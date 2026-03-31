@@ -1,0 +1,36 @@
+clinical micrososcopy
+    - semen
+        - examinations
+            - semen analysis
+        
+        - time collected
+        - time received
+        - total volume
+        - liquefaction time
+
+
+        - motility
+            - motile
+            - non-motile
+
+        - morphology
+            - normal
+            - abnormal
+
+        - sperm count
+            - result
+
+        - others
+            - wbc
+            - rbc
+            - epithelial cells
+                - occasional
+                - few  
+                - moderate
+                - plenty
+                    
+
+
+
+    - urine
+    - fecalysis

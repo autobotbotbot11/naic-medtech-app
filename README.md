@@ -1,0 +1,29 @@
+# NAIC Medtech Workspace
+
+This workspace is organized to separate raw inputs, generated artifacts, reference materials, and future app source code.
+
+## Structure
+- `app/`
+  Future application source code should live here.
+- `data/source/`
+  Raw source workbook and other authoritative input files.
+- `references/print-templates/`
+  Legacy `.dotx` print templates used only as visual/layout guidance.
+- `tools/scripts/`
+  Utility and generation scripts for parsing and maintaining structured data artifacts.
+- `artifacts/schema/`
+  Generated schema, tree, and HTML outputs derived from the workbook.
+- `artifacts/inspection/playwright/`
+  Screenshots and inspection artifacts.
+- `docs/handoff/`
+  AI handoff and project-context documents.
+- `scratch/`
+  Temporary or disposable local files.
+
+## Current Source Of Truth
+- Workbook: `data/source/NAIC MEDTECH SYSTEM DATA.xlsx`
+- App schema: `artifacts/schema/naic_medtech_app_schema.json`
+
+## Notes
+- The app should be built from the schema, not from legacy print templates.
+- The highest-priority feature is the exam/form builder.

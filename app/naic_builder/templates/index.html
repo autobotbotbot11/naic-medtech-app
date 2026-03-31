@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ app_title }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Phase 1</p>
+        <h1>{{ app_title }}</h1>
+        <p class="subtitle">Schema-driven exam builder for NAIC Medtech. Build forms first, then let input and printable outputs follow the same definition.</p>
+      </div>
+      <div class="hero-actions">
+        <button id="newFormBtn" class="secondary" type="button">New Form</button>
+        <button id="saveBtn" type="button">Save Version</button>
+      </div>
+    </header>
+
+    <section class="status-bar">
+      <div id="statusText">Loading builder...</div>
+      <div id="dirtyBadge" class="badge hidden">Unsaved changes</div>
+    </section>
+
+    <section class="workspace">
+      <aside class="sidebar panel">
+        <div class="panel-head">
+          <h2>Forms</h2>
+          <input id="formSearch" type="search" placeholder="Search forms">
+        </div>
+        <div id="formList" class="form-list"></div>
+      </aside>
+
+      <section class="canvas panel">
+        <div class="canvas-head">
+          <div class="tabs">
+            <button class="tab active" data-tab="builder" type="button">Builder</button>
+            <button class="tab" data-tab="preview" type="button">Preview</button>
+            <button class="tab" data-tab="json" type="button">JSON</button>
+          </div>
+          <div class="canvas-actions">
+            <button id="addTopFieldBtn" class="secondary" type="button">Add Field</button>
+            <button id="addTopGroupBtn" class="secondary" type="button">Add Field Group</button>
+            <button id="addSectionBtn" class="secondary" type="button">Add Section</button>
+          </div>
+        </div>
+
+        <div id="builderPane" class="pane active">
+          <div id="structureTree" class="structure-tree"></div>
+        </div>
+
+        <div id="previewPane" class="pane">
+          <div id="previewCanvas" class="preview-canvas"></div>
+        </div>
+
+        <div id="jsonPane" class="pane">
+          <pre id="jsonOutput" class="json-output"></pre>
+        </div>
+      </section>
+
+      <aside class="inspector panel">
+        <div class="panel-head">
+          <h2>Inspector</h2>
+          <div id="selectionHint" class="hint">Select form meta, section, field, or option group.</div>
+        </div>
+        <div id="inspectorContent" class="inspector-content"></div>
+      </aside>
+    </section>
+  </main>
+
+  <script src="{{ url_for('static', path='app.js') }}" defer></script>
+</body>
+</html>

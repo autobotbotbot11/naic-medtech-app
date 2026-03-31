@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NAIC Medtech Structured Tree</title>
+  <style>
+    :root {
+      --bg: #f5f1e8;
+      --panel: rgba(255, 250, 240, 0.92);
+      --panel-strong: #fffdf8;
+      --line: #d7cbb6;
+      --text: #2e2419;
+      --muted: #6a5b4a;
+      --accent: #9c4f2d;
+      --accent-soft: #f0d3bf;
+      --chip: #efe4d2;
+      --shadow: 0 18px 40px rgba(84, 61, 34, 0.08);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(156, 79, 45, 0.12), transparent 28%),
+        linear-gradient(180deg, #fbf7f0 0%, var(--bg) 100%);
+    }
+
+    .shell {
+      width: min(1200px, calc(100vw - 32px));
+      margin: 24px auto 40px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, rgba(255,255,255,0.92), rgba(248, 239, 226, 0.94));
+      border: 1px solid rgba(156, 79, 45, 0.14);
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 3vw, 42px);
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      max-width: 78ch;
+    }
+
+    .toolbar {
+      margin-top: 18px;
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) auto auto;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .toolbar input {
+      width: 100%;
+      border: 1px solid rgba(156, 79, 45, 0.2);
+      background: rgba(255, 255, 255, 0.86);
+      border-radius: 14px;
+      padding: 13px 15px;
+      font-size: 15px;
+      color: var(--text);
+      outline: none;
+    }
+
+    .toolbar input:focus {
+      border-color: rgba(156, 79, 45, 0.45);
+      box-shadow: 0 0 0 4px rgba(156, 79, 45, 0.12);
+    }
+
+    button {
+      border: 0;
+      background: var(--text);
+      color: #fff;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #7f6a50;
+    }
+
+    .meta {
+      margin-top: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.7);
+      border: 1px solid rgba(156, 79, 45, 0.14);
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .legend {
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .ignored {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ignored .chip {
+      background: var(--chip);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+
+    .grid {
+      margin-top: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .group-card {
+      background: var(--panel);
+      border: 1px solid rgba(156, 79, 45, 0.12);
+      border-radius: 22px;
+      padding: 18px 18px 10px;
+      box-shadow: var(--shadow);
+    }
+
+    .group-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .group-head h2 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+    }
+
+    .count {
+      color: var(--muted);
+      font-size: 13px;
+      background: rgba(156, 79, 45, 0.08);
+      padding: 6px 10px;
+      border-radius: 999px;
+    }
+
+    .tree-stack {
+      display: grid;
+      gap: 12px;
+      padding-bottom: 8px;
+    }
+
+    details.tree-node {
+      border-left: 2px solid var(--line);
+      margin-left: 8px;
+      padding-left: 14px;
+    }
+
+    details.tree-node > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 8px 10px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.56);
+      border: 1px solid rgba(156, 79, 45, 0.08);
+      user-select: none;
+    }
+
+    details.tree-node > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details.tree-node > summary::before {
+      content: "+";
+      display: inline-flex;
+      justify-content: center;
+      align-items: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      margin-right: 10px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-weight: 800;
+    }
+
+    details.tree-node[open] > summary::before {
+      content: "-";
+    }
+
+    .node-body {
+      margin: 10px 0 4px 2px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .note {
+      padding: 9px 12px;
+      border-radius: 12px;
+      background: rgba(156, 79, 45, 0.08);
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    .field {
+      background: var(--panel-strong);
+      border: 1px solid rgba(156, 79, 45, 0.1);
+      border-radius: 16px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 18px rgba(84, 61, 34, 0.04);
+    }
+
+    .field-title {
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .field-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .field-meta .chip {
+      padding: 5px 9px;
+      background: var(--chip);
+      border-radius: 10px;
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .option-list {
+      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .option {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(156, 79, 45, 0.08);
+      border: 1px solid rgba(156, 79, 45, 0.12);
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .empty-state {
+      padding: 24px;
+      border-radius: 18px;
+      text-align: center;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.6);
+      border: 1px dashed rgba(156, 79, 45, 0.22);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .match > summary,
+    .field.match {
+      outline: 2px solid rgba(156, 79, 45, 0.36);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 760px) {
+      .toolbar {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <h1>NAIC Medtech Structured Tree</h1>
+      <p class="subtitle">
+        Interactive tree view generated from the Excel workbook using the client-approved grouping.
+        Shared patient/staff metadata fields are excluded so you can focus on the unique structure of each form.
+      </p>
+
+      <div class="toolbar">
+        <input id="searchInput" type="search" placeholder="Search category, form, section, field, option, note...">
+        <button id="expandAllBtn" type="button">Expand All</button>
+        <button id="collapseAllBtn" class="secondary" type="button">Collapse All</button>
+      </div>
+
+      <div class="meta">
+        <span class="pill" id="groupCount"></span>
+        <span class="pill" id="formCount"></span>
+      </div>
+
+      <div class="legend">
+        Tip: use search to isolate one lab form, test name, dropdown option, or note. Matching branches auto-expand.
+      </div>
+
+      <div class="ignored" id="ignoredCommonFields"></div>
+    </section>
+
+    <section class="grid" id="treeRoot"></section>
+  </main>
+
+  <script>
+    const treeData = [{"name": "Clinical Microscopy", "kind": "category", "forms": [{"name": "Semen", "sheet": "SEMEN - Clinical Microscopy", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["SEMEN ANALYSIS"]}, {"name": "TIME COLLECTED", "sheet_row": 12, "source_label": "TIME COLLECTED:", "input_type": "Manual Entry"}, {"name": "TIME RECEIVED", "sheet_row": 13, "source_label": "TIME RECEIVED:", "input_type": "Manual Entry"}, {"name": "TOTAL VOLUME", "sheet_row": 14, "source_label": "TOTAL VOLUME:", "input_type": "Manual Entry"}, {"name": "LIQUEFACTION TIME", "sheet_row": 15, "source_label": "LIQUEFACTION TIME:", "input_type": "Manual Entry"}], "sections": [{"name": "MOTILITY", "fields": [{"name": "MOTILE", "sheet_row": 17, "source_label": "MOTILE:", "input_type": "Manual Entry", "value_hint": "%"}, {"name": "NON MOTILE", "sheet_row": 18, "source_label": "NON MOTILE:", "input_type": "Manual Entry", "value_hint": "%"}], "notes": [], "sheet_row": 16}, {"name": "MORPHOLOGY", "fields": [{"name": "NORMAL", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "%"}, {"name": "ABNORMAL", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "%"}], "notes": [], "sheet_row": 19}, {"name": "SPERM COUNT", "fields": [{"name": "RESULT", "sheet_row": 23, "input_type": "Manual Entry"}], "notes": ["NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"], "sheet_row": 22}, {"name": "OTHERS", "fields": [{"name": "WBC", "sheet_row": 25, "input_type": "Manual Entry", "value_hint": "/HPF"}, {"name": "RBC", "sheet_row": 26, "input_type": "Manual Entry", "value_hint": "/HPF"}, {"name": "EPITHELIAL CELL", "sheet_row": 27, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}], "notes": [], "sheet_row": 24}]}, {"name": "Urine", "sheet": "URINE- Clinical Microscopy", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["URINE KETONE", "URINALYSIS", "URINALYSIS, URINE KETONE", "URINALYSIS, PREGNANCY TEST", "URINALYSIS, PREGNANCY TEST (BLOOD)", "PREGNANCY TEST", "PREGNANCY TEST (BLOOD)"]}], "sections": [{"name": "MACROSCOPIC FINDING", "fields": [{"name": "Color", "sheet_row": 12, "input_type": "Predefined Selection", "dropdown_options": ["LIGHT YELLOW", "YELLOW", "DARK YELLOW", "AMBER", "REDDISH YELLOW", "RED"]}, {"name": "Transparency", "sheet_row": 13, "input_type": "Predefined Selection", "dropdown_options": ["SLIGHTLY HAZY", "HAZY", "TURBID", "CLEAR"]}, {"name": "Reaction", "sheet_row": 14, "input_type": "Predefined Selection", "dropdown_options": ["ACIDIC 5.0", "ACIDIC 6.0", "ACIDIC 6.5", "NEUTRAL 7.0", "ALKALINE 7.5", "ALKALINE 8.0", "ALKALINE 9.0"]}, {"name": "Specific Gravity", "sheet_row": 15, "input_type": "Predefined Selection", "dropdown_options": ["1.005", "1.010", "1.015", "1.020", "1.025", "1.030"]}], "notes": [], "sheet_row": 11}, {"name": "CLINICAL FINDING", "fields": [{"name": "Sugar", "sheet_row": 17, "input_type": "Predefined Selection", "dropdown_options": ["NEGATIVE", "TRACE", "+", "++", "+++", "++++"]}, {"name": "Protein", "sheet_row": 18, "input_type": "Predefined Selection", "dropdown_options": ["NEGATIVE", "TRACE", "+", "++", "+++", "++++"]}], "notes": [], "sheet_row": 16}, {"name": "MICROSCOPIC FINDING", "fields": [{"name": "White Blood Cell", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "/HPF"}, {"name": "Red Blood Cell", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "/HPF"}, {"name": "Epithelial Cell", "sheet_row": 22, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Amorphous Urates", "sheet_row": 23, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Amorphous Phosphate", "sheet_row": 24, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Calcium Oxalate", "sheet_row": 25, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Uric Acid Crystal", "sheet_row": 26, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Mucus Thread", "sheet_row": 27, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Bacteria", "sheet_row": 28, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "Others", "sheet_row": 30, "input_type": "Manual Entry"}, {"name": "Pregnancy Test", "sheet_row": 32, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}], "notes": [], "sheet_row": 19}]}, {"name": "Fecalysis", "sheet": "FECALYSIS - Clinical Microscopy", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["FECALYSIS", "FOBT", "FECALYSIS, FOBT", "SCOTCH TAPE METHOD"]}], "sections": [{"name": "MACROSCOPIC FINDING", "fields": [{"name": "COLOR", "sheet_row": 12, "input_type": "Predefined Selection", "dropdown_options": ["YELLOW", "YELLOWISH", "YELLOWISH GREEN", "YELLOWISH BROWN", "BROWN", "LIGHT BROWN", "DARK BROWN", "REDDISH BROWN", "GREENISH", "GREENISH YELLOW", "BLACK", "REDDISH", "GRAYISH"]}, {"name": "CONSISTENCY", "sheet_row": 13, "input_type": "Predefined Selection", "dropdown_options": ["FORMED", "SEMI-FORMED", "SOFT", "SOFT-WATERY", "SOFT-MUCOID", "WATERY", "MUCOID"]}, {"name": "FECAL OCCULT BLOOD", "sheet_row": 14, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}], "notes": [], "sheet_row": 11}, {"name": "MICROSCOPIC FINDING", "fields": [{"name": "PUS", "sheet_row": 16, "input_type": "Manual Entry", "value_hint": "/HPF"}, {"name": "RED BLOOD CELL", "sheet_row": 17, "input_type": "Manual Entry", "value_hint": "/HPF"}, {"name": "BUDDING YEAST", "sheet_row": 18, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "BACTERIA", "sheet_row": 19, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "FAT GLOBULES", "sheet_row": 20, "input_type": "Predefined Selection", "dropdown_options": ["OCCASIONAL", "FEW", "MODERATE", "PLENTY"]}, {"name": "PARASITES", "sheet_row": 22, "input_type": "Predefined Selection", "dropdown_options": ["ASCARIS LUMBRICOIDES OVA", "TRICHURIS TRICHIURA OVA", "NO OVA NOR PARASITES SEEN"]}, {"name": "AMOEBA", "sheet_row": 23, "input_type": "Predefined Selection", "dropdown_options": ["ENTAMOEBA HISTOLYTICA/ENTAMOEBA DISPAR CYSTS", "ENTAMOEBA COLI CYSTS"]}, {"name": "OTHERS", "sheet_row": 25, "input_type": "Predefined Selection", "dropdown_options": ["BLASTOCYSTIS HOMINIS CYSTS"]}], "notes": [], "sheet_row": 15}]}]}, {"name": "Blood Chemistry", "kind": "category", "forms": [{"name": "OGTT", "sheet": "OGTT - Blood Chemistry", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["50g OGTT", "75g OGTT", "100g OGTT", "2-HOUR POSTPRANDIAL", "50g ORAL GLUCOSE CHALLENGE"]}], "sections": [{"name": "50G ORAL GLUCOSE TOLERANCE", "fields": [{"name": "1ST HOUR", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 200 mg/dl"}, {"name": "2ND HOUR", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 140 mg/d"}], "notes": ["NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"], "sheet_row": 11}, {"name": "75G ORAL GLUCOSE TOLERANCE", "fields": [{"name": "FASTING BLOOD SUGAR", "sheet_row": 15, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "70.27-124.32 mg/dl"}, {"name": "1ST HOUR", "sheet_row": 16, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 200 mg/dl"}, {"name": "2ND HOUR", "sheet_row": 17, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 140 mg/dl"}], "notes": ["NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"], "sheet_row": 14}, {"name": "100G ORAL GLUCOSE TOLERANCE", "fields": [{"name": "FASTING BLOOD SUGAR", "sheet_row": 19, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "70.27-124.32 mg/dl"}, {"name": "1ST HOUR", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 180 mg/dl"}, {"name": "2ND HOUR", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 155 mg/dl"}, {"name": "3RD HOUR", "sheet_row": 22, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "< 140 mg/dl"}], "notes": ["NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"], "sheet_row": 18}, {"name": "Additional Tests", "fields": [{"name": "2 HOURS POST PRANDIAL", "sheet_row": 24, "input_type": "Manual Entry", "value_hint": "mg/dl"}, {"name": "50 G ORAL GLUCOSE CHALLENGE", "sheet_row": 25, "input_type": "Manual Entry", "value_hint": "mg/dl"}, {"name": "Others", "sheet_row": 27, "input_type": "Manual Entry"}], "notes": []}]}, {"name": "HBA1C", "sheet": "HBA1C - Blood Chemistry", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["HBA1C (CLOVER)"]}, {"name": "Result", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "%", "normal_value": "NORMAL VALUE = 4.0 - 5.6 %", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}], "sections": []}, {"name": "Male", "sheet": "BCMALE - Blood Chemistry", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["CHEM 6", "CHEM 4, LIPID PROFILE", "CHEM 4, LIPID PROFILE, AST, ALT", "LIPID PROFILE", "FBS, LIPID PROFILE", "FBS, BUA, LIPID PROFILE", "BUN, CREA, SERUM ELECTROLYTES", "CHEM 4, LIPID PROFILE, AST, ALT, SERUM ELECTROLYTES", "BUN, CREA", "BUN, CREA, BUA, SERUM ELECTROLYTES", "SERUM ELECTROLYTES", "CHEM 4, LIPID PROFILE, SERUM ELECTROLYTES"]}, {"name": "FASTING BLOOD SUGAR", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "70.27-124.32 mg/dL", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "RANDOM BLOOD SUGAR", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "60 - 140 mg/dl", "notes": "note: pde po kaya na incase na magpplit po ng normal values pde nmin sya maedit, ty"}, {"name": "HGT", "sheet_row": 14, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "53 - 103 mg/dl"}, {"name": "BLOOD UREA NITROGEN", "sheet_row": 15, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "7.9- 20.2 mg/dl"}, {"name": "CREATININE", "sheet_row": 16, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0.5-1.3 mg/dl"}, {"name": "BLOOD URIC ACID", "sheet_row": 17, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "3.5 - 7.2 mg/dl"}, {"name": "SODIUM", "sheet_row": 18, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "135 - 148 mEq/L"}, {"name": "POTASSIUM", "sheet_row": 19, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "3.5 - 5.3 mEq/L"}, {"name": "CHLORIDE", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "98 - 107 mEq/L"}, {"name": "IONIZED CALCIUM", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "1.13-1.32 mEq/L"}, {"name": "CHOLESTEROL", "sheet_row": 23, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0 - 200 mg/dl", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "TRIGLYCERIDE", "sheet_row": 24, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0 - 150 mg/dl"}, {"name": "HDL CHOLESTEROL", "sheet_row": 25, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "30 - 85 mg/dl"}, {"name": "LDL CHOLESTEROL", "sheet_row": 26, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "66 - 178 mg/dl"}, {"name": "VLDL CHOLESTEROL", "sheet_row": 27, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0-40 mg/dl"}, {"name": "SGOT(AST)", "sheet_row": 28, "input_type": "Manual Entry", "value_hint": "U/L", "normal_value": "0 - 31 U/L"}, {"name": "SGPT(ALT)", "sheet_row": 29, "input_type": "Manual Entry", "value_hint": "U/L", "normal_value": "0 - 34 U/L"}, {"name": "OTHERS", "sheet_row": 31, "input_type": "Manual Entry"}], "sections": []}, {"name": "Female", "sheet": "BCFEMALE - Blood Chemistry", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["CHEM 6", "CHEM 4, LIPID PROFILE", "CHEM 4, LIPID PROFILE, AST, ALT", "LIPID PROFILE", "FBS, LIPID PROFILE", "FBS, BUA, LIPID PROFILE", "BUN, CREA, SERUM ELECTROLYTES", "CHEM 4, LIPID PROFILE, AST, ALT, SERUM ELECTROLYTES", "BUN, CREA", "BUN, CREA, BUA, SERUM ELECTROLYTES", "SERUM ELECTROLYTES", "CHEM 4, LIPID PROFILE, SERUM ELECTROLYTES"]}, {"name": "FASTING BLOOD SUGAR", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "70.27-124.32 mg/dL", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "RANDOM BLOOD SUGAR", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "60 - 140 mg/dl"}, {"name": "HGT", "sheet_row": 14, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "53 - 103 mg/dl"}, {"name": "BLOOD UREA NITROGEN", "sheet_row": 15, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "7.9- 20.2 mg/dl"}, {"name": "CREATININE", "sheet_row": 16, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0.4-1.2 mg/dl"}, {"name": "BLOOD URIC ACID", "sheet_row": 17, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "2.6 - 6.0 mg/dl"}, {"name": "SODIUM", "sheet_row": 18, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "135 - 148 mEq/L"}, {"name": "POTASSIUM", "sheet_row": 19, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "3.5 - 5.3 mEq/l"}, {"name": "CHLORIDE", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "98 - 107 mEq/L"}, {"name": "IONIZED CALCIUM", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "mEq/L", "normal_value": "1.13-1.32 mEq/L"}, {"name": "CHOLESTEROL", "sheet_row": 23, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0 - 200 mg/dl", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "TRIGLYCERIDE", "sheet_row": 24, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0 - 150 mg/dl"}, {"name": "HDL CHOLESTEROL", "sheet_row": 25, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "30 - 85 mg/dl"}, {"name": "LDL CHOLESTEROL", "sheet_row": 26, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "66 - 178 mg/dl"}, {"name": "VLDL CHOLESTEROL", "sheet_row": 27, "input_type": "Manual Entry", "value_hint": "mg/dl", "normal_value": "0-40 mg/dl"}, {"name": "SGOT(AST)", "sheet_row": 28, "input_type": "Manual Entry", "value_hint": "U/L", "normal_value": "0 - 31 U/L"}, {"name": "SGPT(ALT)", "sheet_row": 29, "input_type": "Manual Entry", "value_hint": "U/L", "normal_value": "0 - 34 U/L"}, {"name": "OTHERS", "sheet_row": 31, "input_type": "Manual Entry"}], "sections": []}]}, {"name": "Serology", "kind": "category", "forms": [{"name": "Serology", "sheet": "SEROLOGY", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["DENGUE TEST", "ASO TITER", "TYHPIDOT", "HBSAG SCREENING", "VDRL", "ANTI-HCV"]}], "sections": [{"name": "TYPHIDOT", "fields": [{"name": "IgM", "sheet_row": 12, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}, {"name": "IgG", "sheet_row": 13, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}], "notes": [], "sheet_row": 11}, {"name": "DENGUE TEST", "fields": [{"name": "Ns1Ag", "sheet_row": 15, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}, {"name": "IgM", "sheet_row": 16, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}, {"name": "IgG", "sheet_row": 17, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}], "notes": [], "sheet_row": 14}, {"name": "MALARIAL TEST", "fields": [{"name": "ANTI-PLASMODIUM FALCIFARUM", "sheet_row": 19, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}, {"name": "ANTI PLASMODIUM VIVAX", "sheet_row": 20, "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}], "notes": [], "sheet_row": 18}, {"name": "Other Serology Tests", "fields": [{"name": "HbsAg SCREENING", "sheet_row": 22, "source_label": "HbsAg SCREENING:", "input_type": "Predefined Selection", "dropdown_options": ["REACTIVE", "NON-REACTIVE"]}, {"name": "VDRL", "sheet_row": 23, "source_label": "VDRL:", "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE", "NEGATIVE"]}, {"name": "ANTI-HCV", "sheet_row": 24, "source_label": "ANTI-HCV:", "input_type": "Predefined Selection", "dropdown_options": ["REACTIVE", "NON-REACTIVE"]}, {"name": "ASO TITER", "sheet_row": 25, "source_label": "ASO TITER:", "input_type": "Predefined Selection", "dropdown_options": ["POSITIVE >200 IU/ML", "NEGATIVE <200 IU/ML"]}, {"name": "OTHERS", "sheet_row": 27, "input_type": "Manual Entry"}], "notes": []}]}, {"name": "Cardiaci", "sheet": "CARDIACI - Serology", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["CK-MB, TNI, BNP"]}, {"name": "CK-MB", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "ng/mL", "normal_value": "0.0 - 4.3 ng / mL", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "TROPONIN - I", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "ng/mL", "normal_value": "0.0 - 0.02 ng /mL"}, {"name": "BNP", "sheet_row": 14, "input_type": "Manual Entry", "value_hint": "pg/mL", "normal_value": "0.0 - 100 pg / mL"}], "sections": []}, {"name": "HIV 1&2 Testing", "sheet": "HIV 1&2 TESTING - Serology", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["HIV TESTING"]}, {"name": "LOT NUMBER", "sheet_row": 12, "input_type": "Manual Entry"}, {"name": "TEST RESULT", "sheet_row": 14, "input_type": "Predefined Selection", "dropdown_options": ["REACTIVE", "NON-REACTIVE"]}], "sections": []}, {"name": "COVID 19 Antigen (Rapid Test)", "sheet": "COVID 19 ANTIGEN (RAPID TEST) -", "notes": ["kelangan may picture sa result"], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["COVID 19-ANTIGEN TEST"]}, {"name": "TEST RESULT", "sheet_row": 12, "input_type": "Predefined Selection", "dropdown_options": ["NEGATIVE", "POSITIVE"]}], "sections": []}]}, {"name": "Blood Bank", "kind": "standalone_form", "sheet": "BBANK - Blood Bank", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["CROSSMATCHING"]}, {"name": "PATIENT'S BLOOD TYPE", "sheet_row": 12, "input_type": "Predefined Selection", "dropdown_options": ["\"A\" rh POSITIVE", "\"B\" rh POSITIVE", "\"AB\" rh POSITIVE", "\"O\" rh POSITIVE", "\"A\" rh NEGATIVE", "\"B\" rh NEGATIVE", "\"O\" rh NEGATIVE", "\"AB\" rh NEGATIVE"]}, {"name": "BLOOD COMPONENT", "sheet_row": 13, "input_type": "Predefined Selection", "dropdown_options": ["WHOLE BLOOD", "PRBC", "WB TO PRBC", "PLATELET CONCENTRATE", "FRESH FROZEN PLASMA"]}, {"name": "DONOR'S BLOOD TYPE", "sheet_row": 14, "input_type": "Predefined Selection", "dropdown_options": ["\"A\" rh POSITIVE", "\"B\" rh POSITIVE", "\"AB\" rh POSITIVE", "\"O\" rh POSITIVE", "\"A\" rh NEGATIVE", "\"B\" rh NEGATIVE", "\"O\" rh NEGATIVE", "\"AB\" rh NEGATIVE"]}, {"name": "SOURCE OF BLOOD", "sheet_row": 15, "input_type": "Predefined Selection", "dropdown_options": ["PRC CAVITE CITY", "PRC DASMARINAS", "PRC SILANG", "PRC CALOOCAN", "PAGAMUTAN NG DASMARINAS", "GEAMH", "EACMED", "TSMC", "DLSUMC", "GENTRIMED"]}, {"name": "SERIAL NUMBER", "sheet_row": 16, "input_type": "Manual Entry"}, {"name": "DATE EXTRACTED", "sheet_row": 17, "input_type": "Manual Entry"}, {"name": "DATE EXPIRY", "sheet_row": 18, "input_type": "Manual Entry"}], "sections": [{"name": "TYPE OF CROSSMATCHING", "fields": [{"name": "IMMEDIATE SPIN/ SALINE PHASE", "sheet_row": 20, "input_type": "manual entry"}, {"name": "ALBUMIN PHASE /37 deg C", "sheet_row": 21, "source_label": "ALBUMIN PHASE /37  deg C", "input_type": "manual entry"}, {"name": "ANTI HUMAN GLOBILIN PHASE", "sheet_row": 22, "input_type": "manual entry"}, {"name": "REMARKS", "sheet_row": 24, "input_type": "Predefined Selection", "dropdown_options": ["COMPATIBLE", "INCOMPATIBLE"]}, {"name": "VITAL SIGNS", "sheet_row": 25, "input_type": "Predefined Selection", "dropdown_options": ["BLOOD PRESSURE: mmHg", "PULSE RATE: bpm", "RESPIRATORY RATE: cpm", "TEMPERATURE: deg C"], "notes": "dapat meron na dropdownlist sa blood pressure, pulse rate, resparatory rate, temperature then mag iinput na lang ng result"}, {"name": "RELEASED BY", "sheet_row": 27, "input_type": "Manual Entry", "value_options": ["IMELDA A. ELEMIA", "CRYSTEL C. TESORO", "JULIE KYLE A. RONATO", "MA. JESUSA B. VITE", "ANDREA COLEEN A, AVELLONES", "SHIELA MAE D. LIBRADILLA"]}, {"name": "RELEASED TO", "sheet_row": 28, "input_type": "Manual Entry"}], "notes": [], "sheet_row": 19}]}, {"name": "Blood Gas Analysis", "kind": "standalone_form", "sheet": "ABG - Blood Gas Analysis", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["ABG"]}], "sections": [{"name": "Blood gas value (ABG)", "fields": [{"name": "pH", "sheet_row": 12, "input_type": "Manual Entry", "normal_value": "7.35-7.45", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "pO2", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "mmHg", "normal_value": "80-105 mmHg"}, {"name": "pCO2", "sheet_row": 14, "input_type": "Manual Entry", "value_hint": "mmHg", "normal_value": "35.0-45.0 mmHg"}], "notes": [], "sheet_row": 11}, {"name": "Calculated values (OXIMETRY)", "fields": [{"name": "sO2", "sheet_row": 16, "input_type": "Manual Entry", "value_hint": "%", "normal_value": "95-100 %", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}], "notes": [], "sheet_row": 15}, {"name": "Calculated values (ACID BASE STATUS)", "fields": [{"name": "HCO3", "sheet_row": 18, "input_type": "Manual Entry", "value_hint": "mmol/L", "normal_value": "22-28 mmol/L", "notes": "NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"}, {"name": "BE(ecf)", "sheet_row": 19, "input_type": "Manual Entry", "value_hint": "mmol/L", "normal_value": "-2 to +2 mmol/L"}, {"name": "pO2(A-a)", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "mmHg", "normal_value": "5-10 mmHg"}, {"name": "TCO2", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "mmol/L", "normal_value": "23-29 mmol/L"}, {"name": "NOTE", "sheet_row": 23, "input_type": "Manual Entry"}], "notes": [], "sheet_row": 17}]}, {"name": "Hematology", "kind": "category", "forms": [{"name": "Hematology", "sheet": "HEMATOLOGY", "notes": ["NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["CBC, PLATELET COUNT, BLOOD TYPING", "HGB-HCT, PLATELET COUNT", "BLOOD TYPING", "CBC, PLATELET COUNT, ESR", "CBC, PLATELET COUNT"]}, {"name": "RBC COUNT (M)", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "/L", "normal_value": "4.6 - 6.2 X 1012/L"}, {"name": "RBC COUNT (F)", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "/L", "normal_value": "4.2 - 5.4 X 1012/L"}, {"name": "WBC COUNT", "sheet_row": 14, "input_type": "Manual Entry", "value_hint": "/L", "normal_value": "5.0 - 10.0 X 109/L"}, {"name": "HEMOGLOBIN (M)", "sheet_row": 15, "input_type": "Manual Entry", "value_hint": "g/L", "normal_value": "140-180 g/L"}, {"name": "HEMOGLOBIN (F)", "sheet_row": 16, "input_type": "Manual Entry", "value_hint": "g/L", "normal_value": "120 - 160 g/L"}, {"name": "HEMATOCRIT (M)", "sheet_row": 17, "input_type": "Manual Entry", "value_hint": "/L", "normal_value": "0.40-0.54 /L"}, {"name": "HEMATOCRIT (F)", "sheet_row": 18, "input_type": "Manual Entry", "value_hint": "/L", "normal_value": "0.37 - 0.42 /L"}, {"name": "PLATELET COUNT", "sheet_row": 19, "input_type": "Manual Entry", "value_hint": "/L", "normal_value": "150 - 450 X 109/L"}, {"name": "CLOTTING TIME", "sheet_row": 20, "input_type": "Manual Entry", "value_hint": "minutes", "normal_value": "1 - 6 minutes"}, {"name": "BLEEDING TIME", "sheet_row": 21, "input_type": "Manual Entry", "value_hint": "minutes", "normal_value": "1 - 6 minutes"}, {"name": "BLOOD TYPING", "sheet_row": 22, "input_type": "Predefined Selection", "dropdown_options": ["\"A\" rh POSITIVE", "\"B\" rh POSITIVE", "\"AB\" rh POSITIVE", "\"O\" rh POSITIVE", "\"A\" rh NEGATIVE", "\"B\" rh NEGATIVE", "\"O\" rh NEGATIVE", "\"AB\" rh NEGATIVE"]}, {"name": "SEGMENTERS", "sheet_row": 24, "input_type": "Manual Entry", "normal_value": "0.50 - 0.70"}, {"name": "LYMPHOCYTES", "sheet_row": 25, "input_type": "Manual Entry", "normal_value": "0.25 - 0.40"}, {"name": "MONOCYTES", "sheet_row": 26, "input_type": "Manual Entry", "normal_value": "0.03 - 0.08"}, {"name": "EOSINOPHILS", "sheet_row": 27, "input_type": "Manual Entry", "normal_value": "0.01 - 0.04"}, {"name": "STAB", "sheet_row": 28, "input_type": "Manual Entry", "normal_value": "0 - 0.05"}, {"name": "E.S.R . (M)", "sheet_row": 29, "input_type": "Manual Entry", "value_hint": "mm/hr", "normal_value": "0 - 10 mm/hr"}, {"name": "E.S.R . (F)", "sheet_row": 30, "input_type": "Manual Entry", "value_hint": "mm/hr", "normal_value": "0 - 20 mm/hr"}, {"name": "OTHERS", "sheet_row": 32, "input_type": "Manual Entry"}], "sections": []}, {"name": "Pro-Time, APTT", "sheet": "PROTIME, APTT - Hematology", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["PROTIME", "APTT", "PROTIME, APTT"]}], "sections": [{"name": "PRO TIME", "fields": [{"name": "TEST", "sheet_row": 12, "input_type": "Manual Entry", "value_hint": "SECONDS", "normal_value": "10.0-13.9 seconds"}, {"name": "CONTROL", "sheet_row": 13, "input_type": "Manual Entry", "value_hint": "SECONDS", "normal_value": "SECONDS"}, {"name": "INR", "sheet_row": 14, "input_type": "Manual Entry", "normal_value": "0.70-1.30"}, {"name": "% ACTIVITY", "sheet_row": 15, "input_type": "Manual Entry", "value_hint": "%", "normal_value": "% ACTIVITY"}], "notes": ["NOTE: ALL RESULTS ABOVE OR BELOW NORMAL VALUE MAKE IT RED"], "sheet_row": 11}, {"name": "APTT", "fields": [{"name": "TEST", "sheet_row": 17, "input_type": "Manual Entry", "value_hint": "SECONDS", "normal_value": "22.2-37.9 seconds"}, {"name": "CONTROL", "sheet_row": 18, "input_type": "Manual Entry", "value_hint": "SECONDS", "normal_value": "SECONDS"}], "notes": [], "sheet_row": 16}]}]}, {"name": "Microbiology", "kind": "standalone_form", "sheet": "MICROBIOLOGY", "notes": [], "fields": [{"name": "Examination", "sheet_row": 7, "input_type": "Predefined Selection", "dropdown_options": ["KOH SMEAR"]}, {"name": "RESULT", "sheet_row": 12, "input_type": "Predefined Selection", "dropdown_options": ["NO FUNGAL ELEMENTS SEEN", "POSITIVE FOR FUNGAL ELEMENTS"]}], "sections": []}];
+    const ignoredCommonFields = ["Name", "Age", "Sex", "Date / Date-Time", "Requesting Physician", "Room", "Case Number", "Medical Technologist", "Pathologist"];
+
+    const treeRoot = document.getElementById("treeRoot");
+    const ignoredRoot = document.getElementById("ignoredCommonFields");
+    const searchInput = document.getElementById("searchInput");
+    const expandAllBtn = document.getElementById("expandAllBtn");
+    const collapseAllBtn = document.getElementById("collapseAllBtn");
+    const groupCount = document.getElementById("groupCount");
+    const formCount = document.getElementById("formCount");
+
+    function appendChild(parent, child) {
+      if (child) parent.appendChild(child);
+      return child;
+    }
+
+    function createElement(tag, className, text) {
+      const el = document.createElement(tag);
+      if (className) el.className = className;
+      if (text !== undefined) el.textContent = text;
+      return el;
+    }
+
+    function createChip(text) {
+      return createElement("span", "chip", text);
+    }
+
+    function aggregateFieldText(field) {
+      const parts = [
+        field.name,
+        field.input_type,
+        field.value_hint,
+        field.normal_value,
+        field.notes,
+        ...(field.dropdown_options || []),
+        ...(field.value_options || [])
+      ];
+      return parts.filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function aggregateSectionText(section) {
+      const parts = [section.name, ...(section.notes || [])];
+      for (const field of section.fields || []) {
+        parts.push(aggregateFieldText(field));
+      }
+      return parts.filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function aggregateFormText(form) {
+      const parts = [form.name, ...(form.notes || [])];
+      for (const field of form.fields || []) {
+        parts.push(aggregateFieldText(field));
+      }
+      for (const section of form.sections || []) {
+        parts.push(aggregateSectionText(section));
+      }
+      return parts.filter(Boolean).join(" ").toLowerCase();
+    }
+
+    function createOptionList(values) {
+      if (!values || !values.length) return null;
+      const wrap = createElement("div", "option-list");
+      for (const value of values) {
+        appendChild(wrap, createElement("span", "option", value));
+      }
+      return wrap;
+    }
+
+    function createField(field) {
+      const card = createElement("article", "field searchable");
+      card.dataset.search = aggregateFieldText(field);
+
+      appendChild(card, createElement("div", "field-title", field.name));
+
+      const meta = createElement("div", "field-meta");
+      let hasMeta = false;
+
+      if (field.input_type) {
+        appendChild(meta, createChip("input: " + field.input_type));
+        hasMeta = true;
+      }
+      if (field.value_hint) {
+        appendChild(meta, createChip("hint: " + field.value_hint));
+        hasMeta = true;
+      }
+      if (field.normal_value) {
+        appendChild(meta, createChip("normal: " + field.normal_value));
+        hasMeta = true;
+      }
+      if (field.notes) {
+        appendChild(meta, createChip("note: " + field.notes));
+        hasMeta = true;
+      }
+
+      if (hasMeta) appendChild(card, meta);
+      appendChild(card, createOptionList(field.dropdown_options));
+      appendChild(card, createOptionList(field.value_options));
+
+      return card;
+    }
+
+    function createBranch(name, searchText, notes, fields, sections, openByDefault) {
+      const details = createElement("details", "tree-node searchable");
+      details.open = Boolean(openByDefault);
+      details.dataset.search = searchText;
+
+      appendChild(details, createElement("summary", "", name));
+
+      const body = createElement("div", "node-body");
+      for (const note of notes || []) {
+        appendChild(body, createElement("div", "note", note));
+      }
+      for (const field of fields || []) {
+        appendChild(body, createField(field));
+      }
+      for (const section of sections || []) {
+        appendChild(body, createSection(section));
+      }
+      appendChild(details, body);
+
+      return details;
+    }
+
+    function createSection(section) {
+      return createBranch(
+        section.name,
+        aggregateSectionText(section),
+        section.notes || [],
+        section.fields || [],
+        [],
+        false
+      );
+    }
+
+    function createForm(form) {
+      return createBranch(
+        form.name,
+        aggregateFormText(form),
+        form.notes || [],
+        form.fields || [],
+        form.sections || [],
+        true
+      );
+    }
+
+    function createStandaloneBody(form) {
+      const body = createElement("div", "node-body");
+      for (const note of form.notes || []) {
+        appendChild(body, createElement("div", "note", note));
+      }
+      for (const field of form.fields || []) {
+        appendChild(body, createField(field));
+      }
+      for (const section of form.sections || []) {
+        appendChild(body, createSection(section));
+      }
+      return body;
+    }
+
+    function renderTree() {
+      let totalForms = 0;
+
+      for (const item of ignoredCommonFields) {
+        appendChild(ignoredRoot, createElement("span", "chip", item));
+      }
+
+      for (const node of treeData) {
+        const card = createElement("section", "group-card searchable");
+        const head = createElement("div", "group-head");
+        const title = createElement("h2", "", node.name);
+        const badgeText = node.kind === "category"
+          ? (node.forms.length + " form" + (node.forms.length > 1 ? "s" : ""))
+          : "standalone form";
+        const badge = createElement("span", "count", badgeText);
+
+        appendChild(head, title);
+        appendChild(head, badge);
+        appendChild(card, head);
+
+        const stack = createElement("div", "tree-stack");
+        if (node.kind === "category") {
+          totalForms += node.forms.length;
+          node.forms.forEach(form => appendChild(stack, createForm(form)));
+          card.dataset.search = (node.name + " " + node.forms.map(aggregateFormText).join(" ")).toLowerCase();
+        } else {
+          totalForms += 1;
+          const standaloneForm = {
+            name: node.name,
+            notes: node.notes || [],
+            fields: node.fields || [],
+            sections: node.sections || []
+          };
+          appendChild(stack, createStandaloneBody(standaloneForm));
+          card.dataset.search = (node.name + " " + aggregateFormText(standaloneForm)).toLowerCase();
+        }
+
+        appendChild(card, stack);
+        appendChild(treeRoot, card);
+      }
+
+      groupCount.textContent = treeData.length + " top-level groups";
+      formCount.textContent = totalForms + " total forms";
+    }
+
+    function setAllDetails(open) {
+      document.querySelectorAll("details.tree-node").forEach(node => {
+        node.open = open;
+      });
+    }
+
+    function filterTree(query) {
+      const normalized = query.trim().toLowerCase();
+      const nodes = Array.from(document.querySelectorAll(".searchable"));
+      const cards = Array.from(document.querySelectorAll(".group-card"));
+      let anyVisible = false;
+
+      nodes.forEach(node => {
+        node.classList.remove("hidden", "match");
+      });
+
+      if (!normalized) {
+        cards.forEach(card => card.classList.remove("hidden"));
+        const emptyState = document.getElementById("emptyState");
+        if (emptyState) emptyState.remove();
+        return;
+      }
+
+      nodes.forEach(node => {
+        const haystack = node.dataset.search || "";
+        const matches = haystack.includes(normalized);
+        if (!matches) node.classList.add("hidden");
+        if (matches) node.classList.add("match");
+      });
+
+      document.querySelectorAll("details.tree-node.match").forEach(node => {
+        node.open = true;
+      });
+
+      cards.forEach(card => {
+        const visibleDescendant = card.querySelector(".searchable:not(.hidden)");
+        if (!visibleDescendant) {
+          card.classList.add("hidden");
+        } else {
+          card.classList.remove("hidden");
+          anyVisible = true;
+        }
+      });
+
+      let emptyState = document.getElementById("emptyState");
+      if (!anyVisible) {
+        if (!emptyState) {
+          emptyState = createElement("div", "empty-state");
+          emptyState.id = "emptyState";
+          emptyState.textContent = "No matching nodes found. Try a broader search term.";
+          treeRoot.appendChild(emptyState);
+        }
+      } else if (emptyState) {
+        emptyState.remove();
+      }
+    }
+
+    renderTree();
+
+    searchInput.addEventListener("input", event => {
+      filterTree(event.target.value);
+    });
+
+    expandAllBtn.addEventListener("click", () => setAllDetails(true));
+    collapseAllBtn.addEventListener("click", () => setAllDetails(false));
+  </script>
+</body>
+</html>

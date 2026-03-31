@@ -1,0 +1,94 @@
+{
+  "project_name": "NAIC Medtech",
+  "primary_problem": "The clinic needs a system that speeds up lab input and lab output during daily operations.",
+  "core_product_direction": "Schema-driven laboratory platform with an exam/form builder.",
+  "phase_1_priority": "exam_form_builder",
+  "phase_1_goals": [
+    "Create exam/form definitions",
+    "Edit existing exam/form definitions",
+    "Add sections and fields",
+    "Define options, normal values, and unit hints",
+    "Reorder fields",
+    "Preview forms",
+    "Persist schema definitions"
+  ],
+  "deferred_modules": [
+    "Accounts",
+    "Full admin portal",
+    "Advanced permissions",
+    "Broader reporting",
+    "Non-builder operations modules"
+  ],
+  "source_of_truth": {
+    "app_schema": "artifacts/schema/naic_medtech_app_schema.json",
+    "workbook": "data/source/NAIC MEDTECH SYSTEM DATA.xlsx",
+    "reference_tree": "artifacts/schema/naic_medtech_structure.json",
+    "tree_diagram": "artifacts/schema/naic_medtech_tree_diagram.html",
+    "legacy_print_guides": "references/print-templates/*.dotx"
+  },
+  "conflict_rule": {
+    "structure_and_fields": "schema_wins",
+    "presentation_and_print_style": "legacy_templates_are_guidance_only"
+  },
+  "builder_primitives": [
+    "group",
+    "form",
+    "section",
+    "field",
+    "field_group",
+    "option_list",
+    "display_order",
+    "normal_value",
+    "unit_hint",
+    "notes"
+  ],
+  "recommended_field_support": [
+    "input_text",
+    "input_textarea",
+    "input_number",
+    "input_date",
+    "input_time",
+    "input_datetime",
+    "select",
+    "multi_select",
+    "field_group"
+  ],
+  "architectural_layers": [
+    "exam_definition",
+    "data_entry_rendering",
+    "output_rendering"
+  ],
+  "current_group_structure": [
+    "Clinical Microscopy",
+    "Blood Chemistry",
+    "Serology",
+    "Blood Bank",
+    "Blood Gas Analysis",
+    "Hematology",
+    "Microbiology"
+  ],
+  "important_domain_rules": [
+    "COVID 19 Antigen (Rapid Test) belongs under Serology",
+    "Shared patient/request fields are modeled as a reusable common field set",
+    "Blood Bank > Type of Crossmatching > VITAL SIGNS is a field_group",
+    "Blood Chemistry > Male and Female require IONIZED CALCIUM immediately after CHLORIDE"
+  ],
+  "known_conservative_areas": [
+    "TOTAL VOLUME",
+    "LIQUEFACTION TIME",
+    "SPERM COUNT > RESULT",
+    "Several OTHERS fields",
+    "Some Blood Bank phase result fields",
+    "NOTE text areas"
+  ],
+  "implementation_warning": [
+    "Do not hardcode one UI screen per exam",
+    "Do not use legacy print templates as the primary data model",
+    "Do not make the client dependent on programmers for ordinary exam changes"
+  ],
+  "ideal_phase_1_outcome": [
+    "The client can create or edit an exam/form without developer help",
+    "The resulting schema stays structured and versionable",
+    "The app is ready for later input and print flows"
+  ]
+}

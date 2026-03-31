@@ -1,0 +1,53 @@
+from __future__ import annotations
+
+from datetime import datetime, timezone
+
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from .database import Base
+
+
+def utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+class FormDefinition(Base):
+    __tablename__ = "form_definitions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(255))
+    group_name: Mapped[str] = mapped_column(String(255))
+    group_kind: Mapped[str] = mapped_column(String(40), default="category")
+    group_order: Mapped[int] = mapped_column(Integer, default=999)
+    form_order: Mapped[int] = mapped_column(Integer, default=1)
+    common_field_set_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+    versions: Mapped[list["FormVersion"]] = relationship(
+        back_populates="form",
+        cascade="all, delete-orphan",
+        order_by="FormVersion.version_number",
+    )
+
+
+class FormVersion(Base):
+    __tablename__ = "form_versions"
+    __table_args__ = (UniqueConstraint("form_id", "version_number", name="uq_form_version"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    form_id: Mapped[int] = mapped_column(ForeignKey("form_definitions.id"))
+    version_number: Mapped[int] = mapped_column(Integer)
+    summary: Mapped[str | None] = mapped_column(Text, nullable=True)
+    schema_json: Mapped[str] = mapped_column(Text)
+    source: Mapped[str] = mapped_column(String(40), default="builder")
+    is_current: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    form: Mapped[FormDefinition] = relationship(back_populates="versions")
