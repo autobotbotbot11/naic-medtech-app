@@ -2,6 +2,7 @@
   "project_name": "NAIC Medtech",
   "primary_problem": "The clinic needs a system that speeds up lab input and lab output during daily operations.",
   "core_product_direction": "Schema-driven laboratory platform with an exam/form builder.",
+  "active_builder_direction_doc": "docs/handoff/BUILDER_V2_PLAN.md",
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [
     "Create exam/form definitions",
@@ -86,6 +87,55 @@
     "Do not use legacy print templates as the primary data model",
     "Do not make the client dependent on programmers for ordinary exam changes"
   ],
+  "builder_v2_direction": {
+    "status": "active",
+    "summary": "Reduce mental load first. The builder should feel calm, step-like, and non-technical.",
+    "current_progress": {
+      "phase_1_shell": "completed",
+      "phase_2_core_editing": "implemented",
+      "phase_3_direct_manipulation": "implemented",
+      "implemented_improvements": [
+        "collapsible form library drawer",
+        "toggleable preview drawer",
+        "single main builder canvas",
+        "collapsed-by-default setup card for existing forms",
+        "collapsible top-of-form area",
+        "collapsible sections",
+        "one-section-at-a-time focus editing",
+        "one-field-at-a-time edit flow",
+        "calmer open/done plus more action menus",
+        "separate save step card",
+        "drag-and-drop section ordering",
+        "drag-and-drop field ordering",
+        "local SortableJS-powered ordering layer",
+        "floating save/reset dock while dirty",
+        "unsaved-change protection on form switch and page unload"
+      ],
+      "remaining_builder_v2_gaps": [
+        "less section-level button noise",
+        "final client-ready visual polish",
+        "real-use stabilization and QA"
+      ]
+    },
+    "primary_ui_rules": [
+      "Hide internal keys and ordering metadata from the main flow",
+      "Use direct manipulation for ordering instead of typed order values",
+      "Prefer duplication over blank-slate creation",
+      "Do not keep library, builder, and preview equally visible at all times"
+    ],
+    "recommended_frontend_approach": [
+      "Server-rendered HTML",
+      "Alpine.js",
+      "SortableJS"
+    ],
+    "implementation_phases": [
+      "Phase 1: rebuild the shell",
+      "Phase 2: rebuild the core editing flow",
+      "Phase 3: add drag-and-drop ordering",
+      "Phase 4: polish safety and usability",
+      "Phase 5: stabilize for real use"
+    ]
+  },
   "ideal_phase_1_outcome": [
     "The client can create or edit an exam/form without developer help",
     "The resulting schema stays structured and versionable",

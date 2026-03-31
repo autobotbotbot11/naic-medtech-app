@@ -2,9 +2,20 @@ const state = {
   bootstrap: null,
   selectedFormSlug: null,
   loadedForm: null,
+  baselineDraft: null,
   draft: null,
   dirty: false,
+  ui: {
+    libraryOpen: false,
+    previewOpen: false,
+    setupOpen: true,
+    topFieldsOpen: true,
+    openSectionPaths: [],
+    activeFieldPath: null,
+  },
 };
+
+const sortableInstances = [];
 
 const FIELD_TYPES = [
   { id: "text", label: "Short answer", control: "input", dataType: "text" },
@@ -22,6 +33,19 @@ const dirtyBadgeEl = document.getElementById("dirtyBadge");
 const formEditorEl = document.getElementById("formEditor");
 const previewCanvasEl = document.getElementById("previewCanvas");
 const jsonOutputEl = document.getElementById("jsonOutput");
+const drawerScrimEl = document.getElementById("drawerScrim");
+const libraryDrawerEl = document.getElementById("libraryDrawer");
+const previewDrawerEl = document.getElementById("previewDrawer");
+const currentFormNameEl = document.getElementById("currentFormName");
+const currentFormMetaEl = document.getElementById("currentFormMeta");
+const stageTitleEl = document.getElementById("stageTitle");
+const stageDescriptionEl = document.getElementById("stageDescription");
+const openPreviewBtnEl = document.getElementById("openPreviewBtn");
+const saveDockEl = document.getElementById("saveDock");
+const saveDockTitleEl = document.getElementById("saveDockTitle");
+const saveDockMetaEl = document.getElementById("saveDockMeta");
+const saveDockBtnEl = document.getElementById("saveDockBtn");
+const resetDraftBtnEl = document.getElementById("resetDraftBtn");
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -78,6 +102,18 @@ function decodePath(serialized) {
   return JSON.parse(decodeURIComponent(serialized));
 }
 
+function pathKey(path) {
+  return JSON.stringify(path);
+}
+
+function parsePathKey(serialized) {
+  return JSON.parse(serialized);
+}
+
+function pathStartsWith(path, prefix) {
+  return prefix.every((segment, index) => path[index] === segment);
+}
+
 function groupedForms() {
   return state.bootstrap?.groups || [];
 }
@@ -90,9 +126,225 @@ function currentVersionLabel() {
   return state.draft?.current_version_number ? `Version ${state.draft.current_version_number}` : "New draft";
 }
 
+function currentDraftFieldCount() {
+  return state.draft ? countFields(state.draft.schema) : 0;
+}
+
+function currentCommonFieldSetName() {
+  const selectedId = state.draft?.schema?.common_field_set_id || "default_lab_request";
+  const match = normalizeArray(state.bootstrap?.common_field_sets).find((fieldSet) => fieldSet.id === selectedId);
+  return match?.name || "Default Lab Request Metadata";
+}
+
+function syncShellState() {
+  libraryDrawerEl.hidden = !state.ui.libraryOpen;
+  previewDrawerEl.hidden = !state.ui.previewOpen;
+  drawerScrimEl.hidden = !(state.ui.libraryOpen || state.ui.previewOpen);
+
+  if (state.ui.libraryOpen) {
+    libraryDrawerEl.removeAttribute("inert");
+  } else {
+    libraryDrawerEl.setAttribute("inert", "");
+  }
+
+  if (state.ui.previewOpen) {
+    previewDrawerEl.removeAttribute("inert");
+  } else {
+    previewDrawerEl.setAttribute("inert", "");
+  }
+
+  libraryDrawerEl.classList.toggle("is-open", state.ui.libraryOpen);
+  previewDrawerEl.classList.toggle("is-open", state.ui.previewOpen);
+  libraryDrawerEl.setAttribute("aria-hidden", String(!state.ui.libraryOpen));
+  previewDrawerEl.setAttribute("aria-hidden", String(!state.ui.previewOpen));
+
+  const anyOpen = state.ui.libraryOpen || state.ui.previewOpen;
+  drawerScrimEl.classList.toggle("hidden", !anyOpen);
+  document.body.classList.toggle("drawer-open", anyOpen);
+  openPreviewBtnEl.textContent = state.ui.previewOpen ? "Hide Preview" : "Open Preview";
+}
+
+function closeDrawers() {
+  state.ui.libraryOpen = false;
+  state.ui.previewOpen = false;
+  syncShellState();
+}
+
+function openLibrary() {
+  state.ui.libraryOpen = true;
+  state.ui.previewOpen = false;
+  syncShellState();
+}
+
+function togglePreview() {
+  state.ui.previewOpen = !state.ui.previewOpen;
+  if (state.ui.previewOpen) {
+    state.ui.libraryOpen = false;
+  }
+  syncShellState();
+}
+
+function renderShellSummary() {
+  if (!state.draft) {
+    currentFormNameEl.textContent = "No form selected";
+    currentFormMetaEl.textContent = "Open a form or start a blank draft.";
+    stageTitleEl.textContent = "One form at a time";
+    stageDescriptionEl.textContent = "Use Browse Forms to switch exams. Open Preview only when you need it.";
+    return;
+  }
+
+  const formName = state.draft.name || "Untitled Form";
+  const groupName = state.draft.group_name || "Unassigned";
+  const version = currentVersionLabel();
+  const fieldCount = pluralize(currentDraftFieldCount(), "field");
+  const sectionCount = pluralize(normalizeArray(state.draft.schema.sections).length, "section");
+
+  currentFormNameEl.textContent = formName;
+  currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
+  stageTitleEl.textContent = `Editing ${formName}`;
+  stageDescriptionEl.textContent = `Stay focused on this one form. It currently has ${sectionCount} and ${fieldCount}.`;
+}
+
+function resetEditorPanels() {
+  const sections = normalizeArray(state.draft?.schema?.sections);
+  const topFields = normalizeArray(state.draft?.schema?.fields);
+  state.ui.setupOpen = !state.selectedFormSlug;
+  state.ui.topFieldsOpen = !topFields.length;
+  state.ui.openSectionPaths = sections.length ? [pathKey(["schema", "sections", 0])] : [];
+  state.ui.activeFieldPath = null;
+}
+
+function collectFieldPathKeys(container, basePath = []) {
+  const paths = [];
+  normalizeArray(container?.fields).forEach((field, index) => {
+    const fieldPath = [...basePath, "fields", index];
+    paths.push(pathKey(fieldPath));
+    if (field.kind === "field_group") {
+      paths.push(...collectFieldPathKeys(field, fieldPath));
+    }
+  });
+  normalizeArray(container?.sections).forEach((section, index) => {
+    paths.push(...collectFieldPathKeys(section, [...basePath, "sections", index]));
+  });
+  return paths;
+}
+
+function syncEditorPanels() {
+  const sections = normalizeArray(state.draft?.schema?.sections);
+  const validPaths = new Set(sections.map((_, index) => pathKey(["schema", "sections", index])));
+  state.ui.openSectionPaths = normalizeArray(state.ui.openSectionPaths).filter((item) => validPaths.has(item));
+
+  if (sections.length && !state.ui.openSectionPaths.length) {
+    state.ui.openSectionPaths = [pathKey(["schema", "sections", 0])];
+  }
+
+  const validFieldPaths = new Set(collectFieldPathKeys(state.draft?.schema, ["schema"]));
+  if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath)) {
+    state.ui.activeFieldPath = null;
+  }
+}
+
+function isSectionOpen(path) {
+  return normalizeArray(state.ui.openSectionPaths).includes(pathKey(path));
+}
+
+function toggleSection(path) {
+  const token = pathKey(path);
+  if (isSectionOpen(path)) {
+    state.ui.openSectionPaths = state.ui.openSectionPaths.filter((item) => item !== token);
+    if (state.ui.activeFieldPath && pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
+      state.ui.activeFieldPath = null;
+    }
+  } else {
+    state.ui.openSectionPaths = [token];
+    if (state.ui.activeFieldPath && !pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
+      state.ui.activeFieldPath = null;
+    }
+  }
+  renderEditor();
+}
+
+function toggleSetup() {
+  state.ui.setupOpen = !state.ui.setupOpen;
+  renderEditor();
+}
+
+function isFieldOpen(path) {
+  if (!state.ui.activeFieldPath) {
+    return false;
+  }
+
+  const token = pathKey(path);
+  if (state.ui.activeFieldPath === token) {
+    return true;
+  }
+
+  const node = getNodeByPath(path);
+  if (node?.kind !== "field_group") {
+    return false;
+  }
+
+  return pathStartsWith(parsePathKey(state.ui.activeFieldPath), path);
+}
+
+function toggleField(path) {
+  const token = pathKey(path);
+  if (state.ui.activeFieldPath) {
+    const activePath = parsePathKey(state.ui.activeFieldPath);
+    if (state.ui.activeFieldPath === token || pathStartsWith(activePath, path)) {
+      state.ui.activeFieldPath = null;
+      renderEditor();
+      return;
+    }
+  }
+
+  state.ui.activeFieldPath = token;
+  renderEditor();
+}
+
+function remapPathAfterMove(path, parentPath, fromIndex, toIndex) {
+  if (!pathStartsWith(path, parentPath)) {
+    return path;
+  }
+
+  const indexPosition = parentPath.length;
+  const currentIndex = path[indexPosition];
+  if (typeof currentIndex !== "number") {
+    return path;
+  }
+
+  let nextIndex = currentIndex;
+  if (currentIndex === fromIndex) {
+    nextIndex = toIndex;
+  } else if (fromIndex < toIndex && currentIndex > fromIndex && currentIndex <= toIndex) {
+    nextIndex = currentIndex - 1;
+  } else if (fromIndex > toIndex && currentIndex >= toIndex && currentIndex < fromIndex) {
+    nextIndex = currentIndex + 1;
+  }
+
+  if (nextIndex === currentIndex) {
+    return path;
+  }
+
+  const copy = [...path];
+  copy[indexPosition] = nextIndex;
+  return copy;
+}
+
+function remapUiStateAfterMove(parentPath, fromIndex, toIndex) {
+  state.ui.openSectionPaths = [...new Set(
+    normalizeArray(state.ui.openSectionPaths).map((serialized) => pathKey(remapPathAfterMove(parsePathKey(serialized), parentPath, fromIndex, toIndex)))
+  )];
+
+  if (state.ui.activeFieldPath) {
+    state.ui.activeFieldPath = pathKey(remapPathAfterMove(parsePathKey(state.ui.activeFieldPath), parentPath, fromIndex, toIndex));
+  }
+}
+
 function setDirty(value) {
   state.dirty = value;
   dirtyBadgeEl.classList.toggle("hidden", !value);
+  renderSaveDock();
 }
 
 function setStatus(message, isError = false) {
@@ -247,6 +499,7 @@ function syncDraftKeys() {
 
 function touch(options = {}) {
   setDirty(true);
+  renderShellSummary();
   renderPreview();
   renderJson();
   if (options.full) {
@@ -270,6 +523,13 @@ async function bootstrap() {
 }
 
 async function loadForm(slug) {
+  if (slug === state.selectedFormSlug && state.draft) {
+    state.ui.libraryOpen = false;
+    setStatus(`Still editing ${state.draft.name}.`);
+    renderAll();
+    return;
+  }
+
   if (state.dirty && !window.confirm("You have unsaved changes. Continue and discard them?")) {
     return;
   }
@@ -278,7 +538,10 @@ async function loadForm(slug) {
   state.selectedFormSlug = slug;
   state.loadedForm = form;
   state.draft = deepClone(form);
+  state.baselineDraft = deepClone(form);
+  resetEditorPanels();
   setDirty(false);
+  state.ui.libraryOpen = false;
   setStatus(`Loaded ${form.name}.`);
   renderAll();
 }
@@ -287,7 +550,10 @@ function startNewForm() {
   state.selectedFormSlug = null;
   state.loadedForm = null;
   state.draft = makeBlankForm();
+  state.baselineDraft = deepClone(state.draft);
+  resetEditorPanels();
   setDirty(true);
+  state.ui.libraryOpen = false;
   setStatus("Started a new blank form.");
   renderAll();
 }
@@ -307,16 +573,60 @@ function duplicateCurrentForm() {
   state.selectedFormSlug = null;
   state.loadedForm = null;
   state.draft = copy;
+  state.baselineDraft = deepClone(copy);
+  resetEditorPanels();
   setDirty(true);
+  state.ui.libraryOpen = false;
   setStatus("Duplicated the current form into a new draft.");
   renderAll();
 }
 
+function resetCurrentDraft() {
+  if (!state.baselineDraft) {
+    return;
+  }
+
+  const message = state.selectedFormSlug
+    ? "Discard your unsaved changes and go back to the last saved version?"
+    : "Clear this current draft and go back to its starting point?";
+  if (!window.confirm(message)) {
+    return;
+  }
+
+  state.draft = deepClone(state.baselineDraft);
+  resetEditorPanels();
+  setDirty(false);
+  setStatus(state.selectedFormSlug ? `Restored ${state.draft.name} to its last saved version.` : "Reset the current draft.");
+  renderAll();
+}
+
 function renderAll() {
+  renderShellSummary();
   renderFormList();
   renderEditor();
   renderPreview();
   renderJson();
+  renderSaveDock();
+  syncShellState();
+}
+
+function renderSaveDock() {
+  if (!saveDockEl) {
+    return;
+  }
+
+  const visible = Boolean(state.draft && state.dirty);
+  saveDockEl.hidden = !visible;
+  saveDockEl.classList.toggle("hidden", !visible);
+  if (!visible) {
+    return;
+  }
+
+  const note = String(state.draft.summary || "").trim();
+  saveDockTitleEl.textContent = state.selectedFormSlug ? "Unsaved changes" : "This draft is not saved yet";
+  saveDockMetaEl.textContent = note
+    ? `Save note: ${note}`
+    : "You can save now, or add a short note in the Save step first.";
 }
 
 function renderFormList() {
@@ -355,7 +665,7 @@ function renderFormList() {
       }
       button.innerHTML = `
         <strong>${escapeHtml(form.name)}</strong>
-        <span class="meta">v${form.current_version_number} | order ${form.form_order}</span>
+        <span class="meta">Version ${form.current_version_number}</span>
       `;
       block.appendChild(button);
     });
@@ -377,99 +687,143 @@ function renderCommonFieldSetOptions(selectedId) {
 }
 
 function renderEditor() {
+  destroySortables();
+
   if (!state.draft) {
     formEditorEl.innerHTML = '<div class="empty-state">No draft loaded.</div>';
     return;
   }
 
+  syncEditorPanels();
+
   formEditorEl.innerHTML = `
     ${renderFormSetupCard()}
     ${renderTopFieldsCard()}
     ${renderSectionsCard()}
+    ${renderSaveCard()}
   `;
+
+  setupSortableCollections();
 }
 
 function renderFormSetupCard() {
+  const setupOpen = state.ui.setupOpen;
+  const formName = state.draft.name || "Untitled Form";
+  const groupName = state.draft.group_name || "Unassigned";
+  const sharedFieldSetName = currentCommonFieldSetName();
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
           <div class="chip-row">
             <span class="chip">${escapeHtml(currentVersionLabel())}</span>
-            <span class="chip soft">${escapeHtml(state.draft.group_name || "Unassigned")}</span>
+            <span class="chip soft">${escapeHtml(groupName)}</span>
           </div>
           <h3 class="card-title">Form setup</h3>
-          <p class="panel-copy">Start with the title, the department, and the shared patient info set. The more technical settings stay hidden below.</p>
+          <p class="panel-copy">${setupOpen ? "Name the form, choose the department, then continue building." : "Open this area only when you need to rename the form or move it."}</p>
+        </div>
+        <div class="top-actions">
+          <button class="ghost mini" type="button" data-action="toggle-setup">${setupOpen ? "Done" : "Open"}</button>
         </div>
       </div>
 
-      <div class="setup-grid">
-        <label>
-          <span>Form title</span>
-          <input data-bind="name" value="${escapeHtml(state.draft.name)}" placeholder="Example: Urinalysis">
-        </label>
-        <label>
-          <span>Department / category</span>
-          <input data-bind="group_name" value="${escapeHtml(state.draft.group_name)}" placeholder="Example: Clinical Microscopy">
-        </label>
-        <label>
-          <span>Shared patient info</span>
-          <select data-bind="schema.common_field_set_id">
-            ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
-          </select>
-        </label>
-        <label>
-          <span>Current version note</span>
-          <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="What changed in this version?">
-        </label>
-      </div>
-
-      <details class="advanced">
-        <summary>Advanced form settings</summary>
-        <div class="advanced-grid">
+      ${setupOpen ? `
+        <div class="setup-grid">
           <label>
-            <span>Internal form key</span>
-            <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
+            <span>Form title</span>
+            <input data-bind="name" value="${escapeHtml(formName)}" placeholder="Example: Urinalysis">
           </label>
           <label>
-            <span>Group type</span>
-            <select data-bind="group_kind">
-              <option value="category"${state.draft.group_kind === "category" ? " selected" : ""}>Category</option>
-              <option value="standalone_form"${state.draft.group_kind === "standalone_form" ? " selected" : ""}>Standalone form</option>
+            <span>Department / category</span>
+            <input data-bind="group_name" value="${escapeHtml(groupName)}" placeholder="Example: Clinical Microscopy">
+          </label>
+          <label>
+            <span>Shared patient info</span>
+            <select data-bind="schema.common_field_set_id">
+              ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
             </select>
           </label>
-          <label>
-            <span>Group order</span>
-            <input data-bind="group_order" type="number" value="${escapeHtml(state.draft.group_order)}">
-          </label>
-          <label>
-            <span>Form order</span>
-            <input data-bind="form_order" type="number" value="${escapeHtml(state.draft.form_order)}">
-          </label>
-          <label style="grid-column: 1 / -1;">
-            <span>Builder notes</span>
-            <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
-          </label>
         </div>
-      </details>
+
+        <details class="advanced">
+          <summary>Advanced form settings</summary>
+          <div class="advanced-grid">
+            <label>
+              <span>Internal form key</span>
+              <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
+            </label>
+            <label style="grid-column: 1 / -1;">
+              <span>Builder notes</span>
+              <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
+            </label>
+          </div>
+        </details>
+      ` : `
+        <div class="collapsed-copy">
+          <strong>${escapeHtml(formName)}</strong>
+          ${escapeHtml(groupName)} with ${escapeHtml(sharedFieldSetName)}. Open this area when you need to rename the form or move it.
+        </div>
+      `}
     </section>
   `;
 }
 
+function renderSaveCard() {
+  return `
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Save this version</h3>
+          <p class="panel-copy">Write a short note about what changed, then save the form.</p>
+        </div>
+        <div class="top-actions">
+          <button class="secondary" type="button" data-action="save-draft">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="field-stack">
+        <label>
+          <span>Version note</span>
+          <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Example: Added urine ketone choices">
+        </label>
+      </div>
+    </section>
+  `;
+}
+
+function renderNodeActionMenu(path) {
+  return `
+    <details class="action-details">
+      <summary>More</summary>
+      <div class="action-menu">
+        <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+        <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+      </div>
+    </details>
+  `;
+}
+
 function renderTopFieldsCard() {
+  const topFields = normalizeArray(state.draft.schema.fields);
+  const itemCount = pluralize(topFields.length, "item");
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
           <h3 class="card-title">Top of form</h3>
-          <p class="panel-copy">Use this area for fields that should appear before the main sections.</p>
+          <p class="panel-copy">Optional fields that appear before the main sections.</p>
         </div>
         <div class="top-actions">
-          <button class="secondary mini" type="button" data-action="add-top-field">Add field</button>
-          <button class="ghost mini" type="button" data-action="add-top-group">Add field group</button>
+          <button class="ghost mini" type="button" data-action="toggle-top-fields">${state.ui.topFieldsOpen ? "Done" : "Open"}</button>
+          ${state.ui.topFieldsOpen ? `
+            <button class="secondary mini" type="button" data-action="add-top-field">Add field</button>
+            <button class="ghost mini" type="button" data-action="add-top-group">Add field group</button>
+          ` : ""}
         </div>
       </div>
-      ${renderFieldCollection(state.draft.schema.fields, ["schema", "fields"])}
+      ${state.ui.topFieldsOpen
+        ? renderFieldCollection(topFields, ["schema", "fields"])
+        : `<div class="collapsed-copy">${escapeHtml(itemCount)} tucked away here. Open this area when you need to edit it.</div>`}
     </section>
   `;
 }
@@ -481,13 +835,13 @@ function renderSectionsCard() {
       <div class="card-head">
         <div>
           <h3 class="card-title">Sections</h3>
-          <p class="panel-copy">Break the exam into readable chunks so staff can encode it faster.</p>
+          <p class="panel-copy">Keep each section focused and easy to scan.</p>
         </div>
         <div class="top-actions">
           <button class="secondary mini" type="button" data-action="add-section">Add section</button>
         </div>
       </div>
-      <div class="section-list">
+      <div class="section-list" data-collection-path="${encodePath(["schema", "sections"])}">
         ${sections.length ? sections.map((section, index) => renderSectionCard(section, ["schema", "sections", index], index + 1)).join("") : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
       </div>
     </section>
@@ -495,51 +849,55 @@ function renderSectionsCard() {
 }
 
 function renderSectionCard(section, path, number) {
+  const open = isSectionOpen(path);
+  const itemCount = pluralize(normalizeArray(section.fields).length, "item");
   return `
-    <article class="section-card">
+    <article class="section-card" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
       <div class="section-head">
         <div>
           <div class="chip-row">
             <span class="chip warm">Section ${number}</span>
-            <span class="chip soft">${normalizeArray(section.fields).length} items</span>
+            <span class="chip soft">${itemCount}</span>
           </div>
-          <p class="section-subcopy">Give this section a clear name and then add the fields inside it.</p>
+          <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
+          <p class="section-subcopy">${open ? "Add the fields that belong in this section." : "Open this section when you want to edit its fields."}</p>
         </div>
         <div class="row-actions">
-          <button class="ghost mini" type="button" data-action="move-up" data-path="${encodePath(path)}">Up</button>
-          <button class="ghost mini" type="button" data-action="move-down" data-path="${encodePath(path)}">Down</button>
-          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
-          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+          <button class="drag-handle" type="button" title="Drag to reorder">Drag</button>
+          <button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Done" : "Open"}</button>
+          ${renderNodeActionMenu(path)}
         </div>
       </div>
 
-      <div class="field-stack">
-        <label>
-          <span>Section title</span>
-          <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
-        </label>
-      </div>
-
-      ${renderFieldCollection(section.fields, [...path, "fields"])}
-
-      <div class="section-actions">
-        <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
-        <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add field group</button>
-      </div>
-
-      <details class="advanced">
-        <summary>Advanced section settings</summary>
-        <div class="advanced-grid">
+      ${open ? `
+        <div class="field-stack">
           <label>
-            <span>Internal section key</span>
-            <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
-          </label>
-          <label style="grid-column: 1 / -1;">
-            <span>Section notes</span>
-            <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
+            <span>Section title</span>
+            <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
           </label>
         </div>
-      </details>
+
+        ${renderFieldCollection(section.fields, [...path, "fields"])}
+
+        <div class="section-actions">
+          <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
+          <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add field group</button>
+        </div>
+
+        <details class="advanced">
+          <summary>Advanced section settings</summary>
+          <div class="advanced-grid">
+            <label>
+              <span>Internal section key</span>
+              <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
+            </label>
+            <label style="grid-column: 1 / -1;">
+              <span>Section notes</span>
+              <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
+            </label>
+          </div>
+        </details>
+      ` : `<div class="collapsed-copy">${escapeHtml(itemCount)} inside this section. Use Open when you want to edit it.</div>`}
     </article>
   `;
 }
@@ -549,11 +907,12 @@ function renderFieldCollection(fields, collectionPath) {
   if (!items.length) {
     return '<div class="empty-state">Nothing here yet. Add a field when you are ready.</div>';
   }
-  return `<div class="field-list">${items.map((field, index) => renderFieldCard(field, [...collectionPath, index])).join("")}</div>`;
+  return `<div class="field-list" data-collection-path="${encodePath(collectionPath)}">${items.map((field, index) => renderFieldCard(field, [...collectionPath, index])).join("")}</div>`;
 }
 
 function renderFieldCard(field, path) {
   const isGroup = field.kind === "field_group";
+  const open = isFieldOpen(path);
   const childCount = normalizeArray(field.fields).length;
   const optionCount = normalizeArray(field.options).length;
   const fieldType = inferFieldType(field);
@@ -562,74 +921,79 @@ function renderFieldCard(field, path) {
     : `${FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Short answer"}${optionCount ? ` | ${optionCount} choices` : ""}`;
 
   return `
-    <article class="field-card ${isGroup ? "group-card" : ""}">
+    <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
       <div class="field-head">
-        <div class="field-meta">
-          <span class="chip ${isGroup ? "warm" : ""}">${isGroup ? "Field group" : "Field"}</span>
-          <span class="field-summary">${escapeHtml(summary)}</span>
+        <div>
+          <div class="field-meta">
+            <span class="chip ${isGroup ? "warm" : ""}">${isGroup ? "Field group" : "Field"}</span>
+            <span class="field-summary">${escapeHtml(summary)}</span>
+          </div>
+          <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
+          <p class="field-helper-copy">${open ? (isGroup ? "Manage the child fields inside this group." : "Edit the label, answer type, and any extra details.") : (isGroup ? "Open this group when you want to manage its child fields." : "Open this field when you want to edit it.")}</p>
         </div>
         <div class="row-actions">
-          <button class="ghost mini" type="button" data-action="move-up" data-path="${encodePath(path)}">Up</button>
-          <button class="ghost mini" type="button" data-action="move-down" data-path="${encodePath(path)}">Down</button>
-          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
-          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+          <button class="drag-handle" type="button" title="Drag to reorder">Drag</button>
+          <button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>
+          ${renderNodeActionMenu(path)}
         </div>
       </div>
 
-      <div class="inline-grid">
-        <label>
-          <span>${isGroup ? "Group title" : "Field label"}</span>
-          <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
-        </label>
-        ${isGroup ? `
+      ${open ? `
+        <div class="inline-grid">
           <label>
-            <span>Type</span>
-            <input value="Field group" disabled>
+            <span>${isGroup ? "Group title" : "Field label"}</span>
+            <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
           </label>
-        ` : `
-          <label>
-            <span>Answer type</span>
-            <select data-action="field-type" data-path="${encodePath(path)}">
-              ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
-            </select>
-          </label>
-        `}
-      </div>
-
-      ${isGroup ? `
-        <div class="nested-fields">
-          ${renderFieldCollection(field.fields, [...path, "fields"])}
-        </div>
-        <div class="section-actions">
-          <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add child field</button>
-        </div>
-      ` : ""}
-
-      ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
-
-      <details class="advanced">
-        <summary>Advanced field settings</summary>
-        <div class="advanced-grid">
-          <label>
-            <span>Internal key</span>
-            <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
-          </label>
-          ${isGroup ? "" : `
+          ${isGroup ? `
             <label>
-              <span>Normal value</span>
-              <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}" placeholder="Example: 4.5 - 11.0">
+              <span>Type</span>
+              <input value="Field group" disabled>
             </label>
+          ` : `
             <label>
-              <span>Unit hint</span>
-              <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}" placeholder="Example: mg/dL">
+              <span>Answer type</span>
+              <select data-action="field-type" data-path="${encodePath(path)}">
+                ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
+              </select>
             </label>
           `}
-          <label style="grid-column: 1 / -1;">
-            <span>Notes</span>
-            <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
-          </label>
         </div>
-      </details>
+
+        ${isGroup ? `
+          <div class="nested-fields">
+            ${renderFieldCollection(field.fields, [...path, "fields"])}
+          </div>
+          <div class="section-actions">
+            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add child field</button>
+          </div>
+        ` : ""}
+
+        ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
+
+        <details class="advanced">
+          <summary>Advanced field settings</summary>
+          <div class="advanced-grid">
+            <label>
+              <span>Internal key</span>
+              <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
+            </label>
+            ${isGroup ? "" : `
+              <label>
+                <span>Normal value</span>
+                <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}" placeholder="Example: 4.5 - 11.0">
+              </label>
+              <label>
+                <span>Unit hint</span>
+                <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}" placeholder="Example: mg/dL">
+              </label>
+            `}
+            <label style="grid-column: 1 / -1;">
+              <span>Notes</span>
+              <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
+            </label>
+          </div>
+        </details>
+      ` : ""}
     </article>
   `;
 }
@@ -641,7 +1005,7 @@ function renderOptionsEditor(field, path) {
       <div class="card-head">
         <div>
           <h4>Choices</h4>
-          <p class="panel-copy">Only needed when the field uses a dropdown.</p>
+          <p class="panel-copy">Shown only for dropdown fields.</p>
         </div>
         <div class="option-actions">
           <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
@@ -749,17 +1113,20 @@ function renderJson() {
   jsonOutputEl.textContent = state.draft ? JSON.stringify(state.draft, null, 2) : "{}";
 }
 
-function moveAtPath(path, delta) {
-  const { collection, index } = getParentCollection(path);
+function moveWithinCollection(collectionPath, fromIndex, toIndex) {
+  const collection = getNodeByPath(collectionPath);
   if (!Array.isArray(collection)) {
     return;
   }
-  const nextIndex = index + delta;
-  if (nextIndex < 0 || nextIndex >= collection.length) {
+
+  const boundedTarget = Math.max(0, Math.min(toIndex, collection.length - 1));
+  if (fromIndex === boundedTarget) {
     return;
   }
-  const [item] = collection.splice(index, 1);
-  collection.splice(nextIndex, 0, item);
+
+  const [item] = collection.splice(fromIndex, 1);
+  collection.splice(boundedTarget, 0, item);
+  remapUiStateAfterMove(collectionPath, fromIndex, boundedTarget);
   touch({ full: true });
 }
 
@@ -769,6 +1136,11 @@ function duplicateAtPath(path) {
     return;
   }
   collection.splice(index + 1, 0, cloneNode(collection[index]));
+  if (path.includes("fields")) {
+    state.ui.activeFieldPath = pathKey([...path.slice(0, -1), index + 1]);
+  } else {
+    state.ui.activeFieldPath = null;
+  }
   touch({ full: true });
 }
 
@@ -776,6 +1148,9 @@ function deleteAtPath(path) {
   const { collection, index } = getParentCollection(path);
   if (!Array.isArray(collection)) {
     return;
+  }
+  if (state.ui.activeFieldPath && pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
+    state.ui.activeFieldPath = null;
   }
   collection.splice(index, 1);
   touch({ full: true });
@@ -787,11 +1162,17 @@ function addFieldAt(path, kind) {
     return;
   }
   collection.push(makeBlankField(kind));
+  state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
+  if (pathKey(path) === pathKey(["schema", "fields"])) {
+    state.ui.topFieldsOpen = true;
+  }
   touch({ full: true });
 }
 
 function addSection() {
   state.draft.schema.sections.push(makeBlankSection());
+  state.ui.openSectionPaths = [pathKey(["schema", "sections", state.draft.schema.sections.length - 1])];
+  state.ui.activeFieldPath = null;
   touch({ full: true });
 }
 
@@ -807,6 +1188,47 @@ function deleteOption(path, index) {
   ensureOptionShape(field);
   field.options.splice(index, 1);
   touch({ full: true });
+}
+
+function destroySortables() {
+  while (sortableInstances.length) {
+    sortableInstances.pop()?.destroy();
+  }
+}
+
+function setupSortableCollections() {
+  if (!window.Sortable) {
+    return;
+  }
+
+  formEditorEl.querySelectorAll("[data-collection-path]").forEach((collectionEl) => {
+    if (!(collectionEl instanceof HTMLElement)) {
+      return;
+    }
+
+    const collectionPath = decodePath(collectionEl.dataset.collectionPath);
+    const items = getNodeByPath(collectionPath);
+    if (!Array.isArray(items) || items.length < 2) {
+      return;
+    }
+
+    const sortable = window.Sortable.create(collectionEl, {
+      animation: 160,
+      handle: ".drag-handle",
+      chosenClass: "is-dragging",
+      dragClass: "is-dragging",
+      ghostClass: "sortable-ghost",
+      onEnd(event) {
+        if (event.oldIndex == null || event.newIndex == null || event.oldIndex === event.newIndex) {
+          return;
+        }
+
+        moveWithinCollection(collectionPath, event.oldIndex, event.newIndex);
+      },
+    });
+
+    sortableInstances.push(sortable);
+  });
 }
 
 async function saveDraft() {
@@ -833,6 +1255,7 @@ async function saveDraft() {
   state.selectedFormSlug = saved.slug;
   state.loadedForm = saved;
   state.draft = deepClone(saved);
+  state.baselineDraft = deepClone(saved);
   state.bootstrap = await api("/api/builder/bootstrap");
   setDirty(false);
   setStatus(`Saved ${saved.name} as version ${saved.current_version_number}.`);
@@ -923,20 +1346,29 @@ function handleEditorClick(event) {
     addSection();
     return;
   }
+  if (action === "toggle-top-fields") {
+    state.ui.topFieldsOpen = !state.ui.topFieldsOpen;
+    renderEditor();
+    return;
+  }
+  if (action === "toggle-setup") {
+    toggleSetup();
+    return;
+  }
+  if (action === "toggle-section" && path) {
+    toggleSection(path);
+    return;
+  }
+  if (action === "toggle-field" && path) {
+    toggleField(path);
+    return;
+  }
   if (action === "add-field" && path) {
     addFieldAt(path, "field");
     return;
   }
   if (action === "add-group" && path) {
     addFieldAt(path, "field_group");
-    return;
-  }
-  if (action === "move-up" && path) {
-    moveAtPath(path, -1);
-    return;
-  }
-  if (action === "move-down" && path) {
-    moveAtPath(path, 1);
     return;
   }
   if (action === "duplicate-node" && path) {
@@ -955,6 +1387,13 @@ function handleEditorClick(event) {
   }
   if (action === "delete-option" && path) {
     deleteOption(path, Number(actionTarget.dataset.index));
+    return;
+  }
+  if (action === "save-draft") {
+    void saveDraft().catch((error) => {
+      console.error(error);
+      setStatus(`Save failed: ${error.message}`, true);
+    });
   }
 }
 
@@ -991,6 +1430,38 @@ formEditorEl.addEventListener("change", (event) => {
     handleEditorChange(event);
   }
 });
+formEditorEl.addEventListener("toggle", (event) => {
+  const details = event.target;
+  if (!(details instanceof HTMLDetailsElement) || !details.classList.contains("action-details") || !details.open) {
+    return;
+  }
+
+  formEditorEl.querySelectorAll(".action-details[open]").forEach((item) => {
+    if (item !== details) {
+      item.open = false;
+    }
+  });
+}, true);
+
+document.getElementById("openLibraryBtn").addEventListener("click", () => {
+  openLibrary();
+});
+
+document.getElementById("closeLibraryBtn").addEventListener("click", () => {
+  closeDrawers();
+});
+
+document.getElementById("closePreviewBtn").addEventListener("click", () => {
+  closeDrawers();
+});
+
+openPreviewBtnEl.addEventListener("click", () => {
+  togglePreview();
+});
+
+drawerScrimEl.addEventListener("click", () => {
+  closeDrawers();
+});
 
 document.getElementById("newFormBtn").addEventListener("click", () => {
   if (state.dirty && !window.confirm("Discard current unsaved changes and start a new form?")) {
@@ -1010,7 +1481,33 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   });
 });
 
+saveDockBtnEl.addEventListener("click", () => {
+  void saveDraft().catch((error) => {
+    console.error(error);
+    setStatus(`Save failed: ${error.message}`, true);
+  });
+});
+
+resetDraftBtnEl.addEventListener("click", () => {
+  resetCurrentDraft();
+});
+
 formSearchEl.addEventListener("input", renderFormList);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeDrawers();
+  }
+});
+
+window.addEventListener("beforeunload", (event) => {
+  if (!state.dirty) {
+    return;
+  }
+
+  event.preventDefault();
+  event.returnValue = "";
+});
 
 void bootstrap().catch((error) => {
   console.error(error);

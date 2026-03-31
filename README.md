@@ -27,3 +27,4 @@ This workspace is organized to separate raw inputs, generated artifacts, referen
 ## Notes
 - The app should be built from the schema, not from legacy print templates.
 - The highest-priority feature is the exam/form builder.
+- The active builder UX direction is documented in `docs/handoff/BUILDER_V2_PLAN.md`.

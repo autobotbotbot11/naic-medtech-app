@@ -1,0 +1,172 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "Browse Forms" [ref=e5] [cursor=pointer]
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Phase 1 Builder
+        - heading "NAIC Medtech Builder" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - strong [ref=e11]: Blood Bank
+        - generic [ref=e12]: Blood Bank | Version 1 | 18 fields
+      - generic [ref=e13]:
+        - button "Open Preview" [ref=e14] [cursor=pointer]
+        - button "New Blank Form" [ref=e15] [cursor=pointer]
+        - button "Duplicate Current" [ref=e16] [cursor=pointer]
+        - button "Save Changes" [ref=e17] [cursor=pointer]
+  - generic [ref=e19]:
+    - strong [ref=e20]: "Status:"
+    - text: Loaded Blood Bank.
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - paragraph [ref=e24]: Builder Flow
+        - heading "Editing Blood Bank" [level=2] [ref=e263]
+        - paragraph [ref=e26]: Stay focused on this one form. It currently has 1 section and 18 fields.
+      - generic [ref=e27]:
+        - generic [ref=e28]: 1. Setup
+        - generic [ref=e29]: 2. Build
+        - generic [ref=e30]: 3. Preview
+        - generic [ref=e31]: 4. Save
+    - generic [ref=e33]:
+      - generic [ref=e264]:
+        - generic [ref=e266]:
+          - generic [ref=e267]:
+            - generic [ref=e268]: Version 1
+            - generic [ref=e269]: Blood Bank
+          - heading "Form setup" [level=3] [ref=e270]
+          - paragraph [ref=e271]: Name the form, choose the department, then save with a short note.
+        - generic [ref=e272]:
+          - generic [ref=e273]:
+            - generic [ref=e274]: Form title
+            - textbox "Form title" [ref=e275]:
+              - /placeholder: "Example: Urinalysis"
+              - text: Blood Bank
+          - generic [ref=e276]:
+            - generic [ref=e277]: Department / category
+            - textbox "Department / category" [ref=e278]:
+              - /placeholder: "Example: Clinical Microscopy"
+              - text: Blood Bank
+          - generic [ref=e279]:
+            - generic [ref=e280]: Shared patient info
+            - combobox "Shared patient info" [ref=e281]:
+              - option "Default Lab Request Metadata" [selected]
+        - group [ref=e282]:
+          - generic "Advanced form settings" [ref=e283] [cursor=pointer]
+      - generic [ref=e284]:
+        - generic [ref=e285]:
+          - generic [ref=e286]:
+            - heading "Top of form" [level=3] [ref=e287]
+            - paragraph [ref=e288]: Optional fields that appear before the main sections.
+          - generic [ref=e289]:
+            - button "Open" [ref=e290] [cursor=pointer]
+            - button "Add field" [ref=e291] [cursor=pointer]
+            - button "Add field group" [ref=e292] [cursor=pointer]
+        - generic [ref=e293]: 8 items tucked away here. Open this area when you need to edit it.
+      - generic [ref=e294]:
+        - generic [ref=e295]:
+          - generic [ref=e296]:
+            - heading "Sections" [level=3] [ref=e297]
+            - paragraph [ref=e298]: Keep each section focused and easy to scan.
+          - button "Add section" [ref=e300] [cursor=pointer]
+        - article [ref=e302]:
+          - generic [ref=e303]:
+            - generic [ref=e304]:
+              - generic [ref=e305]:
+                - generic [ref=e306]: Section 1
+                - generic [ref=e307]: 7 items
+              - heading "TYPE OF CROSSMATCHING" [level=4] [ref=e308]
+              - paragraph [ref=e309]: Add the fields that belong in this section.
+            - generic [ref=e310]:
+              - button "Collapse" [ref=e311] [cursor=pointer]
+              - button "Up" [ref=e312] [cursor=pointer]
+              - button "Down" [ref=e313] [cursor=pointer]
+              - button "Duplicate" [ref=e314] [cursor=pointer]
+              - button "Delete" [ref=e315] [cursor=pointer]
+          - generic [ref=e317]:
+            - generic [ref=e318]: Section title
+            - textbox "Section title" [ref=e319]:
+              - /placeholder: "Example: Chemical Findings"
+              - text: TYPE OF CROSSMATCHING
+          - generic [ref=e320]:
+            - article [ref=e321]:
+              - generic [ref=e322]:
+                - generic [ref=e323]:
+                  - generic [ref=e324]:
+                    - generic [ref=e325]: Field
+                    - generic [ref=e326]: Short answer
+                  - heading "IMMEDIATE SPIN/ SALINE PHASE" [level=4] [ref=e327]
+                  - paragraph [ref=e328]: Open this field when you want to edit it.
+                - button "Edit" [ref=e330] [cursor=pointer]
+            - article [ref=e331]:
+              - generic [ref=e332]:
+                - generic [ref=e333]:
+                  - generic [ref=e334]:
+                    - generic [ref=e335]: Field
+                    - generic [ref=e336]: Short answer
+                  - heading "ALBUMIN PHASE /37 deg C" [level=4] [ref=e337]
+                  - paragraph [ref=e338]: Open this field when you want to edit it.
+                - button "Edit" [ref=e340] [cursor=pointer]
+            - article [ref=e341]:
+              - generic [ref=e342]:
+                - generic [ref=e343]:
+                  - generic [ref=e344]:
+                    - generic [ref=e345]: Field
+                    - generic [ref=e346]: Short answer
+                  - heading "ANTI HUMAN GLOBILIN PHASE" [level=4] [ref=e347]
+                  - paragraph [ref=e348]: Open this field when you want to edit it.
+                - button "Edit" [ref=e350] [cursor=pointer]
+            - article [ref=e351]:
+              - generic [ref=e352]:
+                - generic [ref=e353]:
+                  - generic [ref=e354]:
+                    - generic [ref=e355]: Field
+                    - generic [ref=e356]: Dropdown choices | 2 choices
+                  - heading "REMARKS" [level=4] [ref=e357]
+                  - paragraph [ref=e358]: Open this field when you want to edit it.
+                - button "Edit" [ref=e360] [cursor=pointer]
+            - article [ref=e361]:
+              - generic [ref=e362]:
+                - generic [ref=e363]:
+                  - generic [ref=e364]:
+                    - generic [ref=e365]: Field group
+                    - generic [ref=e366]: 4 child fields
+                  - heading "VITAL SIGNS" [level=4] [ref=e367]
+                  - paragraph [ref=e368]: Open this group when you want to manage its child fields.
+                - button "Edit" [ref=e370] [cursor=pointer]
+            - article [ref=e371]:
+              - generic [ref=e372]:
+                - generic [ref=e373]:
+                  - generic [ref=e374]:
+                    - generic [ref=e375]: Field
+                    - generic [ref=e376]: Dropdown choices | 6 choices
+                  - heading "RELEASED BY" [level=4] [ref=e377]
+                  - paragraph [ref=e378]: Open this field when you want to edit it.
+                - button "Edit" [ref=e380] [cursor=pointer]
+            - article [ref=e381]:
+              - generic [ref=e382]:
+                - generic [ref=e383]:
+                  - generic [ref=e384]:
+                    - generic [ref=e385]: Field
+                    - generic [ref=e386]: Short answer
+                  - heading "RELEASED TO" [level=4] [ref=e387]
+                  - paragraph [ref=e388]: Open this field when you want to edit it.
+                - button "Edit" [ref=e390] [cursor=pointer]
+          - generic [ref=e391]:
+            - button "Add field" [ref=e392] [cursor=pointer]
+            - button "Add field group" [ref=e393] [cursor=pointer]
+          - group [ref=e394]:
+            - generic "Advanced section settings" [ref=e395] [cursor=pointer]
+      - generic [ref=e396]:
+        - generic [ref=e397]:
+          - generic [ref=e398]:
+            - heading "Save this version" [level=3] [ref=e399]
+            - paragraph [ref=e400]: Write a short note about what changed, then save the form.
+          - button "Save Changes" [ref=e402] [cursor=pointer]
+        - generic [ref=e404]:
+          - generic [ref=e405]: Version note
+          - textbox "Version note" [ref=e406]:
+            - /placeholder: "Example: Added urine ketone choices"
+            - text: Seeded from current reference schema.
+    - group [ref=e172]:
+      - generic "Technical JSON" [ref=e173] [cursor=pointer]

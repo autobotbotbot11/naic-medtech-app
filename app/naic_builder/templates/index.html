@@ -9,79 +9,112 @@
 </head>
 <body>
   <main class="shell">
-    <header class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Phase 1 Builder</p>
-        <h1>{{ app_title }}</h1>
-        <p class="subtitle">Build exams the easy way: name the form, add sections, add fields, then save a clean version for the clinic.</p>
+    <header class="app-bar panel">
+      <div class="brand-block">
+        <button id="openLibraryBtn" class="ghost" type="button">Browse Forms</button>
+        <div class="brand-copy">
+          <p class="eyebrow">Exam Builder</p>
+          <h1>{{ app_title }}</h1>
+        </div>
       </div>
-      <div class="hero-actions">
-        <button id="newFormBtn" class="secondary" type="button">New Blank Form</button>
-        <button id="duplicateFormBtn" class="ghost" type="button">Duplicate Current</button>
-        <button id="saveBtn" type="button">Save Changes</button>
+
+      <div class="bar-actions">
+        <div class="draft-summary">
+          <strong id="currentFormName">Loading form...</strong>
+          <span id="currentFormMeta">Preparing the builder.</span>
+        </div>
+        <div class="action-row">
+          <button id="openPreviewBtn" class="ghost" type="button">Open Preview</button>
+          <button id="newFormBtn" class="secondary" type="button">New Form</button>
+          <button id="duplicateFormBtn" class="ghost" type="button">Duplicate Form</button>
+          <button id="saveBtn" type="button">Quick Save</button>
+        </div>
       </div>
     </header>
 
-    <section class="status-bar">
-      <div>
+    <section class="feedback-bar panel">
+      <div class="feedback-copy">
         <strong>Status:</strong>
         <span id="statusText">Loading builder...</span>
       </div>
       <div id="dirtyBadge" class="badge hidden">Unsaved changes</div>
     </section>
 
-    <section class="workspace">
-      <aside class="library panel">
-        <div class="panel-head">
+    <div id="drawerScrim" class="drawer-scrim hidden" hidden></div>
+
+    <aside id="libraryDrawer" class="drawer drawer-left" aria-hidden="true" hidden inert>
+      <div class="drawer-card">
+        <div class="drawer-head">
           <div>
-            <h2>Form Library</h2>
-            <p class="panel-copy">Pick an existing exam or start a new blank form.</p>
+            <p class="eyebrow">Form Library</p>
+            <h2>Choose an exam</h2>
+            <p class="panel-copy">Open an existing form or start from a blank draft.</p>
           </div>
+          <button id="closeLibraryBtn" class="ghost" type="button">Close Library</button>
         </div>
+
         <label class="search-wrap">
           <span>Search</span>
           <input id="formSearch" type="search" placeholder="Search department or form">
         </label>
+
         <div id="formList" class="form-list"></div>
-      </aside>
+      </div>
+    </aside>
 
-      <section class="editor-column">
-        <section class="guide-card panel">
+    <aside id="previewDrawer" class="drawer drawer-right" aria-hidden="true" hidden inert>
+      <div class="drawer-card preview-card-shell">
+        <div class="drawer-head">
           <div>
-            <p class="eyebrow">Simple Flow</p>
-            <h2>Keep the builder easy to use</h2>
-            <p class="panel-copy">Focus on the form title, the sections, and the fields. Internal keys and extra notes stay hidden until you need them.</p>
+            <p class="eyebrow">Preview</p>
+            <h2>Entry Form View</h2>
+            <p class="panel-copy">Quickly inspect what the resulting data-entry screen roughly looks like.</p>
           </div>
-          <div class="guide-steps">
-            <div class="step-pill">1. Fill in the form setup</div>
-            <div class="step-pill">2. Add sections</div>
-            <div class="step-pill">3. Add fields</div>
-            <div class="step-pill">4. Check the live preview</div>
-          </div>
-        </section>
+          <button id="closePreviewBtn" class="ghost" type="button">Close Preview</button>
+        </div>
 
-        <section class="panel editor-panel">
-          <div id="formEditor" class="form-editor"></div>
-        </section>
+        <div id="previewCanvas" class="preview-canvas"></div>
+      </div>
+    </aside>
 
-        <details class="panel dev-panel">
-          <summary>Technical JSON</summary>
-          <pre id="jsonOutput" class="json-output"></pre>
-        </details>
+    <section class="stage-shell">
+      <section class="stage-head panel">
+        <div>
+          <p class="eyebrow">Builder Flow</p>
+          <h2 id="stageTitle">One form at a time</h2>
+          <p id="stageDescription" class="panel-copy">Use Browse Forms to switch exams. Open Preview only when you need it.</p>
+        </div>
+        <div class="step-row">
+          <span class="step-pill">1. Setup</span>
+          <span class="step-pill">2. Build</span>
+          <span class="step-pill">3. Preview</span>
+          <span class="step-pill">4. Save</span>
+        </div>
       </section>
 
-      <aside class="preview panel">
-        <div class="panel-head">
-          <div>
-            <h2>Live Preview</h2>
-            <p class="panel-copy">This is the simplified entry form view that follows your builder changes.</p>
-          </div>
-        </div>
-        <div id="previewCanvas" class="preview-canvas"></div>
-      </aside>
+      <section class="panel editor-panel">
+        <div id="formEditor" class="form-editor"></div>
+      </section>
+
+      <details class="panel dev-panel">
+        <summary>Technical JSON</summary>
+        <pre id="jsonOutput" class="json-output"></pre>
+      </details>
     </section>
+
+    <aside id="saveDock" class="save-dock hidden" hidden>
+      <div class="save-dock-copy">
+        <strong id="saveDockTitle">Unsaved changes</strong>
+        <span id="saveDockMeta">Save when you are ready.</span>
+      </div>
+      <div class="save-dock-actions">
+        <button id="resetDraftBtn" class="ghost" type="button">Reset Draft</button>
+        <button id="saveDockBtn" type="button">Save Changes</button>
+      </div>
+    </aside>
   </main>
 
+  <script src="{{ url_for('static', path='vendor/sortable.min.js') }}" defer></script>
   <script src="{{ url_for('static', path='app.js') }}" defer></script>
 </body>
 </html>

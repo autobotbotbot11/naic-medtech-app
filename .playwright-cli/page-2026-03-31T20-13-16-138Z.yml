@@ -1,0 +1,178 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "Browse Forms" [ref=e5] [cursor=pointer]
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Phase 1 Builder
+        - heading "NAIC Medtech Builder" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - strong [ref=e11]: Semen
+        - generic [ref=e12]: Clinical Microscopy | Version 1 | 13 fields
+      - generic [ref=e13]:
+        - button "Open Preview" [ref=e14] [cursor=pointer]
+        - button "New Form" [ref=e15] [cursor=pointer]
+        - button "Duplicate Form" [ref=e16] [cursor=pointer]
+        - button "Quick Save" [ref=e17] [cursor=pointer]
+  - generic [ref=e19]:
+    - strong [ref=e20]: "Status:"
+    - text: Loaded Semen.
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]:
+        - paragraph [ref=e24]: Builder Flow
+        - heading "Editing Semen" [level=2] [ref=e25]
+        - paragraph [ref=e26]: Stay focused on this one form. It currently has 4 sections and 13 fields.
+      - generic [ref=e27]:
+        - generic [ref=e28]: 1. Setup
+        - generic [ref=e29]: 2. Build
+        - generic [ref=e30]: 3. Preview
+        - generic [ref=e31]: 4. Save
+    - generic [ref=e33]:
+      - generic [ref=e34]:
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]: Version 1
+            - generic [ref=e39]: Clinical Microscopy
+          - heading "Form setup" [level=3] [ref=e40]
+          - paragraph [ref=e41]: Name the form, choose the department, then save with a short note.
+        - generic [ref=e42]:
+          - generic [ref=e43]:
+            - generic [ref=e44]: Form title
+            - textbox "Form title" [ref=e45]:
+              - /placeholder: "Example: Urinalysis"
+              - text: Semen
+          - generic [ref=e46]:
+            - generic [ref=e47]: Department / category
+            - textbox "Department / category" [ref=e48]:
+              - /placeholder: "Example: Clinical Microscopy"
+              - text: Clinical Microscopy
+          - generic [ref=e49]:
+            - generic [ref=e50]: Shared patient info
+            - combobox "Shared patient info" [ref=e51]:
+              - option "Default Lab Request Metadata" [selected]
+        - group [ref=e52]:
+          - generic "Advanced form settings" [ref=e53] [cursor=pointer]
+      - generic [ref=e54]:
+        - generic [ref=e55]:
+          - generic [ref=e56]:
+            - heading "Top of form" [level=3] [ref=e57]
+            - paragraph [ref=e58]: Optional fields that appear before the main sections.
+          - button "Open" [ref=e60] [cursor=pointer]
+        - generic [ref=e61]: 5 items tucked away here. Open this area when you need to edit it.
+      - generic [ref=e62]:
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - heading "Sections" [level=3] [ref=e65]
+            - paragraph [ref=e66]: Keep each section focused and easy to scan.
+          - button "Add section" [ref=e68] [cursor=pointer]
+        - generic [ref=e69]:
+          - article [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e72]:
+                - generic [ref=e73]:
+                  - generic [ref=e74]: Section 1
+                  - generic [ref=e75]: 2 items
+                - heading "MOTILITY" [level=4] [ref=e76]
+                - paragraph [ref=e77]: Add the fields that belong in this section.
+              - generic [ref=e78]:
+                - button "Done" [ref=e79] [cursor=pointer]
+                - group [ref=e80]:
+                  - generic "More" [active] [ref=e81] [cursor=pointer]
+                  - generic [ref=e168]:
+                    - button "Move up" [ref=e169] [cursor=pointer]
+                    - button "Move down" [ref=e170] [cursor=pointer]
+                    - button "Duplicate" [ref=e171] [cursor=pointer]
+                    - button "Delete" [ref=e172] [cursor=pointer]
+            - generic [ref=e83]:
+              - generic [ref=e84]: Section title
+              - textbox "Section title" [ref=e85]:
+                - /placeholder: "Example: Chemical Findings"
+                - text: MOTILITY
+            - generic [ref=e86]:
+              - article [ref=e87]:
+                - generic [ref=e88]:
+                  - generic [ref=e89]:
+                    - generic [ref=e90]:
+                      - generic [ref=e91]: Field
+                      - generic [ref=e92]: Number
+                    - heading "MOTILE" [level=4] [ref=e93]
+                    - paragraph [ref=e94]: Open this field when you want to edit it.
+                  - generic [ref=e95]:
+                    - button "Edit" [ref=e96] [cursor=pointer]
+                    - group [ref=e97]:
+                      - generic "More" [ref=e98] [cursor=pointer]
+                      - generic [ref=e173]:
+                        - button "Move up" [ref=e174] [cursor=pointer]
+                        - button "Move down" [ref=e175] [cursor=pointer]
+                        - button "Duplicate" [ref=e176] [cursor=pointer]
+                        - button "Delete" [ref=e177] [cursor=pointer]
+              - article [ref=e99]:
+                - generic [ref=e100]:
+                  - generic [ref=e101]:
+                    - generic [ref=e102]:
+                      - generic [ref=e103]: Field
+                      - generic [ref=e104]: Number
+                    - heading "NON MOTILE" [level=4] [ref=e105]
+                    - paragraph [ref=e106]: Open this field when you want to edit it.
+                  - generic [ref=e107]:
+                    - button "Edit" [ref=e108] [cursor=pointer]
+                    - group [ref=e109]:
+                      - generic "More" [ref=e110] [cursor=pointer]
+            - generic [ref=e111]:
+              - button "Add field" [ref=e112] [cursor=pointer]
+              - button "Add field group" [ref=e113] [cursor=pointer]
+            - group [ref=e114]:
+              - generic "Advanced section settings" [ref=e115] [cursor=pointer]
+          - article [ref=e116]:
+            - generic [ref=e117]:
+              - generic [ref=e118]:
+                - generic [ref=e119]:
+                  - generic [ref=e120]: Section 2
+                  - generic [ref=e121]: 2 items
+                - heading "MORPHOLOGY" [level=4] [ref=e122]
+                - paragraph [ref=e123]: Open this section when you want to edit its fields.
+              - generic [ref=e124]:
+                - button "Open" [ref=e125] [cursor=pointer]
+                - group [ref=e126]:
+                  - generic "More" [ref=e127] [cursor=pointer]
+            - generic [ref=e128]: 2 items inside this section. Use Open when you want to edit it.
+          - article [ref=e129]:
+            - generic [ref=e130]:
+              - generic [ref=e131]:
+                - generic [ref=e132]:
+                  - generic [ref=e133]: Section 3
+                  - generic [ref=e134]: 1 item
+                - heading "SPERM COUNT" [level=4] [ref=e135]
+                - paragraph [ref=e136]: Open this section when you want to edit its fields.
+              - generic [ref=e137]:
+                - button "Open" [ref=e138] [cursor=pointer]
+                - group [ref=e139]:
+                  - generic "More" [ref=e140] [cursor=pointer]
+            - generic [ref=e141]: 1 item inside this section. Use Open when you want to edit it.
+          - article [ref=e142]:
+            - generic [ref=e143]:
+              - generic [ref=e144]:
+                - generic [ref=e145]:
+                  - generic [ref=e146]: Section 4
+                  - generic [ref=e147]: 3 items
+                - heading "OTHERS" [level=4] [ref=e148]
+                - paragraph [ref=e149]: Open this section when you want to edit its fields.
+              - generic [ref=e150]:
+                - button "Open" [ref=e151] [cursor=pointer]
+                - group [ref=e152]:
+                  - generic "More" [ref=e153] [cursor=pointer]
+            - generic [ref=e154]: 3 items inside this section. Use Open when you want to edit it.
+      - generic [ref=e155]:
+        - generic [ref=e156]:
+          - generic [ref=e157]:
+            - heading "Save this version" [level=3] [ref=e158]
+            - paragraph [ref=e159]: Write a short note about what changed, then save the form.
+          - button "Save Changes" [ref=e161] [cursor=pointer]
+        - generic [ref=e163]:
+          - generic [ref=e164]: Version note
+          - textbox "Version note" [ref=e165]:
+            - /placeholder: "Example: Added urine ketone choices"
+            - text: Seeded from current reference schema.
+    - group [ref=e166]:
+      - generic "Technical JSON" [ref=e167] [cursor=pointer]

@@ -54,6 +54,42 @@ Phase 1 is not primarily about:
 
 Those can come later, but the architecture should still allow them.
 
+## Builder V2 Note
+The current builder prototype is not yet considered user-friendly enough for the real client.
+
+Before continuing major builder UI work, read:
+- `docs/handoff/BUILDER_V2_PLAN.md`
+
+That document is the active UX/product direction for the next builder implementation pass.
+
+## Current Builder Progress
+Current implementation status:
+- `Phase 1` shell rebuild is done
+- `Phase 2` core editing simplification is in place for the current builder direction
+- `Phase 3` drag-and-drop ordering is now implemented
+
+What is already true in the current builder:
+- form library is now a collapsible left drawer
+- preview is now a toggleable right drawer
+- the main canvas focuses on one form at a time
+- form setup collapses by default on existing forms
+- top-of-form fields are collapsible
+- sections are collapsible
+- only one section stays open at a time for calmer editing
+- fields now use a calmer `Edit` / `Done` flow instead of exposing every field editor at once
+- sections and fields now use a calmer `More` action menu instead of always showing all actions
+- the save note is now separated into its own save step card
+- sections can be reordered by drag-and-drop
+- fields can be reordered by drag-and-drop
+- `SortableJS` is now used locally for reliable drag-and-drop ordering
+- a floating save/reset dock appears while the draft is dirty
+- the builder warns before discarding unsaved changes on form switch or page unload
+
+What is still not done:
+- final reduction of section-level button noise
+- deeper visual polish for truly client-ready comfort
+- full stabilization and real-use QA
+
 ## Source Of Truth
 Primary source of truth:
 - `artifacts/schema/naic_medtech_app_schema.json`
@@ -198,10 +234,11 @@ These should be treated as safe defaults, not as final product truth.
 When continuing implementation, the next AI should:
 
 1. Read `artifacts/schema/naic_medtech_app_schema.json`
-2. Treat the app as schema-driven
-3. Build the exam/form builder first
-4. Avoid hardcoding individual lab forms
-5. Keep output/print generation as a separate later-capable layer
+2. Read `docs/handoff/BUILDER_V2_PLAN.md`
+3. Treat the app as schema-driven
+4. Build the exam/form builder first
+5. Avoid hardcoding individual lab forms
+6. Keep output/print generation as a separate later-capable layer
 
 ## What Another AI Should Avoid
 - Do not build one screen per exam.
