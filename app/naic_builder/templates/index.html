@@ -4,69 +4,80 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="{{ url_for('static', path='app.css') }}">
 </head>
 <body>
   <main class="shell">
     <header class="hero">
-      <div>
-        <p class="eyebrow">Phase 1</p>
+      <div class="hero-copy">
+        <p class="eyebrow">Phase 1 Builder</p>
         <h1>{{ app_title }}</h1>
-        <p class="subtitle">Schema-driven exam builder for NAIC Medtech. Build forms first, then let input and printable outputs follow the same definition.</p>
+        <p class="subtitle">Build exams the easy way: name the form, add sections, add fields, then save a clean version for the clinic.</p>
       </div>
       <div class="hero-actions">
-        <button id="newFormBtn" class="secondary" type="button">New Form</button>
-        <button id="saveBtn" type="button">Save Version</button>
+        <button id="newFormBtn" class="secondary" type="button">New Blank Form</button>
+        <button id="duplicateFormBtn" class="ghost" type="button">Duplicate Current</button>
+        <button id="saveBtn" type="button">Save Changes</button>
       </div>
     </header>
 
     <section class="status-bar">
-      <div id="statusText">Loading builder...</div>
+      <div>
+        <strong>Status:</strong>
+        <span id="statusText">Loading builder...</span>
+      </div>
       <div id="dirtyBadge" class="badge hidden">Unsaved changes</div>
     </section>
 
     <section class="workspace">
-      <aside class="sidebar panel">
+      <aside class="library panel">
         <div class="panel-head">
-          <h2>Forms</h2>
-          <input id="formSearch" type="search" placeholder="Search forms">
+          <div>
+            <h2>Form Library</h2>
+            <p class="panel-copy">Pick an existing exam or start a new blank form.</p>
+          </div>
         </div>
+        <label class="search-wrap">
+          <span>Search</span>
+          <input id="formSearch" type="search" placeholder="Search department or form">
+        </label>
         <div id="formList" class="form-list"></div>
       </aside>
 
-      <section class="canvas panel">
-        <div class="canvas-head">
-          <div class="tabs">
-            <button class="tab active" data-tab="builder" type="button">Builder</button>
-            <button class="tab" data-tab="preview" type="button">Preview</button>
-            <button class="tab" data-tab="json" type="button">JSON</button>
+      <section class="editor-column">
+        <section class="guide-card panel">
+          <div>
+            <p class="eyebrow">Simple Flow</p>
+            <h2>Keep the builder easy to use</h2>
+            <p class="panel-copy">Focus on the form title, the sections, and the fields. Internal keys and extra notes stay hidden until you need them.</p>
           </div>
-          <div class="canvas-actions">
-            <button id="addTopFieldBtn" class="secondary" type="button">Add Field</button>
-            <button id="addTopGroupBtn" class="secondary" type="button">Add Field Group</button>
-            <button id="addSectionBtn" class="secondary" type="button">Add Section</button>
+          <div class="guide-steps">
+            <div class="step-pill">1. Fill in the form setup</div>
+            <div class="step-pill">2. Add sections</div>
+            <div class="step-pill">3. Add fields</div>
+            <div class="step-pill">4. Check the live preview</div>
           </div>
-        </div>
+        </section>
 
-        <div id="builderPane" class="pane active">
-          <div id="structureTree" class="structure-tree"></div>
-        </div>
+        <section class="panel editor-panel">
+          <div id="formEditor" class="form-editor"></div>
+        </section>
 
-        <div id="previewPane" class="pane">
-          <div id="previewCanvas" class="preview-canvas"></div>
-        </div>
-
-        <div id="jsonPane" class="pane">
+        <details class="panel dev-panel">
+          <summary>Technical JSON</summary>
           <pre id="jsonOutput" class="json-output"></pre>
-        </div>
+        </details>
       </section>
 
-      <aside class="inspector panel">
+      <aside class="preview panel">
         <div class="panel-head">
-          <h2>Inspector</h2>
-          <div id="selectionHint" class="hint">Select form meta, section, field, or option group.</div>
+          <div>
+            <h2>Live Preview</h2>
+            <p class="panel-copy">This is the simplified entry form view that follows your builder changes.</p>
+          </div>
         </div>
-        <div id="inspectorContent" class="inspector-content"></div>
+        <div id="previewCanvas" class="preview-canvas"></div>
       </aside>
     </section>
   </main>

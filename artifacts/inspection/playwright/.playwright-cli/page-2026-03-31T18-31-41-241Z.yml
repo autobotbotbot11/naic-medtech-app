@@ -1,0 +1,194 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Phase 1 Builder
+      - heading "NAIC Medtech Builder" [level=1] [ref=e6]
+      - paragraph [ref=e7]: "Build exams the easy way: name the form, add sections, add fields, then save a clean version for the clinic."
+    - generic [ref=e8]:
+      - button "New Blank Form" [ref=e9] [cursor=pointer]
+      - button "Duplicate Current" [ref=e10] [cursor=pointer]
+      - button "Save Changes" [ref=e11] [cursor=pointer]
+  - generic [ref=e12]:
+    - generic [ref=e13]:
+      - strong [ref=e14]: "Status:"
+      - text: Started a new blank form.
+    - generic [ref=e580]: Unsaved changes
+  - generic [ref=e15]:
+    - complementary [ref=e16]:
+      - generic [ref=e18]:
+        - heading "Form Library" [level=2] [ref=e19]
+        - paragraph [ref=e20]: Pick an existing exam or start a new blank form.
+      - generic [ref=e21]:
+        - generic [ref=e22]: Search
+        - searchbox "Search" [ref=e23]
+      - generic [ref=e24]:
+        - generic [ref=e581]:
+          - generic [ref=e582]:
+            - generic [ref=e583]: Clinical Microscopy
+            - generic [ref=e584]: 3 forms
+          - button "Semen v1 | order 1" [ref=e585] [cursor=pointer]:
+            - strong [ref=e586]: Semen
+            - generic [ref=e587]: v1 | order 1
+          - button "Urine v1 | order 2" [ref=e588] [cursor=pointer]:
+            - strong [ref=e589]: Urine
+            - generic [ref=e590]: v1 | order 2
+          - button "Fecalysis v1 | order 3" [ref=e591] [cursor=pointer]:
+            - strong [ref=e592]: Fecalysis
+            - generic [ref=e593]: v1 | order 3
+        - generic [ref=e594]:
+          - generic [ref=e595]:
+            - generic [ref=e596]: Blood Chemistry
+            - generic [ref=e597]: 4 forms
+          - button "OGTT v1 | order 1" [ref=e598] [cursor=pointer]:
+            - strong [ref=e599]: OGTT
+            - generic [ref=e600]: v1 | order 1
+          - button "HBA1C v1 | order 2" [ref=e601] [cursor=pointer]:
+            - strong [ref=e602]: HBA1C
+            - generic [ref=e603]: v1 | order 2
+          - button "Male v1 | order 3" [ref=e604] [cursor=pointer]:
+            - strong [ref=e605]: Male
+            - generic [ref=e606]: v1 | order 3
+          - button "Female v1 | order 4" [ref=e607] [cursor=pointer]:
+            - strong [ref=e608]: Female
+            - generic [ref=e609]: v1 | order 4
+        - generic [ref=e610]:
+          - generic [ref=e611]:
+            - generic [ref=e612]: Serology
+            - generic [ref=e613]: 4 forms
+          - button "Serology v1 | order 1" [ref=e614] [cursor=pointer]:
+            - strong [ref=e615]: Serology
+            - generic [ref=e616]: v1 | order 1
+          - button "Cardiaci v1 | order 2" [ref=e617] [cursor=pointer]:
+            - strong [ref=e618]: Cardiaci
+            - generic [ref=e619]: v1 | order 2
+          - button "HIV 1&2 Testing v1 | order 3" [ref=e620] [cursor=pointer]:
+            - strong [ref=e621]: HIV 1&2 Testing
+            - generic [ref=e622]: v1 | order 3
+          - button "COVID 19 Antigen (Rapid Test) v1 | order 4" [ref=e623] [cursor=pointer]:
+            - strong [ref=e624]: COVID 19 Antigen (Rapid Test)
+            - generic [ref=e625]: v1 | order 4
+        - generic [ref=e626]:
+          - generic [ref=e627]:
+            - generic [ref=e628]: Blood Bank
+            - generic [ref=e629]: 1 forms
+          - button "Blood Bank v1 | order 1" [ref=e630] [cursor=pointer]:
+            - strong [ref=e631]: Blood Bank
+            - generic [ref=e632]: v1 | order 1
+        - generic [ref=e633]:
+          - generic [ref=e634]:
+            - generic [ref=e635]: Blood Gas Analysis
+            - generic [ref=e636]: 1 forms
+          - button "Blood Gas Analysis v1 | order 1" [ref=e637] [cursor=pointer]:
+            - strong [ref=e638]: Blood Gas Analysis
+            - generic [ref=e639]: v1 | order 1
+        - generic [ref=e640]:
+          - generic [ref=e641]:
+            - generic [ref=e642]: Hematology
+            - generic [ref=e643]: 2 forms
+          - button "Hematology v1 | order 1" [ref=e644] [cursor=pointer]:
+            - strong [ref=e645]: Hematology
+            - generic [ref=e646]: v1 | order 1
+          - button "Pro-Time, APTT v1 | order 2" [ref=e647] [cursor=pointer]:
+            - strong [ref=e648]: Pro-Time, APTT
+            - generic [ref=e649]: v1 | order 2
+        - generic [ref=e650]:
+          - generic [ref=e651]:
+            - generic [ref=e652]: Microbiology
+            - generic [ref=e653]: 1 forms
+          - button "Microbiology v1 | order 1" [ref=e654] [cursor=pointer]:
+            - strong [ref=e655]: Microbiology
+            - generic [ref=e656]: v1 | order 1
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - paragraph [ref=e104]: Simple Flow
+          - heading "Keep the builder easy to use" [level=2] [ref=e105]
+          - paragraph [ref=e106]: Focus on the form title, the sections, and the fields. Internal keys and extra notes stay hidden until you need them.
+        - generic [ref=e107]:
+          - generic [ref=e108]: 1. Fill in the form setup
+          - generic [ref=e109]: 2. Add sections
+          - generic [ref=e110]: 3. Add fields
+          - generic [ref=e111]: 4. Check the live preview
+      - generic [ref=e113]:
+        - generic [ref=e706]:
+          - generic [ref=e708]:
+            - generic [ref=e709]:
+              - generic [ref=e710]: New draft
+              - generic [ref=e711]: New Category
+            - heading "Form setup" [level=3] [ref=e712]
+            - paragraph [ref=e713]: Start with the title, the department, and the shared patient info set. The more technical settings stay hidden below.
+          - generic [ref=e714]:
+            - generic [ref=e715]:
+              - generic [ref=e716]: Form title
+              - textbox "Form title" [ref=e717]:
+                - /placeholder: "Example: Urinalysis"
+                - text: Untitled Form
+            - generic [ref=e718]:
+              - generic [ref=e719]: Department / category
+              - textbox "Department / category" [ref=e720]:
+                - /placeholder: "Example: Clinical Microscopy"
+                - text: New Category
+            - generic [ref=e721]:
+              - generic [ref=e722]: Shared patient info
+              - combobox "Shared patient info" [ref=e723]:
+                - option "Default Lab Request Metadata" [selected]
+            - generic [ref=e724]:
+              - generic [ref=e725]: Current version note
+              - textbox "Current version note" [ref=e726]:
+                - /placeholder: What changed in this version?
+          - group [ref=e727]:
+            - generic "Advanced form settings" [ref=e728] [cursor=pointer]
+            - option "Category" [selected]
+            - option "Standalone form"
+        - generic [ref=e729]:
+          - generic [ref=e730]:
+            - generic [ref=e731]:
+              - heading "Top of form" [level=3] [ref=e732]
+              - paragraph [ref=e733]: Use this area for fields that should appear before the main sections.
+            - generic [ref=e734]:
+              - button "Add field" [ref=e735] [cursor=pointer]
+              - button "Add field group" [ref=e736] [cursor=pointer]
+          - generic [ref=e737]: Nothing here yet. Add a field when you are ready.
+        - generic [ref=e738]:
+          - generic [ref=e739]:
+            - generic [ref=e740]:
+              - heading "Sections" [level=3] [ref=e741]
+              - paragraph [ref=e742]: Break the exam into readable chunks so staff can encode it faster.
+            - button "Add section" [ref=e744] [cursor=pointer]
+          - article [ref=e746]:
+            - generic [ref=e747]:
+              - generic [ref=e748]:
+                - generic [ref=e749]:
+                  - generic [ref=e750]: Section 1
+                  - generic [ref=e751]: 0 items
+                - paragraph [ref=e752]: Give this section a clear name and then add the fields inside it.
+              - generic [ref=e753]:
+                - button "Up" [ref=e754] [cursor=pointer]
+                - button "Down" [ref=e755] [cursor=pointer]
+                - button "Duplicate" [ref=e756] [cursor=pointer]
+                - button "Delete" [ref=e757] [cursor=pointer]
+            - generic [ref=e759]:
+              - generic [ref=e760]: Section title
+              - textbox "Section title" [ref=e761]:
+                - /placeholder: "Example: Chemical Findings"
+                - text: New Section
+            - generic [ref=e762]: Nothing here yet. Add a field when you are ready.
+            - generic [ref=e763]:
+              - button "Add field" [ref=e764] [cursor=pointer]
+              - button "Add field group" [ref=e765] [cursor=pointer]
+            - group [ref=e766]:
+              - generic "Advanced section settings" [ref=e767] [cursor=pointer]
+      - group [ref=e504]:
+        - generic "Technical JSON" [ref=e505] [cursor=pointer]
+    - complementary [ref=e506]:
+      - generic [ref=e508]:
+        - heading "Live Preview" [level=2] [ref=e509]
+        - paragraph [ref=e510]: This is the simplified entry form view that follows your builder changes.
+      - generic [ref=e768]:
+        - generic [ref=e770]:
+          - heading "Untitled Form" [level=3] [ref=e771]
+          - paragraph [ref=e772]: New Category | New draft
+        - generic [ref=e773]:
+          - generic [ref=e774]: 0 fields
+          - generic [ref=e775]: 1 sections
+        - heading "New Section" [level=4] [ref=e777]

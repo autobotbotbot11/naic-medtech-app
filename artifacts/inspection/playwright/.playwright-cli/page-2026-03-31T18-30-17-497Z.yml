@@ -1,0 +1,724 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - paragraph [ref=e5]: Phase 1 Builder
+      - heading "NAIC Medtech Builder" [level=1] [ref=e6]
+      - paragraph [ref=e7]: "Build exams the easy way: name the form, add sections, add fields, then save a clean version for the clinic."
+    - generic [ref=e8]:
+      - button "New Blank Form" [ref=e9] [cursor=pointer]
+      - button "Duplicate Current" [ref=e10] [cursor=pointer]
+      - button "Save Changes" [ref=e11] [cursor=pointer]
+  - generic [ref=e13]:
+    - strong [ref=e14]: "Status:"
+    - text: Loaded Semen.
+  - generic [ref=e15]:
+    - complementary [ref=e16]:
+      - generic [ref=e18]:
+        - heading "Form Library" [level=2] [ref=e19]
+        - paragraph [ref=e20]: Pick an existing exam or start a new blank form.
+      - generic [ref=e21]:
+        - generic [ref=e22]: Search
+        - searchbox "Search" [ref=e23]
+      - generic [ref=e24]:
+        - generic [ref=e25]:
+          - generic [ref=e26]:
+            - generic [ref=e27]: Clinical Microscopy
+            - generic [ref=e28]: 3 forms
+          - button "Semen v1 | order 1" [ref=e29] [cursor=pointer]:
+            - strong [ref=e30]: Semen
+            - generic [ref=e31]: v1 | order 1
+          - button "Urine v1 | order 2" [ref=e32] [cursor=pointer]:
+            - strong [ref=e33]: Urine
+            - generic [ref=e34]: v1 | order 2
+          - button "Fecalysis v1 | order 3" [ref=e35] [cursor=pointer]:
+            - strong [ref=e36]: Fecalysis
+            - generic [ref=e37]: v1 | order 3
+        - generic [ref=e38]:
+          - generic [ref=e39]:
+            - generic [ref=e40]: Blood Chemistry
+            - generic [ref=e41]: 4 forms
+          - button "OGTT v1 | order 1" [ref=e42] [cursor=pointer]:
+            - strong [ref=e43]: OGTT
+            - generic [ref=e44]: v1 | order 1
+          - button "HBA1C v1 | order 2" [ref=e45] [cursor=pointer]:
+            - strong [ref=e46]: HBA1C
+            - generic [ref=e47]: v1 | order 2
+          - button "Male v1 | order 3" [ref=e48] [cursor=pointer]:
+            - strong [ref=e49]: Male
+            - generic [ref=e50]: v1 | order 3
+          - button "Female v1 | order 4" [ref=e51] [cursor=pointer]:
+            - strong [ref=e52]: Female
+            - generic [ref=e53]: v1 | order 4
+        - generic [ref=e54]:
+          - generic [ref=e55]:
+            - generic [ref=e56]: Serology
+            - generic [ref=e57]: 4 forms
+          - button "Serology v1 | order 1" [ref=e58] [cursor=pointer]:
+            - strong [ref=e59]: Serology
+            - generic [ref=e60]: v1 | order 1
+          - button "Cardiaci v1 | order 2" [ref=e61] [cursor=pointer]:
+            - strong [ref=e62]: Cardiaci
+            - generic [ref=e63]: v1 | order 2
+          - button "HIV 1&2 Testing v1 | order 3" [ref=e64] [cursor=pointer]:
+            - strong [ref=e65]: HIV 1&2 Testing
+            - generic [ref=e66]: v1 | order 3
+          - button "COVID 19 Antigen (Rapid Test) v1 | order 4" [ref=e67] [cursor=pointer]:
+            - strong [ref=e68]: COVID 19 Antigen (Rapid Test)
+            - generic [ref=e69]: v1 | order 4
+        - generic [ref=e70]:
+          - generic [ref=e71]:
+            - generic [ref=e72]: Blood Bank
+            - generic [ref=e73]: 1 forms
+          - button "Blood Bank v1 | order 1" [ref=e74] [cursor=pointer]:
+            - strong [ref=e75]: Blood Bank
+            - generic [ref=e76]: v1 | order 1
+        - generic [ref=e77]:
+          - generic [ref=e78]:
+            - generic [ref=e79]: Blood Gas Analysis
+            - generic [ref=e80]: 1 forms
+          - button "Blood Gas Analysis v1 | order 1" [ref=e81] [cursor=pointer]:
+            - strong [ref=e82]: Blood Gas Analysis
+            - generic [ref=e83]: v1 | order 1
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]: Hematology
+            - generic [ref=e87]: 2 forms
+          - button "Hematology v1 | order 1" [ref=e88] [cursor=pointer]:
+            - strong [ref=e89]: Hematology
+            - generic [ref=e90]: v1 | order 1
+          - button "Pro-Time, APTT v1 | order 2" [ref=e91] [cursor=pointer]:
+            - strong [ref=e92]: Pro-Time, APTT
+            - generic [ref=e93]: v1 | order 2
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - generic [ref=e96]: Microbiology
+            - generic [ref=e97]: 1 forms
+          - button "Microbiology v1 | order 1" [ref=e98] [cursor=pointer]:
+            - strong [ref=e99]: Microbiology
+            - generic [ref=e100]: v1 | order 1
+    - generic [ref=e101]:
+      - generic [ref=e102]:
+        - generic [ref=e103]:
+          - paragraph [ref=e104]: Simple Flow
+          - heading "Keep the builder easy to use" [level=2] [ref=e105]
+          - paragraph [ref=e106]: Focus on the form title, the sections, and the fields. Internal keys and extra notes stay hidden until you need them.
+        - generic [ref=e107]:
+          - generic [ref=e108]: 1. Fill in the form setup
+          - generic [ref=e109]: 2. Add sections
+          - generic [ref=e110]: 3. Add fields
+          - generic [ref=e111]: 4. Check the live preview
+      - generic [ref=e113]:
+        - generic [ref=e114]:
+          - generic [ref=e116]:
+            - generic [ref=e117]:
+              - generic [ref=e118]: Version 1
+              - generic [ref=e119]: Clinical Microscopy
+            - heading "Form setup" [level=3] [ref=e120]
+            - paragraph [ref=e121]: Start with the title, the department, and the shared patient info set. The more technical settings stay hidden below.
+          - generic [ref=e122]:
+            - generic [ref=e123]:
+              - generic [ref=e124]: Form title
+              - textbox "Form title" [ref=e125]:
+                - /placeholder: "Example: Urinalysis"
+                - text: Semen
+            - generic [ref=e126]:
+              - generic [ref=e127]: Department / category
+              - textbox "Department / category" [ref=e128]:
+                - /placeholder: "Example: Clinical Microscopy"
+                - text: Clinical Microscopy
+            - generic [ref=e129]:
+              - generic [ref=e130]: Shared patient info
+              - combobox "Shared patient info" [ref=e131]:
+                - option "Default Lab Request Metadata" [selected]
+            - generic [ref=e132]:
+              - generic [ref=e133]: Current version note
+              - textbox "Current version note" [ref=e134]:
+                - /placeholder: What changed in this version?
+                - text: Seeded from current reference schema.
+          - group [ref=e135]:
+            - generic "Advanced form settings" [ref=e136] [cursor=pointer]
+            - option "Category" [selected]
+            - option "Standalone form"
+        - generic [ref=e137]:
+          - generic [ref=e138]:
+            - generic [ref=e139]:
+              - heading "Top of form" [level=3] [ref=e140]
+              - paragraph [ref=e141]: Use this area for fields that should appear before the main sections.
+            - generic [ref=e142]:
+              - button "Add field" [ref=e143] [cursor=pointer]
+              - button "Add field group" [ref=e144] [cursor=pointer]
+          - generic [ref=e145]:
+            - article [ref=e146]:
+              - generic [ref=e147]:
+                - generic [ref=e148]:
+                  - generic [ref=e149]: Field
+                  - generic [ref=e150]: Dropdown choices | 1 choices
+                - generic [ref=e151]:
+                  - button "Up" [ref=e152] [cursor=pointer]
+                  - button "Down" [ref=e153] [cursor=pointer]
+                  - button "Duplicate" [ref=e154] [cursor=pointer]
+                  - button "Delete" [ref=e155] [cursor=pointer]
+              - generic [ref=e156]:
+                - generic [ref=e157]:
+                  - text: Field label
+                  - textbox "Field label" [ref=e158]:
+                    - /placeholder: "Example: Color"
+                    - text: Examination
+                - generic [ref=e159]:
+                  - text: Answer type
+                  - combobox "Answer type" [ref=e160]:
+                    - option "Short answer"
+                    - option "Number"
+                    - option "Dropdown choices" [selected]
+                    - option "Date"
+                    - option "Time"
+                    - option "Date and time"
+              - generic [ref=e161]:
+                - generic [ref=e162]:
+                  - generic [ref=e163]:
+                    - heading "Choices" [level=4] [ref=e164]
+                    - paragraph [ref=e165]: Only needed when the field uses a dropdown.
+                  - button "Add choice" [ref=e167] [cursor=pointer]
+                - generic [ref=e169]:
+                  - generic [ref=e170]:
+                    - generic [ref=e171]: Choice 1
+                    - textbox "Choice 1" [ref=e172]:
+                      - /placeholder: Option name
+                      - text: SEMEN ANALYSIS
+                  - button "Delete" [ref=e173] [cursor=pointer]
+              - group [ref=e174]:
+                - generic "Advanced field settings" [ref=e175] [cursor=pointer]
+            - article [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e178]:
+                  - generic [ref=e179]: Field
+                  - generic [ref=e180]: Time
+                - generic [ref=e181]:
+                  - button "Up" [ref=e182] [cursor=pointer]
+                  - button "Down" [ref=e183] [cursor=pointer]
+                  - button "Duplicate" [ref=e184] [cursor=pointer]
+                  - button "Delete" [ref=e185] [cursor=pointer]
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - text: Field label
+                  - textbox "Field label" [ref=e188]:
+                    - /placeholder: "Example: Color"
+                    - text: TIME COLLECTED
+                - generic [ref=e189]:
+                  - text: Answer type
+                  - combobox "Answer type" [ref=e190]:
+                    - option "Short answer"
+                    - option "Number"
+                    - option "Dropdown choices"
+                    - option "Date"
+                    - option "Time" [selected]
+                    - option "Date and time"
+              - group [ref=e191]:
+                - generic "Advanced field settings" [ref=e192] [cursor=pointer]
+            - article [ref=e193]:
+              - generic [ref=e194]:
+                - generic [ref=e195]:
+                  - generic [ref=e196]: Field
+                  - generic [ref=e197]: Time
+                - generic [ref=e198]:
+                  - button "Up" [ref=e199] [cursor=pointer]
+                  - button "Down" [ref=e200] [cursor=pointer]
+                  - button "Duplicate" [ref=e201] [cursor=pointer]
+                  - button "Delete" [ref=e202] [cursor=pointer]
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - text: Field label
+                  - textbox "Field label" [ref=e205]:
+                    - /placeholder: "Example: Color"
+                    - text: TIME RECEIVED
+                - generic [ref=e206]:
+                  - text: Answer type
+                  - combobox "Answer type" [ref=e207]:
+                    - option "Short answer"
+                    - option "Number"
+                    - option "Dropdown choices"
+                    - option "Date"
+                    - option "Time" [selected]
+                    - option "Date and time"
+              - group [ref=e208]:
+                - generic "Advanced field settings" [ref=e209] [cursor=pointer]
+            - article [ref=e210]:
+              - generic [ref=e211]:
+                - generic [ref=e212]:
+                  - generic [ref=e213]: Field
+                  - generic [ref=e214]: Short answer
+                - generic [ref=e215]:
+                  - button "Up" [ref=e216] [cursor=pointer]
+                  - button "Down" [ref=e217] [cursor=pointer]
+                  - button "Duplicate" [ref=e218] [cursor=pointer]
+                  - button "Delete" [ref=e219] [cursor=pointer]
+              - generic [ref=e220]:
+                - generic [ref=e221]:
+                  - text: Field label
+                  - textbox "Field label" [ref=e222]:
+                    - /placeholder: "Example: Color"
+                    - text: TOTAL VOLUME
+                - generic [ref=e223]:
+                  - text: Answer type
+                  - combobox "Answer type" [ref=e224]:
+                    - option "Short answer" [selected]
+                    - option "Number"
+                    - option "Dropdown choices"
+                    - option "Date"
+                    - option "Time"
+                    - option "Date and time"
+              - group [ref=e225]:
+                - generic "Advanced field settings" [ref=e226] [cursor=pointer]
+            - article [ref=e227]:
+              - generic [ref=e228]:
+                - generic [ref=e229]:
+                  - generic [ref=e230]: Field
+                  - generic [ref=e231]: Short answer
+                - generic [ref=e232]:
+                  - button "Up" [ref=e233] [cursor=pointer]
+                  - button "Down" [ref=e234] [cursor=pointer]
+                  - button "Duplicate" [ref=e235] [cursor=pointer]
+                  - button "Delete" [ref=e236] [cursor=pointer]
+              - generic [ref=e237]:
+                - generic [ref=e238]:
+                  - text: Field label
+                  - textbox "Field label" [ref=e239]:
+                    - /placeholder: "Example: Color"
+                    - text: LIQUEFACTION TIME
+                - generic [ref=e240]:
+                  - text: Answer type
+                  - combobox "Answer type" [ref=e241]:
+                    - option "Short answer" [selected]
+                    - option "Number"
+                    - option "Dropdown choices"
+                    - option "Date"
+                    - option "Time"
+                    - option "Date and time"
+              - group [ref=e242]:
+                - generic "Advanced field settings" [ref=e243] [cursor=pointer]
+        - generic [ref=e244]:
+          - generic [ref=e245]:
+            - generic [ref=e246]:
+              - heading "Sections" [level=3] [ref=e247]
+              - paragraph [ref=e248]: Break the exam into readable chunks so staff can encode it faster.
+            - button "Add section" [ref=e250] [cursor=pointer]
+          - generic [ref=e251]:
+            - article [ref=e252]:
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - generic [ref=e255]:
+                    - generic [ref=e256]: Section 1
+                    - generic [ref=e257]: 2 items
+                  - paragraph [ref=e258]: Give this section a clear name and then add the fields inside it.
+                - generic [ref=e259]:
+                  - button "Up" [ref=e260] [cursor=pointer]
+                  - button "Down" [ref=e261] [cursor=pointer]
+                  - button "Duplicate" [ref=e262] [cursor=pointer]
+                  - button "Delete" [ref=e263] [cursor=pointer]
+              - generic [ref=e265]:
+                - generic [ref=e266]: Section title
+                - textbox "Section title" [ref=e267]:
+                  - /placeholder: "Example: Chemical Findings"
+                  - text: MOTILITY
+              - generic [ref=e268]:
+                - article [ref=e269]:
+                  - generic [ref=e270]:
+                    - generic [ref=e271]:
+                      - generic [ref=e272]: Field
+                      - generic [ref=e273]: Number
+                    - generic [ref=e274]:
+                      - button "Up" [ref=e275] [cursor=pointer]
+                      - button "Down" [ref=e276] [cursor=pointer]
+                      - button "Duplicate" [ref=e277] [cursor=pointer]
+                      - button "Delete" [ref=e278] [cursor=pointer]
+                  - generic [ref=e279]:
+                    - generic [ref=e280]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e281]:
+                        - /placeholder: "Example: Color"
+                        - text: MOTILE
+                    - generic [ref=e282]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e283]:
+                        - option "Short answer"
+                        - option "Number" [selected]
+                        - option "Dropdown choices"
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - group [ref=e284]:
+                    - generic "Advanced field settings" [ref=e285] [cursor=pointer]
+                - article [ref=e286]:
+                  - generic [ref=e287]:
+                    - generic [ref=e288]:
+                      - generic [ref=e289]: Field
+                      - generic [ref=e290]: Number
+                    - generic [ref=e291]:
+                      - button "Up" [ref=e292] [cursor=pointer]
+                      - button "Down" [ref=e293] [cursor=pointer]
+                      - button "Duplicate" [ref=e294] [cursor=pointer]
+                      - button "Delete" [ref=e295] [cursor=pointer]
+                  - generic [ref=e296]:
+                    - generic [ref=e297]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e298]:
+                        - /placeholder: "Example: Color"
+                        - text: NON MOTILE
+                    - generic [ref=e299]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e300]:
+                        - option "Short answer"
+                        - option "Number" [selected]
+                        - option "Dropdown choices"
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - group [ref=e301]:
+                    - generic "Advanced field settings" [ref=e302] [cursor=pointer]
+              - generic [ref=e303]:
+                - button "Add field" [ref=e304] [cursor=pointer]
+                - button "Add field group" [ref=e305] [cursor=pointer]
+              - group [ref=e306]:
+                - generic "Advanced section settings" [ref=e307] [cursor=pointer]
+            - article [ref=e308]:
+              - generic [ref=e309]:
+                - generic [ref=e310]:
+                  - generic [ref=e311]:
+                    - generic [ref=e312]: Section 2
+                    - generic [ref=e313]: 2 items
+                  - paragraph [ref=e314]: Give this section a clear name and then add the fields inside it.
+                - generic [ref=e315]:
+                  - button "Up" [ref=e316] [cursor=pointer]
+                  - button "Down" [ref=e317] [cursor=pointer]
+                  - button "Duplicate" [ref=e318] [cursor=pointer]
+                  - button "Delete" [ref=e319] [cursor=pointer]
+              - generic [ref=e321]:
+                - generic [ref=e322]: Section title
+                - textbox "Section title" [ref=e323]:
+                  - /placeholder: "Example: Chemical Findings"
+                  - text: MORPHOLOGY
+              - generic [ref=e324]:
+                - article [ref=e325]:
+                  - generic [ref=e326]:
+                    - generic [ref=e327]:
+                      - generic [ref=e328]: Field
+                      - generic [ref=e329]: Number
+                    - generic [ref=e330]:
+                      - button "Up" [ref=e331] [cursor=pointer]
+                      - button "Down" [ref=e332] [cursor=pointer]
+                      - button "Duplicate" [ref=e333] [cursor=pointer]
+                      - button "Delete" [ref=e334] [cursor=pointer]
+                  - generic [ref=e335]:
+                    - generic [ref=e336]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e337]:
+                        - /placeholder: "Example: Color"
+                        - text: NORMAL
+                    - generic [ref=e338]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e339]:
+                        - option "Short answer"
+                        - option "Number" [selected]
+                        - option "Dropdown choices"
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - group [ref=e340]:
+                    - generic "Advanced field settings" [ref=e341] [cursor=pointer]
+                - article [ref=e342]:
+                  - generic [ref=e343]:
+                    - generic [ref=e344]:
+                      - generic [ref=e345]: Field
+                      - generic [ref=e346]: Number
+                    - generic [ref=e347]:
+                      - button "Up" [ref=e348] [cursor=pointer]
+                      - button "Down" [ref=e349] [cursor=pointer]
+                      - button "Duplicate" [ref=e350] [cursor=pointer]
+                      - button "Delete" [ref=e351] [cursor=pointer]
+                  - generic [ref=e352]:
+                    - generic [ref=e353]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e354]:
+                        - /placeholder: "Example: Color"
+                        - text: ABNORMAL
+                    - generic [ref=e355]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e356]:
+                        - option "Short answer"
+                        - option "Number" [selected]
+                        - option "Dropdown choices"
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - group [ref=e357]:
+                    - generic "Advanced field settings" [ref=e358] [cursor=pointer]
+              - generic [ref=e359]:
+                - button "Add field" [ref=e360] [cursor=pointer]
+                - button "Add field group" [ref=e361] [cursor=pointer]
+              - group [ref=e362]:
+                - generic "Advanced section settings" [ref=e363] [cursor=pointer]
+            - article [ref=e364]:
+              - generic [ref=e365]:
+                - generic [ref=e366]:
+                  - generic [ref=e367]:
+                    - generic [ref=e368]: Section 3
+                    - generic [ref=e369]: 1 items
+                  - paragraph [ref=e370]: Give this section a clear name and then add the fields inside it.
+                - generic [ref=e371]:
+                  - button "Up" [ref=e372] [cursor=pointer]
+                  - button "Down" [ref=e373] [cursor=pointer]
+                  - button "Duplicate" [ref=e374] [cursor=pointer]
+                  - button "Delete" [ref=e375] [cursor=pointer]
+              - generic [ref=e377]:
+                - generic [ref=e378]: Section title
+                - textbox "Section title" [ref=e379]:
+                  - /placeholder: "Example: Chemical Findings"
+                  - text: SPERM COUNT
+              - article [ref=e381]:
+                - generic [ref=e382]:
+                  - generic [ref=e383]:
+                    - generic [ref=e384]: Field
+                    - generic [ref=e385]: Short answer
+                  - generic [ref=e386]:
+                    - button "Up" [ref=e387] [cursor=pointer]
+                    - button "Down" [ref=e388] [cursor=pointer]
+                    - button "Duplicate" [ref=e389] [cursor=pointer]
+                    - button "Delete" [ref=e390] [cursor=pointer]
+                - generic [ref=e391]:
+                  - generic [ref=e392]:
+                    - text: Field label
+                    - textbox "Field label" [ref=e393]:
+                      - /placeholder: "Example: Color"
+                      - text: RESULT
+                  - generic [ref=e394]:
+                    - text: Answer type
+                    - combobox "Answer type" [ref=e395]:
+                      - option "Short answer" [selected]
+                      - option "Number"
+                      - option "Dropdown choices"
+                      - option "Date"
+                      - option "Time"
+                      - option "Date and time"
+                - group [ref=e396]:
+                  - generic "Advanced field settings" [ref=e397] [cursor=pointer]
+              - generic [ref=e398]:
+                - button "Add field" [ref=e399] [cursor=pointer]
+                - button "Add field group" [ref=e400] [cursor=pointer]
+              - group [ref=e401]:
+                - generic "Advanced section settings" [ref=e402] [cursor=pointer]
+            - article [ref=e403]:
+              - generic [ref=e404]:
+                - generic [ref=e405]:
+                  - generic [ref=e406]:
+                    - generic [ref=e407]: Section 4
+                    - generic [ref=e408]: 3 items
+                  - paragraph [ref=e409]: Give this section a clear name and then add the fields inside it.
+                - generic [ref=e410]:
+                  - button "Up" [ref=e411] [cursor=pointer]
+                  - button "Down" [ref=e412] [cursor=pointer]
+                  - button "Duplicate" [ref=e413] [cursor=pointer]
+                  - button "Delete" [ref=e414] [cursor=pointer]
+              - generic [ref=e416]:
+                - generic [ref=e417]: Section title
+                - textbox "Section title" [ref=e418]:
+                  - /placeholder: "Example: Chemical Findings"
+                  - text: OTHERS
+              - generic [ref=e419]:
+                - article [ref=e420]:
+                  - generic [ref=e421]:
+                    - generic [ref=e422]:
+                      - generic [ref=e423]: Field
+                      - generic [ref=e424]: Number
+                    - generic [ref=e425]:
+                      - button "Up" [ref=e426] [cursor=pointer]
+                      - button "Down" [ref=e427] [cursor=pointer]
+                      - button "Duplicate" [ref=e428] [cursor=pointer]
+                      - button "Delete" [ref=e429] [cursor=pointer]
+                  - generic [ref=e430]:
+                    - generic [ref=e431]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e432]:
+                        - /placeholder: "Example: Color"
+                        - text: WBC
+                    - generic [ref=e433]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e434]:
+                        - option "Short answer"
+                        - option "Number" [selected]
+                        - option "Dropdown choices"
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - group [ref=e435]:
+                    - generic "Advanced field settings" [ref=e436] [cursor=pointer]
+                - article [ref=e437]:
+                  - generic [ref=e438]:
+                    - generic [ref=e439]:
+                      - generic [ref=e440]: Field
+                      - generic [ref=e441]: Number
+                    - generic [ref=e442]:
+                      - button "Up" [ref=e443] [cursor=pointer]
+                      - button "Down" [ref=e444] [cursor=pointer]
+                      - button "Duplicate" [ref=e445] [cursor=pointer]
+                      - button "Delete" [ref=e446] [cursor=pointer]
+                  - generic [ref=e447]:
+                    - generic [ref=e448]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e449]:
+                        - /placeholder: "Example: Color"
+                        - text: RBC
+                    - generic [ref=e450]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e451]:
+                        - option "Short answer"
+                        - option "Number" [selected]
+                        - option "Dropdown choices"
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - group [ref=e452]:
+                    - generic "Advanced field settings" [ref=e453] [cursor=pointer]
+                - article [ref=e454]:
+                  - generic [ref=e455]:
+                    - generic [ref=e456]:
+                      - generic [ref=e457]: Field
+                      - generic [ref=e458]: Dropdown choices | 4 choices
+                    - generic [ref=e459]:
+                      - button "Up" [ref=e460] [cursor=pointer]
+                      - button "Down" [ref=e461] [cursor=pointer]
+                      - button "Duplicate" [ref=e462] [cursor=pointer]
+                      - button "Delete" [ref=e463] [cursor=pointer]
+                  - generic [ref=e464]:
+                    - generic [ref=e465]:
+                      - text: Field label
+                      - textbox "Field label" [ref=e466]:
+                        - /placeholder: "Example: Color"
+                        - text: EPITHELIAL CELL
+                    - generic [ref=e467]:
+                      - text: Answer type
+                      - combobox "Answer type" [ref=e468]:
+                        - option "Short answer"
+                        - option "Number"
+                        - option "Dropdown choices" [selected]
+                        - option "Date"
+                        - option "Time"
+                        - option "Date and time"
+                  - generic [ref=e469]:
+                    - generic [ref=e470]:
+                      - generic [ref=e471]:
+                        - heading "Choices" [level=4] [ref=e472]
+                        - paragraph [ref=e473]: Only needed when the field uses a dropdown.
+                      - button "Add choice" [ref=e475] [cursor=pointer]
+                    - generic [ref=e476]:
+                      - generic [ref=e477]:
+                        - generic [ref=e478]:
+                          - generic [ref=e479]: Choice 1
+                          - textbox "Choice 1" [ref=e480]:
+                            - /placeholder: Option name
+                            - text: OCCASIONAL
+                        - button "Delete" [ref=e481] [cursor=pointer]
+                      - generic [ref=e482]:
+                        - generic [ref=e483]:
+                          - generic [ref=e484]: Choice 2
+                          - textbox "Choice 2" [ref=e485]:
+                            - /placeholder: Option name
+                            - text: FEW
+                        - button "Delete" [ref=e486] [cursor=pointer]
+                      - generic [ref=e487]:
+                        - generic [ref=e488]:
+                          - generic [ref=e489]: Choice 3
+                          - textbox "Choice 3" [ref=e490]:
+                            - /placeholder: Option name
+                            - text: MODERATE
+                        - button "Delete" [ref=e491] [cursor=pointer]
+                      - generic [ref=e492]:
+                        - generic [ref=e493]:
+                          - generic [ref=e494]: Choice 4
+                          - textbox "Choice 4" [ref=e495]:
+                            - /placeholder: Option name
+                            - text: PLENTY
+                        - button "Delete" [ref=e496] [cursor=pointer]
+                  - group [ref=e497]:
+                    - generic "Advanced field settings" [ref=e498] [cursor=pointer]
+              - generic [ref=e499]:
+                - button "Add field" [ref=e500] [cursor=pointer]
+                - button "Add field group" [ref=e501] [cursor=pointer]
+              - group [ref=e502]:
+                - generic "Advanced section settings" [ref=e503] [cursor=pointer]
+      - group [ref=e504]:
+        - generic "Technical JSON" [ref=e505] [cursor=pointer]
+    - complementary [ref=e506]:
+      - generic [ref=e508]:
+        - heading "Live Preview" [level=2] [ref=e509]
+        - paragraph [ref=e510]: This is the simplified entry form view that follows your builder changes.
+      - generic [ref=e512]:
+        - generic [ref=e514]:
+          - heading "Semen" [level=3] [ref=e515]
+          - paragraph [ref=e516]: Clinical Microscopy | Version 1
+        - generic [ref=e517]:
+          - generic [ref=e518]: 13 fields
+          - generic [ref=e519]: 4 sections
+        - generic [ref=e520]:
+          - heading "Top of form" [level=4] [ref=e521]
+          - generic [ref=e522]:
+            - generic [ref=e523]:
+              - generic [ref=e524]: Examination
+              - combobox "Examination" [ref=e525]:
+                - option "SEMEN ANALYSIS" [selected]
+            - generic [ref=e526]:
+              - generic [ref=e527]: TIME COLLECTED
+              - textbox "TIME COLLECTED" [ref=e528]
+            - generic [ref=e529]:
+              - generic [ref=e530]: TIME RECEIVED
+              - textbox "TIME RECEIVED" [ref=e531]
+            - generic [ref=e532]:
+              - generic [ref=e533]: TOTAL VOLUME
+              - textbox "TOTAL VOLUME" [ref=e534]
+            - generic [ref=e535]:
+              - generic [ref=e536]: LIQUEFACTION TIME
+              - textbox "LIQUEFACTION TIME" [ref=e537]
+        - generic [ref=e538]:
+          - heading "MOTILITY" [level=4] [ref=e539]
+          - generic [ref=e540]:
+            - generic [ref=e541]:
+              - generic [ref=e542]: MOTILE
+              - textbox "MOTILE %" [ref=e543]
+              - generic [ref=e544]: "%"
+            - generic [ref=e545]:
+              - generic [ref=e546]: NON MOTILE
+              - textbox "NON MOTILE %" [ref=e547]
+              - generic [ref=e548]: "%"
+        - generic [ref=e549]:
+          - heading "MORPHOLOGY" [level=4] [ref=e550]
+          - generic [ref=e551]:
+            - generic [ref=e552]:
+              - generic [ref=e553]: NORMAL
+              - textbox "NORMAL %" [ref=e554]
+              - generic [ref=e555]: "%"
+            - generic [ref=e556]:
+              - generic [ref=e557]: ABNORMAL
+              - textbox "ABNORMAL %" [ref=e558]
+              - generic [ref=e559]: "%"
+        - generic [ref=e560]:
+          - heading "SPERM COUNT" [level=4] [ref=e561]
+          - generic [ref=e563]:
+            - generic [ref=e564]: RESULT
+            - textbox "RESULT" [ref=e565]
+        - generic [ref=e566]:
+          - heading "OTHERS" [level=4] [ref=e567]
+          - generic [ref=e568]:
+            - generic [ref=e569]:
+              - generic [ref=e570]: WBC
+              - textbox "WBC /HPF" [ref=e571]
+              - generic [ref=e572]: /HPF
+            - generic [ref=e573]:
+              - generic [ref=e574]: RBC
+              - textbox "RBC /HPF" [ref=e575]
+              - generic [ref=e576]: /HPF
+            - generic [ref=e577]:
+              - generic [ref=e578]: EPITHELIAL CELL
+              - combobox "EPITHELIAL CELL" [ref=e579]:
+                - option "OCCASIONAL" [selected]
+                - option "FEW"
+                - option "MODERATE"
+                - option "PLENTY"

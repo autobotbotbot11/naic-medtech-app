@@ -3,19 +3,25 @@ const state = {
   selectedFormSlug: null,
   loadedForm: null,
   draft: null,
-  selectedPath: ["meta"],
   dirty: false,
 };
+
+const FIELD_TYPES = [
+  { id: "text", label: "Short answer", control: "input", dataType: "text" },
+  { id: "number", label: "Number", control: "input", dataType: "number" },
+  { id: "choice", label: "Dropdown choices", control: "select", dataType: "enum" },
+  { id: "date", label: "Date", control: "input", dataType: "date" },
+  { id: "time", label: "Time", control: "input", dataType: "time" },
+  { id: "datetime", label: "Date and time", control: "input", dataType: "datetime" },
+];
 
 const formListEl = document.getElementById("formList");
 const formSearchEl = document.getElementById("formSearch");
 const statusTextEl = document.getElementById("statusText");
 const dirtyBadgeEl = document.getElementById("dirtyBadge");
-const structureTreeEl = document.getElementById("structureTree");
-const inspectorContentEl = document.getElementById("inspectorContent");
+const formEditorEl = document.getElementById("formEditor");
 const previewCanvasEl = document.getElementById("previewCanvas");
 const jsonOutputEl = document.getElementById("jsonOutput");
-const selectionHintEl = document.getElementById("selectionHint");
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -56,12 +62,42 @@ function splitLines(value) {
     .filter(Boolean);
 }
 
-function pathKey(path) {
-  return JSON.stringify(path);
+function escapeHtml(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
 }
 
-function isSelected(path) {
-  return pathKey(path) === pathKey(state.selectedPath);
+function encodePath(path) {
+  return encodeURIComponent(JSON.stringify(path));
+}
+
+function decodePath(serialized) {
+  return JSON.parse(decodeURIComponent(serialized));
+}
+
+function groupedForms() {
+  return state.bootstrap?.groups || [];
+}
+
+function pluralize(count, singular, plural = `${singular}s`) {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function currentVersionLabel() {
+  return state.draft?.current_version_number ? `Version ${state.draft.current_version_number}` : "New draft";
+}
+
+function setDirty(value) {
+  state.dirty = value;
+  dirtyBadgeEl.classList.toggle("hidden", !value);
+}
+
+function setStatus(message, isError = false) {
+  statusTextEl.textContent = message;
+  statusTextEl.style.color = isError ? "#9f3d17" : "";
 }
 
 function getNodeByPath(path) {
@@ -80,12 +116,18 @@ function getParentCollection(path) {
   };
 }
 
-function escapeHtml(value) {
-  return String(value || "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;");
+function setBoundValue(target, bind, rawValue) {
+  const parts = bind.split(".");
+  let cursor = target;
+  for (let index = 0; index < parts.length - 1; index += 1) {
+    cursor = cursor[parts[index]];
+  }
+  const key = parts[parts.length - 1];
+  if (key.includes("order")) {
+    cursor[key] = Number(rawValue || 0);
+    return;
+  }
+  cursor[key] = rawValue;
 }
 
 function makeBlankField(kind = "field") {
@@ -125,7 +167,7 @@ function makeBlankForm() {
   return {
     slug: null,
     name: "Untitled Form",
-    group_name: "New Group",
+    group_name: "New Category",
     group_kind: "category",
     group_order: 999,
     form_order: 1,
@@ -143,14 +185,53 @@ function makeBlankForm() {
   };
 }
 
-function setDirty(value) {
-  state.dirty = value;
-  dirtyBadgeEl.classList.toggle("hidden", !value);
+function makeCopyName(name) {
+  const base = String(name || "Untitled").trim() || "Untitled";
+  return base.endsWith(" Copy") ? `${base} 2` : `${base} Copy`;
 }
 
-function setStatus(message, isError = false) {
-  statusTextEl.textContent = message;
-  statusTextEl.style.color = isError ? "#9f3d17" : "";
+function cloneNode(node) {
+  const copy = deepClone(node);
+  copy.name = makeCopyName(copy.name);
+  if (copy.key) {
+    copy.key = `${slugify(copy.key)}_copy`;
+  }
+  return copy;
+}
+
+function ensureOptionShape(field) {
+  field.options = normalizeArray(field.options);
+}
+
+function inferFieldType(field) {
+  if (field.control === "select" || field.data_type === "enum") {
+    return "choice";
+  }
+  const match = FIELD_TYPES.find((item) => item.dataType === field.data_type && item.control === field.control);
+  return match?.id || "text";
+}
+
+function applyFieldType(field, typeId) {
+  const selected = FIELD_TYPES.find((item) => item.id === typeId) || FIELD_TYPES[0];
+  field.control = selected.control;
+  field.data_type = selected.dataType;
+  if (selected.id === "choice") {
+    ensureOptionShape(field);
+    if (!field.options.length) {
+      field.options.push({ name: "Option 1" });
+    }
+  }
+}
+
+function syncNodeKeys(node) {
+  if (!node || typeof node !== "object") {
+    return;
+  }
+  if ("name" in node && !node.key) {
+    node.key = slugify(node.name);
+  }
+  normalizeArray(node.fields).forEach(syncNodeKeys);
+  normalizeArray(node.sections).forEach(syncNodeKeys);
 }
 
 function syncDraftKeys() {
@@ -160,17 +241,20 @@ function syncDraftKeys() {
   if (!state.draft.schema.key) {
     state.draft.schema.key = slugify(state.draft.name);
   }
-  if (!state.draft.schema.name) {
-    state.draft.schema.name = state.draft.name;
-  }
+  state.draft.schema.name = state.draft.name;
+  syncNodeKeys(state.draft.schema);
 }
 
-function renderAll() {
-  renderFormList();
-  renderStructure();
-  renderInspector();
+function touch(options = {}) {
+  setDirty(true);
   renderPreview();
   renderJson();
+  if (options.full) {
+    renderEditor();
+  }
+  if (options.library) {
+    renderFormList();
+  }
 }
 
 async function bootstrap() {
@@ -194,9 +278,8 @@ async function loadForm(slug) {
   state.selectedFormSlug = slug;
   state.loadedForm = form;
   state.draft = deepClone(form);
-  state.selectedPath = ["meta"];
   setDirty(false);
-  setStatus(`Loaded ${form.name} (v${form.current_version_number}).`);
+  setStatus(`Loaded ${form.name}.`);
   renderAll();
 }
 
@@ -204,14 +287,36 @@ function startNewForm() {
   state.selectedFormSlug = null;
   state.loadedForm = null;
   state.draft = makeBlankForm();
-  state.selectedPath = ["meta"];
   setDirty(true);
-  setStatus("Creating a new unsaved form.");
+  setStatus("Started a new blank form.");
   renderAll();
 }
 
-function groupedForms() {
-  return state.bootstrap?.groups || [];
+function duplicateCurrentForm() {
+  if (!state.draft) {
+    startNewForm();
+    return;
+  }
+  const copy = deepClone(state.draft);
+  copy.slug = null;
+  copy.current_version_number = 0;
+  copy.summary = "";
+  copy.name = makeCopyName(copy.name);
+  copy.schema.name = copy.name;
+  copy.schema.key = slugify(copy.name);
+  state.selectedFormSlug = null;
+  state.loadedForm = null;
+  state.draft = copy;
+  setDirty(true);
+  setStatus("Duplicated the current form into a new draft.");
+  renderAll();
+}
+
+function renderAll() {
+  renderFormList();
+  renderEditor();
+  renderPreview();
+  renderJson();
 }
 
 function renderFormList() {
@@ -232,17 +337,26 @@ function renderFormList() {
 
     const block = document.createElement("section");
     block.className = "group-block";
-    block.innerHTML = `<div class="group-title">${group.name}</div>`;
+    block.innerHTML = `
+      <div class="group-title">
+        <span>${escapeHtml(group.name)}</span>
+        <span class="group-count">${pluralize(matching.length, "form")}</span>
+      </div>
+    `;
 
     matching.forEach((form) => {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "form-link";
+      button.dataset.action = "load-form";
+      button.dataset.slug = form.slug;
       if (form.slug === state.selectedFormSlug) {
         button.classList.add("active");
       }
-      button.innerHTML = `<strong>${form.name}</strong><span class="meta">v${form.current_version_number} | order ${form.form_order}</span>`;
-      button.addEventListener("click", () => void loadForm(form.slug));
+      button.innerHTML = `
+        <strong>${escapeHtml(form.name)}</strong>
+        <span class="meta">v${form.current_version_number} | order ${form.form_order}</span>
+      `;
       block.appendChild(button);
     });
 
@@ -254,224 +368,385 @@ function renderFormList() {
   }
 }
 
-function renderStructure() {
-  structureTreeEl.innerHTML = "";
+function renderCommonFieldSetOptions(selectedId) {
+  return normalizeArray(state.bootstrap?.common_field_sets)
+    .map((fieldSet) => `
+      <option value="${escapeHtml(fieldSet.id)}"${fieldSet.id === selectedId ? " selected" : ""}>${escapeHtml(fieldSet.name)}</option>
+    `)
+    .join("");
+}
+
+function renderEditor() {
   if (!state.draft) {
-    structureTreeEl.innerHTML = '<div class="empty-state">No draft loaded.</div>';
+    formEditorEl.innerHTML = '<div class="empty-state">No draft loaded.</div>';
     return;
   }
 
-  structureTreeEl.appendChild(renderMetaCard());
-  structureTreeEl.appendChild(renderTopLevelFields());
-  structureTreeEl.appendChild(renderSections());
+  formEditorEl.innerHTML = `
+    ${renderFormSetupCard()}
+    ${renderTopFieldsCard()}
+    ${renderSectionsCard()}
+  `;
 }
 
-function renderMetaCard() {
-  const card = document.createElement("section");
-  card.className = "meta-card";
-  if (isSelected(["meta"])) {
-    card.style.borderColor = "rgba(24, 92, 74, 0.35)";
-    card.style.background = "var(--accent-soft)";
-  }
-  card.innerHTML = `
-    <div class="block-head">
-      <div>
-        <div class="block-title">Form Meta</div>
-        <div class="hint">${state.draft.group_name} | ${state.draft.group_kind}</div>
+function renderFormSetupCard() {
+  return `
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <div class="chip-row">
+            <span class="chip">${escapeHtml(currentVersionLabel())}</span>
+            <span class="chip soft">${escapeHtml(state.draft.group_name || "Unassigned")}</span>
+          </div>
+          <h3 class="card-title">Form setup</h3>
+          <p class="panel-copy">Start with the title, the department, and the shared patient info set. The more technical settings stay hidden below.</p>
+        </div>
       </div>
-      <button class="ghost mini-btn" type="button">Edit</button>
-    </div>
-    <div class="hint">${state.draft.name} | version ${state.draft.current_version_number || 0}</div>
+
+      <div class="setup-grid">
+        <label>
+          <span>Form title</span>
+          <input data-bind="name" value="${escapeHtml(state.draft.name)}" placeholder="Example: Urinalysis">
+        </label>
+        <label>
+          <span>Department / category</span>
+          <input data-bind="group_name" value="${escapeHtml(state.draft.group_name)}" placeholder="Example: Clinical Microscopy">
+        </label>
+        <label>
+          <span>Shared patient info</span>
+          <select data-bind="schema.common_field_set_id">
+            ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
+          </select>
+        </label>
+        <label>
+          <span>Current version note</span>
+          <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="What changed in this version?">
+        </label>
+      </div>
+
+      <details class="advanced">
+        <summary>Advanced form settings</summary>
+        <div class="advanced-grid">
+          <label>
+            <span>Internal form key</span>
+            <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
+          </label>
+          <label>
+            <span>Group type</span>
+            <select data-bind="group_kind">
+              <option value="category"${state.draft.group_kind === "category" ? " selected" : ""}>Category</option>
+              <option value="standalone_form"${state.draft.group_kind === "standalone_form" ? " selected" : ""}>Standalone form</option>
+            </select>
+          </label>
+          <label>
+            <span>Group order</span>
+            <input data-bind="group_order" type="number" value="${escapeHtml(state.draft.group_order)}">
+          </label>
+          <label>
+            <span>Form order</span>
+            <input data-bind="form_order" type="number" value="${escapeHtml(state.draft.form_order)}">
+          </label>
+          <label style="grid-column: 1 / -1;">
+            <span>Builder notes</span>
+            <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
+          </label>
+        </div>
+      </details>
+    </section>
   `;
-  card.querySelector("button").addEventListener("click", () => {
-    state.selectedPath = ["meta"];
-    renderStructure();
-    renderInspector();
-  });
-  card.addEventListener("click", () => {
-    state.selectedPath = ["meta"];
-    renderStructure();
-    renderInspector();
-  });
-  return card;
 }
 
-function renderTopLevelFields() {
-  const block = document.createElement("section");
-  block.className = "block";
-  block.innerHTML = `
-    <div class="block-head">
-      <div class="block-title">Top-Level Fields</div>
-      <div class="hint">${normalizeArray(state.draft.schema.fields).length} items</div>
-    </div>
+function renderTopFieldsCard() {
+  return `
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Top of form</h3>
+          <p class="panel-copy">Use this area for fields that should appear before the main sections.</p>
+        </div>
+        <div class="top-actions">
+          <button class="secondary mini" type="button" data-action="add-top-field">Add field</button>
+          <button class="ghost mini" type="button" data-action="add-top-group">Add field group</button>
+        </div>
+      </div>
+      ${renderFieldCollection(state.draft.schema.fields, ["schema", "fields"])}
+    </section>
   `;
-
-  const list = document.createElement("div");
-  list.className = "item-list";
-  const fields = normalizeArray(state.draft.schema.fields);
-  if (!fields.length) {
-    list.innerHTML = '<div class="empty-state">No top-level fields yet. Use "Add Field" or "Add Field Group".</div>';
-  } else {
-    fields.forEach((field, index) => {
-      list.appendChild(renderFieldRow(field, ["schema", "fields", index]));
-    });
-  }
-  block.appendChild(list);
-  return block;
 }
 
-function renderSections() {
-  const block = document.createElement("section");
-  block.className = "block";
-  block.innerHTML = `
-    <div class="block-head">
-      <div class="block-title">Sections</div>
-      <div class="hint">${normalizeArray(state.draft.schema.sections).length} sections</div>
-    </div>
-  `;
-
-  const list = document.createElement("div");
-  list.className = "item-list";
+function renderSectionsCard() {
   const sections = normalizeArray(state.draft.schema.sections);
-  if (!sections.length) {
-    list.innerHTML = '<div class="empty-state">No sections yet. Use "Add Section".</div>';
-  } else {
-    sections.forEach((section, index) => {
-      list.appendChild(renderSectionShell(section, ["schema", "sections", index]));
-    });
-  }
-  block.appendChild(list);
-  return block;
+  return `
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <h3 class="card-title">Sections</h3>
+          <p class="panel-copy">Break the exam into readable chunks so staff can encode it faster.</p>
+        </div>
+        <div class="top-actions">
+          <button class="secondary mini" type="button" data-action="add-section">Add section</button>
+        </div>
+      </div>
+      <div class="section-list">
+        ${sections.length ? sections.map((section, index) => renderSectionCard(section, ["schema", "sections", index], index + 1)).join("") : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
+      </div>
+    </section>
+  `;
 }
 
-function renderSectionShell(section, path) {
-  const wrapper = document.createElement("div");
-  wrapper.className = "section-shell";
+function renderSectionCard(section, path, number) {
+  return `
+    <article class="section-card">
+      <div class="section-head">
+        <div>
+          <div class="chip-row">
+            <span class="chip warm">Section ${number}</span>
+            <span class="chip soft">${normalizeArray(section.fields).length} items</span>
+          </div>
+          <p class="section-subcopy">Give this section a clear name and then add the fields inside it.</p>
+        </div>
+        <div class="row-actions">
+          <button class="ghost mini" type="button" data-action="move-up" data-path="${encodePath(path)}">Up</button>
+          <button class="ghost mini" type="button" data-action="move-down" data-path="${encodePath(path)}">Down</button>
+          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+        </div>
+      </div>
 
-  const row = document.createElement("div");
-  row.className = "item-row";
-  if (isSelected(path)) {
-    row.classList.add("selected");
-  }
-  row.innerHTML = `
-    <div class="item-meta">
-      <span class="item-kind">Section</span>
-      <strong>${section.name || "Untitled Section"}</strong>
-      <span class="item-sub">${normalizeArray(section.fields).length} fields</span>
-    </div>
+      <div class="field-stack">
+        <label>
+          <span>Section title</span>
+          <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
+        </label>
+      </div>
+
+      ${renderFieldCollection(section.fields, [...path, "fields"])}
+
+      <div class="section-actions">
+        <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
+        <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add field group</button>
+      </div>
+
+      <details class="advanced">
+        <summary>Advanced section settings</summary>
+        <div class="advanced-grid">
+          <label>
+            <span>Internal section key</span>
+            <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
+          </label>
+          <label style="grid-column: 1 / -1;">
+            <span>Section notes</span>
+            <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
+          </label>
+        </div>
+      </details>
+    </article>
   `;
-  row.appendChild(buildRowActions(path));
-  row.addEventListener("click", (event) => {
-    if (event.target.closest(".item-actions")) {
-      return;
-    }
-    state.selectedPath = path;
-    renderStructure();
-    renderInspector();
-  });
-  wrapper.appendChild(row);
-
-  const children = document.createElement("div");
-  children.className = "item-list nested";
-  if (!normalizeArray(section.fields).length) {
-    children.innerHTML = '<div class="empty-state">No fields in this section yet.</div>';
-  } else {
-    normalizeArray(section.fields).forEach((field, index) => {
-      children.appendChild(renderFieldRow(field, [...path, "fields", index]));
-    });
-  }
-  wrapper.appendChild(children);
-
-  const addBar = document.createElement("div");
-  addBar.className = "item-actions nested";
-  addBar.innerHTML = `
-    <button class="ghost mini-btn" type="button">Add Field</button>
-    <button class="ghost mini-btn" type="button">Add Field Group</button>
-  `;
-  addBar.children[0].addEventListener("click", () => addFieldAt([...path, "fields"], "field"));
-  addBar.children[1].addEventListener("click", () => addFieldAt([...path, "fields"], "field_group"));
-  wrapper.appendChild(addBar);
-
-  return wrapper;
 }
 
-function renderFieldRow(field, path) {
-  const row = document.createElement("div");
-  row.className = "item-row";
-  if (isSelected(path)) {
-    row.classList.add("selected");
+function renderFieldCollection(fields, collectionPath) {
+  const items = normalizeArray(fields);
+  if (!items.length) {
+    return '<div class="empty-state">Nothing here yet. Add a field when you are ready.</div>';
   }
+  return `<div class="field-list">${items.map((field, index) => renderFieldCard(field, [...collectionPath, index])).join("")}</div>`;
+}
 
+function renderFieldCard(field, path) {
+  const isGroup = field.kind === "field_group";
+  const childCount = normalizeArray(field.fields).length;
+  const optionCount = normalizeArray(field.options).length;
+  const fieldType = inferFieldType(field);
+  const summary = isGroup
+    ? `${childCount} child fields`
+    : `${FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Short answer"}${optionCount ? ` | ${optionCount} choices` : ""}`;
+
+  return `
+    <article class="field-card ${isGroup ? "group-card" : ""}">
+      <div class="field-head">
+        <div class="field-meta">
+          <span class="chip ${isGroup ? "warm" : ""}">${isGroup ? "Field group" : "Field"}</span>
+          <span class="field-summary">${escapeHtml(summary)}</span>
+        </div>
+        <div class="row-actions">
+          <button class="ghost mini" type="button" data-action="move-up" data-path="${encodePath(path)}">Up</button>
+          <button class="ghost mini" type="button" data-action="move-down" data-path="${encodePath(path)}">Down</button>
+          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+        </div>
+      </div>
+
+      <div class="inline-grid">
+        <label>
+          <span>${isGroup ? "Group title" : "Field label"}</span>
+          <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
+        </label>
+        ${isGroup ? `
+          <label>
+            <span>Type</span>
+            <input value="Field group" disabled>
+          </label>
+        ` : `
+          <label>
+            <span>Answer type</span>
+            <select data-action="field-type" data-path="${encodePath(path)}">
+              ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
+            </select>
+          </label>
+        `}
+      </div>
+
+      ${isGroup ? `
+        <div class="nested-fields">
+          ${renderFieldCollection(field.fields, [...path, "fields"])}
+        </div>
+        <div class="section-actions">
+          <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add child field</button>
+        </div>
+      ` : ""}
+
+      ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
+
+      <details class="advanced">
+        <summary>Advanced field settings</summary>
+        <div class="advanced-grid">
+          <label>
+            <span>Internal key</span>
+            <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
+          </label>
+          ${isGroup ? "" : `
+            <label>
+              <span>Normal value</span>
+              <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}" placeholder="Example: 4.5 - 11.0">
+            </label>
+            <label>
+              <span>Unit hint</span>
+              <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}" placeholder="Example: mg/dL">
+            </label>
+          `}
+          <label style="grid-column: 1 / -1;">
+            <span>Notes</span>
+            <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
+          </label>
+        </div>
+      </details>
+    </article>
+  `;
+}
+
+function renderOptionsEditor(field, path) {
   const options = normalizeArray(field.options);
-  const children = normalizeArray(field.fields);
-  const descriptor =
-    field.kind === "field_group"
-      ? `${children.length} child fields`
-      : `${field.control || "input"} | ${field.data_type || "text"}${options.length ? ` | ${options.length} options` : ""}`;
-
-  row.innerHTML = `
-    <div class="item-meta">
-      <span class="item-kind">${field.kind === "field_group" ? "Field Group" : "Field"}</span>
-      <strong>${field.name || "Untitled Field"}</strong>
-      <span class="item-sub">${descriptor}</span>
-    </div>
+  return `
+    <section class="field-stack">
+      <div class="card-head">
+        <div>
+          <h4>Choices</h4>
+          <p class="panel-copy">Only needed when the field uses a dropdown.</p>
+        </div>
+        <div class="option-actions">
+          <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
+        </div>
+      </div>
+      <div class="options-list">
+        ${options.length ? options.map((option, index) => `
+          <div class="option-row">
+            <label>
+              <span>Choice ${index + 1}</span>
+              <input data-action="option-name" data-path="${encodePath(path)}" data-index="${index}" value="${escapeHtml(option.name || "")}" placeholder="Option name">
+            </label>
+            <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${index}">Delete</button>
+          </div>
+        `).join("") : '<div class="empty-state">This dropdown has no choices yet.</div>'}
+      </div>
+    </section>
   `;
-  row.appendChild(buildRowActions(path));
-  row.addEventListener("click", (event) => {
-    if (event.target.closest(".item-actions")) {
-      return;
-    }
-    state.selectedPath = path;
-    renderStructure();
-    renderInspector();
-  });
-
-  const wrapper = document.createElement("div");
-  wrapper.appendChild(row);
-
-  if (field.kind === "field_group") {
-    const childList = document.createElement("div");
-    childList.className = "item-list nested";
-    if (!children.length) {
-      childList.innerHTML = '<div class="empty-state">No child fields yet.</div>';
-    } else {
-      children.forEach((child, index) => {
-        childList.appendChild(renderFieldRow(child, [...path, "fields", index]));
-      });
-    }
-    wrapper.appendChild(childList);
-
-    const addBar = document.createElement("div");
-    addBar.className = "item-actions nested";
-    addBar.innerHTML = '<button class="ghost mini-btn" type="button">Add Child Field</button>';
-    addBar.children[0].addEventListener("click", () => addFieldAt([...path, "fields"], "field"));
-    wrapper.appendChild(addBar);
-  }
-
-  return wrapper;
 }
 
-function buildRowActions(path) {
-  const actions = document.createElement("div");
-  actions.className = "item-actions";
-  actions.innerHTML = `
-    <button class="ghost mini-btn" type="button">Up</button>
-    <button class="ghost mini-btn" type="button">Down</button>
-    <button class="ghost mini-btn" type="button">Delete</button>
+function renderPreview() {
+  if (!state.draft) {
+    previewCanvasEl.innerHTML = '<div class="empty-state">No preview yet.</div>';
+    return;
+  }
+
+  const totalFields = countFields(state.draft.schema);
+  previewCanvasEl.innerHTML = `
+    <section class="preview-card">
+      <div class="preview-head">
+        <div>
+          <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
+          <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
+        </div>
+      </div>
+      <div class="preview-badges">
+        <span class="chip">${totalFields} fields</span>
+        <span class="chip soft">${normalizeArray(state.draft.schema.sections).length} sections</span>
+      </div>
+      ${normalizeArray(state.draft.schema.fields).length ? `
+        <section class="preview-section">
+          <h4>Top of form</h4>
+          <div class="preview-grid">
+            ${normalizeArray(state.draft.schema.fields).map(renderPreviewField).join("")}
+          </div>
+        </section>
+      ` : ""}
+      ${normalizeArray(state.draft.schema.sections).map((section) => `
+        <section class="preview-section">
+          <h4>${escapeHtml(section.name || "Untitled Section")}</h4>
+          <div class="preview-grid">
+            ${normalizeArray(section.fields).map(renderPreviewField).join("")}
+          </div>
+        </section>
+      `).join("")}
+    </section>
   `;
-  actions.children[0].addEventListener("click", (event) => {
-    event.stopPropagation();
-    moveAtPath(path, -1);
+}
+
+function countFields(container) {
+  let count = 0;
+  normalizeArray(container.fields).forEach((field) => {
+    if (field.kind === "field_group") {
+      count += countFields(field);
+    } else {
+      count += 1;
+    }
   });
-  actions.children[1].addEventListener("click", (event) => {
-    event.stopPropagation();
-    moveAtPath(path, 1);
+  normalizeArray(container.sections).forEach((section) => {
+    count += countFields(section);
   });
-  actions.children[2].addEventListener("click", (event) => {
-    event.stopPropagation();
-    deleteAtPath(path);
-  });
-  return actions;
+  return count;
+}
+
+function renderPreviewField(field) {
+  if (field.kind === "field_group") {
+    return `
+      <div class="preview-group">
+        <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
+        <div class="preview-grid">
+          ${normalizeArray(field.fields).map(renderPreviewField).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  const hints = [];
+  if (field.unit_hint) hints.push(field.unit_hint);
+  if (field.normal_value) hints.push(`normal ${field.normal_value}`);
+
+  return `
+    <label class="preview-field">
+      <span>${escapeHtml(field.name || "Untitled Field")}</span>
+      ${field.control === "select" ? `
+        <select>
+          ${normalizeArray(field.options).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
+        </select>
+      ` : '<input>'}
+      ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
+    </label>
+  `;
+}
+
+function renderJson() {
+  jsonOutputEl.textContent = state.draft ? JSON.stringify(state.draft, null, 2) : "{}";
 }
 
 function moveAtPath(path, delta) {
@@ -485,9 +760,16 @@ function moveAtPath(path, delta) {
   }
   const [item] = collection.splice(index, 1);
   collection.splice(nextIndex, 0, item);
-  state.selectedPath = [...path.slice(0, -1), nextIndex];
-  setDirty(true);
-  renderAll();
+  touch({ full: true });
+}
+
+function duplicateAtPath(path) {
+  const { collection, index } = getParentCollection(path);
+  if (!Array.isArray(collection)) {
+    return;
+  }
+  collection.splice(index + 1, 0, cloneNode(collection[index]));
+  touch({ full: true });
 }
 
 function deleteAtPath(path) {
@@ -496,9 +778,7 @@ function deleteAtPath(path) {
     return;
   }
   collection.splice(index, 1);
-  state.selectedPath = ["meta"];
-  setDirty(true);
-  renderAll();
+  touch({ full: true });
 }
 
 function addFieldAt(path, kind) {
@@ -507,330 +787,26 @@ function addFieldAt(path, kind) {
     return;
   }
   collection.push(makeBlankField(kind));
-  state.selectedPath = [...path, collection.length - 1];
-  setDirty(true);
-  renderAll();
+  touch({ full: true });
 }
 
 function addSection() {
   state.draft.schema.sections.push(makeBlankSection());
-  state.selectedPath = ["schema", "sections", state.draft.schema.sections.length - 1];
-  setDirty(true);
-  renderAll();
+  touch({ full: true });
 }
 
-function renderInspector() {
-  inspectorContentEl.innerHTML = "";
-  if (!state.draft) {
-    inspectorContentEl.innerHTML = '<div class="empty-state">Nothing selected.</div>';
-    return;
-  }
-
-  if (state.selectedPath.length === 1 && state.selectedPath[0] === "meta") {
-    selectionHintEl.textContent = "Editing form meta.";
-    inspectorContentEl.appendChild(renderMetaInspector());
-    return;
-  }
-
-  const node = getNodeByPath(state.selectedPath);
-  if (!node) {
-    inspectorContentEl.innerHTML = '<div class="empty-state">Select a node to edit its properties.</div>';
-    return;
-  }
-
-  const isSection =
-    state.selectedPath.includes("sections") &&
-    state.selectedPath[state.selectedPath.length - 2] === "sections";
-
-  if (isSection) {
-    selectionHintEl.textContent = "Editing section.";
-    inspectorContentEl.appendChild(renderSectionInspector(node));
-    return;
-  }
-
-  selectionHintEl.textContent = node.kind === "field_group" ? "Editing field group." : "Editing field.";
-  inspectorContentEl.appendChild(renderFieldInspector(node));
+function addOption(path) {
+  const field = getNodeByPath(path);
+  ensureOptionShape(field);
+  field.options.push({ name: `Option ${field.options.length + 1}` });
+  touch({ full: true });
 }
 
-function renderMetaInspector() {
-  const card = document.createElement("section");
-  card.className = "inspector-card";
-  card.innerHTML = `
-    <div class="inspector-header">
-      <h3>Form Meta</h3>
-      <span class="hint">${state.selectedFormSlug ? "Existing form" : "Unsaved draft"}</span>
-    </div>
-    <div class="field-grid two">
-      <label class="field-label">Form Name<input data-bind="name" value="${escapeHtml(state.draft.name)}"></label>
-      <label class="field-label">Form Key<input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}"></label>
-      <label class="field-label">Group Name<input data-bind="group_name" value="${escapeHtml(state.draft.group_name)}"></label>
-      <label class="field-label">Group Kind
-        <select data-bind="group_kind">
-          <option value="category">Category</option>
-          <option value="standalone_form">Standalone Form</option>
-        </select>
-      </label>
-      <label class="field-label">Group Order<input data-bind="group_order" type="number" value="${state.draft.group_order}"></label>
-      <label class="field-label">Form Order<input data-bind="form_order" type="number" value="${state.draft.form_order}"></label>
-      <label class="field-label">Common Field Set
-        <select data-bind="schema.common_field_set_id"></select>
-      </label>
-    </div>
-    <label class="field-label">Form Notes<textarea data-bind="schema.notes">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea></label>
-    <label class="field-label">Version Summary<textarea data-bind="summary">${escapeHtml(state.draft.summary || "")}</textarea></label>
-  `;
-
-  card.querySelector('[data-bind="group_kind"]').value = state.draft.group_kind || "category";
-
-  const commonSelect = card.querySelector('[data-bind="schema.common_field_set_id"]');
-  normalizeArray(state.bootstrap?.common_field_sets).forEach((fieldSet) => {
-    const option = document.createElement("option");
-    option.value = fieldSet.id;
-    option.textContent = fieldSet.name;
-    commonSelect.appendChild(option);
-  });
-  commonSelect.value = state.draft.schema.common_field_set_id || "default_lab_request";
-
-  wireInputs(card, (bind, value) => {
-    if (bind === "schema.notes") {
-      state.draft.schema.notes = splitLines(value);
-    } else if (bind === "summary") {
-      state.draft.summary = value;
-    } else {
-      setBoundValue(bind, value);
-      if (bind === "name") {
-        state.draft.schema.name = value;
-        if (!state.selectedFormSlug) {
-          state.draft.schema.key = slugify(value);
-        }
-      }
-    }
-    setDirty(true);
-    renderAll();
-  });
-
-  return card;
-}
-
-function renderSectionInspector(section) {
-  const card = document.createElement("section");
-  card.className = "inspector-card";
-  card.innerHTML = `
-    <div class="inspector-header"><h3>Section</h3><span class="hint">${normalizeArray(section.fields).length} fields</span></div>
-    <div class="field-grid two">
-      <label class="field-label">Section Name<input data-bind="name" value="${escapeHtml(section.name || "")}"></label>
-      <label class="field-label">Section Key<input data-bind="key" value="${escapeHtml(section.key || "")}"></label>
-    </div>
-    <label class="field-label">Notes<textarea data-bind="notes">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea></label>
-  `;
-  wireNodeInputs(card, section);
-  return card;
-}
-
-function renderFieldInspector(field) {
-  const card = document.createElement("section");
-  card.className = "inspector-card";
-  const isGroup = field.kind === "field_group";
-  card.innerHTML = `
-    <div class="inspector-header">
-      <h3>${isGroup ? "Field Group" : "Field"}</h3>
-      <span class="hint">${isGroup ? `${normalizeArray(field.fields).length} child fields` : `${field.control || "input"} | ${field.data_type || "text"}`}</span>
-    </div>
-    <div class="field-grid two">
-      <label class="field-label">Name<input data-bind="name" value="${escapeHtml(field.name || "")}"></label>
-      <label class="field-label">Key<input data-bind="key" value="${escapeHtml(field.key || "")}"></label>
-    </div>
-    <label class="field-label">Notes<textarea data-bind="notes">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea></label>
-  `;
-
-  if (!isGroup) {
-    const extras = document.createElement("div");
-    extras.innerHTML = `
-      <div class="field-grid two">
-        <label class="field-label">Control
-          <select data-bind="control">
-            <option value="input">Input</option>
-            <option value="select">Select</option>
-          </select>
-        </label>
-        <label class="field-label">Data Type
-          <select data-bind="data_type">
-            <option value="text">Text</option>
-            <option value="number">Number</option>
-            <option value="date">Date</option>
-            <option value="time">Time</option>
-            <option value="datetime">Datetime</option>
-            <option value="enum">Enum</option>
-          </select>
-        </label>
-        <label class="field-label">Unit Hint<input data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}"></label>
-        <label class="field-label">Normal Value<input data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}"></label>
-      </div>
-      <div class="inspector-card">
-        <div class="inspector-header">
-          <h3>Options</h3>
-          <button id="addOptionBtn" class="ghost mini-btn" type="button">Add Option</button>
-        </div>
-        <div id="optionsList" class="options-list"></div>
-      </div>
-    `;
-    card.appendChild(extras);
-    card.querySelector('[data-bind="control"]').value = field.control || "input";
-    card.querySelector('[data-bind="data_type"]').value = field.data_type || "text";
-    renderOptionRows(field, card.querySelector("#optionsList"));
-    card.querySelector("#addOptionBtn").addEventListener("click", () => {
-      field.options = normalizeArray(field.options);
-      field.options.push({ name: "New Option" });
-      setDirty(true);
-      renderAll();
-    });
-  }
-
-  wireNodeInputs(card, field);
-  return card;
-}
-
-function renderOptionRows(field, container) {
-  container.innerHTML = "";
-  const options = normalizeArray(field.options);
-  if (!options.length) {
-    container.innerHTML = '<div class="empty-state">No options defined. Useful for select fields.</div>';
-    return;
-  }
-
-  options.forEach((option, index) => {
-    const row = document.createElement("div");
-    row.className = "option-row";
-    row.innerHTML = `
-      <input value="${escapeHtml(option.name || "")}" placeholder="Option name">
-      <button class="ghost mini-btn" type="button">Delete</button>
-    `;
-    row.querySelector("input").addEventListener("input", (event) => {
-      field.options[index].name = event.target.value;
-      setDirty(true);
-      renderAll();
-    });
-    row.querySelector("button").addEventListener("click", () => {
-      field.options.splice(index, 1);
-      setDirty(true);
-      renderAll();
-    });
-    container.appendChild(row);
-  });
-}
-
-function wireInputs(root, onChange) {
-  root.querySelectorAll("[data-bind]").forEach((input) => {
-    const handler = (event) => onChange(event.target.dataset.bind, event.target.value);
-    input.addEventListener("input", handler);
-    input.addEventListener("change", handler);
-  });
-}
-
-function wireNodeInputs(card, node) {
-  wireInputs(card, (bind, value) => {
-    if (bind === "notes") {
-      node.notes = splitLines(value);
-    } else {
-      node[bind] = value;
-    }
-    setDirty(true);
-    renderAll();
-  });
-}
-
-function setBoundValue(bind, value) {
-  const parts = bind.split(".");
-  let cursor = state.draft;
-  for (let index = 0; index < parts.length - 1; index += 1) {
-    cursor = cursor[parts[index]];
-  }
-  const key = parts[parts.length - 1];
-  cursor[key] = key.includes("order") ? Number(value || 0) : value;
-}
-
-function renderPreview() {
-  previewCanvasEl.innerHTML = "";
-  if (!state.draft) {
-    return;
-  }
-
-  const card = document.createElement("section");
-  card.className = "preview-card";
-  card.innerHTML = `
-    <h3>${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-    <div class="preview-hint">${escapeHtml(state.draft.group_name)} | ${escapeHtml(state.draft.group_kind)} | common fields: ${escapeHtml(state.draft.schema.common_field_set_id || "default_lab_request")}</div>
-  `;
-
-  if (normalizeArray(state.draft.schema.fields).length) {
-    const topGrid = document.createElement("div");
-    topGrid.className = "preview-field-grid preview-section";
-    state.draft.schema.fields.forEach((field) => topGrid.appendChild(renderPreviewField(field)));
-    card.appendChild(topGrid);
-  }
-
-  normalizeArray(state.draft.schema.sections).forEach((section) => {
-    const sectionEl = document.createElement("section");
-    sectionEl.className = "preview-section";
-    sectionEl.innerHTML = `<h3>${escapeHtml(section.name)}</h3>`;
-    const grid = document.createElement("div");
-    grid.className = "preview-field-grid";
-    normalizeArray(section.fields).forEach((field) => grid.appendChild(renderPreviewField(field)));
-    sectionEl.appendChild(grid);
-    card.appendChild(sectionEl);
-  });
-
-  previewCanvasEl.appendChild(card);
-}
-
-function renderPreviewField(field) {
-  if (field.kind === "field_group") {
-    const wrapper = document.createElement("div");
-    wrapper.className = "preview-field";
-    wrapper.innerHTML = `<label>${escapeHtml(field.name)}</label>`;
-    const nested = document.createElement("div");
-    nested.className = "preview-field-grid";
-    normalizeArray(field.fields).forEach((child) => nested.appendChild(renderPreviewField(child)));
-    wrapper.appendChild(nested);
-    return wrapper;
-  }
-
-  const wrapper = document.createElement("div");
-  wrapper.className = "preview-field";
-  wrapper.innerHTML = `<label>${escapeHtml(field.name)}</label>`;
-
-  const hints = [];
-  if (field.control) hints.push(field.control);
-  if (field.data_type) hints.push(field.data_type);
-  if (field.unit_hint) hints.push(field.unit_hint);
-  if (field.normal_value) hints.push(`normal ${field.normal_value}`);
-
-  if (field.control === "select") {
-    const select = document.createElement("select");
-    normalizeArray(field.options).forEach((option) => {
-      const optionEl = document.createElement("option");
-      optionEl.textContent = option.name || "Option";
-      select.appendChild(optionEl);
-    });
-    wrapper.appendChild(select);
-  } else {
-    const input = document.createElement("input");
-    input.placeholder = hints.join(" | ");
-    wrapper.appendChild(input);
-  }
-
-  if (hints.length) {
-    const hint = document.createElement("div");
-    hint.className = "preview-hint";
-    hint.textContent = hints.join(" | ");
-    wrapper.appendChild(hint);
-  }
-
-  return wrapper;
-}
-
-function renderJson() {
-  jsonOutputEl.textContent = state.draft ? JSON.stringify(state.draft, null, 2) : "{}";
+function deleteOption(path, index) {
+  const field = getNodeByPath(path);
+  ensureOptionShape(field);
+  field.options.splice(index, 1);
+  touch({ full: true });
 }
 
 async function saveDraft() {
@@ -857,29 +833,174 @@ async function saveDraft() {
   state.selectedFormSlug = saved.slug;
   state.loadedForm = saved;
   state.draft = deepClone(saved);
-  state.selectedPath = ["meta"];
+  state.bootstrap = await api("/api/builder/bootstrap");
   setDirty(false);
   setStatus(`Saved ${saved.name} as version ${saved.current_version_number}.`);
-  state.bootstrap = await api("/api/builder/bootstrap");
   renderAll();
 }
 
-function bindTabs() {
-  document.querySelectorAll(".tab").forEach((button) => {
-    button.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach((item) => item.classList.toggle("active", item === button));
-      document.querySelectorAll(".pane").forEach((pane) => {
-        pane.classList.toggle("active", pane.id === `${button.dataset.tab}Pane`);
-      });
-    });
-  });
+function handleRootInput(event) {
+  const bind = event.target.dataset.bind;
+  if (!bind || !state.draft) {
+    return;
+  }
+
+  if (event.target.dataset.action === "option-name") {
+    return;
+  }
+
+  const rawValue = event.target.value;
+  if (event.target.dataset.path) {
+    const node = getNodeByPath(decodePath(event.target.dataset.path));
+    if (!node) {
+      return;
+    }
+    const previousName = bind === "name" ? node.name : "";
+    if (event.target.dataset.format === "lines") {
+      node[bind] = splitLines(rawValue);
+    } else {
+      setBoundValue(node, bind, rawValue);
+    }
+    if (bind === "name" && (!node.key || node.key === slugify(previousName))) {
+      node.key = slugify(rawValue);
+    }
+  } else {
+    const previousName = bind === "name" ? state.draft.name : "";
+    if (event.target.dataset.format === "lines") {
+      setBoundValue(state.draft, bind, splitLines(rawValue));
+    } else {
+      setBoundValue(state.draft, bind, rawValue);
+    }
+    if (bind === "name") {
+      state.draft.schema.name = state.draft.name;
+      if (!state.draft.schema.key || state.draft.schema.key === slugify(previousName)) {
+        state.draft.schema.key = slugify(rawValue);
+      }
+    }
+  }
+
+  touch();
 }
+
+function handleOptionInput(event) {
+  const path = event.target.dataset.path;
+  const index = Number(event.target.dataset.index);
+  if (!path || Number.isNaN(index)) {
+    return;
+  }
+  const field = getNodeByPath(decodePath(path));
+  ensureOptionShape(field);
+  field.options[index].name = event.target.value;
+  touch();
+}
+
+function handleEditorClick(event) {
+  const actionTarget = event.target.closest("[data-action]");
+  if (!actionTarget) {
+    return;
+  }
+
+  const action = actionTarget.dataset.action;
+  if (action === "option-name" || action === "load-form") {
+    return;
+  }
+
+  if (actionTarget.tagName === "SUMMARY") {
+    return;
+  }
+
+  const path = actionTarget.dataset.path ? decodePath(actionTarget.dataset.path) : null;
+
+  if (action === "add-top-field") {
+    addFieldAt(["schema", "fields"], "field");
+    return;
+  }
+  if (action === "add-top-group") {
+    addFieldAt(["schema", "fields"], "field_group");
+    return;
+  }
+  if (action === "add-section") {
+    addSection();
+    return;
+  }
+  if (action === "add-field" && path) {
+    addFieldAt(path, "field");
+    return;
+  }
+  if (action === "add-group" && path) {
+    addFieldAt(path, "field_group");
+    return;
+  }
+  if (action === "move-up" && path) {
+    moveAtPath(path, -1);
+    return;
+  }
+  if (action === "move-down" && path) {
+    moveAtPath(path, 1);
+    return;
+  }
+  if (action === "duplicate-node" && path) {
+    duplicateAtPath(path);
+    return;
+  }
+  if (action === "delete-node" && path) {
+    if (window.confirm("Delete this item?")) {
+      deleteAtPath(path);
+    }
+    return;
+  }
+  if (action === "add-option" && path) {
+    addOption(path);
+    return;
+  }
+  if (action === "delete-option" && path) {
+    deleteOption(path, Number(actionTarget.dataset.index));
+  }
+}
+
+function handleEditorChange(event) {
+  if (event.target.dataset.action === "field-type") {
+    const field = getNodeByPath(decodePath(event.target.dataset.path));
+    applyFieldType(field, event.target.value);
+    touch({ full: true });
+    return;
+  }
+  handleRootInput(event);
+}
+
+formListEl.addEventListener("click", (event) => {
+  const button = event.target.closest('[data-action="load-form"]');
+  if (!button) {
+    return;
+  }
+  void loadForm(button.dataset.slug);
+});
+
+formEditorEl.addEventListener("click", handleEditorClick);
+formEditorEl.addEventListener("input", (event) => {
+  if (event.target.dataset.action === "option-name") {
+    handleOptionInput(event);
+    return;
+  }
+  if (event.target.matches("input, textarea")) {
+    handleRootInput(event);
+  }
+});
+formEditorEl.addEventListener("change", (event) => {
+  if (event.target.matches("select")) {
+    handleEditorChange(event);
+  }
+});
 
 document.getElementById("newFormBtn").addEventListener("click", () => {
   if (state.dirty && !window.confirm("Discard current unsaved changes and start a new form?")) {
     return;
   }
   startNewForm();
+});
+
+document.getElementById("duplicateFormBtn").addEventListener("click", () => {
+  duplicateCurrentForm();
 });
 
 document.getElementById("saveBtn").addEventListener("click", () => {
@@ -889,12 +1010,7 @@ document.getElementById("saveBtn").addEventListener("click", () => {
   });
 });
 
-document.getElementById("addTopFieldBtn").addEventListener("click", () => addFieldAt(["schema", "fields"], "field"));
-document.getElementById("addTopGroupBtn").addEventListener("click", () => addFieldAt(["schema", "fields"], "field_group"));
-document.getElementById("addSectionBtn").addEventListener("click", addSection);
 formSearchEl.addEventListener("input", renderFormList);
-
-bindTabs();
 
 void bootstrap().catch((error) => {
   console.error(error);
