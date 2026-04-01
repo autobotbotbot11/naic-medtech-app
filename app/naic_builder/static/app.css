@@ -769,6 +769,12 @@ button.subtle[aria-pressed="true"] {
   gap: 16px;
 }
 
+.form-editor.pane-setup,
+.form-editor.pane-save {
+  max-width: 780px;
+  margin-inline: auto;
+}
+
 .editor-card,
 .section-card,
 .field-card,
@@ -782,6 +788,41 @@ button.subtle[aria-pressed="true"] {
 .editor-card {
   display: grid;
   gap: 12px;
+}
+
+.editor-spotlight,
+.save-spotlight {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+  padding: 12px 14px;
+  border: 1px solid rgba(68, 54, 40, 0.08);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(245, 249, 247, 0.88));
+}
+
+.editor-spotlight > div,
+.save-spotlight > div {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.editor-spotlight strong,
+.save-spotlight strong {
+  font-size: 16px;
+}
+
+.editor-spotlight span,
+.save-spotlight span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.editor-spotlight-meta {
+  display: flex;
+  justify-content: flex-end;
 }
 
 .card-title {
@@ -839,6 +880,10 @@ button.subtle[aria-pressed="true"] {
 .save-step-inline button,
 .section-quick-actions button {
   flex: 0 0 auto;
+}
+
+.save-step-inline button.secondary {
+  min-width: 120px;
 }
 
 .section-list,
@@ -1274,6 +1319,19 @@ button.subtle[aria-pressed="true"] {
 .option-focus-input {
   display: grid;
   gap: 6px;
+}
+
+@media (max-width: 860px) {
+  .form-editor.pane-setup,
+  .form-editor.pane-save {
+    max-width: none;
+  }
+
+  .editor-spotlight,
+  .save-spotlight {
+    display: grid;
+    justify-content: stretch;
+  }
 }
 
 .empty-state {

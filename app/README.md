@@ -18,6 +18,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - the `Sections` view now uses a compact organizer plus one focused section editor
 - `Free fields` and selected sections now use compact field organizers plus one focused field editor
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
+- `Form details` and `Save` now use narrower calmer guided surfaces
+- the folder field suggests existing library folders while editing form details
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

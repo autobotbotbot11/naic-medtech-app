@@ -169,6 +169,31 @@ function currentCommonFieldSetName() {
   return match?.name || "Default Lab Request Metadata";
 }
 
+function availableGroupNames() {
+  const names = new Set();
+  groupedForms().forEach((group) => {
+    if (group?.name) {
+      names.add(String(group.name).trim());
+    }
+  });
+  if (state.draft?.group_name) {
+    names.add(String(state.draft.group_name).trim());
+  }
+  return [...names].filter(Boolean).sort((a, b) => a.localeCompare(b));
+}
+
+function renderGroupNameSuggestions() {
+  const names = availableGroupNames();
+  if (!names.length) {
+    return "";
+  }
+  return `
+    <datalist id="groupNameSuggestions">
+      ${names.map((name) => `<option value="${escapeHtml(name)}"></option>`).join("")}
+    </datalist>
+  `;
+}
+
 function renderHelpPopover(label, text) {
   return `
     <details class="inline-help">
@@ -1141,6 +1166,9 @@ function renderEditor() {
     formEditorEl.innerHTML = renderSectionsCard({ focusMode: true });
   }
 
+  formEditorEl.classList.remove("pane-setup", "pane-free_fields", "pane-sections", "pane-save");
+  formEditorEl.classList.add(`pane-${focusPane}`);
+
   setupSortableCollections();
 }
 
@@ -1150,14 +1178,12 @@ function renderFormSetupCard(options = {}) {
   const formName = state.draft.name || "Untitled Form";
   const groupName = state.draft.group_name || "Unassigned";
   const sharedFieldSetName = currentCommonFieldSetName();
+  const currentVersion = currentVersionLabel();
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
-          <div class="chip-row">
-            <span class="chip">${escapeHtml(currentVersionLabel())}</span>
-            <span class="chip soft">${escapeHtml(groupName)}</span>
-          </div>
+          <p class="eyebrow">Basics</p>
           <div class="card-title-row">
             <h3 class="card-title">Form details</h3>
             ${renderHelpPopover("Form details help", "Name the form and choose where it lives in the library. Keep advanced record defaults tucked away unless you really need them.")}
@@ -1171,16 +1197,26 @@ function renderFormSetupCard(options = {}) {
       </div>
 
       ${setupOpen ? `
+        <div class="editor-spotlight">
+          <div>
+            <strong>${escapeHtml(formName)}</strong>
+            <span>${escapeHtml(groupName)}</span>
+          </div>
+          <div class="editor-spotlight-meta">
+            <span class="chip">${escapeHtml(currentVersion)}</span>
+          </div>
+        </div>
         <div class="setup-grid">
           <label>
             <span>Form title</span>
             <input data-bind="name" value="${escapeHtml(formName)}" placeholder="Example: Urinalysis">
           </label>
           <label>
-            <span>Folder / container</span>
-            <input data-bind="group_name" value="${escapeHtml(groupName)}" placeholder="Example: Clinical Microscopy">
+            <span>Folder</span>
+            <input list="groupNameSuggestions" data-bind="group_name" value="${escapeHtml(groupName)}" placeholder="Type or choose a folder">
           </label>
         </div>
+        ${renderGroupNameSuggestions()}
         ${state.ui.advancedMode ? `
           <details class="advanced">
             <summary>Advanced</summary>
@@ -1216,12 +1252,17 @@ function renderSaveCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const saveOpen = focusMode ? true : state.ui.saveOpen;
   const note = String(state.draft.summary || "").trim();
+  const dirtyLabel = state.dirty ? "Ready to save" : "Already saved";
+  const helperCopy = state.dirty
+    ? "Save this draft when the current changes already look right."
+    : "No unsaved changes right now.";
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
+          <p class="eyebrow">Finish</p>
           <div class="card-title-row">
-            <h3 class="card-title">Save this version</h3>
+            <h3 class="card-title">Save draft</h3>
             ${renderHelpPopover("Version note help", "Version notes are optional. Add one only when you want to remember what changed.")}
           </div>
         </div>
@@ -1233,12 +1274,19 @@ function renderSaveCard(options = {}) {
       </div>
 
       ${saveOpen ? `
+        <div class="save-spotlight">
+          <div>
+            <strong>${escapeHtml(dirtyLabel)}</strong>
+            <span>${escapeHtml(currentVersionLabel())} | ${escapeHtml(helperCopy)}</span>
+          </div>
+          <span class="chip soft">${currentDraftFieldCount()} fields</span>
+        </div>
         <div class="save-step-inline">
           <label>
-            <span>Version note</span>
+            <span>Note (optional)</span>
             <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Example: Added urine ketone choices">
           </label>
-          <button class="secondary mini" type="button" data-action="save-draft">Save</button>
+          <button class="secondary" type="button" data-action="save-draft">Save now</button>
         </div>
       ` : `
         <div class="collapsed-copy">

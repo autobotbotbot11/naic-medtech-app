@@ -31,7 +31,10 @@
       "sections still keep drag-and-drop ordering inside the focused sections view",
       "the sections pane now uses a compact section organizer plus one focused section editor",
       "free fields and selected sections now use compact field organizers plus one focused field editor",
-      "dropdown fields now use compact choice organizers plus one focused choice editor"
+      "dropdown fields now use compact choice organizers plus one focused choice editor",
+      "form details and save now use narrower calmer guided surfaces",
+      "folder input now suggests existing library folders",
+      "save now shows a clearer draft-state spotlight with a simpler optional note field"
     ],
     "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
   },
@@ -220,6 +223,9 @@
         "compact section organizer with one focused section editor",
         "compact field organizers with one focused field editor in free fields and selected sections",
         "compact choice organizers with one focused choice editor in dropdown fields",
+        "narrower guided form-details and save surfaces",
+        "folder suggestions from existing library groups",
+        "clearer draft-state spotlight in the save surface",
         "one-field-at-a-time edit flow",
         "calmer open/done plus more action menus",
         "separate save step card",
