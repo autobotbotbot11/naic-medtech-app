@@ -16,6 +16,7 @@ const state = {
     openSectionPaths: [],
     activeFieldPath: null,
     activeOptionToken: null,
+    activePreviewSectionId: null,
   },
 };
 
@@ -1686,42 +1687,147 @@ function renderPreview() {
   }
 
   const totalFields = countFields(state.draft.schema);
+  const freeFields = normalizeArray(state.draft.schema.fields);
+  const sections = normalizeArray(state.draft.schema.sections);
+  const previewTargets = [
+    ...(freeFields.length ? [{ id: "preview_section_free_fields", label: "Free fields" }] : []),
+    ...sections.map((section, index) => ({
+      id: previewSectionId(section.name || "Section", index),
+      label: section.name || "Section",
+    })),
+  ];
+  const activePreviewSectionId = previewTargets.some((item) => item.id === state.ui.activePreviewSectionId)
+    ? state.ui.activePreviewSectionId
+    : (previewTargets[0]?.id || null);
+  state.ui.activePreviewSectionId = activePreviewSectionId;
   previewCanvasEl.innerHTML = `
     <section class="preview-card">
-      <div class="preview-head">
-        <div>
-          <div class="preview-live-row">
-            <span class="live-pill">
-              <span class="live-dot"></span>
-              Live
-            </span>
-            <span class="preview-sync-copy">Updates while you edit</span>
+      <div class="preview-shell">
+        <div class="preview-head">
+          <div>
+            <div class="preview-live-row">
+              <span class="live-pill">
+                <span class="live-dot"></span>
+                Live
+              </span>
+              <span class="preview-sync-copy">Read-only sample while you edit</span>
+            </div>
+            <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
+            <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
           </div>
-          <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-          <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
+        </div>
+        <div class="preview-badges">
+          <span class="chip">${totalFields} fields</span>
+          <span class="chip soft">${sections.length} sections</span>
+        </div>
+        <div class="preview-index">
+          ${previewTargets.map((item) => `
+            <button
+              class="preview-index-chip ${item.id === activePreviewSectionId ? "active" : ""}"
+              type="button"
+              data-preview-target="${escapeHtml(item.id)}"
+              aria-pressed="${item.id === activePreviewSectionId ? "true" : "false"}"
+            >${escapeHtml(item.label)}</button>
+          `).join("")}
+        </div>
+        <div class="preview-paper">
+          ${freeFields.length ? renderPreviewSection("Free fields", freeFields, "preview_section_free_fields") : ""}
+          ${sections.map((section, index) => renderPreviewSection(section.name || "Untitled Section", section.fields, previewSectionId(section.name || "Section", index))).join("")}
         </div>
       </div>
-      <div class="preview-badges">
-        <span class="chip">${totalFields} fields</span>
-        <span class="chip soft">${normalizeArray(state.draft.schema.sections).length} sections</span>
-      </div>
-      ${normalizeArray(state.draft.schema.fields).length ? `
-        <section class="preview-section">
-          <h4>Free fields</h4>
-          <div class="preview-grid">
-            ${normalizeArray(state.draft.schema.fields).map(renderPreviewField).join("")}
-          </div>
-        </section>
-      ` : ""}
-      ${normalizeArray(state.draft.schema.sections).map((section) => `
-        <section class="preview-section">
-          <h4>${escapeHtml(section.name || "Untitled Section")}</h4>
-          <div class="preview-grid">
-            ${normalizeArray(section.fields).map(renderPreviewField).join("")}
-          </div>
-        </section>
-      `).join("")}
     </section>
+  `;
+  syncPreviewIndexSelection();
+}
+
+function previewSectionId(title, index) {
+  return `preview_section_${slugify(title)}_${index}`;
+}
+
+function renderPreviewSection(title, fields, previewId) {
+  const normalizedFields = normalizeArray(fields);
+  if (!normalizedFields.length) {
+    return "";
+  }
+
+  return `
+    <section class="preview-section" id="${escapeHtml(previewId)}">
+      <div class="preview-section-head">
+        <h4>${escapeHtml(title)}</h4>
+        <span class="chip soft">${countPreviewFields(normalizedFields)} fields</span>
+      </div>
+      <div class="preview-grid">
+        ${normalizedFields.map(renderPreviewField).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function countPreviewFields(fields) {
+  return normalizeArray(fields).reduce((count, field) => {
+    if (field?.kind === "field_group") {
+      return count + countPreviewFields(field.fields);
+    }
+    return count + 1;
+  }, 0);
+}
+
+function previewInputType(field) {
+  const fieldType = inferFieldType(field);
+  if (fieldType === "number") {
+    return "number";
+  }
+  if (fieldType === "date") {
+    return "date";
+  }
+  if (fieldType === "time") {
+    return "time";
+  }
+  if (fieldType === "datetime") {
+    return "datetime-local";
+  }
+  return "text";
+}
+
+function previewPlaceholder(field) {
+  if (field.unit_hint) {
+    return field.unit_hint;
+  }
+  if (inferFieldType(field) === "number") {
+    return "Enter value";
+  }
+  return "Sample input";
+}
+
+function renderPreviewField(field) {
+  if (field.kind === "field_group") {
+    return `
+      <div class="preview-group">
+        <div class="preview-group-head">
+          <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
+          <span class="chip warm">${countPreviewFields(field.fields)} fields</span>
+        </div>
+        <div class="preview-grid">
+          ${normalizeArray(field.fields).map(renderPreviewField).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  const hints = [];
+  if (field.unit_hint) hints.push(field.unit_hint);
+  if (field.normal_value) hints.push(`normal ${field.normal_value}`);
+
+  return `
+    <label class="preview-field">
+      <span>${escapeHtml(field.name || "Untitled Field")}</span>
+      ${field.control === "select" ? `
+        <select disabled>
+          ${normalizeArray(field.options).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
+        </select>
+      ` : `<input type="${previewInputType(field)}" placeholder="${escapeHtml(previewPlaceholder(field))}" disabled>`}
+      ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
+    </label>
   `;
 }
 
@@ -1738,35 +1844,6 @@ function countFields(container) {
     count += countFields(section);
   });
   return count;
-}
-
-function renderPreviewField(field) {
-  if (field.kind === "field_group") {
-    return `
-      <div class="preview-group">
-        <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
-        <div class="preview-grid">
-          ${normalizeArray(field.fields).map(renderPreviewField).join("")}
-        </div>
-      </div>
-    `;
-  }
-
-  const hints = [];
-  if (field.unit_hint) hints.push(field.unit_hint);
-  if (field.normal_value) hints.push(`normal ${field.normal_value}`);
-
-  return `
-    <label class="preview-field">
-      <span>${escapeHtml(field.name || "Untitled Field")}</span>
-      ${field.control === "select" ? `
-        <select>
-          ${normalizeArray(field.options).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
-        </select>
-      ` : '<input>'}
-      ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
-    </label>
-  `;
 }
 
 function renderJson() {
@@ -2123,6 +2200,42 @@ function handleOutlineClick(event) {
   }
 }
 
+function handlePreviewClick(event) {
+  const target = event.target.closest("[data-preview-target]");
+  if (!target || !(target instanceof HTMLElement) || !previewCanvasEl) {
+    return;
+  }
+
+  const previewTarget = String(target.dataset.previewTarget || "");
+  if (!previewTarget) {
+    return;
+  }
+
+  const sectionEl = previewCanvasEl.querySelector(`#${CSS.escape(previewTarget)}`);
+  if (!(sectionEl instanceof HTMLElement)) {
+    return;
+  }
+
+  state.ui.activePreviewSectionId = previewTarget;
+  syncPreviewIndexSelection();
+  sectionEl.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function syncPreviewIndexSelection() {
+  if (!previewCanvasEl) {
+    return;
+  }
+
+  previewCanvasEl.querySelectorAll("[data-preview-target]").forEach((item) => {
+    if (!(item instanceof HTMLElement)) {
+      return;
+    }
+    const isActive = item.dataset.previewTarget === state.ui.activePreviewSectionId;
+    item.classList.toggle("active", isActive);
+    item.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
 formListEl.addEventListener("click", (event) => {
   const button = event.target.closest('[data-action="load-form"]');
   if (!button) {
@@ -2147,6 +2260,7 @@ formEditorEl.addEventListener("change", (event) => {
   }
 });
 builderOutlineEl?.addEventListener("click", handleOutlineClick);
+previewCanvasEl?.addEventListener("click", handlePreviewClick);
 formEditorEl.addEventListener("toggle", (event) => {
   const details = event.target;
   if (!(details instanceof HTMLDetailsElement) || !details.open) {

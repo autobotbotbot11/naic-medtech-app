@@ -97,6 +97,8 @@ What is implemented:
 - `Form details` now offers folder suggestions from the existing library to reduce typing friction
 - `Save` now uses a clearer draft-state spotlight (`Ready to save` / `Already saved`) with a simpler optional note field
 - the top shell is now more compact: lighter status bar, calmer workspace header, and a tighter preview/advanced control strip
+- the live preview panel now reads more like a polished form surface: read-only controls, stronger section grouping, and a clearer preview paper layout
+- the preview now includes sticky quick-jump section chips for long forms, with active state so the user can navigate the preview faster
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface
@@ -126,6 +128,8 @@ What is already true in the current builder:
 - dropdown `Choices` editors now keep a compact choice organizer list and one focused choice editor at a time
 - `Form details` and `Save` now render as narrower, calmer guided sheets inside the focused editor
 - the top shell now uses a lighter first-glance hierarchy, with less stacked copy before the main workspace
+- the preview panel now behaves as a true read-only preview instead of looking like another editable form
+- the preview now has quick-jump section navigation for long forms
 - fields now use a calmer `Edit` / `Done` flow instead of exposing every field editor at once
 - sections and fields now use a calmer `More` action menu instead of always showing all actions
 - the save note is now separated into its own save step card

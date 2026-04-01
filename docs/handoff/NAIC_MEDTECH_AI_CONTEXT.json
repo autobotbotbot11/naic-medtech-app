@@ -35,7 +35,8 @@
       "form details and save now use narrower calmer guided surfaces",
       "folder input now suggests existing library folders",
       "save now shows a clearer draft-state spotlight with a simpler optional note field",
-      "the top shell now uses a lighter status bar and a more compact workspace header"
+      "the top shell now uses a lighter status bar and a more compact workspace header",
+      "the preview is now read-only and includes sticky quick-jump section navigation"
     ],
     "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
   },
@@ -228,6 +229,7 @@
         "folder suggestions from existing library groups",
         "clearer draft-state spotlight in the save surface",
         "lighter first-glance top shell",
+        "sticky quick-jump section navigation inside preview",
         "one-field-at-a-time edit flow",
         "calmer open/done plus more action menus",
         "separate save step card",
