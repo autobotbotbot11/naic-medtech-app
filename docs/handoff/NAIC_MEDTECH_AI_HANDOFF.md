@@ -94,6 +94,16 @@ What is already true in the current builder:
 - the live preview now stays visible while editing instead of blocking the builder in an overlay
 - the preview panel updates live while the user edits builder fields and form titles
 - on desktop, the preview panel uses its own internal scroll area so long forms remain fully inspectable without losing the builder view
+- helper text is now reduced and moved into small `?` popovers in the main editing cards
+- open help popovers and `More` menus now close when the user clicks elsewhere
+- in-app destructive/dirty decisions now use a calmer custom modal instead of browser `confirm()` dialogs
+- the floating dirty-state bar is now smaller and less visually aggressive while still keeping save/reset obvious
+- the top bar now uses shorter, smaller actions to reduce first-glance weight
+- row actions now use quieter icon-like drag and `...` controls instead of heavier text buttons
+- drag and `...` controls stay visually subdued until a card is active or hovered
+- open section cards now use a compact header row where section title and quick add-actions live together
+- the save step now uses a single compact inline row (note input + one save action) to reduce vertical weight
+- open field cards now use lighter metadata chrome by default (less repetitive labeling noise)
 
 What is still not done:
 - final reduction of header and action noise
@@ -171,6 +181,14 @@ The app should have three clearly separated layers:
 - printable result document generated from schema and record data
 
 Do not tightly couple output layout to a single fixed hardcoded screen.
+
+## Current Frontend Note
+Current builder implementation is still:
+- server-rendered HTML
+- vanilla JS
+- local `SortableJS`
+
+The repo has not been migrated to Alpine.js. Alpine.js was only a possible helper direction discussed for future UI simplification, not a current dependency.
 
 ## Current Domain Structure
 Client-approved current groups:

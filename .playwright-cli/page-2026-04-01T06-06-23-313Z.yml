@@ -1,0 +1,331 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "Browse Forms" [ref=e5] [cursor=pointer]
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Builder
+        - heading "NAIC Medtech Builder" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - strong [ref=e11]: Urine
+        - generic [ref=e12]: Clinical Microscopy | Version 1 | 18 fields
+      - generic [ref=e13]:
+        - button "New Form" [ref=e14] [cursor=pointer]
+        - button "Duplicate Form" [ref=e15] [cursor=pointer]
+        - button "Saved" [disabled] [ref=e603]
+  - generic [ref=e18]:
+    - strong [ref=e19]: "Status:"
+    - text: Loaded Urine.
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Focused Flow
+        - heading "Editing Urine" [level=2] [ref=e604]
+        - paragraph [ref=e25]: Build on the left. Preview on the right.
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - generic [ref=e29]: Live Preview
+              - strong [ref=e31]: Visible while you build
+            - generic [ref=e32]: 3 sections | 18 fields
+          - button "Hide Live Preview" [ref=e33] [cursor=pointer]
+      - generic [ref=e34]:
+        - generic [ref=e35]: Setup
+        - generic [ref=e36]: Build
+        - generic [ref=e37]: Preview
+        - generic [ref=e38]: Save
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - generic [ref=e605]:
+          - generic [ref=e606]:
+            - generic [ref=e607]:
+              - generic [ref=e608]:
+                - generic [ref=e609]: Version 1
+                - generic [ref=e610]: Clinical Microscopy
+              - generic [ref=e611]:
+                - heading "Form setup" [level=3] [ref=e612]
+                - group [ref=e613]:
+                  - generic "Form setup help" [ref=e614] [cursor=pointer]: "?"
+            - button "Open" [ref=e616] [cursor=pointer]
+          - generic [ref=e617]:
+            - strong [ref=e618]: Urine
+            - text: Clinical Microscopy | Default Lab Request Metadata
+        - generic [ref=e619]:
+          - generic [ref=e620]:
+            - generic [ref=e622]:
+              - heading "Top of form" [level=3] [ref=e623]
+              - group [ref=e624]:
+                - generic "Top of form help" [ref=e625] [cursor=pointer]: "?"
+            - button "Open" [ref=e627] [cursor=pointer]
+          - generic [ref=e628]: 1 item hidden here.
+        - generic [ref=e629]:
+          - generic [ref=e630]:
+            - generic [ref=e632]:
+              - heading "Sections" [level=3] [ref=e633]
+              - group [ref=e634]:
+                - generic "Sections help" [ref=e635] [cursor=pointer]: "?"
+            - button "Add section" [ref=e637] [cursor=pointer]
+          - generic [ref=e638]:
+            - article [ref=e639]:
+              - generic [ref=e640]:
+                - generic [ref=e641]:
+                  - generic [ref=e642]:
+                    - generic [ref=e643]: Section 1
+                    - generic [ref=e644]: 4 items
+                  - heading "MACROSCOPIC FINDING" [level=4] [ref=e645]
+                - generic [ref=e646]:
+                  - button "Drag" [ref=e647]
+                  - button "Done" [ref=e648] [cursor=pointer]
+                  - group [ref=e649]:
+                    - generic "More" [ref=e650] [cursor=pointer]
+              - generic [ref=e652]:
+                - generic [ref=e653]: Section title
+                - textbox "Section title" [ref=e654]:
+                  - /placeholder: "Example: Chemical Findings"
+                  - text: MACROSCOPIC FINDING
+              - generic [ref=e655]:
+                - article [ref=e656]:
+                  - generic [ref=e657]:
+                    - generic [ref=e658]:
+                      - generic [ref=e659]:
+                        - generic [ref=e660]: Field
+                        - generic [ref=e661]: Dropdown choices | 6 choices
+                      - heading "Color" [level=4] [ref=e662]
+                    - generic [ref=e663]:
+                      - button "Drag" [ref=e664]
+                      - button "Edit" [ref=e665] [cursor=pointer]
+                      - group [ref=e666]:
+                        - generic "More" [ref=e667] [cursor=pointer]
+                - article [ref=e668]:
+                  - generic [ref=e669]:
+                    - generic [ref=e670]:
+                      - generic [ref=e671]:
+                        - generic [ref=e672]: Field
+                        - generic [ref=e673]: Dropdown choices | 4 choices
+                      - heading "Transparency" [level=4] [ref=e674]
+                    - generic [ref=e675]:
+                      - button "Drag" [ref=e676]
+                      - button "Edit" [ref=e677] [cursor=pointer]
+                      - group [ref=e678]:
+                        - generic "More" [ref=e679] [cursor=pointer]
+                - article [ref=e680]:
+                  - generic [ref=e681]:
+                    - generic [ref=e682]:
+                      - generic [ref=e683]:
+                        - generic [ref=e684]: Field
+                        - generic [ref=e685]: Dropdown choices | 7 choices
+                      - heading "Reaction" [level=4] [ref=e686]
+                    - generic [ref=e687]:
+                      - button "Drag" [ref=e688]
+                      - button "Edit" [ref=e689] [cursor=pointer]
+                      - group [ref=e690]:
+                        - generic "More" [ref=e691] [cursor=pointer]
+                - article [ref=e692]:
+                  - generic [ref=e693]:
+                    - generic [ref=e694]:
+                      - generic [ref=e695]:
+                        - generic [ref=e696]: Field
+                        - generic [ref=e697]: Dropdown choices | 6 choices
+                      - heading "Specific Gravity" [level=4] [ref=e698]
+                    - generic [ref=e699]:
+                      - button "Drag" [ref=e700]
+                      - button "Edit" [ref=e701] [cursor=pointer]
+                      - group [ref=e702]:
+                        - generic "More" [ref=e703] [cursor=pointer]
+              - generic [ref=e704]:
+                - button "Add field" [ref=e705] [cursor=pointer]
+                - button "Add group" [ref=e706] [cursor=pointer]
+              - group [ref=e707]:
+                - generic "Advanced" [ref=e708] [cursor=pointer]
+            - article [ref=e709]:
+              - generic [ref=e710]:
+                - generic [ref=e711]:
+                  - generic [ref=e712]:
+                    - generic [ref=e713]: Section 2
+                    - generic [ref=e714]: 2 items
+                  - heading "CLINICAL FINDING" [level=4] [ref=e715]
+                - generic [ref=e716]:
+                  - button "Drag" [ref=e717]
+                  - button "Open" [ref=e718] [cursor=pointer]
+                  - group [ref=e719]:
+                    - generic "More" [ref=e720] [cursor=pointer]
+            - article [ref=e721]:
+              - generic [ref=e722]:
+                - generic [ref=e723]:
+                  - generic [ref=e724]:
+                    - generic [ref=e725]: Section 3
+                    - generic [ref=e726]: 11 items
+                  - heading "MICROSCOPIC FINDING" [level=4] [ref=e727]
+                - generic [ref=e728]:
+                  - button "Drag" [ref=e729]
+                  - button "Open" [ref=e730] [cursor=pointer]
+                  - group [ref=e731]:
+                    - generic "More" [ref=e732] [cursor=pointer]
+        - generic [ref=e733]:
+          - generic [ref=e734]:
+            - generic [ref=e736]:
+              - heading "Save this version" [level=3] [ref=e737]
+              - group [ref=e738]:
+                - generic "Version note help" [ref=e739] [cursor=pointer]: "?"
+            - button "Open" [ref=e741] [cursor=pointer]
+          - generic [ref=e742]:
+            - strong [ref=e743]: Current version note
+            - text: Seeded from current reference schema.
+      - complementary [ref=e169]:
+        - generic [ref=e170]:
+          - generic [ref=e171]:
+            - paragraph [ref=e172]: Live Preview
+            - heading "Entry Screen Preview" [level=3] [ref=e173]
+            - paragraph [ref=e174]: Updates as you edit.
+          - button "Hide Preview" [ref=e175] [cursor=pointer]
+        - generic [ref=e744]:
+          - generic [ref=e746]:
+            - generic [ref=e747]:
+              - generic [ref=e748]: Live
+              - generic [ref=e750]: Updates while you edit
+            - heading "Urine" [level=3] [ref=e751]
+            - paragraph [ref=e752]: Clinical Microscopy | Version 1
+          - generic [ref=e753]:
+            - generic [ref=e754]: 18 fields
+            - generic [ref=e755]: 3 sections
+          - generic [ref=e756]:
+            - heading "Top of form" [level=4] [ref=e757]
+            - generic [ref=e759]:
+              - generic [ref=e760]: Examination
+              - combobox "Examination" [ref=e761]:
+                - option "URINE KETONE" [selected]
+                - option "URINALYSIS"
+                - option "URINALYSIS, URINE KETONE"
+                - option "URINALYSIS, PREGNANCY TEST"
+                - option "URINALYSIS, PREGNANCY TEST (BLOOD)"
+                - option "PREGNANCY TEST"
+                - option "PREGNANCY TEST (BLOOD)"
+          - generic [ref=e762]:
+            - heading "MACROSCOPIC FINDING" [level=4] [ref=e763]
+            - generic [ref=e764]:
+              - generic [ref=e765]:
+                - generic [ref=e766]: Color
+                - combobox "Color" [ref=e767]:
+                  - option "LIGHT YELLOW" [selected]
+                  - option "YELLOW"
+                  - option "DARK YELLOW"
+                  - option "AMBER"
+                  - option "REDDISH YELLOW"
+                  - option "RED"
+              - generic [ref=e768]:
+                - generic [ref=e769]: Transparency
+                - combobox "Transparency" [ref=e770]:
+                  - option "SLIGHTLY HAZY" [selected]
+                  - option "HAZY"
+                  - option "TURBID"
+                  - option "CLEAR"
+              - generic [ref=e771]:
+                - generic [ref=e772]: Reaction
+                - combobox "Reaction" [ref=e773]:
+                  - option "ACIDIC 5.0" [selected]
+                  - option "ACIDIC 6.0"
+                  - option "ACIDIC 6.5"
+                  - option "NEUTRAL 7.0"
+                  - option "ALKALINE 7.5"
+                  - option "ALKALINE 8.0"
+                  - option "ALKALINE 9.0"
+              - generic [ref=e774]:
+                - generic [ref=e775]: Specific Gravity
+                - combobox "Specific Gravity" [ref=e776]:
+                  - option "1.005" [selected]
+                  - option "1.010"
+                  - option "1.015"
+                  - option "1.020"
+                  - option "1.025"
+                  - option "1.030"
+          - generic [ref=e777]:
+            - heading "CLINICAL FINDING" [level=4] [ref=e778]
+            - generic [ref=e779]:
+              - generic [ref=e780]:
+                - generic [ref=e781]: Sugar
+                - combobox "Sugar" [ref=e782]:
+                  - option "NEGATIVE" [selected]
+                  - option "TRACE"
+                  - option "+"
+                  - option "++"
+                  - option "+++"
+                  - option "++++"
+              - generic [ref=e783]:
+                - generic [ref=e784]: Protein
+                - combobox "Protein" [ref=e785]:
+                  - option "NEGATIVE" [selected]
+                  - option "TRACE"
+                  - option "+"
+                  - option "++"
+                  - option "+++"
+                  - option "++++"
+          - generic [ref=e786]:
+            - heading "MICROSCOPIC FINDING" [level=4] [ref=e787]
+            - generic [ref=e788]:
+              - generic [ref=e789]:
+                - generic [ref=e790]: White Blood Cell
+                - textbox "White Blood Cell /HPF" [ref=e791]
+                - generic [ref=e792]: /HPF
+              - generic [ref=e793]:
+                - generic [ref=e794]: Red Blood Cell
+                - textbox "Red Blood Cell /HPF" [ref=e795]
+                - generic [ref=e796]: /HPF
+              - generic [ref=e797]:
+                - generic [ref=e798]: Epithelial Cell
+                - combobox "Epithelial Cell" [ref=e799]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e800]:
+                - generic [ref=e801]: Amorphous Urates
+                - combobox "Amorphous Urates" [ref=e802]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e803]:
+                - generic [ref=e804]: Amorphous Phosphate
+                - combobox "Amorphous Phosphate" [ref=e805]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e806]:
+                - generic [ref=e807]: Calcium Oxalate
+                - combobox "Calcium Oxalate" [ref=e808]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e809]:
+                - generic [ref=e810]: Uric Acid Crystal
+                - combobox "Uric Acid Crystal" [ref=e811]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e812]:
+                - generic [ref=e813]: Mucus Thread
+                - combobox "Mucus Thread" [ref=e814]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e815]:
+                - generic [ref=e816]: Bacteria
+                - combobox "Bacteria" [ref=e817]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+              - generic [ref=e818]:
+                - generic [ref=e819]: Others
+                - textbox "Others" [ref=e820]
+              - generic [ref=e821]:
+                - generic [ref=e822]: Pregnancy Test
+                - combobox "Pregnancy Test" [ref=e823]:
+                  - option "POSITIVE" [selected]
+                  - option "NEGATIVE"
+    - group [ref=e249]:
+      - generic "Technical JSON" [ref=e250] [cursor=pointer]

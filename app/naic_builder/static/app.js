@@ -52,6 +52,17 @@ const saveDockTitleEl = document.getElementById("saveDockTitle");
 const saveDockMetaEl = document.getElementById("saveDockMeta");
 const saveDockBtnEl = document.getElementById("saveDockBtn");
 const resetDraftBtnEl = document.getElementById("resetDraftBtn");
+const dialogScrimEl = document.getElementById("dialogScrim");
+const confirmDialogEl = document.getElementById("confirmDialog");
+const confirmDialogEyebrowEl = document.getElementById("confirmDialogEyebrow");
+const confirmDialogTitleEl = document.getElementById("confirmDialogTitle");
+const confirmDialogMessageEl = document.getElementById("confirmDialogMessage");
+const confirmDialogCancelBtnEl = document.getElementById("confirmDialogCancelBtn");
+const confirmDialogAltBtnEl = document.getElementById("confirmDialogAltBtn");
+const confirmDialogConfirmBtnEl = document.getElementById("confirmDialogConfirmBtn");
+
+let dialogResolver = null;
+let dialogReturnFocusEl = null;
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -142,6 +153,134 @@ function currentCommonFieldSetName() {
   return match?.name || "Default Lab Request Metadata";
 }
 
+function renderHelpPopover(label, text) {
+  return `
+    <details class="inline-help">
+      <summary aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">?</summary>
+      <div class="help-popover">${escapeHtml(text)}</div>
+    </details>
+  `;
+}
+
+function isDialogOpen() {
+  return Boolean(confirmDialogEl && !confirmDialogEl.hidden);
+}
+
+function closeTransientDetails() {
+  if (!formEditorEl) {
+    return;
+  }
+
+  formEditorEl.querySelectorAll(".action-details[open], .inline-help[open]").forEach((item) => {
+    item.open = false;
+  });
+}
+
+function closeDecisionDialog(result = "cancel") {
+  if (!confirmDialogEl || !dialogScrimEl) {
+    return;
+  }
+
+  confirmDialogEl.hidden = true;
+  confirmDialogEl.classList.add("hidden");
+  dialogScrimEl.hidden = true;
+  dialogScrimEl.classList.add("hidden");
+  document.body.classList.remove("modal-open");
+
+  const resolve = dialogResolver;
+  const returnFocus = dialogReturnFocusEl;
+  dialogResolver = null;
+  dialogReturnFocusEl = null;
+
+  if (returnFocus && typeof returnFocus.focus === "function") {
+    queueMicrotask(() => returnFocus.focus());
+  }
+
+  if (resolve) {
+    resolve(result);
+  }
+}
+
+function openDecisionDialog({
+  eyebrow = "Please confirm",
+  title = "What do you want to do?",
+  message = "",
+  cancelLabel = "Cancel",
+  altLabel = "",
+  confirmLabel = "Continue",
+  destructive = false,
+}) {
+  if (!confirmDialogEl || !dialogScrimEl) {
+    return Promise.resolve("confirm");
+  }
+
+  if (dialogResolver) {
+    closeDecisionDialog("cancel");
+  }
+
+  closeTransientDetails();
+  dialogReturnFocusEl = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+  confirmDialogEyebrowEl.textContent = eyebrow;
+  confirmDialogTitleEl.textContent = title;
+  confirmDialogMessageEl.textContent = message;
+  confirmDialogCancelBtnEl.textContent = cancelLabel;
+  confirmDialogConfirmBtnEl.textContent = confirmLabel;
+  confirmDialogConfirmBtnEl.classList.toggle("warn-fill", destructive);
+
+  const showAlt = Boolean(altLabel);
+  confirmDialogAltBtnEl.hidden = !showAlt;
+  confirmDialogAltBtnEl.classList.toggle("hidden", !showAlt);
+  confirmDialogAltBtnEl.textContent = altLabel || "";
+
+  confirmDialogEl.hidden = false;
+  confirmDialogEl.classList.remove("hidden");
+  dialogScrimEl.hidden = false;
+  dialogScrimEl.classList.remove("hidden");
+  document.body.classList.add("modal-open");
+
+  return new Promise((resolve) => {
+    dialogResolver = resolve;
+    queueMicrotask(() => {
+      const focusTarget = showAlt ? confirmDialogAltBtnEl : confirmDialogCancelBtnEl;
+      if (focusTarget && typeof focusTarget.focus === "function") {
+        focusTarget.focus();
+      }
+    });
+  });
+}
+
+async function resolveDirtyBeforeContinue() {
+  if (!state.dirty) {
+    return true;
+  }
+
+  const decision = await openDecisionDialog({
+    eyebrow: "Draft changed",
+    title: "What should happen to this draft?",
+    message: "You still have changes in this form.",
+    cancelLabel: "Keep editing",
+    altLabel: "Save and continue",
+    confirmLabel: "Discard changes",
+    destructive: true,
+  });
+
+  if (decision === "cancel") {
+    return false;
+  }
+
+  if (decision === "alt") {
+    try {
+      await saveDraft();
+    } catch (error) {
+      console.error(error);
+      setStatus(`Save failed: ${error.message}`, true);
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function syncShellState() {
   const previewVisible = state.ui.previewOpen && Boolean(state.draft);
   if (libraryDrawerEl) {
@@ -199,7 +338,7 @@ function renderShellSummary() {
     currentFormNameEl.textContent = "No form selected";
     currentFormMetaEl.textContent = "Open a form or start a blank draft.";
     stageTitleEl.textContent = "One form at a time";
-    stageDescriptionEl.textContent = "Choose a form, build it in the center, then keep the live panel visible while you shape the result.";
+    stageDescriptionEl.textContent = "Build on the left. Preview on the right.";
     renderPreviewCallout();
     return;
   }
@@ -213,8 +352,8 @@ function renderShellSummary() {
   currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
   stageTitleEl.textContent = `Editing ${formName}`;
   stageDescriptionEl.textContent = state.ui.previewOpen
-    ? "Build in the center and watch the live panel update beside it."
-    : "Build in the center, then show the live panel when you want to inspect the entry screen.";
+    ? "Build on the left. Preview on the right."
+    : "Build on the left. Show preview when needed.";
   renderPreviewCallout();
 }
 
@@ -225,7 +364,7 @@ function renderPreviewCallout() {
 
   if (!state.draft) {
     previewCalloutTitleEl.textContent = "Choose a form first";
-    previewCalloutMetaEl.textContent = "The live panel appears after you load or create a form.";
+    previewCalloutMetaEl.textContent = "The live panel appears after you load a form.";
     openPreviewBtnEl.disabled = true;
     return;
   }
@@ -236,12 +375,12 @@ function renderPreviewCallout() {
 
   if (state.ui.previewOpen) {
     previewCalloutTitleEl.textContent = "Visible while you build";
-    previewCalloutMetaEl.textContent = `${sectionCount} and ${fieldCount}. The live panel stays beside the builder and updates while you edit.`;
+    previewCalloutMetaEl.textContent = `${sectionCount} | ${fieldCount}`;
     return;
   }
 
-  previewCalloutTitleEl.textContent = "Ready beside the builder";
-  previewCalloutMetaEl.textContent = `${sectionCount} and ${fieldCount}. Show the live panel when you want to watch the output update as you edit.`;
+  previewCalloutTitleEl.textContent = "Show live preview";
+  previewCalloutMetaEl.textContent = `${sectionCount} | ${fieldCount}`;
 }
 
 function resetEditorPanels() {
@@ -390,7 +529,7 @@ function setDirty(value) {
   state.dirty = value;
   dirtyBadgeEl.classList.toggle("hidden", !value);
   saveBtnEl.disabled = !value;
-  saveBtnEl.textContent = value ? "Quick Save" : "Saved";
+  saveBtnEl.textContent = value ? "Save" : "Saved";
   renderSaveDock();
 }
 
@@ -577,7 +716,7 @@ async function loadForm(slug) {
     return;
   }
 
-  if (state.dirty && !window.confirm("You have unsaved changes. Continue and discard them?")) {
+  if (!await resolveDirtyBeforeContinue()) {
     return;
   }
 
@@ -628,15 +767,23 @@ function duplicateCurrentForm() {
   renderAll();
 }
 
-function resetCurrentDraft() {
+async function resetCurrentDraft() {
   if (!state.baselineDraft) {
     return;
   }
 
   const message = state.selectedFormSlug
-    ? "Discard your unsaved changes and go back to the last saved version?"
-    : "Clear this current draft and go back to its starting point?";
-  if (!window.confirm(message)) {
+    ? "Go back to the last saved version of this form."
+    : "Clear this draft and go back to its starting point.";
+  const decision = await openDecisionDialog({
+    eyebrow: "Reset draft",
+    title: state.selectedFormSlug ? "Reset to the saved version?" : "Reset this draft?",
+    message,
+    cancelLabel: "Keep editing",
+    confirmLabel: state.selectedFormSlug ? "Reset draft" : "Clear draft",
+    destructive: true,
+  });
+  if (decision !== "confirm") {
     return;
   }
 
@@ -645,6 +792,21 @@ function resetCurrentDraft() {
   setDirty(false);
   setStatus(state.selectedFormSlug ? `Restored ${state.draft.name} to its last saved version.` : "Reset the current draft.");
   renderAll();
+}
+
+async function confirmDeleteNode(path) {
+  const decision = await openDecisionDialog({
+    eyebrow: "Delete item",
+    title: "Remove this item from the form?",
+    message: "This only changes the current draft until you save.",
+    cancelLabel: "Keep item",
+    confirmLabel: "Delete item",
+    destructive: true,
+  });
+
+  if (decision === "confirm") {
+    deleteAtPath(path);
+  }
 }
 
 function renderAll() {
@@ -670,10 +832,10 @@ function renderSaveDock() {
   }
 
   const note = String(state.draft.summary || "").trim();
-  saveDockTitleEl.textContent = state.selectedFormSlug ? "Unsaved changes" : "This draft is not saved yet";
+  saveDockTitleEl.textContent = state.selectedFormSlug ? "Draft changed" : "New draft";
   saveDockMetaEl.textContent = note
-    ? `Save note: ${note}`
-    : "You can save now, or add a short note in the Save step first.";
+    ? `Note: ${note}`
+    : "Save now, or add a short note first.";
 }
 
 function renderFormList() {
@@ -766,8 +928,10 @@ function renderFormSetupCard() {
             <span class="chip">${escapeHtml(currentVersionLabel())}</span>
             <span class="chip soft">${escapeHtml(groupName)}</span>
           </div>
-          <h3 class="card-title">Form setup</h3>
-          <p class="panel-copy">${setupOpen ? "Name the form and place it in the right department." : "Open only when you need to rename or move the form."}</p>
+          <div class="card-title-row">
+            <h3 class="card-title">Form setup</h3>
+            ${renderHelpPopover("Form setup help", "Name the form, choose its department, and keep the shared patient info set aligned.")}
+          </div>
         </div>
         <div class="top-actions">
           <button class="ghost mini" type="button" data-action="toggle-setup">${setupOpen ? "Done" : "Open"}</button>
@@ -822,21 +986,23 @@ function renderSaveCard() {
     <section class="editor-card">
       <div class="card-head">
         <div>
-          <h3 class="card-title">Save this version</h3>
-          <p class="panel-copy">${saveOpen ? "Add a short note if you want one, then save." : "Open if you want to review the version note."}</p>
+          <div class="card-title-row">
+            <h3 class="card-title">Save this version</h3>
+            ${renderHelpPopover("Version note help", "Version notes are optional. Add one only when you want to remember what changed.")}
+          </div>
         </div>
         <div class="top-actions">
           <button class="ghost mini" type="button" data-action="toggle-save-step">${saveOpen ? "Done" : "Open"}</button>
-          ${saveOpen ? '<button class="secondary" type="button" data-action="save-draft">Save Changes</button>' : ""}
         </div>
       </div>
 
       ${saveOpen ? `
-        <div class="field-stack">
+        <div class="save-step-inline">
           <label>
             <span>Version note</span>
             <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Example: Added urine ketone choices">
           </label>
+          <button class="secondary mini" type="button" data-action="save-draft">Save</button>
         </div>
       ` : `
         <div class="collapsed-copy">
@@ -851,7 +1017,7 @@ function renderSaveCard() {
 function renderNodeActionMenu(path) {
   return `
     <details class="action-details">
-      <summary>More</summary>
+      <summary aria-label="More actions" title="More actions">...</summary>
       <div class="action-menu">
         <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
         <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
@@ -867,14 +1033,16 @@ function renderTopFieldsCard() {
     <section class="editor-card">
       <div class="card-head">
         <div>
-          <h3 class="card-title">Top of form</h3>
-          <p class="panel-copy">Optional fields that appear before the main sections.</p>
+          <div class="card-title-row">
+            <h3 class="card-title">Top of form</h3>
+            ${renderHelpPopover("Top of form help", "These fields appear above the main sections of the form.")}
+          </div>
         </div>
         <div class="top-actions">
           <button class="ghost mini" type="button" data-action="toggle-top-fields">${state.ui.topFieldsOpen ? "Done" : "Open"}</button>
           ${state.ui.topFieldsOpen ? `
             <button class="secondary mini" type="button" data-action="add-top-field">Add field</button>
-            <button class="ghost mini" type="button" data-action="add-top-group">Add field group</button>
+            <button class="ghost mini" type="button" data-action="add-top-group">Add group</button>
           ` : ""}
         </div>
       </div>
@@ -891,8 +1059,10 @@ function renderSectionsCard() {
     <section class="editor-card">
       <div class="card-head">
         <div>
-          <h3 class="card-title">Sections</h3>
-          <p class="panel-copy">Open one section at a time. Drag by handle to reorder.</p>
+          <div class="card-title-row">
+            <h3 class="card-title">Sections</h3>
+            ${renderHelpPopover("Sections help", "Open a section to edit it. Drag its handle when you want to reorder it.")}
+          </div>
         </div>
         <div class="top-actions">
           <button class="secondary mini" type="button" data-action="add-section">Add section</button>
@@ -919,26 +1089,27 @@ function renderSectionCard(section, path, number) {
           <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
         </div>
         <div class="row-actions">
-          <button class="drag-handle" type="button" title="Drag to reorder">Drag</button>
+          <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+            <span class="drag-dots" aria-hidden="true"></span>
+          </button>
           <button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Done" : "Open"}</button>
           ${renderNodeActionMenu(path)}
         </div>
       </div>
 
       ${open ? `
-        <div class="field-stack">
-          <label>
+        <div class="section-builder-head">
+          <label class="section-title-wrap">
             <span>Section title</span>
             <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
           </label>
+          <div class="section-quick-actions">
+            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
+            <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add group</button>
+          </div>
         </div>
 
         ${renderFieldCollection(section.fields, [...path, "fields"])}
-
-        <div class="section-actions">
-          <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
-          <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add group</button>
-        </div>
 
         <details class="advanced">
           <summary>Advanced</summary>
@@ -981,13 +1152,15 @@ function renderFieldCard(field, path) {
       <div class="field-head">
         <div>
           <div class="field-meta">
-            <span class="chip ${isGroup ? "warm" : ""}">${isGroup ? "Field group" : "Field"}</span>
+            ${isGroup ? '<span class="chip warm">Group</span>' : ""}
             <span class="field-summary">${escapeHtml(summary)}</span>
           </div>
           <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
         </div>
         <div class="row-actions">
-          <button class="drag-handle" type="button" title="Drag to reorder">Drag</button>
+          <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+            <span class="drag-dots" aria-hidden="true"></span>
+          </button>
           <button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>
           ${renderNodeActionMenu(path)}
         </div>
@@ -1378,7 +1551,7 @@ function handleOptionInput(event) {
   touch();
 }
 
-function handleEditorClick(event) {
+async function handleEditorClick(event) {
   const actionTarget = event.target.closest("[data-action]");
   if (!actionTarget) {
     return;
@@ -1441,9 +1614,7 @@ function handleEditorClick(event) {
     return;
   }
   if (action === "delete-node" && path) {
-    if (window.confirm("Delete this item?")) {
-      deleteAtPath(path);
-    }
+    await confirmDeleteNode(path);
     return;
   }
   if (action === "add-option" && path) {
@@ -1497,16 +1668,43 @@ formEditorEl.addEventListener("change", (event) => {
 });
 formEditorEl.addEventListener("toggle", (event) => {
   const details = event.target;
-  if (!(details instanceof HTMLDetailsElement) || !details.classList.contains("action-details") || !details.open) {
+  if (!(details instanceof HTMLDetailsElement) || !details.open) {
     return;
   }
 
-  formEditorEl.querySelectorAll(".action-details[open]").forEach((item) => {
-    if (item !== details) {
-      item.open = false;
-    }
-  });
+  if (details.classList.contains("action-details")) {
+    formEditorEl.querySelectorAll(".action-details[open]").forEach((item) => {
+      if (item !== details) {
+        item.open = false;
+      }
+    });
+  }
+
+  if (details.classList.contains("inline-help")) {
+    formEditorEl.querySelectorAll(".inline-help[open]").forEach((item) => {
+      if (item !== details) {
+        item.open = false;
+      }
+    });
+  }
 }, true);
+
+document.addEventListener("click", (event) => {
+  if (isDialogOpen()) {
+    return;
+  }
+
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  if (target.closest(".action-details, .inline-help")) {
+    return;
+  }
+
+  closeTransientDetails();
+});
 
 document.getElementById("openLibraryBtn").addEventListener("click", () => {
   openLibrary();
@@ -1534,8 +1732,8 @@ drawerScrimEl.addEventListener("click", () => {
   closeDrawers();
 });
 
-document.getElementById("newFormBtn").addEventListener("click", () => {
-  if (state.dirty && !window.confirm("Discard current unsaved changes and start a new form?")) {
+document.getElementById("newFormBtn").addEventListener("click", async () => {
+  if (!await resolveDirtyBeforeContinue()) {
     return;
   }
   startNewForm();
@@ -1560,12 +1758,40 @@ saveDockBtnEl.addEventListener("click", () => {
 });
 
 resetDraftBtnEl.addEventListener("click", () => {
-  resetCurrentDraft();
+  void resetCurrentDraft();
 });
+
+if (dialogScrimEl) {
+  dialogScrimEl.addEventListener("click", () => {
+    closeDecisionDialog("cancel");
+  });
+}
+
+if (confirmDialogCancelBtnEl) {
+  confirmDialogCancelBtnEl.addEventListener("click", () => {
+    closeDecisionDialog("cancel");
+  });
+}
+
+if (confirmDialogAltBtnEl) {
+  confirmDialogAltBtnEl.addEventListener("click", () => {
+    closeDecisionDialog("alt");
+  });
+}
+
+if (confirmDialogConfirmBtnEl) {
+  confirmDialogConfirmBtnEl.addEventListener("click", () => {
+    closeDecisionDialog("confirm");
+  });
+}
 
 formSearchEl.addEventListener("input", renderFormList);
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && isDialogOpen()) {
+    closeDecisionDialog("cancel");
+    return;
+  }
   if (event.key === "Escape") {
     closeDrawers();
   }

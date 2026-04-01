@@ -1,0 +1,244 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "Browse Forms" [ref=e5] [cursor=pointer]
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Builder
+        - heading "NAIC Medtech Builder" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - strong [ref=e11]: Semen Draft UX
+        - generic [ref=e12]: Clinical Microscopy | Version 4 | 13 fields
+      - generic [ref=e13]:
+        - button "New Form" [ref=e14] [cursor=pointer]
+        - button "Duplicate Form" [ref=e15] [cursor=pointer]
+        - button "Saved" [disabled] [ref=e459]
+  - generic [ref=e18]:
+    - strong [ref=e19]: "Status:"
+    - text: Restored Semen Draft UX to its last saved version.
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Focused Flow
+        - heading "Editing Semen Draft UX" [level=2] [ref=e24]
+        - paragraph [ref=e25]: Build on the left. Preview on the right.
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - generic [ref=e29]: Live Preview
+              - strong [ref=e31]: Visible while you build
+            - generic [ref=e32]: 4 sections | 13 fields
+          - button "Hide Live Preview" [ref=e33] [cursor=pointer]
+      - generic [ref=e34]:
+        - generic [ref=e35]: Setup
+        - generic [ref=e36]: Build
+        - generic [ref=e37]: Preview
+        - generic [ref=e38]: Save
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - generic [ref=e460]:
+          - generic [ref=e461]:
+            - generic [ref=e462]:
+              - generic [ref=e463]:
+                - generic [ref=e464]: Version 4
+                - generic [ref=e465]: Clinical Microscopy
+              - generic [ref=e466]:
+                - heading "Form setup" [level=3] [ref=e467]
+                - group [ref=e468]:
+                  - generic "Form setup help" [ref=e469] [cursor=pointer]: "?"
+            - button "Open" [ref=e471] [cursor=pointer]
+          - generic [ref=e472]:
+            - strong [ref=e473]: Semen Draft UX
+            - text: Clinical Microscopy | Default Lab Request Metadata
+        - generic [ref=e474]:
+          - generic [ref=e475]:
+            - generic [ref=e477]:
+              - heading "Top of form" [level=3] [ref=e478]
+              - group [ref=e479]:
+                - generic "Top of form help" [ref=e480] [cursor=pointer]: "?"
+            - button "Open" [ref=e482] [cursor=pointer]
+          - generic [ref=e483]: 5 items hidden here.
+        - generic [ref=e484]:
+          - generic [ref=e485]:
+            - generic [ref=e487]:
+              - heading "Sections" [level=3] [ref=e488]
+              - group [ref=e489]:
+                - generic "Sections help" [ref=e490] [cursor=pointer]: "?"
+            - button "Add section" [ref=e492] [cursor=pointer]
+          - generic [ref=e493]:
+            - article [ref=e494]:
+              - generic [ref=e495]:
+                - generic [ref=e496]:
+                  - generic [ref=e497]:
+                    - generic [ref=e498]: Section 1
+                    - generic [ref=e499]: 2 items
+                  - heading "MOTILITY" [level=4] [ref=e500]
+                - generic [ref=e501]:
+                  - button "Drag" [ref=e502]
+                  - button "Done" [ref=e503] [cursor=pointer]
+                  - group [ref=e504]:
+                    - generic "More" [ref=e505] [cursor=pointer]
+              - generic [ref=e507]:
+                - generic [ref=e508]: Section title
+                - textbox "Section title" [ref=e509]:
+                  - /placeholder: "Example: Chemical Findings"
+                  - text: MOTILITY
+              - generic [ref=e510]:
+                - article [ref=e511]:
+                  - generic [ref=e512]:
+                    - generic [ref=e513]:
+                      - generic [ref=e514]:
+                        - generic [ref=e515]: Field
+                        - generic [ref=e516]: Number
+                      - heading "MOTILE" [level=4] [ref=e517]
+                    - generic [ref=e518]:
+                      - button "Drag" [ref=e519]
+                      - button "Edit" [ref=e520] [cursor=pointer]
+                      - group [ref=e521]:
+                        - generic "More" [ref=e522] [cursor=pointer]
+                - article [ref=e523]:
+                  - generic [ref=e524]:
+                    - generic [ref=e525]:
+                      - generic [ref=e526]:
+                        - generic [ref=e527]: Field
+                        - generic [ref=e528]: Number
+                      - heading "NON MOTILE" [level=4] [ref=e529]
+                    - generic [ref=e530]:
+                      - button "Drag" [ref=e531]
+                      - button "Edit" [ref=e532] [cursor=pointer]
+                      - group [ref=e533]:
+                        - generic "More" [ref=e534] [cursor=pointer]
+              - generic [ref=e535]:
+                - button "Add field" [ref=e536] [cursor=pointer]
+                - button "Add group" [ref=e537] [cursor=pointer]
+              - group [ref=e538]:
+                - generic "Advanced" [ref=e539] [cursor=pointer]
+            - article [ref=e540]:
+              - generic [ref=e541]:
+                - generic [ref=e542]:
+                  - generic [ref=e543]:
+                    - generic [ref=e544]: Section 2
+                    - generic [ref=e545]: 2 items
+                  - heading "MORPHOLOGY" [level=4] [ref=e546]
+                - generic [ref=e547]:
+                  - button "Drag" [ref=e548]
+                  - button "Open" [ref=e549] [cursor=pointer]
+                  - group [ref=e550]:
+                    - generic "More" [ref=e551] [cursor=pointer]
+            - article [ref=e552]:
+              - generic [ref=e553]:
+                - generic [ref=e554]:
+                  - generic [ref=e555]:
+                    - generic [ref=e556]: Section 3
+                    - generic [ref=e557]: 1 item
+                  - heading "SPERM COUNT" [level=4] [ref=e558]
+                - generic [ref=e559]:
+                  - button "Drag" [ref=e560]
+                  - button "Open" [ref=e561] [cursor=pointer]
+                  - group [ref=e562]:
+                    - generic "More" [ref=e563] [cursor=pointer]
+            - article [ref=e564]:
+              - generic [ref=e565]:
+                - generic [ref=e566]:
+                  - generic [ref=e567]:
+                    - generic [ref=e568]: Section 4
+                    - generic [ref=e569]: 3 items
+                  - heading "OTHERS" [level=4] [ref=e570]
+                - generic [ref=e571]:
+                  - button "Drag" [ref=e572]
+                  - button "Open" [ref=e573] [cursor=pointer]
+                  - group [ref=e574]:
+                    - generic "More" [ref=e575] [cursor=pointer]
+        - generic [ref=e576]:
+          - generic [ref=e577]:
+            - generic [ref=e579]:
+              - heading "Save this version" [level=3] [ref=e580]
+              - group [ref=e581]:
+                - generic "Version note help" [ref=e582] [cursor=pointer]: "?"
+            - button "Open" [ref=e584] [cursor=pointer]
+          - generic [ref=e585]:
+            - strong [ref=e586]: Current version note
+            - text: Seeded from current reference schema.
+      - complementary [ref=e169]:
+        - generic [ref=e170]:
+          - generic [ref=e171]:
+            - paragraph [ref=e172]: Live Preview
+            - heading "Entry Screen Preview" [level=3] [ref=e173]
+            - paragraph [ref=e174]: Updates as you edit.
+          - button "Hide Preview" [ref=e175] [cursor=pointer]
+        - generic [ref=e587]:
+          - generic [ref=e589]:
+            - generic [ref=e590]:
+              - generic [ref=e591]: Live
+              - generic [ref=e593]: Updates while you edit
+            - heading "Semen Draft UX" [level=3] [ref=e594]
+            - paragraph [ref=e595]: Clinical Microscopy | Version 4
+          - generic [ref=e596]:
+            - generic [ref=e597]: 13 fields
+            - generic [ref=e598]: 4 sections
+          - generic [ref=e599]:
+            - heading "Top of form" [level=4] [ref=e600]
+            - generic [ref=e601]:
+              - generic [ref=e602]:
+                - generic [ref=e603]: Examination
+                - combobox "Examination" [ref=e604]:
+                  - option "SEMEN ANALYSIS" [selected]
+              - generic [ref=e605]:
+                - generic [ref=e606]: TIME COLLECTED
+                - textbox "TIME COLLECTED" [ref=e607]
+              - generic [ref=e608]:
+                - generic [ref=e609]: TIME RECEIVED
+                - textbox "TIME RECEIVED" [ref=e610]
+              - generic [ref=e611]:
+                - generic [ref=e612]: TOTAL VOLUME
+                - textbox "TOTAL VOLUME" [ref=e613]
+              - generic [ref=e614]:
+                - generic [ref=e615]: LIQUEFACTION TIME
+                - textbox "LIQUEFACTION TIME" [ref=e616]
+          - generic [ref=e617]:
+            - heading "MOTILITY" [level=4] [ref=e618]
+            - generic [ref=e619]:
+              - generic [ref=e620]:
+                - generic [ref=e621]: MOTILE
+                - textbox "MOTILE %" [ref=e622]
+                - generic [ref=e623]: "%"
+              - generic [ref=e624]:
+                - generic [ref=e625]: NON MOTILE
+                - textbox "NON MOTILE %" [ref=e626]
+                - generic [ref=e627]: "%"
+          - generic [ref=e628]:
+            - heading "MORPHOLOGY" [level=4] [ref=e629]
+            - generic [ref=e630]:
+              - generic [ref=e631]:
+                - generic [ref=e632]: NORMAL
+                - textbox "NORMAL %" [ref=e633]
+                - generic [ref=e634]: "%"
+              - generic [ref=e635]:
+                - generic [ref=e636]: ABNORMAL
+                - textbox "ABNORMAL %" [ref=e637]
+                - generic [ref=e638]: "%"
+          - generic [ref=e639]:
+            - heading "SPERM COUNT" [level=4] [ref=e640]
+            - generic [ref=e642]:
+              - generic [ref=e643]: RESULT
+              - textbox "RESULT" [ref=e644]
+          - generic [ref=e645]:
+            - heading "OTHERS" [level=4] [ref=e646]
+            - generic [ref=e647]:
+              - generic [ref=e648]:
+                - generic [ref=e649]: WBC
+                - textbox "WBC /HPF" [ref=e650]
+                - generic [ref=e651]: /HPF
+              - generic [ref=e652]:
+                - generic [ref=e653]: RBC
+                - textbox "RBC /HPF" [ref=e654]
+                - generic [ref=e655]: /HPF
+              - generic [ref=e656]:
+                - generic [ref=e657]: EPITHELIAL CELL
+                - combobox "EPITHELIAL CELL" [ref=e658]:
+                  - option "OCCASIONAL" [selected]
+                  - option "FEW"
+                  - option "MODERATE"
+                  - option "PLENTY"
+    - group [ref=e249]:
+      - generic "Technical JSON" [ref=e250] [cursor=pointer]

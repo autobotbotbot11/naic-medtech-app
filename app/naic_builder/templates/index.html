@@ -11,7 +11,7 @@
   <main class="shell">
     <header class="app-bar panel">
       <div class="brand-block">
-        <button id="openLibraryBtn" class="ghost" type="button">Browse Forms</button>
+        <button id="openLibraryBtn" class="ghost mini" type="button">Forms</button>
         <div class="brand-copy">
           <p class="eyebrow">Builder</p>
           <h1>{{ app_title }}</h1>
@@ -24,9 +24,9 @@
           <span id="currentFormMeta">Preparing the builder.</span>
         </div>
         <div class="action-row">
-          <button id="newFormBtn" class="secondary" type="button">New Form</button>
-          <button id="duplicateFormBtn" class="ghost" type="button">Duplicate Form</button>
-          <button id="saveBtn" type="button">Quick Save</button>
+          <button id="newFormBtn" class="secondary mini" type="button">New Form</button>
+          <button id="duplicateFormBtn" class="ghost mini" type="button">Duplicate</button>
+          <button id="saveBtn" class="mini" type="button">Save</button>
         </div>
       </div>
     </header>
@@ -36,7 +36,7 @@
         <strong>Status:</strong>
         <span id="statusText">Loading builder...</span>
       </div>
-      <div id="dirtyBadge" class="badge hidden">Unsaved changes</div>
+      <div id="dirtyBadge" class="badge hidden">Draft changed</div>
     </section>
 
     <div id="drawerScrim" class="drawer-scrim hidden" hidden></div>
@@ -47,7 +47,7 @@
           <div>
             <p class="eyebrow">Form Library</p>
             <h2>Choose an exam</h2>
-            <p class="panel-copy">Open an existing form or start a blank one.</p>
+            <p class="panel-copy">Pick an existing form or start a blank one.</p>
           </div>
           <button id="closeLibraryBtn" class="ghost" type="button">Close Library</button>
         </div>
@@ -66,7 +66,7 @@
         <div>
           <p class="eyebrow">Focused Flow</p>
           <h2 id="stageTitle">One form at a time</h2>
-          <p id="stageDescription" class="panel-copy">Use Browse Forms to switch exams. Open Preview only when you need it.</p>
+          <p id="stageDescription" class="panel-copy">Build on the left. Preview on the right.</p>
           <div class="preview-callout">
             <div class="preview-callout-copy">
               <div class="preview-callout-topline">
@@ -99,7 +99,7 @@
             <div>
               <p class="eyebrow">Live Preview</p>
               <h3>Entry Screen Preview</h3>
-              <p class="panel-copy">Keep this visible while you edit the builder.</p>
+              <p class="panel-copy">Updates as you edit.</p>
             </div>
             <button id="closePreviewBtn" class="ghost mini" type="button">Hide Preview</button>
           </div>
@@ -114,16 +114,30 @@
       </details>
     </section>
 
-    <aside id="saveDock" class="save-dock hidden" hidden>
-      <div class="save-dock-copy">
-        <strong id="saveDockTitle">Unsaved changes</strong>
-        <span id="saveDockMeta">Save when you are ready.</span>
+      <aside id="saveDock" class="save-dock hidden" hidden>
+        <div class="save-dock-copy">
+          <strong id="saveDockTitle">Draft changed</strong>
+          <span id="saveDockMeta">Save when you are ready.</span>
+        </div>
+        <div class="save-dock-actions">
+          <button id="resetDraftBtn" class="ghost mini" type="button">Reset Draft</button>
+          <button id="saveDockBtn" class="mini" type="button">Save Changes</button>
+        </div>
+      </aside>
+
+    <div id="dialogScrim" class="dialog-scrim hidden" hidden></div>
+    <section id="confirmDialog" class="confirm-dialog hidden" role="dialog" aria-modal="true" aria-labelledby="confirmDialogTitle" aria-describedby="confirmDialogMessage" hidden>
+      <div class="confirm-dialog-copy">
+        <p id="confirmDialogEyebrow" class="eyebrow">Review changes</p>
+        <h2 id="confirmDialogTitle">What do you want to do?</h2>
+        <p id="confirmDialogMessage" class="panel-copy">You still have changes in this form.</p>
       </div>
-      <div class="save-dock-actions">
-        <button id="resetDraftBtn" class="ghost" type="button">Reset Draft</button>
-        <button id="saveDockBtn" type="button">Save Changes</button>
+      <div class="confirm-dialog-actions">
+        <button id="confirmDialogCancelBtn" class="ghost" type="button">Keep editing</button>
+        <button id="confirmDialogAltBtn" class="secondary hidden" type="button" hidden>Save and continue</button>
+        <button id="confirmDialogConfirmBtn" class="warn-fill" type="button">Discard changes</button>
       </div>
-    </aside>
+    </section>
   </main>
 
   <script src="{{ url_for('static', path='vendor/sortable.min.js') }}" defer></script>

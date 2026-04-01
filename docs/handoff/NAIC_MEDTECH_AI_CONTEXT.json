@@ -119,7 +119,17 @@
         "preview control moved out of the crowded top bar and into a dedicated live-preview callout",
         "preview stays visible while editing instead of blocking the builder in an overlay",
         "preview panel updates live while editing builder fields and form titles",
-        "desktop preview panel uses its own internal scroll area for long forms"
+        "desktop preview panel uses its own internal scroll area for long forms",
+        "persistent helper copy reduced into small question-mark popovers in key cards",
+        "open help popovers and action menus close when the user clicks elsewhere",
+        "in-app destructive and unsaved-change decisions now use a calmer custom modal instead of browser confirm dialogs",
+        "floating dirty-state save dock is now smaller and less visually aggressive",
+        "top bar actions are now shorter and more compact",
+        "drag and more controls are now icon-like and visually quieter",
+        "drag and more controls stay subdued until a row is active or hovered",
+        "open section cards use a compact builder-head row where title and quick add-actions stay together",
+        "save step uses a compact inline row with note input plus one save action",
+        "open field cards use lighter metadata chrome with less repetitive label noise"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",
@@ -134,9 +144,8 @@
       "Do not keep library, builder, and preview equally visible at all times"
     ],
     "recommended_frontend_approach": [
-      "Server-rendered HTML",
-      "Alpine.js",
-      "SortableJS"
+      "Current code: server-rendered HTML + vanilla JS + SortableJS",
+      "Alpine.js is optional future helper direction, not current repo reality"
     ],
     "implementation_phases": [
       "Phase 1: rebuild the shell",
