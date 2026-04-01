@@ -395,8 +395,8 @@ function renderShellSummary() {
   if (!state.draft) {
     currentFormNameEl.textContent = "No form selected";
     currentFormMetaEl.textContent = "Open a form or start a blank draft.";
-    stageTitleEl.textContent = "One form at a time";
-    stageDescriptionEl.textContent = "Build on the left. Preview on the right.";
+    stageTitleEl.textContent = "Choose or build a form";
+    stageDescriptionEl.textContent = "Use the library first, then edit one area at a time.";
     renderPreviewCallout();
     return;
   }
@@ -410,8 +410,8 @@ function renderShellSummary() {
   currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
   stageTitleEl.textContent = `Editing ${formName}`;
   stageDescriptionEl.textContent = state.ui.previewOpen
-    ? "Build on the left. Preview on the right."
-    : "Build on the left. Show preview when needed.";
+    ? "Edit in the center and keep the live preview beside it."
+    : "Edit in the center and open the preview whenever you need a live check.";
   renderPreviewCallout();
 }
 
@@ -421,8 +421,8 @@ function renderPreviewCallout() {
   }
 
   if (!state.draft) {
-    previewCalloutTitleEl.textContent = "Choose a form first";
-    previewCalloutMetaEl.textContent = "The live panel appears after you load a form.";
+    previewCalloutTitleEl.textContent = "No preview yet";
+    previewCalloutMetaEl.textContent = "The live side panel appears after you open a form.";
     openPreviewBtnEl.disabled = true;
     return;
   }
@@ -432,12 +432,12 @@ function renderPreviewCallout() {
   openPreviewBtnEl.disabled = false;
 
   if (state.ui.previewOpen) {
-    previewCalloutTitleEl.textContent = "Visible while you build";
+    previewCalloutTitleEl.textContent = "Preview is live";
     previewCalloutMetaEl.textContent = `${sectionCount} | ${fieldCount}`;
     return;
   }
 
-  previewCalloutTitleEl.textContent = "Show live preview";
+  previewCalloutTitleEl.textContent = "Preview is hidden";
   previewCalloutMetaEl.textContent = `${sectionCount} | ${fieldCount}`;
 }
 

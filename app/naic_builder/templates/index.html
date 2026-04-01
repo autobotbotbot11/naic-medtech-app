@@ -36,7 +36,7 @@
 
     <section class="feedback-bar panel">
       <div class="feedback-copy">
-        <strong>Status:</strong>
+        <strong>Now:</strong>
         <span id="statusText">Loading builder...</span>
       </div>
       <div id="dirtyBadge" class="badge hidden">Draft changed</div>
@@ -66,31 +66,23 @@
 
     <section class="stage-shell">
       <section class="stage-head panel">
-        <div>
-          <p class="eyebrow">Focused Flow</p>
+        <div class="stage-copy">
+          <p class="eyebrow">Workspace</p>
           <h2 id="stageTitle">One form at a time</h2>
           <p id="stageDescription" class="panel-copy">Build on the left. Preview on the right.</p>
-          <div class="preview-callout">
-            <div class="preview-callout-copy">
-              <div class="preview-callout-topline">
-                <span class="live-pill">
-                  <span class="live-dot"></span>
-                  Live Preview
-                </span>
-                <strong id="previewCalloutTitle">Ready to inspect</strong>
-              </div>
-              <span id="previewCalloutMeta">Open it when you want to see the entry screen take shape.</span>
-            </div>
-            <button id="openPreviewBtn" class="ghost" type="button">Show Live Preview</button>
+          <div class="stage-signal">
+            <strong id="previewCalloutTitle">Ready to inspect</strong>
+            <span id="previewCalloutMeta">Open it when you want to see the entry screen take shape.</span>
           </div>
         </div>
-        <div class="stage-meta">
-          <div class="step-row">
-            <span class="step-pill">Setup</span>
-            <span class="step-pill">Build</span>
-            <span class="step-pill">Preview</span>
-            <span class="step-pill">Save</span>
+        <div class="stage-toolbar">
+          <div class="stage-toolbar-status">
+            <span class="live-pill">
+              <span class="live-dot"></span>
+              Live Preview
+            </span>
           </div>
+          <button id="openPreviewBtn" class="ghost mini" type="button">Show Live Preview</button>
           <button id="toggleAdvancedBtn" class="ghost mini subtle" type="button" aria-pressed="false">Advanced: Off</button>
         </div>
       </section>

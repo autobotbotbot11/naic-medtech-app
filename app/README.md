@@ -20,6 +20,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details
+- the top shell now uses a lighter status bar and a more compact workspace header
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:
