@@ -1,0 +1,12 @@
+INFO:     127.0.0.1:59709 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56914 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56914 - "GET /static/app.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:18793 - "GET /static/vendor/sortable.min.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:26686 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58695 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58695 - "GET /api/forms/semen HTTP/1.1" 200 OK
+INFO:     127.0.0.1:18385 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:18385 - "GET /static/app.css HTTP/1.1" 304 Not Modified
+INFO:     127.0.0.1:18385 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:18385 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:18385 - "GET /api/forms/semen HTTP/1.1" 200 OK

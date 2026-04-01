@@ -7,7 +7,7 @@ const state = {
   dirty: false,
   ui: {
     libraryOpen: false,
-    previewOpen: false,
+    previewOpen: true,
     setupOpen: true,
     saveOpen: false,
     topFieldsOpen: true,
@@ -35,13 +35,17 @@ const formEditorEl = document.getElementById("formEditor");
 const previewCanvasEl = document.getElementById("previewCanvas");
 const jsonOutputEl = document.getElementById("jsonOutput");
 const drawerScrimEl = document.getElementById("drawerScrim");
+const workspaceShellEl = document.getElementById("workspaceShell") || document.querySelector(".workspace-shell") || document.querySelector(".stage-shell");
 const libraryDrawerEl = document.getElementById("libraryDrawer");
-const previewDrawerEl = document.getElementById("previewDrawer");
+const previewPanelEl = document.getElementById("previewPanel") || document.getElementById("previewDrawer");
 const currentFormNameEl = document.getElementById("currentFormName");
 const currentFormMetaEl = document.getElementById("currentFormMeta");
 const stageTitleEl = document.getElementById("stageTitle");
 const stageDescriptionEl = document.getElementById("stageDescription");
+const previewCalloutTitleEl = document.getElementById("previewCalloutTitle");
+const previewCalloutMetaEl = document.getElementById("previewCalloutMeta");
 const openPreviewBtnEl = document.getElementById("openPreviewBtn");
+const closePreviewBtnEl = document.getElementById("closePreviewBtn");
 const saveBtnEl = document.getElementById("saveBtn");
 const saveDockEl = document.getElementById("saveDock");
 const saveDockTitleEl = document.getElementById("saveDockTitle");
@@ -139,50 +143,54 @@ function currentCommonFieldSetName() {
 }
 
 function syncShellState() {
-  libraryDrawerEl.hidden = !state.ui.libraryOpen;
-  previewDrawerEl.hidden = !state.ui.previewOpen;
-  drawerScrimEl.hidden = !(state.ui.libraryOpen || state.ui.previewOpen);
-
-  if (state.ui.libraryOpen) {
-    libraryDrawerEl.removeAttribute("inert");
-  } else {
-    libraryDrawerEl.setAttribute("inert", "");
+  const previewVisible = state.ui.previewOpen && Boolean(state.draft);
+  if (libraryDrawerEl) {
+    libraryDrawerEl.hidden = !state.ui.libraryOpen;
+    if (state.ui.libraryOpen) {
+      libraryDrawerEl.removeAttribute("inert");
+    } else {
+      libraryDrawerEl.setAttribute("inert", "");
+    }
+    libraryDrawerEl.classList.toggle("is-open", state.ui.libraryOpen);
+    libraryDrawerEl.setAttribute("aria-hidden", String(!state.ui.libraryOpen));
   }
 
-  if (state.ui.previewOpen) {
-    previewDrawerEl.removeAttribute("inert");
-  } else {
-    previewDrawerEl.setAttribute("inert", "");
+  if (previewPanelEl) {
+    previewPanelEl.hidden = !previewVisible;
+    if (previewPanelEl.id === "previewDrawer") {
+      previewPanelEl.classList.toggle("is-open", previewVisible);
+      previewPanelEl.setAttribute("aria-hidden", String(!previewVisible));
+      if (previewVisible) {
+        previewPanelEl.removeAttribute("inert");
+      } else {
+        previewPanelEl.setAttribute("inert", "");
+      }
+    }
   }
 
-  libraryDrawerEl.classList.toggle("is-open", state.ui.libraryOpen);
-  previewDrawerEl.classList.toggle("is-open", state.ui.previewOpen);
-  libraryDrawerEl.setAttribute("aria-hidden", String(!state.ui.libraryOpen));
-  previewDrawerEl.setAttribute("aria-hidden", String(!state.ui.previewOpen));
-
-  const anyOpen = state.ui.libraryOpen || state.ui.previewOpen;
-  drawerScrimEl.classList.toggle("hidden", !anyOpen);
-  document.body.classList.toggle("drawer-open", anyOpen);
-  openPreviewBtnEl.textContent = state.ui.previewOpen ? "Hide Preview" : "Open Preview";
+  workspaceShellEl?.classList.toggle("preview-open", previewVisible);
+  drawerScrimEl.hidden = !state.ui.libraryOpen;
+  drawerScrimEl.classList.toggle("hidden", !state.ui.libraryOpen);
+  document.body.classList.toggle("drawer-open", state.ui.libraryOpen);
+  if (openPreviewBtnEl) {
+    openPreviewBtnEl.textContent = previewVisible ? "Hide Live Preview" : "Show Live Preview";
+  }
+  renderPreviewCallout();
 }
 
 function closeDrawers() {
   state.ui.libraryOpen = false;
-  state.ui.previewOpen = false;
   syncShellState();
 }
 
 function openLibrary() {
   state.ui.libraryOpen = true;
-  state.ui.previewOpen = false;
   syncShellState();
 }
 
 function togglePreview() {
   state.ui.previewOpen = !state.ui.previewOpen;
-  if (state.ui.previewOpen) {
-    state.ui.libraryOpen = false;
-  }
+  renderShellSummary();
   syncShellState();
 }
 
@@ -191,7 +199,8 @@ function renderShellSummary() {
     currentFormNameEl.textContent = "No form selected";
     currentFormMetaEl.textContent = "Open a form or start a blank draft.";
     stageTitleEl.textContent = "One form at a time";
-    stageDescriptionEl.textContent = "Switch forms only when you need to. Keep preview closed unless you are checking layout.";
+    stageDescriptionEl.textContent = "Choose a form, build it in the center, then keep the live panel visible while you shape the result.";
+    renderPreviewCallout();
     return;
   }
 
@@ -199,12 +208,40 @@ function renderShellSummary() {
   const groupName = state.draft.group_name || "Unassigned";
   const version = currentVersionLabel();
   const fieldCount = pluralize(currentDraftFieldCount(), "field");
-  const sectionCount = pluralize(normalizeArray(state.draft.schema.sections).length, "section");
 
   currentFormNameEl.textContent = formName;
   currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
   stageTitleEl.textContent = `Editing ${formName}`;
-  stageDescriptionEl.textContent = `${sectionCount} and ${fieldCount}. Open only the part you are working on.`;
+  stageDescriptionEl.textContent = state.ui.previewOpen
+    ? "Build in the center and watch the live panel update beside it."
+    : "Build in the center, then show the live panel when you want to inspect the entry screen.";
+  renderPreviewCallout();
+}
+
+function renderPreviewCallout() {
+  if (!previewCalloutTitleEl || !previewCalloutMetaEl || !openPreviewBtnEl) {
+    return;
+  }
+
+  if (!state.draft) {
+    previewCalloutTitleEl.textContent = "Choose a form first";
+    previewCalloutMetaEl.textContent = "The live panel appears after you load or create a form.";
+    openPreviewBtnEl.disabled = true;
+    return;
+  }
+
+  const sectionCount = pluralize(normalizeArray(state.draft.schema.sections).length, "section");
+  const fieldCount = pluralize(currentDraftFieldCount(), "field");
+  openPreviewBtnEl.disabled = false;
+
+  if (state.ui.previewOpen) {
+    previewCalloutTitleEl.textContent = "Visible while you build";
+    previewCalloutMetaEl.textContent = `${sectionCount} and ${fieldCount}. The live panel stays beside the builder and updates while you edit.`;
+    return;
+  }
+
+  previewCalloutTitleEl.textContent = "Ready beside the builder";
+  previewCalloutMetaEl.textContent = `${sectionCount} and ${fieldCount}. Show the live panel when you want to watch the output update as you edit.`;
 }
 
 function resetEditorPanels() {
@@ -1054,6 +1091,13 @@ function renderPreview() {
     <section class="preview-card">
       <div class="preview-head">
         <div>
+          <div class="preview-live-row">
+            <span class="live-pill">
+              <span class="live-dot"></span>
+              Live
+            </span>
+            <span class="preview-sync-copy">Updates while you edit</span>
+          </div>
           <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
           <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
         </div>
@@ -1472,13 +1516,19 @@ document.getElementById("closeLibraryBtn").addEventListener("click", () => {
   closeDrawers();
 });
 
-document.getElementById("closePreviewBtn").addEventListener("click", () => {
-  closeDrawers();
-});
+if (closePreviewBtnEl) {
+  closePreviewBtnEl.addEventListener("click", () => {
+    state.ui.previewOpen = false;
+    renderShellSummary();
+    syncShellState();
+  });
+}
 
-openPreviewBtnEl.addEventListener("click", () => {
-  togglePreview();
-});
+if (openPreviewBtnEl) {
+  openPreviewBtnEl.addEventListener("click", () => {
+    togglePreview();
+  });
+}
 
 drawerScrimEl.addEventListener("click", () => {
   closeDrawers();

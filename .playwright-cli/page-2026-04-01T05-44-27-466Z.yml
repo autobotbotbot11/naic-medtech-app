@@ -1,0 +1,185 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - button "Browse Forms" [ref=e5] [cursor=pointer]
+      - generic [ref=e6]:
+        - paragraph [ref=e7]: Builder
+        - heading "NAIC Medtech Builder" [level=1] [ref=e8]
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - strong [ref=e11]: Hematology
+        - generic [ref=e12]: Hematology | Version 1 | 20 fields
+      - generic [ref=e13]:
+        - button "New Form" [ref=e14] [cursor=pointer]
+        - button "Duplicate Form" [ref=e15] [cursor=pointer]
+        - button "Saved" [disabled] [ref=e16]
+  - generic [ref=e18]:
+    - strong [ref=e19]: "Status:"
+    - text: Loaded Hematology.
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - generic [ref=e22]:
+        - paragraph [ref=e23]: Focused Flow
+        - heading "Editing Hematology" [level=2] [ref=e366]
+        - paragraph [ref=e25]: Build in the center and watch the live panel update beside it.
+        - generic [ref=e26]:
+          - generic [ref=e27]:
+            - generic [ref=e28]:
+              - generic [ref=e29]: Live Preview
+              - strong [ref=e31]: Visible while you build
+            - generic [ref=e32]: 0 sections and 20 fields. The live panel stays beside the builder and updates while you edit.
+          - button "Hide Live Preview" [ref=e33] [cursor=pointer]
+      - generic [ref=e34]:
+        - generic [ref=e35]: Setup
+        - generic [ref=e36]: Build
+        - generic [ref=e37]: Preview
+        - generic [ref=e38]: Save
+    - generic [ref=e39]:
+      - generic [ref=e41]:
+        - generic [ref=e367]:
+          - generic [ref=e368]:
+            - generic [ref=e369]:
+              - generic [ref=e370]:
+                - generic [ref=e371]: Version 1
+                - generic [ref=e372]: Hematology
+              - heading "Form setup" [level=3] [ref=e373]
+              - paragraph [ref=e374]: Open only when you need to rename or move the form.
+            - button "Open" [ref=e376] [cursor=pointer]
+          - generic [ref=e377]:
+            - strong [ref=e378]: Hematology
+            - text: Hematology | Default Lab Request Metadata
+        - generic [ref=e379]:
+          - generic [ref=e380]:
+            - generic [ref=e381]:
+              - heading "Top of form" [level=3] [ref=e382]
+              - paragraph [ref=e383]: Optional fields that appear before the main sections.
+            - button "Open" [ref=e385] [cursor=pointer]
+          - generic [ref=e386]: 20 items hidden here.
+        - generic [ref=e387]:
+          - generic [ref=e388]:
+            - generic [ref=e389]:
+              - heading "Sections" [level=3] [ref=e390]
+              - paragraph [ref=e391]: Open one section at a time. Drag by handle to reorder.
+            - button "Add section" [ref=e393] [cursor=pointer]
+          - generic [ref=e395]: No sections yet. Add one to start organizing the form.
+        - generic [ref=e396]:
+          - generic [ref=e397]:
+            - generic [ref=e398]:
+              - heading "Save this version" [level=3] [ref=e399]
+              - paragraph [ref=e400]: Open if you want to review the version note.
+            - button "Open" [ref=e402] [cursor=pointer]
+          - generic [ref=e403]:
+            - strong [ref=e404]: Current version note
+            - text: Seeded from current reference schema.
+      - complementary [ref=e161]:
+        - generic [ref=e162]:
+          - generic [ref=e163]:
+            - paragraph [ref=e164]: Live Preview
+            - heading "Entry Screen Preview" [level=3] [ref=e165]
+            - paragraph [ref=e166]: Keep this visible while you edit the builder.
+          - button "Hide Preview" [ref=e167] [cursor=pointer]
+        - generic [ref=e405]:
+          - generic [ref=e407]:
+            - generic [ref=e408]:
+              - generic [ref=e409]: Live
+              - generic [ref=e411]: Updates while you edit
+            - heading "Hematology" [level=3] [ref=e412]
+            - paragraph [ref=e413]: Hematology | Version 1
+          - generic [ref=e414]:
+            - generic [ref=e415]: 20 fields
+            - generic [ref=e416]: 0 sections
+          - generic [ref=e417]:
+            - heading "Top of form" [level=4] [ref=e418]
+            - generic [ref=e419]:
+              - generic [ref=e420]:
+                - generic [ref=e421]: Examination
+                - combobox "Examination" [ref=e422]:
+                  - option "CBC, PLATELET COUNT, BLOOD TYPING" [selected]
+                  - option "HGB-HCT, PLATELET COUNT"
+                  - option "BLOOD TYPING"
+                  - option "CBC, PLATELET COUNT, ESR"
+                  - option "CBC, PLATELET COUNT"
+              - generic [ref=e423]:
+                - generic [ref=e424]: RBC COUNT (M)
+                - textbox "RBC COUNT (M) /L | normal 4.6 - 6.2 X 1012/L" [ref=e425]
+                - generic [ref=e426]: /L | normal 4.6 - 6.2 X 1012/L
+              - generic [ref=e427]:
+                - generic [ref=e428]: RBC COUNT (F)
+                - textbox "RBC COUNT (F) /L | normal 4.2 - 5.4 X 1012/L" [ref=e429]
+                - generic [ref=e430]: /L | normal 4.2 - 5.4 X 1012/L
+              - generic [ref=e431]:
+                - generic [ref=e432]: WBC COUNT
+                - textbox "WBC COUNT /L | normal 5.0 - 10.0 X 109/L" [ref=e433]
+                - generic [ref=e434]: /L | normal 5.0 - 10.0 X 109/L
+              - generic [ref=e435]:
+                - generic [ref=e436]: HEMOGLOBIN (M)
+                - textbox "HEMOGLOBIN (M) g/L | normal 140-180 g/L" [ref=e437]
+                - generic [ref=e438]: g/L | normal 140-180 g/L
+              - generic [ref=e439]:
+                - generic [ref=e440]: HEMOGLOBIN (F)
+                - textbox "HEMOGLOBIN (F) g/L | normal 120 - 160 g/L" [ref=e441]
+                - generic [ref=e442]: g/L | normal 120 - 160 g/L
+              - generic [ref=e443]:
+                - generic [ref=e444]: HEMATOCRIT (M)
+                - textbox "HEMATOCRIT (M) /L | normal 0.40-0.54 /L" [ref=e445]
+                - generic [ref=e446]: /L | normal 0.40-0.54 /L
+              - generic [ref=e447]:
+                - generic [ref=e448]: HEMATOCRIT (F)
+                - textbox "HEMATOCRIT (F) /L | normal 0.37 - 0.42 /L" [ref=e449]
+                - generic [ref=e450]: /L | normal 0.37 - 0.42 /L
+              - generic [ref=e451]:
+                - generic [ref=e452]: PLATELET COUNT
+                - textbox "PLATELET COUNT /L | normal 150 - 450 X 109/L" [ref=e453]
+                - generic [ref=e454]: /L | normal 150 - 450 X 109/L
+              - generic [ref=e455]:
+                - generic [ref=e456]: CLOTTING TIME
+                - textbox "CLOTTING TIME minutes | normal 1 - 6 minutes" [ref=e457]
+                - generic [ref=e458]: minutes | normal 1 - 6 minutes
+              - generic [ref=e459]:
+                - generic [ref=e460]: BLEEDING TIME
+                - textbox "BLEEDING TIME minutes | normal 1 - 6 minutes" [ref=e461]
+                - generic [ref=e462]: minutes | normal 1 - 6 minutes
+              - generic [ref=e463]:
+                - generic [ref=e464]: BLOOD TYPING
+                - combobox "BLOOD TYPING" [ref=e465]:
+                  - option "\"A\" rh POSITIVE" [selected]
+                  - option "\"B\" rh POSITIVE"
+                  - option "\"AB\" rh POSITIVE"
+                  - option "\"O\" rh POSITIVE"
+                  - option "\"A\" rh NEGATIVE"
+                  - option "\"B\" rh NEGATIVE"
+                  - option "\"O\" rh NEGATIVE"
+                  - option "\"AB\" rh NEGATIVE"
+              - generic [ref=e466]:
+                - generic [ref=e467]: SEGMENTERS
+                - textbox "SEGMENTERS normal 0.50 - 0.70" [ref=e468]
+                - generic [ref=e469]: normal 0.50 - 0.70
+              - generic [ref=e470]:
+                - generic [ref=e471]: LYMPHOCYTES
+                - textbox "LYMPHOCYTES normal 0.25 - 0.40" [ref=e472]
+                - generic [ref=e473]: normal 0.25 - 0.40
+              - generic [ref=e474]:
+                - generic [ref=e475]: MONOCYTES
+                - textbox "MONOCYTES normal 0.03 - 0.08" [ref=e476]
+                - generic [ref=e477]: normal 0.03 - 0.08
+              - generic [ref=e478]:
+                - generic [ref=e479]: EOSINOPHILS
+                - textbox "EOSINOPHILS normal 0.01 - 0.04" [ref=e480]
+                - generic [ref=e481]: normal 0.01 - 0.04
+              - generic [ref=e482]:
+                - generic [ref=e483]: STAB
+                - textbox "STAB normal 0 - 0.05" [ref=e484]
+                - generic [ref=e485]: normal 0 - 0.05
+              - generic [ref=e486]:
+                - generic [ref=e487]: E.S.R . (M)
+                - textbox "E.S.R . (M) mm/hr | normal 0 - 10 mm/hr" [ref=e488]
+                - generic [ref=e489]: mm/hr | normal 0 - 10 mm/hr
+              - generic [ref=e490]:
+                - generic [ref=e491]: E.S.R . (F)
+                - textbox "E.S.R . (F) mm/hr | normal 0 - 20 mm/hr" [ref=e492]
+                - generic [ref=e493]: mm/hr | normal 0 - 20 mm/hr
+              - generic [ref=e494]:
+                - generic [ref=e495]: OTHERS
+                - textbox "OTHERS" [ref=e496]
+    - group [ref=e241]:
+      - generic "Technical JSON" [ref=e242] [cursor=pointer]

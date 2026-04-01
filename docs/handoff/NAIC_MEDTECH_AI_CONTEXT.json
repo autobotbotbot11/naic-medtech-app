@@ -97,7 +97,8 @@
       "phase_4_polish": "advanced_in_progress",
       "implemented_improvements": [
         "collapsible form library drawer",
-        "toggleable preview drawer",
+        "docked side-by-side live preview panel on desktop",
+        "preview promoted to a first-class live-preview callout in the main flow",
         "single main builder canvas",
         "collapsed-by-default setup card for existing forms",
         "collapsible top-of-form area",
@@ -114,7 +115,11 @@
         "clean-state save button that disables itself and shows Saved",
         "save step collapsed by default until needed",
         "compact closed section and field rows with reduced helper-text repetition",
-        "live shell summary updates while editing the form title"
+        "live shell summary updates while editing the form title",
+        "preview control moved out of the crowded top bar and into a dedicated live-preview callout",
+        "preview stays visible while editing instead of blocking the builder in an overlay",
+        "preview panel updates live while editing builder fields and form titles",
+        "desktop preview panel uses its own internal scroll area for long forms"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",

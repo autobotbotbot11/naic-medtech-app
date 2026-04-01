@@ -16,7 +16,7 @@
   --radius-lg: 20px;
   --radius-md: 16px;
   --radius-sm: 14px;
-  --content-width: 960px;
+  --content-width: 1180px;
 }
 
 * {
@@ -235,11 +235,6 @@ button:disabled {
   width: min(360px, calc(100vw - 36px));
 }
 
-.drawer-right {
-  right: 18px;
-  width: min(430px, calc(100vw - 36px));
-}
-
 .drawer-card {
   height: 100%;
   display: grid;
@@ -258,10 +253,6 @@ button:disabled {
 
 .drawer-left .drawer-card {
   transform: translateX(-110%);
-}
-
-.drawer-right .drawer-card {
-  transform: translateX(110%);
 }
 
 .drawer.is-open {
@@ -315,15 +306,12 @@ button:disabled {
   justify-content: flex-end;
 }
 
-.preview-card-shell {
-  grid-template-rows: auto 1fr;
-}
-
 .drawer-head,
 .card-head,
 .section-head,
 .field-head,
-.preview-head {
+.preview-head,
+.preview-panel-head {
   display: flex;
   justify-content: space-between;
   gap: 12px;
@@ -441,6 +429,16 @@ textarea:focus {
   gap: 14px;
 }
 
+.workspace-shell {
+  display: grid;
+  gap: 14px;
+  align-items: start;
+}
+
+.workspace-shell.preview-open {
+  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+}
+
 .stage-head,
 .editor-panel,
 .dev-panel {
@@ -464,8 +462,92 @@ textarea:focus {
   font-weight: 800;
 }
 
+.preview-callout,
+.preview-callout-topline,
+.preview-live-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.preview-callout {
+  margin-top: 14px;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border: 1px solid rgba(30, 93, 82, 0.16);
+  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, rgba(223, 240, 233, 0.84), rgba(255, 252, 247, 0.94));
+}
+
+.preview-callout-copy {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+
+.preview-callout-copy strong {
+  font-size: 14px;
+}
+
+.preview-callout-copy span:last-child,
+.preview-sync-copy {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.84);
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  border: 1px solid rgba(30, 93, 82, 0.14);
+}
+
+.live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: #2c9c83;
+  box-shadow: 0 0 0 0 rgba(44, 156, 131, 0.34);
+  animation: live-pulse 1.9s ease-out infinite;
+}
+
+@keyframes live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(44, 156, 131, 0.34);
+  }
+
+  70% {
+    box-shadow: 0 0 0 9px rgba(44, 156, 131, 0);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(44, 156, 131, 0);
+  }
+}
+
 .editor-panel {
   min-height: calc(100vh - 255px);
+}
+
+.preview-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 14px;
+  padding: 16px;
+  align-self: start;
+  position: sticky;
+  top: 18px;
+  height: calc(100vh - 36px);
+  max-height: calc(100vh - 36px);
+  overflow: hidden;
 }
 
 .form-editor {
@@ -723,12 +805,6 @@ details.advanced summary {
   font-size: 13px;
 }
 
-.preview-canvas {
-  overflow: auto;
-  min-height: 0;
-  padding-right: 4px;
-}
-
 .preview-card {
   display: grid;
   gap: 14px;
@@ -736,6 +812,19 @@ details.advanced summary {
 
 .preview-title {
   font-size: 26px;
+}
+
+.preview-live-row {
+  margin-bottom: 8px;
+}
+
+.preview-canvas {
+  overflow: auto;
+  min-height: 0;
+  max-height: 100%;
+  padding-right: 8px;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
 }
 
 .preview-section {
@@ -787,7 +876,8 @@ details.advanced summary {
   .card-head,
   .section-head,
   .field-head,
-  .drawer-head {
+  .drawer-head,
+  .preview-panel-head {
     flex-direction: column;
     align-items: stretch;
   }
@@ -795,6 +885,21 @@ details.advanced summary {
   .bar-actions,
   .action-row {
     justify-content: flex-start;
+  }
+
+  .preview-callout {
+    align-items: stretch;
+  }
+
+  .workspace-shell.preview-open {
+    grid-template-columns: 1fr;
+  }
+
+  .preview-panel {
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow: visible;
   }
 
   .setup-grid,
@@ -814,12 +919,12 @@ details.advanced summary {
   .feedback-bar,
   .stage-head,
   .editor-panel,
-  .dev-panel {
+  .dev-panel,
+  .preview-panel {
     padding: 14px;
   }
 
-  .drawer-left,
-  .drawer-right {
+  .drawer-left {
     left: 10px;
     right: 10px;
     width: auto;
@@ -830,8 +935,7 @@ details.advanced summary {
     bottom: 10px;
   }
 
-  .drawer-left .drawer-card,
-  .drawer-right .drawer-card {
+  .drawer-left .drawer-card {
     transform: translateY(4%);
   }
 
@@ -841,6 +945,11 @@ details.advanced summary {
 
   .stage-shell {
     margin-top: 12px;
+  }
+
+  .preview-callout {
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .editor-panel {

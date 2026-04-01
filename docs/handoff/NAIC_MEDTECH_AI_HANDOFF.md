@@ -71,7 +71,8 @@ Current implementation status:
 
 What is already true in the current builder:
 - form library is now a collapsible left drawer
-- preview is now a toggleable right drawer
+- live preview is now a docked side-by-side panel in the workspace on desktop
+- live preview is now treated as a first-class builder feature, not just a utility button
 - the main canvas focuses on one form at a time
 - form setup collapses by default on existing forms
 - top-of-form fields are collapsible
@@ -89,6 +90,10 @@ What is already true in the current builder:
 - the save step stays collapsed by default until needed
 - closed sections and closed fields now render as compact outline rows instead of repeating helper text
 - the shell summary updates live while the user edits the form title
+- preview control was moved out of the crowded top bar into a dedicated main-flow `Live Preview` callout
+- the live preview now stays visible while editing instead of blocking the builder in an overlay
+- the preview panel updates live while the user edits builder fields and form titles
+- on desktop, the preview panel uses its own internal scroll area so long forms remain fully inspectable without losing the builder view
 
 What is still not done:
 - final reduction of header and action noise
