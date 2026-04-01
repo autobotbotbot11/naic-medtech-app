@@ -545,13 +545,15 @@ textarea:focus {
   display: grid;
   gap: 14px;
   align-items: start;
+  grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
 }
 
 .workspace-shell.preview-open {
-  grid-template-columns: minmax(0, 1fr) minmax(340px, 390px);
+  grid-template-columns: minmax(220px, 250px) minmax(0, 1fr) minmax(340px, 390px);
 }
 
 .stage-head,
+.outline-panel,
 .editor-panel,
 .dev-panel {
   padding: 16px;
@@ -667,6 +669,81 @@ button.subtle[aria-pressed="true"] {
 
 .editor-panel {
   min-height: calc(100vh - 255px);
+}
+
+.outline-panel {
+  align-self: start;
+  position: sticky;
+  top: 18px;
+}
+
+.builder-outline {
+  display: grid;
+  gap: 14px;
+}
+
+.outline-head {
+  display: grid;
+  gap: 6px;
+}
+
+.outline-head h3 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.outline-nav,
+.outline-sublist {
+  display: grid;
+  gap: 8px;
+}
+
+.outline-item,
+.outline-subitem {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(68, 54, 40, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text);
+}
+
+.outline-item {
+  padding: 11px 12px;
+  font-weight: 700;
+}
+
+.outline-sublist {
+  padding-left: 10px;
+  border-left: 2px solid rgba(68, 54, 40, 0.08);
+}
+
+.outline-subitem {
+  padding: 9px 10px;
+  font-size: 13px;
+}
+
+.outline-item.active,
+.outline-subitem.active {
+  border-color: rgba(30, 93, 82, 0.2);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
+}
+
+.outline-count {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.outline-empty {
+  padding: 10px 2px 2px;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .preview-panel {
@@ -1131,11 +1208,19 @@ details.advanced summary {
     grid-template-columns: 1fr;
   }
 
+  .workspace-shell {
+    grid-template-columns: 1fr;
+  }
+
   .preview-panel {
     position: static;
     height: auto;
     max-height: none;
     overflow: visible;
+  }
+
+  .outline-panel {
+    position: static;
   }
 
   .setup-grid,

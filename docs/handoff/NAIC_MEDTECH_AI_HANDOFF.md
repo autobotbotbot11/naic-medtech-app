@@ -87,11 +87,14 @@ What is implemented:
   - destination folder
   - starting method (`Blank`, `Duplicate Existing Form`, or `Start from Preset`)
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
+- the current builder workspace now has a real left outline plus one focused editing context at a time
+- the old `Top of form` language is now reframed as `Free fields`
+- `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details preset
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface
 - treat `/forms/new` as the new creation surface
-- the current builder page still uses the older single-page builder shell
+- the current builder page is still using the older underlying schema shape, but the workspace shell is now significantly calmer
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
 
 ## Current Builder Progress

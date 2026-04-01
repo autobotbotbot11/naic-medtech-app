@@ -24,7 +24,13 @@
       "start methods now include blank, duplicate existing form, and starter presets",
       "builder duplicate actions now route through the guided create screen instead of forking immediately in place"
     ],
-    "current_builder_surface_note": "The builder page itself still uses the older single-page builder shell."
+    "workspace_behavior": [
+      "the builder workspace now uses a left outline plus one focused editing context at a time",
+      "the old top of form area is now reframed as free fields",
+      "default shared record details are tucked into advanced mode instead of staying in the primary form-details surface",
+      "sections still keep drag-and-drop ordering inside the focused sections view"
+    ],
+    "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
   },
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [

@@ -14,6 +14,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - runtime data lives in `../data/runtime/naic_medtech.db`
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
+- the builder workspace now uses a calmer `outline + focused editor + live preview` layout
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

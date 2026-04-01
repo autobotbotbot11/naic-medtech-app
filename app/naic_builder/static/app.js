@@ -9,6 +9,7 @@ const state = {
     libraryOpen: false,
     previewOpen: true,
     advancedMode: false,
+    focusPane: "setup",
     setupOpen: true,
     saveOpen: false,
     topFieldsOpen: true,
@@ -37,6 +38,7 @@ const formSearchEl = document.getElementById("formSearch");
 const statusTextEl = document.getElementById("statusText");
 const dirtyBadgeEl = document.getElementById("dirtyBadge");
 const formEditorEl = document.getElementById("formEditor");
+const builderOutlineEl = document.getElementById("builderOutline");
 const previewCanvasEl = document.getElementById("previewCanvas");
 const jsonOutputEl = document.getElementById("jsonOutput");
 const drawerScrimEl = document.getElementById("drawerScrim");
@@ -421,6 +423,7 @@ function resetEditorPanels() {
   state.ui.topFieldsOpen = !topFields.length;
   state.ui.openSectionPaths = sections.length ? [pathKey(["schema", "sections", 0])] : [];
   state.ui.activeFieldPath = null;
+  state.ui.focusPane = defaultFocusPane();
 }
 
 function collectFieldPathKeys(container, basePath = []) {
@@ -451,6 +454,8 @@ function syncEditorPanels() {
   if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath)) {
     state.ui.activeFieldPath = null;
   }
+
+  syncFocusPane();
 }
 
 function isSectionOpen(path) {
@@ -916,6 +921,10 @@ async function confirmDeleteNode(path) {
 function renderAll() {
   renderShellSummary();
   renderFormList();
+  if (state.draft) {
+    syncEditorPanels();
+  }
+  renderOutline();
   renderEditor();
   renderPreview();
   renderJson();
@@ -1000,6 +1009,103 @@ function renderCommonFieldSetOptions(selectedId) {
     .join("");
 }
 
+function defaultFocusPane() {
+  const sections = normalizeArray(state.draft?.schema?.sections);
+  const freeFields = normalizeArray(state.draft?.schema?.fields);
+
+  if (!state.selectedFormSlug) {
+    return "setup";
+  }
+  if (sections.length) {
+    return "sections";
+  }
+  if (freeFields.length) {
+    return "free_fields";
+  }
+  return "setup";
+}
+
+function syncFocusPane() {
+  const focus = String(state.ui.focusPane || "");
+  const valid = new Set(["setup", "free_fields", "sections", "save"]);
+  if (!valid.has(focus)) {
+    state.ui.focusPane = defaultFocusPane();
+  }
+}
+
+function setFocusPane(pane) {
+  state.ui.focusPane = pane;
+  renderAll();
+}
+
+function focusSectionAtIndex(index) {
+  const sections = normalizeArray(state.draft?.schema?.sections);
+  if (!sections[index]) {
+    return;
+  }
+
+  state.ui.focusPane = "sections";
+  state.ui.openSectionPaths = [pathKey(["schema", "sections", index])];
+  state.ui.activeFieldPath = null;
+  renderAll();
+}
+
+function renderOutline() {
+  if (!builderOutlineEl) {
+    return;
+  }
+
+  if (!state.draft) {
+    builderOutlineEl.innerHTML = '<div class="empty-state">No draft loaded.</div>';
+    return;
+  }
+
+  const sections = normalizeArray(state.draft.schema.sections);
+  const freeFields = normalizeArray(state.draft.schema.fields);
+  const focusPane = String(state.ui.focusPane || defaultFocusPane());
+  const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
+
+  builderOutlineEl.innerHTML = `
+    <div class="outline-head">
+      <p class="eyebrow">Workspace</p>
+      <h3>${escapeHtml(state.draft.name || "Untitled Form")}</h3>
+      <p class="panel-copy">${pluralize(sections.length, "section")} | ${pluralize(freeFields.length, "free field", "free fields")}</p>
+    </div>
+
+    <nav class="outline-nav">
+      <button class="outline-item ${focusPane === "setup" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="setup">
+        <span>Form details</span>
+      </button>
+      <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
+        <span>Free fields</span>
+        <span class="outline-count">${freeFields.length}</span>
+      </button>
+      <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
+        <span>Sections</span>
+        <span class="outline-count">${sections.length}</span>
+      </button>
+      ${sections.length ? `
+        <div class="outline-sublist">
+          ${sections.map((section, index) => {
+            const token = pathKey(["schema", "sections", index]);
+            return `
+              <button class="outline-subitem ${focusPane === "sections" && openSectionToken === token ? "active" : ""}" type="button" data-action="focus-section" data-index="${index}">
+                <span>${escapeHtml(section.name || `Section ${index + 1}`)}</span>
+                <span class="outline-count">${normalizeArray(section.fields).length}</span>
+              </button>
+            `;
+          }).join("")}
+        </div>
+      ` : `
+        <div class="outline-empty">No sections yet.</div>
+      `}
+      <button class="outline-item ${focusPane === "save" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="save">
+        <span>Save</span>
+      </button>
+    </nav>
+  `;
+}
+
 function renderEditor() {
   destroySortables();
 
@@ -1009,19 +1115,24 @@ function renderEditor() {
   }
 
   syncEditorPanels();
+  const focusPane = String(state.ui.focusPane || defaultFocusPane());
 
-  formEditorEl.innerHTML = `
-    ${renderFormSetupCard()}
-    ${renderTopFieldsCard()}
-    ${renderSectionsCard()}
-    ${renderSaveCard()}
-  `;
+  if (focusPane === "setup") {
+    formEditorEl.innerHTML = renderFormSetupCard({ focusMode: true });
+  } else if (focusPane === "free_fields") {
+    formEditorEl.innerHTML = renderTopFieldsCard({ focusMode: true });
+  } else if (focusPane === "save") {
+    formEditorEl.innerHTML = renderSaveCard({ focusMode: true });
+  } else {
+    formEditorEl.innerHTML = renderSectionsCard({ focusMode: true });
+  }
 
   setupSortableCollections();
 }
 
-function renderFormSetupCard() {
-  const setupOpen = state.ui.setupOpen;
+function renderFormSetupCard(options = {}) {
+  const focusMode = Boolean(options.focusMode);
+  const setupOpen = focusMode ? true : state.ui.setupOpen;
   const formName = state.draft.name || "Untitled Form";
   const groupName = state.draft.group_name || "Unassigned";
   const sharedFieldSetName = currentCommonFieldSetName();
@@ -1034,13 +1145,15 @@ function renderFormSetupCard() {
             <span class="chip soft">${escapeHtml(groupName)}</span>
           </div>
           <div class="card-title-row">
-            <h3 class="card-title">Form setup</h3>
-            ${renderHelpPopover("Form setup help", "Name the form, choose its department, and keep the shared patient info set aligned.")}
+            <h3 class="card-title">Form details</h3>
+            ${renderHelpPopover("Form details help", "Name the form and choose where it lives in the library. Keep advanced record defaults tucked away unless you really need them.")}
           </div>
         </div>
+        ${focusMode ? "" : `
         <div class="top-actions">
           <button class="ghost mini" type="button" data-action="toggle-setup">${setupOpen ? "Done" : "Open"}</button>
         </div>
+        `}
       </div>
 
       ${setupOpen ? `
@@ -1050,20 +1163,20 @@ function renderFormSetupCard() {
             <input data-bind="name" value="${escapeHtml(formName)}" placeholder="Example: Urinalysis">
           </label>
           <label>
-            <span>Department / category</span>
+            <span>Folder / container</span>
             <input data-bind="group_name" value="${escapeHtml(groupName)}" placeholder="Example: Clinical Microscopy">
-          </label>
-          <label>
-            <span>Shared patient info</span>
-            <select data-bind="schema.common_field_set_id">
-              ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
-            </select>
           </label>
         </div>
         ${state.ui.advancedMode ? `
           <details class="advanced">
             <summary>Advanced</summary>
             <div class="advanced-grid">
+              <label>
+                <span>Default record details</span>
+                <select data-bind="schema.common_field_set_id">
+                  ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
+                </select>
+              </label>
               <label>
                 <span>Internal form key</span>
                 <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
@@ -1078,15 +1191,16 @@ function renderFormSetupCard() {
       ` : `
         <div class="collapsed-copy">
           <strong>${escapeHtml(formName)}</strong>
-          ${escapeHtml(groupName)} | ${escapeHtml(sharedFieldSetName)}
+          ${escapeHtml(groupName)}${state.ui.advancedMode ? ` | ${escapeHtml(sharedFieldSetName)}` : ""}
         </div>
       `}
     </section>
   `;
 }
 
-function renderSaveCard() {
-  const saveOpen = state.ui.saveOpen;
+function renderSaveCard(options = {}) {
+  const focusMode = Boolean(options.focusMode);
+  const saveOpen = focusMode ? true : state.ui.saveOpen;
   const note = String(state.draft.summary || "").trim();
   return `
     <section class="editor-card">
@@ -1097,9 +1211,11 @@ function renderSaveCard() {
             ${renderHelpPopover("Version note help", "Version notes are optional. Add one only when you want to remember what changed.")}
           </div>
         </div>
+        ${focusMode ? "" : `
         <div class="top-actions">
           <button class="ghost mini" type="button" data-action="toggle-save-step">${saveOpen ? "Done" : "Open"}</button>
         </div>
+        `}
       </div>
 
       ${saveOpen ? `
@@ -1132,34 +1248,36 @@ function renderNodeActionMenu(path) {
   `;
 }
 
-function renderTopFieldsCard() {
+function renderTopFieldsCard(options = {}) {
+  const focusMode = Boolean(options.focusMode);
   const topFields = normalizeArray(state.draft.schema.fields);
   const itemCount = pluralize(topFields.length, "item");
+  const topFieldsOpen = focusMode ? true : state.ui.topFieldsOpen;
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
           <div class="card-title-row">
-            <h3 class="card-title">Top of form</h3>
-            ${renderHelpPopover("Top of form help", "These fields appear above the main sections of the form.")}
+            <h3 class="card-title">Free fields</h3>
+            ${renderHelpPopover("Free fields help", "Use these only when a field does not belong inside a named section yet.")}
           </div>
         </div>
         <div class="top-actions">
-          <button class="ghost mini" type="button" data-action="toggle-top-fields">${state.ui.topFieldsOpen ? "Done" : "Open"}</button>
-          ${state.ui.topFieldsOpen ? `
+          ${focusMode ? "" : `<button class="ghost mini" type="button" data-action="toggle-top-fields">${topFieldsOpen ? "Done" : "Open"}</button>`}
+          ${topFieldsOpen ? `
             <button class="secondary mini" type="button" data-action="add-top-field">Add field</button>
             <button class="ghost mini" type="button" data-action="add-top-group">Add group</button>
           ` : ""}
         </div>
       </div>
-      ${state.ui.topFieldsOpen
+      ${topFieldsOpen
         ? renderFieldCollection(topFields, ["schema", "fields"])
         : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
     </section>
   `;
 }
 
-function renderSectionsCard() {
+function renderSectionsCard(options = {}) {
   const sections = normalizeArray(state.draft.schema.sections);
   return `
     <section class="editor-card">
@@ -1167,7 +1285,7 @@ function renderSectionsCard() {
         <div>
           <div class="card-title-row">
             <h3 class="card-title">Sections</h3>
-            ${renderHelpPopover("Sections help", "Open a section to edit it. Drag its handle when you want to reorder it.")}
+            ${renderHelpPopover("Sections help", "Use sections when the form needs named groups of fields. Open one when you want to edit it, and drag to reorder them.")}
           </div>
         </div>
         <div class="top-actions">
@@ -1391,7 +1509,7 @@ function renderPreview() {
       </div>
       ${normalizeArray(state.draft.schema.fields).length ? `
         <section class="preview-section">
-          <h4>Top of form</h4>
+          <h4>Free fields</h4>
           <div class="preview-grid">
             ${normalizeArray(state.draft.schema.fields).map(renderPreviewField).join("")}
           </div>
@@ -1509,6 +1627,7 @@ function addFieldAt(path, kind) {
   state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
   if (pathKey(path) === pathKey(["schema", "fields"])) {
     state.ui.topFieldsOpen = true;
+    state.ui.focusPane = "free_fields";
   }
   touch({ full: true });
 }
@@ -1517,6 +1636,7 @@ function addSection() {
   state.draft.schema.sections.push(makeBlankSection());
   state.ui.openSectionPaths = [pathKey(["schema", "sections", state.draft.schema.sections.length - 1])];
   state.ui.activeFieldPath = null;
+  state.ui.focusPane = "sections";
   touch({ full: true });
 }
 
@@ -1692,18 +1812,22 @@ async function handleEditorClick(event) {
   }
   if (action === "toggle-top-fields") {
     state.ui.topFieldsOpen = !state.ui.topFieldsOpen;
+    state.ui.focusPane = "free_fields";
     renderEditor();
     return;
   }
   if (action === "toggle-setup") {
+    state.ui.focusPane = "setup";
     toggleSetup();
     return;
   }
   if (action === "toggle-save-step") {
+    state.ui.focusPane = "save";
     toggleSaveStep();
     return;
   }
   if (action === "toggle-section" && path) {
+    state.ui.focusPane = "sections";
     toggleSection(path);
     return;
   }
@@ -1753,6 +1877,23 @@ function handleEditorChange(event) {
   handleRootInput(event);
 }
 
+function handleOutlineClick(event) {
+  const actionTarget = event.target.closest("[data-action]");
+  if (!actionTarget) {
+    return;
+  }
+
+  const action = actionTarget.dataset.action;
+  if (action === "focus-pane") {
+    setFocusPane(actionTarget.dataset.pane || defaultFocusPane());
+    return;
+  }
+
+  if (action === "focus-section") {
+    focusSectionAtIndex(Number(actionTarget.dataset.index));
+  }
+}
+
 formListEl.addEventListener("click", (event) => {
   const button = event.target.closest('[data-action="load-form"]');
   if (!button) {
@@ -1776,6 +1917,7 @@ formEditorEl.addEventListener("change", (event) => {
     handleEditorChange(event);
   }
 });
+builderOutlineEl?.addEventListener("click", handleOutlineClick);
 formEditorEl.addEventListener("toggle", (event) => {
   const details = event.target;
   if (!(details instanceof HTMLDetailsElement) || !details.open) {
