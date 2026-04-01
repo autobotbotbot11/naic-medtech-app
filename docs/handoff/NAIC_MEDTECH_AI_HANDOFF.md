@@ -54,13 +54,18 @@ Phase 1 is not primarily about:
 
 Those can come later, but the architecture should still allow them.
 
-## Builder V2 Note
-The current builder prototype is not yet considered user-friendly enough for the real client.
+## Builder Direction Note
+The current builder prototype is not yet considered final for the real client.
 
-Before continuing major builder UI work, read:
+Before continuing major builder work, read in this order:
+- `docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
+- `docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
 - `docs/handoff/BUILDER_V2_PLAN.md`
 
-That document is the active UX/product direction for the next builder implementation pass.
+Important:
+- `FLEXIBLE_BUILDER_FOUNDATION.md` is the current long-term architecture recommendation
+- `BUILDER_DATA_MODEL_SPEC.md` is the current concrete data-model recommendation
+- `BUILDER_V2_PLAN.md` remains the active short-term UX simplification plan for the current prototype
 
 ## Current Builder Progress
 Current implementation status:
@@ -112,6 +117,22 @@ What is still not done:
 - final reduction of header and action noise
 - deeper visual polish for truly client-ready comfort
 - full stabilization and real-use QA
+
+## Current Strategic Recommendation
+The strongest future-proof direction currently recommended is:
+- organization tree using generic `container | form` nodes
+- block-based form schema instead of special zones like `top_of_form`
+- generic fields instead of hardcoded domain-specific field concepts
+- optional reusable presets instead of mandatory shared blocks
+- versioned records separate from form design
+
+This is documented in:
+- `docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
+- `docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
+
+Important:
+- the engine should be highly flexible
+- the UI should still stay very simple for non-technical users
 
 ## Source Of Truth
 Primary source of truth:

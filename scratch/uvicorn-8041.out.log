@@ -1,0 +1,6 @@
+INFO:     127.0.0.1:46225 - "GET /api/health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35996 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35997 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35998 - "GET /api/forms/urine HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36001 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:36002 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK

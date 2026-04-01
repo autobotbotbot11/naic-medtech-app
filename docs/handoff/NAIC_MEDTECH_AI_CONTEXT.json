@@ -2,6 +2,8 @@
   "project_name": "NAIC Medtech",
   "primary_problem": "The clinic needs a system that speeds up lab input and lab output during daily operations.",
   "core_product_direction": "Schema-driven laboratory platform with an exam/form builder.",
+  "active_builder_foundation_doc": "docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md",
+  "active_builder_data_model_doc": "docs/handoff/BUILDER_DATA_MODEL_SPEC.md",
   "active_builder_direction_doc": "docs/handoff/BUILDER_V2_PLAN.md",
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [
@@ -59,6 +61,47 @@
     "data_entry_rendering",
     "output_rendering"
   ],
+  "flexible_builder_recommendation": {
+    "organization_model": [
+      "container",
+      "form"
+    ],
+    "form_model": "ordered_blocks",
+    "recommended_blocks": [
+      "section",
+      "field",
+      "field_group",
+      "note",
+      "divider",
+      "table",
+      "repeater",
+      "columns"
+    ],
+    "recommended_field_types": [
+      "text",
+      "textarea",
+      "number",
+      "select",
+      "multi_select",
+      "date",
+      "time",
+      "datetime",
+      "checkbox",
+      "radio"
+    ],
+    "important_rules": [
+      "do not hardcode top_of_form",
+      "do not hardcode shared_patient_info as a mandatory builder zone",
+      "do not hardcode medtech or pathologist as special engine concepts",
+      "hardcode primitives instead of medical assumptions",
+      "keep the engine highly flexible while keeping the UI simple by default"
+    ],
+    "supporting_concepts": [
+      "optional presets",
+      "versioned records",
+      "search and tags later in addition to hierarchy"
+    ]
+  },
   "current_group_structure": [
     "Clinical Microscopy",
     "Blood Chemistry",
