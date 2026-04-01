@@ -15,6 +15,7 @@ const state = {
     topFieldsOpen: true,
     openSectionPaths: [],
     activeFieldPath: null,
+    activeOptionToken: null,
   },
 };
 
@@ -423,6 +424,7 @@ function resetEditorPanels() {
   state.ui.topFieldsOpen = !topFields.length;
   state.ui.openSectionPaths = sections.length ? [pathKey(["schema", "sections", 0])] : [];
   state.ui.activeFieldPath = null;
+  state.ui.activeOptionToken = null;
   state.ui.focusPane = defaultFocusPane();
 }
 
@@ -453,6 +455,16 @@ function syncEditorPanels() {
   const validFieldPaths = new Set(collectFieldPathKeys(state.draft?.schema, ["schema"]));
   if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath)) {
     state.ui.activeFieldPath = null;
+    state.ui.activeOptionToken = null;
+  }
+
+  if (state.ui.activeOptionToken) {
+    const parsed = parseOptionToken(state.ui.activeOptionToken);
+    const field = parsed ? getNodeByPath(parsed.path) : null;
+    const options = normalizeArray(field?.options);
+    if (!parsed || !options[parsed.index]) {
+      state.ui.activeOptionToken = null;
+    }
   }
 
   syncFocusPane();
@@ -512,12 +524,14 @@ function toggleField(path) {
     const activePath = parsePathKey(state.ui.activeFieldPath);
     if (state.ui.activeFieldPath === token || pathStartsWith(activePath, path)) {
       state.ui.activeFieldPath = null;
+      state.ui.activeOptionToken = null;
       renderEditor();
       return;
     }
   }
 
   state.ui.activeFieldPath = token;
+  state.ui.activeOptionToken = null;
   renderEditor();
 }
 
@@ -1423,6 +1437,35 @@ function resolveFocusedFieldIndex(collectionPath, items) {
   return matchIndex >= 0 ? matchIndex : 0;
 }
 
+function optionToken(path, index) {
+  return `${pathKey(path)}::${index}`;
+}
+
+function parseOptionToken(token) {
+  const marker = String(token || "");
+  const splitIndex = marker.lastIndexOf("::");
+  if (splitIndex <= 0) {
+    return null;
+  }
+  const path = parsePathKey(marker.slice(0, splitIndex));
+  const index = Number(marker.slice(splitIndex + 2));
+  if (!path.length || Number.isNaN(index)) {
+    return null;
+  }
+  return { path, index };
+}
+
+function resolveFocusedOptionIndex(path, options) {
+  if (!options.length) {
+    return -1;
+  }
+  const parsed = parseOptionToken(state.ui.activeOptionToken);
+  if (parsed && pathKey(parsed.path) === pathKey(path) && options[parsed.index]) {
+    return parsed.index;
+  }
+  return 0;
+}
+
 function summarizeField(field) {
   const isGroup = field.kind === "field_group";
   const childCount = normalizeArray(field.fields).length;
@@ -1540,6 +1583,8 @@ function renderFieldCard(field, path, options = {}) {
 
 function renderOptionsEditor(field, path) {
   const options = normalizeArray(field.options);
+  const selectedIndex = resolveFocusedOptionIndex(path, options);
+  const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
   return `
     <section class="field-stack">
       <div class="card-head">
@@ -1550,17 +1595,38 @@ function renderOptionsEditor(field, path) {
           <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
         </div>
       </div>
-      <div class="options-list">
-        ${options.length ? options.map((option, index) => `
-          <div class="option-row">
-            <label>
-              <span>Choice ${index + 1}</span>
-              <input data-action="option-name" data-path="${encodePath(path)}" data-index="${index}" value="${escapeHtml(option.name || "")}" placeholder="Option name">
-            </label>
-            <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${index}">Delete</button>
-          </div>
-        `).join("") : '<div class="empty-state">This dropdown has no choices yet.</div>'}
-      </div>
+      ${options.length ? `
+        <div class="option-organizer">
+          ${options.map((option, index) => `
+            <div class="option-organizer-item ${index === selectedIndex ? "active" : ""}">
+              <button class="option-organizer-select" type="button" data-action="focus-option" data-path="${encodePath(path)}" data-index="${index}">
+                <span class="option-organizer-copy">
+                  <strong>${escapeHtml(option.name || `Choice ${index + 1}`)}</strong>
+                  <span>Choice ${index + 1}</span>
+                </span>
+                <span class="outline-count">${index + 1}</span>
+              </button>
+            </div>
+          `).join("")}
+        </div>
+        <div class="option-focus-stage">
+          ${selectedOption ? `
+            <div class="option-focus-card">
+              <div class="option-focus-head">
+                <div>
+                  <span class="field-summary">Choice ${selectedIndex + 1}</span>
+                  <h5>${escapeHtml(selectedOption.name || `Choice ${selectedIndex + 1}`)}</h5>
+                </div>
+                <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${selectedIndex}">Delete</button>
+              </div>
+              <label class="option-focus-input">
+                <span>Choice label</span>
+                <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Option name">
+              </label>
+            </div>
+          ` : '<div class="empty-state">Choose a choice to keep editing.</div>'}
+        </div>
+      ` : '<div class="empty-state">This dropdown has no choices yet.</div>'}
     </section>
   `;
 }
@@ -1735,6 +1801,7 @@ function addOption(path) {
   const field = getNodeByPath(path);
   ensureOptionShape(field);
   field.options.push({ name: `Option ${field.options.length + 1}` });
+  state.ui.activeOptionToken = optionToken(path, field.options.length - 1);
   touch({ full: true });
 }
 
@@ -1742,6 +1809,11 @@ function deleteOption(path, index) {
   const field = getNodeByPath(path);
   ensureOptionShape(field);
   field.options.splice(index, 1);
+  if (field.options.length) {
+    state.ui.activeOptionToken = optionToken(path, Math.max(0, Math.min(index, field.options.length - 1)));
+  } else {
+    state.ui.activeOptionToken = null;
+  }
   touch({ full: true });
 }
 
@@ -1917,12 +1989,18 @@ async function handleEditorClick(event) {
     toggleSaveStep();
     return;
   }
+  if (action === "focus-option" && path) {
+    state.ui.activeOptionToken = optionToken(path, Number(actionTarget.dataset.index));
+    renderAll();
+    return;
+  }
   if (action === "focus-section") {
     focusSectionAtIndex(Number(actionTarget.dataset.index));
     return;
   }
   if (action === "focus-field" && path) {
     state.ui.activeFieldPath = pathKey(path);
+    state.ui.activeOptionToken = null;
     renderAll();
     return;
   }
@@ -1971,6 +2049,9 @@ function handleEditorChange(event) {
   if (event.target.dataset.action === "field-type") {
     const field = getNodeByPath(decodePath(event.target.dataset.path));
     applyFieldType(field, event.target.value);
+    state.ui.activeOptionToken = event.target.value === "choice"
+      ? optionToken(decodePath(event.target.dataset.path), 0)
+      : null;
     touch({ full: true });
     return;
   }

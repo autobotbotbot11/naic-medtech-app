@@ -92,6 +92,7 @@ What is implemented:
 - `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details preset
 - the sections view now uses a compact section organizer plus one focused section editor
 - inside `Sections` and `Free fields`, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
+- dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface
@@ -118,6 +119,7 @@ What is already true in the current builder:
 - only one section stays open at a time for calmer editing
 - the sections view now keeps a compact organizer list at the top and a single focused section editor below it
 - the `Free fields` and selected-section editors now keep a compact field organizer list and one focused field editor at a time
+- dropdown `Choices` editors now keep a compact choice organizer list and one focused choice editor at a time
 - fields now use a calmer `Edit` / `Done` flow instead of exposing every field editor at once
 - sections and fields now use a calmer `More` action menu instead of always showing all actions
 - the save note is now separated into its own save step card

@@ -846,6 +846,7 @@ button.subtle[aria-pressed="true"] {
 .field-organizer,
 .field-list,
 .nested-fields,
+.option-organizer,
 .options-list {
   display: grid;
   gap: 10px;
@@ -856,6 +857,10 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-organizer {
+  padding: 2px 0 6px;
+}
+
+.option-organizer {
   padding: 2px 0 6px;
 }
 
@@ -881,6 +886,16 @@ button.subtle[aria-pressed="true"] {
   background: rgba(255, 255, 255, 0.72);
 }
 
+.option-organizer-item {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(68, 54, 40, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+
 .section-organizer-item.active {
   border-color: rgba(30, 93, 82, 0.18);
   background: var(--accent-soft);
@@ -888,6 +903,12 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-organizer-item.active {
+  border-color: rgba(30, 93, 82, 0.18);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
+}
+
+.option-organizer-item.active {
   border-color: rgba(30, 93, 82, 0.18);
   background: var(--accent-soft);
   box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
@@ -919,6 +940,19 @@ button.subtle[aria-pressed="true"] {
   padding: 4px 2px;
 }
 
+.option-organizer-select {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 2px;
+}
+
 .section-organizer-copy {
   min-width: 0;
   display: grid;
@@ -926,6 +960,12 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-organizer-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.option-organizer-copy {
   min-width: 0;
   display: grid;
   gap: 3px;
@@ -939,6 +979,10 @@ button.subtle[aria-pressed="true"] {
   font-size: 14px;
 }
 
+.option-organizer-copy strong {
+  font-size: 14px;
+}
+
 .section-organizer-copy span {
   color: var(--muted);
   font-size: 12px;
@@ -949,12 +993,22 @@ button.subtle[aria-pressed="true"] {
   font-size: 12px;
 }
 
+.option-organizer-copy span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .section-focus-stage {
   display: grid;
   gap: 10px;
 }
 
 .field-focus-stage {
+  display: grid;
+  gap: 10px;
+}
+
+.option-focus-stage {
   display: grid;
   gap: 10px;
 }
@@ -1194,6 +1248,32 @@ button.subtle[aria-pressed="true"] {
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 10px;
   align-items: end;
+}
+
+.option-focus-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid rgba(68, 54, 40, 0.1);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.94));
+}
+
+.option-focus-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.option-focus-head h5 {
+  margin: 4px 0 0;
+  font-size: 18px;
+}
+
+.option-focus-input {
+  display: grid;
+  gap: 6px;
 }
 
 .empty-state {
