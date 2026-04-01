@@ -9,6 +9,7 @@ const state = {
     libraryOpen: false,
     previewOpen: false,
     setupOpen: true,
+    saveOpen: false,
     topFieldsOpen: true,
     openSectionPaths: [],
     activeFieldPath: null,
@@ -41,6 +42,7 @@ const currentFormMetaEl = document.getElementById("currentFormMeta");
 const stageTitleEl = document.getElementById("stageTitle");
 const stageDescriptionEl = document.getElementById("stageDescription");
 const openPreviewBtnEl = document.getElementById("openPreviewBtn");
+const saveBtnEl = document.getElementById("saveBtn");
 const saveDockEl = document.getElementById("saveDock");
 const saveDockTitleEl = document.getElementById("saveDockTitle");
 const saveDockMetaEl = document.getElementById("saveDockMeta");
@@ -189,7 +191,7 @@ function renderShellSummary() {
     currentFormNameEl.textContent = "No form selected";
     currentFormMetaEl.textContent = "Open a form or start a blank draft.";
     stageTitleEl.textContent = "One form at a time";
-    stageDescriptionEl.textContent = "Use Browse Forms to switch exams. Open Preview only when you need it.";
+    stageDescriptionEl.textContent = "Switch forms only when you need to. Keep preview closed unless you are checking layout.";
     return;
   }
 
@@ -202,13 +204,14 @@ function renderShellSummary() {
   currentFormNameEl.textContent = formName;
   currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
   stageTitleEl.textContent = `Editing ${formName}`;
-  stageDescriptionEl.textContent = `Stay focused on this one form. It currently has ${sectionCount} and ${fieldCount}.`;
+  stageDescriptionEl.textContent = `${sectionCount} and ${fieldCount}. Open only the part you are working on.`;
 }
 
 function resetEditorPanels() {
   const sections = normalizeArray(state.draft?.schema?.sections);
   const topFields = normalizeArray(state.draft?.schema?.fields);
   state.ui.setupOpen = !state.selectedFormSlug;
+  state.ui.saveOpen = !state.selectedFormSlug;
   state.ui.topFieldsOpen = !topFields.length;
   state.ui.openSectionPaths = sections.length ? [pathKey(["schema", "sections", 0])] : [];
   state.ui.activeFieldPath = null;
@@ -266,6 +269,11 @@ function toggleSection(path) {
 
 function toggleSetup() {
   state.ui.setupOpen = !state.ui.setupOpen;
+  renderEditor();
+}
+
+function toggleSaveStep() {
+  state.ui.saveOpen = !state.ui.saveOpen;
   renderEditor();
 }
 
@@ -344,6 +352,8 @@ function remapUiStateAfterMove(parentPath, fromIndex, toIndex) {
 function setDirty(value) {
   state.dirty = value;
   dirtyBadgeEl.classList.toggle("hidden", !value);
+  saveBtnEl.disabled = !value;
+  saveBtnEl.textContent = value ? "Quick Save" : "Saved";
   renderSaveDock();
 }
 
@@ -720,7 +730,7 @@ function renderFormSetupCard() {
             <span class="chip soft">${escapeHtml(groupName)}</span>
           </div>
           <h3 class="card-title">Form setup</h3>
-          <p class="panel-copy">${setupOpen ? "Name the form, choose the department, then continue building." : "Open this area only when you need to rename the form or move it."}</p>
+          <p class="panel-copy">${setupOpen ? "Name the form and place it in the right department." : "Open only when you need to rename or move the form."}</p>
         </div>
         <div class="top-actions">
           <button class="ghost mini" type="button" data-action="toggle-setup">${setupOpen ? "Done" : "Open"}</button>
@@ -746,7 +756,7 @@ function renderFormSetupCard() {
         </div>
 
         <details class="advanced">
-          <summary>Advanced form settings</summary>
+          <summary>Advanced</summary>
           <div class="advanced-grid">
             <label>
               <span>Internal form key</span>
@@ -761,7 +771,7 @@ function renderFormSetupCard() {
       ` : `
         <div class="collapsed-copy">
           <strong>${escapeHtml(formName)}</strong>
-          ${escapeHtml(groupName)} with ${escapeHtml(sharedFieldSetName)}. Open this area when you need to rename the form or move it.
+          ${escapeHtml(groupName)} | ${escapeHtml(sharedFieldSetName)}
         </div>
       `}
     </section>
@@ -769,24 +779,34 @@ function renderFormSetupCard() {
 }
 
 function renderSaveCard() {
+  const saveOpen = state.ui.saveOpen;
+  const note = String(state.draft.summary || "").trim();
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
           <h3 class="card-title">Save this version</h3>
-          <p class="panel-copy">Write a short note about what changed, then save the form.</p>
+          <p class="panel-copy">${saveOpen ? "Add a short note if you want one, then save." : "Open if you want to review the version note."}</p>
         </div>
         <div class="top-actions">
-          <button class="secondary" type="button" data-action="save-draft">Save Changes</button>
+          <button class="ghost mini" type="button" data-action="toggle-save-step">${saveOpen ? "Done" : "Open"}</button>
+          ${saveOpen ? '<button class="secondary" type="button" data-action="save-draft">Save Changes</button>' : ""}
         </div>
       </div>
 
-      <div class="field-stack">
-        <label>
-          <span>Version note</span>
-          <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Example: Added urine ketone choices">
-        </label>
-      </div>
+      ${saveOpen ? `
+        <div class="field-stack">
+          <label>
+            <span>Version note</span>
+            <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Example: Added urine ketone choices">
+          </label>
+        </div>
+      ` : `
+        <div class="collapsed-copy">
+          <strong>${note ? "Current version note" : "Save note is optional"}</strong>
+          ${note ? escapeHtml(note) : "Use the floating save bar when you are ready."}
+        </div>
+      `}
     </section>
   `;
 }
@@ -823,7 +843,7 @@ function renderTopFieldsCard() {
       </div>
       ${state.ui.topFieldsOpen
         ? renderFieldCollection(topFields, ["schema", "fields"])
-        : `<div class="collapsed-copy">${escapeHtml(itemCount)} tucked away here. Open this area when you need to edit it.</div>`}
+        : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
     </section>
   `;
 }
@@ -835,7 +855,7 @@ function renderSectionsCard() {
       <div class="card-head">
         <div>
           <h3 class="card-title">Sections</h3>
-          <p class="panel-copy">Keep each section focused and easy to scan.</p>
+          <p class="panel-copy">Open one section at a time. Drag by handle to reorder.</p>
         </div>
         <div class="top-actions">
           <button class="secondary mini" type="button" data-action="add-section">Add section</button>
@@ -852,7 +872,7 @@ function renderSectionCard(section, path, number) {
   const open = isSectionOpen(path);
   const itemCount = pluralize(normalizeArray(section.fields).length, "item");
   return `
-    <article class="section-card" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
+    <article class="section-card ${open ? "is-open" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
       <div class="section-head">
         <div>
           <div class="chip-row">
@@ -860,7 +880,6 @@ function renderSectionCard(section, path, number) {
             <span class="chip soft">${itemCount}</span>
           </div>
           <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
-          <p class="section-subcopy">${open ? "Add the fields that belong in this section." : "Open this section when you want to edit its fields."}</p>
         </div>
         <div class="row-actions">
           <button class="drag-handle" type="button" title="Drag to reorder">Drag</button>
@@ -881,11 +900,11 @@ function renderSectionCard(section, path, number) {
 
         <div class="section-actions">
           <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
-          <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add field group</button>
+          <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add group</button>
         </div>
 
         <details class="advanced">
-          <summary>Advanced section settings</summary>
+          <summary>Advanced</summary>
           <div class="advanced-grid">
             <label>
               <span>Internal section key</span>
@@ -897,7 +916,7 @@ function renderSectionCard(section, path, number) {
             </label>
           </div>
         </details>
-      ` : `<div class="collapsed-copy">${escapeHtml(itemCount)} inside this section. Use Open when you want to edit it.</div>`}
+      ` : ""}
     </article>
   `;
 }
@@ -929,7 +948,6 @@ function renderFieldCard(field, path) {
             <span class="field-summary">${escapeHtml(summary)}</span>
           </div>
           <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
-          <p class="field-helper-copy">${open ? (isGroup ? "Manage the child fields inside this group." : "Edit the label, answer type, and any extra details.") : (isGroup ? "Open this group when you want to manage its child fields." : "Open this field when you want to edit it.")}</p>
         </div>
         <div class="row-actions">
           <button class="drag-handle" type="button" title="Drag to reorder">Drag</button>
@@ -971,7 +989,7 @@ function renderFieldCard(field, path) {
         ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
 
         <details class="advanced">
-          <summary>Advanced field settings</summary>
+          <summary>Advanced</summary>
           <div class="advanced-grid">
             <label>
               <span>Internal key</span>
@@ -1005,7 +1023,6 @@ function renderOptionsEditor(field, path) {
       <div class="card-head">
         <div>
           <h4>Choices</h4>
-          <p class="panel-copy">Shown only for dropdown fields.</p>
         </div>
         <div class="option-actions">
           <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
@@ -1353,6 +1370,10 @@ function handleEditorClick(event) {
   }
   if (action === "toggle-setup") {
     toggleSetup();
+    return;
+  }
+  if (action === "toggle-save-step") {
+    toggleSaveStep();
     return;
   }
   if (action === "toggle-section" && path) {

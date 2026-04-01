@@ -94,6 +94,7 @@
       "phase_1_shell": "completed",
       "phase_2_core_editing": "implemented",
       "phase_3_direct_manipulation": "implemented",
+      "phase_4_polish": "advanced_in_progress",
       "implemented_improvements": [
         "collapsible form library drawer",
         "toggleable preview drawer",
@@ -109,10 +110,14 @@
         "drag-and-drop field ordering",
         "local SortableJS-powered ordering layer",
         "floating save/reset dock while dirty",
-        "unsaved-change protection on form switch and page unload"
+        "unsaved-change protection on form switch and page unload",
+        "clean-state save button that disables itself and shows Saved",
+        "save step collapsed by default until needed",
+        "compact closed section and field rows with reduced helper-text repetition",
+        "live shell summary updates while editing the form title"
       ],
       "remaining_builder_v2_gaps": [
-        "less section-level button noise",
+        "less header and action noise",
         "final client-ready visual polish",
         "real-use stabilization and QA"
       ]

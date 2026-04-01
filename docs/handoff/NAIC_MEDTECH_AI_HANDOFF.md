@@ -67,6 +67,7 @@ Current implementation status:
 - `Phase 1` shell rebuild is done
 - `Phase 2` core editing simplification is in place for the current builder direction
 - `Phase 3` drag-and-drop ordering is now implemented
+- `Phase 4` safety/usability polish is meaningfully underway
 
 What is already true in the current builder:
 - form library is now a collapsible left drawer
@@ -84,9 +85,13 @@ What is already true in the current builder:
 - `SortableJS` is now used locally for reliable drag-and-drop ordering
 - a floating save/reset dock appears while the draft is dirty
 - the builder warns before discarding unsaved changes on form switch or page unload
+- clean state now shows a disabled `Saved` button instead of an active save action
+- the save step stays collapsed by default until needed
+- closed sections and closed fields now render as compact outline rows instead of repeating helper text
+- the shell summary updates live while the user edits the form title
 
 What is still not done:
-- final reduction of section-level button noise
+- final reduction of header and action noise
 - deeper visual polish for truly client-ready comfort
 - full stabilization and real-use QA
 
