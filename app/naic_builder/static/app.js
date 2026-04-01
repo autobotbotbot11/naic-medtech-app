@@ -356,7 +356,7 @@ function syncShellState() {
   drawerScrimEl.classList.toggle("hidden", !state.ui.libraryOpen);
   document.body.classList.toggle("drawer-open", state.ui.libraryOpen);
   if (openPreviewBtnEl) {
-    openPreviewBtnEl.textContent = previewVisible ? "Hide Live Preview" : "Show Live Preview";
+    openPreviewBtnEl.textContent = previewVisible ? "Hide Preview" : "Show Preview";
   }
   renderPreviewCallout();
 }
@@ -409,7 +409,7 @@ function renderShellSummary() {
 
   currentFormNameEl.textContent = formName;
   currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
-  stageTitleEl.textContent = `Editing ${formName}`;
+  stageTitleEl.textContent = `${formName} form`;
   stageDescriptionEl.textContent = state.ui.previewOpen
     ? "Edit in the center and keep the live preview beside it."
     : "Edit in the center and open the preview whenever you need a live check.";
@@ -1106,20 +1106,20 @@ function renderOutline() {
   const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
 
   builderOutlineEl.innerHTML = `
-    <div class="outline-head">
-      <p class="eyebrow">Workspace</p>
-      <h3>${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-      <p class="panel-copy">${pluralize(sections.length, "section")} | ${pluralize(freeFields.length, "free field", "free fields")}</p>
-    </div>
+      <div class="outline-head">
+        <p class="eyebrow">This form</p>
+        <h3>${escapeHtml(state.draft.name || "Untitled Form")}</h3>
+        <p class="panel-copy">${pluralize(sections.length, "section")} | ${pluralize(freeFields.length, "ungrouped field", "ungrouped fields")}</p>
+      </div>
 
-    <nav class="outline-nav">
-      <button class="outline-item ${focusPane === "setup" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="setup">
-        <span>Form details</span>
-      </button>
-      <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
-        <span>Free fields</span>
-        <span class="outline-count">${freeFields.length}</span>
-      </button>
+      <nav class="outline-nav">
+        <button class="outline-item ${focusPane === "setup" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="setup">
+          <span>Basics</span>
+        </button>
+        <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
+          <span>Ungrouped fields</span>
+          <span class="outline-count">${freeFields.length}</span>
+        </button>
       <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
         <span>Sections</span>
         <span class="outline-count">${sections.length}</span>
@@ -1136,15 +1136,15 @@ function renderOutline() {
             `;
           }).join("")}
         </div>
-      ` : `
-        <div class="outline-empty">No sections yet.</div>
-      `}
-      <button class="outline-item ${focusPane === "save" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="save">
-        <span>Save</span>
-      </button>
-    </nav>
-  `;
-}
+        ` : `
+          <div class="outline-empty">No sections yet.</div>
+        `}
+        <button class="outline-item ${focusPane === "save" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="save">
+          <span>Save draft</span>
+        </button>
+      </nav>
+    `;
+  }
 
 function renderEditor() {
   destroySortables();
@@ -1186,8 +1186,8 @@ function renderFormSetupCard(options = {}) {
         <div>
           <p class="eyebrow">Basics</p>
           <div class="card-title-row">
-            <h3 class="card-title">Form details</h3>
-            ${renderHelpPopover("Form details help", "Name the form and choose where it lives in the library. Keep advanced record defaults tucked away unless you really need them.")}
+            <h3 class="card-title">Basics</h3>
+            ${renderHelpPopover("Basics help", "Name the form and choose which folder it belongs to. Leave advanced defaults tucked away unless you really need them.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -1321,8 +1321,8 @@ function renderTopFieldsCard(options = {}) {
       <div class="card-head">
         <div>
           <div class="card-title-row">
-            <h3 class="card-title">Free fields</h3>
-            ${renderHelpPopover("Free fields help", "Use these only when a field does not belong inside a named section yet.")}
+            <h3 class="card-title">Ungrouped fields</h3>
+            ${renderHelpPopover("Ungrouped fields help", "Use these only when a field should stay outside a named section.")}
           </div>
         </div>
         <div class="top-actions">
@@ -1690,7 +1690,7 @@ function renderPreview() {
   const freeFields = normalizeArray(state.draft.schema.fields);
   const sections = normalizeArray(state.draft.schema.sections);
   const previewTargets = [
-    ...(freeFields.length ? [{ id: "preview_section_free_fields", label: "Free fields" }] : []),
+    ...(freeFields.length ? [{ id: "preview_section_free_fields", label: "Ungrouped fields" }] : []),
     ...sections.map((section, index) => ({
       id: previewSectionId(section.name || "Section", index),
       label: section.name || "Section",
@@ -1731,7 +1731,7 @@ function renderPreview() {
           `).join("")}
         </div>
         <div class="preview-paper">
-          ${freeFields.length ? renderPreviewSection("Free fields", freeFields, "preview_section_free_fields") : ""}
+          ${freeFields.length ? renderPreviewSection("Ungrouped fields", freeFields, "preview_section_free_fields") : ""}
           ${sections.map((section, index) => renderPreviewSection(section.name || "Untitled Section", section.fields, previewSectionId(section.name || "Section", index))).join("")}
         </div>
       </div>

@@ -13,12 +13,12 @@
       <div class="brand-copy">
         <p class="eyebrow">Form Library</p>
         <h1>{{ app_title }}</h1>
-        <p class="panel-copy">Choose an existing form, duplicate one, or start a new draft.</p>
+        <p class="panel-copy">Open a form, copy one, or start a new one.</p>
       </div>
       <div class="topbar-actions">
         <label class="search-wrap">
           <span>Search</span>
-          <input id="librarySearch" type="search" placeholder="Search folder or form">
+          <input id="librarySearch" type="search" placeholder="Search forms or folders">
         </label>
         <a class="primary-button" href="/forms/new">New Form</a>
       </div>
@@ -27,7 +27,7 @@
     <section class="library-grid">
       <aside class="panel library-sidebar">
         <div class="sidebar-head">
-          <p class="eyebrow">Browse</p>
+          <p class="eyebrow">Library</p>
           <h2>Folders</h2>
         </div>
         <nav class="group-jump-list">
@@ -40,8 +40,8 @@
         </nav>
         {% if extra_groups %}
         <div class="sidebar-note">
-          <p class="eyebrow">Secondary</p>
-          <p class="panel-copy">Additional working groups stay tucked below so the main library stays clean.</p>
+          <p class="eyebrow">More</p>
+          <p class="panel-copy">Extra folders stay tucked below so the main library stays calm.</p>
         </div>
         {% endif %}
       </aside>
@@ -55,7 +55,7 @@
         >
           <div class="group-head">
             <div>
-              <p class="eyebrow">Container</p>
+              <p class="eyebrow">Folder</p>
               <h2>{{ group.name }}</h2>
               <p class="panel-copy">{{ group.forms|length }} form{% if group.forms|length != 1 %}s{% endif %}</p>
             </div>
@@ -71,7 +71,7 @@
               </div>
               <div class="form-card-actions">
                 <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Duplicate</a>
-                <a class="primary-button" href="/forms/{{ form.slug }}/builder">Open Builder</a>
+                <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit Form</a>
               </div>
             </article>
             {% endfor %}
@@ -83,9 +83,9 @@
         <details class="panel extra-groups-shell" data-extra-groups>
           <summary class="extra-groups-summary">
             <div>
-              <p class="eyebrow">Secondary</p>
-              <h2>Additional Working Groups</h2>
-              <p class="panel-copy">Older tests or scratch groups stay here so the main library stays focused.</p>
+              <p class="eyebrow">More</p>
+              <h2>More Folders</h2>
+              <p class="panel-copy">Older or scratch forms stay here so the main library stays focused.</p>
             </div>
             <span class="group-jump-count">{{ extra_groups|length }} group{% if extra_groups|length != 1 %}s{% endif %}</span>
           </summary>
@@ -98,7 +98,7 @@
             >
               <div class="group-head">
                 <div>
-                  <p class="eyebrow">Working Group</p>
+                  <p class="eyebrow">Extra Folder</p>
                   <h2>{{ group.name }}</h2>
                   <p class="panel-copy">{{ group.forms|length }} form{% if group.forms|length != 1 %}s{% endif %}</p>
                 </div>
@@ -114,7 +114,7 @@
                   </div>
                   <div class="form-card-actions">
                     <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Duplicate</a>
-                    <a class="primary-button" href="/forms/{{ form.slug }}/builder">Open Builder</a>
+                    <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit Form</a>
                   </div>
                 </article>
                 {% endfor %}

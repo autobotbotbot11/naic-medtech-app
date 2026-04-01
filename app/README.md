@@ -22,6 +22,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the folder field suggests existing library folders while editing form details
 - the top shell now uses a lighter status bar and a more compact workspace header
 - the live preview is now read-only and includes sticky quick-jump section navigation
+- the left outline and library wording now use calmer non-technical labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

@@ -99,6 +99,7 @@ What is implemented:
 - the top shell is now more compact: lighter status bar, calmer workspace header, and a tighter preview/advanced control strip
 - the live preview panel now reads more like a polished form surface: read-only controls, stronger section grouping, and a clearer preview paper layout
 - the preview now includes sticky quick-jump section chips for long forms, with active state so the user can navigate the preview faster
+- the left outline and library wording are now less technical, using calmer labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface

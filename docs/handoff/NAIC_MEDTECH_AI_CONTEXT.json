@@ -36,7 +36,8 @@
       "folder input now suggests existing library folders",
       "save now shows a clearer draft-state spotlight with a simpler optional note field",
       "the top shell now uses a lighter status bar and a more compact workspace header",
-      "the preview is now read-only and includes sticky quick-jump section navigation"
+      "the preview is now read-only and includes sticky quick-jump section navigation",
+      "the left outline and library wording now use calmer non-technical labels"
     ],
     "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
   },
