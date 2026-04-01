@@ -1271,7 +1271,7 @@ function renderTopFieldsCard(options = {}) {
         </div>
       </div>
       ${topFieldsOpen
-        ? renderFieldCollection(topFields, ["schema", "fields"])
+        ? renderFieldCollection(topFields, ["schema", "fields"], { focused: true })
         : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
     </section>
   `;
@@ -1279,6 +1279,14 @@ function renderTopFieldsCard(options = {}) {
 
 function renderSectionsCard(options = {}) {
   const sections = normalizeArray(state.draft.schema.sections);
+  const selectedPath = normalizeArray(state.ui.openSectionPaths)[0]
+    ? parsePathKey(normalizeArray(state.ui.openSectionPaths)[0])
+    : null;
+  const selectedIndex = selectedPath && selectedPath[0] === "schema" && selectedPath[1] === "sections"
+    ? selectedPath[2]
+    : 0;
+  const selectedSection = Number.isInteger(selectedIndex) ? sections[selectedIndex] : null;
+
   return `
     <section class="editor-card">
       <div class="card-head">
@@ -1292,10 +1300,34 @@ function renderSectionsCard(options = {}) {
           <button class="secondary mini" type="button" data-action="add-section">Add section</button>
         </div>
       </div>
-      <div class="section-list" data-collection-path="${encodePath(["schema", "sections"])}">
-        ${sections.length ? sections.map((section, index) => renderSectionCard(section, ["schema", "sections", index], index + 1)).join("") : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
-      </div>
+      ${sections.length ? `
+        <div class="section-organizer" data-collection-path="${encodePath(["schema", "sections"])}">
+          ${sections.map((section, index) => renderSectionOrganizerItem(section, index, index === selectedIndex)).join("")}
+        </div>
+        <div class="section-focus-stage">
+          ${selectedSection
+            ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], selectedIndex + 1)
+            : '<div class="empty-state">Choose a section from the list to keep editing.</div>'}
+        </div>
+      ` : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
     </section>
+  `;
+}
+
+function renderSectionOrganizerItem(section, index, active) {
+  return `
+    <div class="section-organizer-item ${active ? "active" : ""}">
+      <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+        <span class="drag-dots" aria-hidden="true"></span>
+      </button>
+      <button class="section-organizer-select" type="button" data-action="focus-section" data-index="${index}">
+        <span class="section-organizer-copy">
+          <strong>${escapeHtml(section.name || `Section ${index + 1}`)}</strong>
+          <span>${pluralize(normalizeArray(section.fields).length, "item")}</span>
+        </span>
+        <span class="outline-count">${index + 1}</span>
+      </button>
+    </div>
   `;
 }
 
@@ -1333,7 +1365,7 @@ function renderSectionCard(section, path, number) {
           </div>
         </div>
 
-        ${renderFieldCollection(section.fields, [...path, "fields"])}
+        ${renderFieldCollection(section.fields, [...path, "fields"], { focused: true })}
 
         ${state.ui.advancedMode ? `
           <details class="advanced">
@@ -1355,23 +1387,75 @@ function renderSectionCard(section, path, number) {
   `;
 }
 
-function renderFieldCollection(fields, collectionPath) {
+function renderFieldCollection(fields, collectionPath, options = {}) {
   const items = normalizeArray(fields);
   if (!items.length) {
     return '<div class="empty-state">Nothing here yet. Add a field when you are ready.</div>';
   }
+  if (options.focused) {
+    const selectedIndex = resolveFocusedFieldIndex(collectionPath, items);
+    const selectedField = items[selectedIndex] || null;
+    return `
+      <div class="field-organizer" data-collection-path="${encodePath(collectionPath)}">
+        ${items.map((field, index) => renderFieldOrganizerItem(field, [...collectionPath, index], index, index === selectedIndex)).join("")}
+      </div>
+      <div class="field-focus-stage">
+        ${selectedField
+          ? renderFieldCard(selectedField, [...collectionPath, selectedIndex], { forceOpen: true, hideToggle: true })
+          : '<div class="empty-state">Choose a field from the list to keep editing.</div>'}
+      </div>
+    `;
+  }
   return `<div class="field-list" data-collection-path="${encodePath(collectionPath)}">${items.map((field, index) => renderFieldCard(field, [...collectionPath, index])).join("")}</div>`;
 }
 
-function renderFieldCard(field, path) {
+function resolveFocusedFieldIndex(collectionPath, items) {
+  if (!items.length) {
+    return 0;
+  }
+
+  if (!state.ui.activeFieldPath) {
+    return 0;
+  }
+
+  const activePath = parsePathKey(state.ui.activeFieldPath);
+  const matchIndex = items.findIndex((_, index) => pathStartsWith(activePath, [...collectionPath, index]));
+  return matchIndex >= 0 ? matchIndex : 0;
+}
+
+function summarizeField(field) {
   const isGroup = field.kind === "field_group";
-  const open = isFieldOpen(path);
   const childCount = normalizeArray(field.fields).length;
   const optionCount = normalizeArray(field.options).length;
   const fieldType = inferFieldType(field);
-  const summary = isGroup
+  return isGroup
     ? `${childCount} child fields`
     : `${FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Short answer"}${optionCount ? ` | ${optionCount} choices` : ""}`;
+}
+
+function renderFieldOrganizerItem(field, path, index, active) {
+  const isGroup = field.kind === "field_group";
+  return `
+    <div class="field-organizer-item ${active ? "active" : ""}">
+      <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+        <span class="drag-dots" aria-hidden="true"></span>
+      </button>
+      <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
+        <span class="field-organizer-copy">
+          <strong>${escapeHtml(field.name || (isGroup ? `Group ${index + 1}` : `Field ${index + 1}`))}</strong>
+          <span>${escapeHtml(summarizeField(field))}</span>
+        </span>
+        <span class="outline-count">${index + 1}</span>
+      </button>
+    </div>
+  `;
+}
+
+function renderFieldCard(field, path, options = {}) {
+  const isGroup = field.kind === "field_group";
+  const open = Boolean(options.forceOpen) || isFieldOpen(path);
+  const summary = summarizeField(field);
+  const fieldType = inferFieldType(field);
 
   return `
     <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
@@ -1387,7 +1471,7 @@ function renderFieldCard(field, path) {
           <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
             <span class="drag-dots" aria-hidden="true"></span>
           </button>
-          <button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>
+          ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>`}
           ${renderNodeActionMenu(path)}
         </div>
       </div>
@@ -1600,6 +1684,10 @@ function duplicateAtPath(path) {
   collection.splice(index + 1, 0, cloneNode(collection[index]));
   if (path.includes("fields")) {
     state.ui.activeFieldPath = pathKey([...path.slice(0, -1), index + 1]);
+  } else if (path.includes("sections")) {
+    state.ui.openSectionPaths = [pathKey([...path.slice(0, -1), index + 1])];
+    state.ui.focusPane = "sections";
+    state.ui.activeFieldPath = null;
   } else {
     state.ui.activeFieldPath = null;
   }
@@ -1613,6 +1701,9 @@ function deleteAtPath(path) {
   }
   if (state.ui.activeFieldPath && pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
     state.ui.activeFieldPath = null;
+  }
+  if (path.includes("sections") && isSectionOpen(path)) {
+    state.ui.openSectionPaths = [];
   }
   collection.splice(index, 1);
   touch({ full: true });
@@ -1824,6 +1915,15 @@ async function handleEditorClick(event) {
   if (action === "toggle-save-step") {
     state.ui.focusPane = "save";
     toggleSaveStep();
+    return;
+  }
+  if (action === "focus-section") {
+    focusSectionAtIndex(Number(actionTarget.dataset.index));
+    return;
+  }
+  if (action === "focus-field" && path) {
+    state.ui.activeFieldPath = pathKey(path);
+    renderAll();
     return;
   }
   if (action === "toggle-section" && path) {

@@ -28,7 +28,9 @@
       "the builder workspace now uses a left outline plus one focused editing context at a time",
       "the old top of form area is now reframed as free fields",
       "default shared record details are tucked into advanced mode instead of staying in the primary form-details surface",
-      "sections still keep drag-and-drop ordering inside the focused sections view"
+      "sections still keep drag-and-drop ordering inside the focused sections view",
+      "the sections pane now uses a compact section organizer plus one focused section editor",
+      "free fields and selected sections now use compact field organizers plus one focused field editor"
     ],
     "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
   },
@@ -209,10 +211,13 @@
         "docked side-by-side live preview panel on desktop",
         "preview promoted to a first-class live-preview callout in the main flow",
         "single main builder canvas",
+        "left outline navigation for form details, free fields, sections, and save",
         "collapsed-by-default setup card for existing forms",
         "collapsible top-of-form area",
         "collapsible sections",
         "one-section-at-a-time focus editing",
+        "compact section organizer with one focused section editor",
+        "compact field organizers with one focused field editor in free fields and selected sections",
         "one-field-at-a-time edit flow",
         "calmer open/done plus more action menus",
         "separate save step card",

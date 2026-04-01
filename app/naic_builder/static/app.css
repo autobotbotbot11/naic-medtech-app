@@ -842,9 +842,119 @@ button.subtle[aria-pressed="true"] {
 }
 
 .section-list,
+.section-organizer,
+.field-organizer,
 .field-list,
 .nested-fields,
 .options-list {
+  display: grid;
+  gap: 10px;
+}
+
+.section-organizer {
+  padding: 2px 0 6px;
+}
+
+.field-organizer {
+  padding: 2px 0 6px;
+}
+
+.section-organizer-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(68, 54, 40, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.field-organizer-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: center;
+  padding: 6px;
+  border: 1px solid rgba(68, 54, 40, 0.08);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.section-organizer-item.active {
+  border-color: rgba(30, 93, 82, 0.18);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
+}
+
+.field-organizer-item.active {
+  border-color: rgba(30, 93, 82, 0.18);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
+}
+
+.section-organizer-select {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 2px;
+}
+
+.field-organizer-select {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 4px 2px;
+}
+
+.section-organizer-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.field-organizer-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.section-organizer-copy strong {
+  font-size: 14px;
+}
+
+.field-organizer-copy strong {
+  font-size: 14px;
+}
+
+.section-organizer-copy span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.field-organizer-copy span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.section-focus-stage {
+  display: grid;
+  gap: 10px;
+}
+
+.field-focus-stage {
   display: grid;
   gap: 10px;
 }

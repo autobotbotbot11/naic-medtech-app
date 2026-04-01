@@ -90,6 +90,8 @@ What is implemented:
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the old `Top of form` language is now reframed as `Free fields`
 - `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details preset
+- the sections view now uses a compact section organizer plus one focused section editor
+- inside `Sections` and `Free fields`, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface
@@ -109,10 +111,13 @@ What is already true in the current builder:
 - live preview is now a docked side-by-side panel in the workspace on desktop
 - live preview is now treated as a first-class builder feature, not just a utility button
 - the main canvas focuses on one form at a time
+- the left outline can switch between `Form details`, `Free fields`, `Sections`, and `Save`
 - form setup collapses by default on existing forms
 - top-of-form fields are collapsible
 - sections are collapsible
 - only one section stays open at a time for calmer editing
+- the sections view now keeps a compact organizer list at the top and a single focused section editor below it
+- the `Free fields` and selected-section editors now keep a compact field organizer list and one focused field editor at a time
 - fields now use a calmer `Edit` / `Done` flow instead of exposing every field editor at once
 - sections and fields now use a calmer `More` action menu instead of always showing all actions
 - the save note is now separated into its own save step card
