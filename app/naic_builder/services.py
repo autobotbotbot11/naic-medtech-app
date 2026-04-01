@@ -265,6 +265,28 @@ def list_grouped_forms(session: Session) -> list[dict[str, Any]]:
     return list(grouped.values())
 
 
+def split_library_groups(session: Session) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    grouped_forms = list_grouped_forms(session)
+    reference = load_reference_schema()
+    reference_group_names = {
+        compact_text(group.get("name")).lower()
+        for group in reference.get("groups", [])
+        if compact_text(group.get("name"))
+    }
+
+    official_groups: list[dict[str, Any]] = []
+    extra_groups: list[dict[str, Any]] = []
+
+    for group in grouped_forms:
+        token = compact_text(group.get("name")).lower()
+        if token in reference_group_names:
+            official_groups.append(group)
+        else:
+            extra_groups.append(group)
+
+    return official_groups, extra_groups
+
+
 def next_available_slug(session: Session, preferred: str) -> str:
     base = slugify(preferred)
     slug = base

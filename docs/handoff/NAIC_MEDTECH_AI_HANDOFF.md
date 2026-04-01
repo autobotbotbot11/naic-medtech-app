@@ -60,12 +60,39 @@ The current builder prototype is not yet considered final for the real client.
 Before continuing major builder work, read in this order:
 - `docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
 - `docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
+- `docs/handoff/BUILDER_UX_FLOW_SPEC.md`
+- `docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
 - `docs/handoff/BUILDER_V2_PLAN.md`
 
 Important:
 - `FLEXIBLE_BUILDER_FOUNDATION.md` is the current long-term architecture recommendation
 - `BUILDER_DATA_MODEL_SPEC.md` is the current concrete data-model recommendation
+- `BUILDER_UX_FLOW_SPEC.md` is the current recommended user experience flow
+- `BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md` is the current screen-by-screen build plan
 - `BUILDER_V2_PLAN.md` remains the active short-term UX simplification plan for the current prototype
+
+## Current Implementation Checkpoint
+The first real screen from the newer builder direction now exists.
+
+What is implemented:
+- `/` now redirects to `/forms`
+- `/forms` now renders a dedicated `Form Library` screen
+- the main library shows only the official reference groups in the primary browse area
+- extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
+- library search works across both the primary groups and the tucked-away extra groups
+- `/forms/new` now renders a dedicated guided `Start New Form` screen
+- `New Form`, `Open Builder`, and `Duplicate` are all routed from the new library screen
+- guided creation now asks for:
+  - form name
+  - destination folder
+  - starting method (`Blank`, `Duplicate Existing Form`, or `Start from Preset`)
+- guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
+
+Important reading for the next implementation step:
+- treat `/forms` as the new entry surface
+- treat `/forms/new` as the new creation surface
+- the current builder page still uses the older single-page builder shell
+- the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
 
 ## Current Builder Progress
 Current implementation status:
@@ -129,6 +156,8 @@ The strongest future-proof direction currently recommended is:
 This is documented in:
 - `docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
 - `docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
+- `docs/handoff/BUILDER_UX_FLOW_SPEC.md`
+- `docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
 
 Important:
 - the engine should be highly flexible

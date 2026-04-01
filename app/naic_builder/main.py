@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from typing import Any
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -19,6 +19,7 @@ from .services import (
     list_grouped_forms,
     load_reference_schema,
     serialize_form,
+    split_library_groups,
     update_form,
 )
 
@@ -36,13 +37,138 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
-@app.get("/", response_class=HTMLResponse)
-def index(request: Request) -> HTMLResponse:
+def render_builder_page(
+    request: Request,
+    *,
+    initial_form_slug: str = "",
+    initial_builder_mode: str = "",
+) -> HTMLResponse:
     return templates.TemplateResponse(
         request=request,
         name="index.html",
-        context={"app_title": APP_TITLE},
+        context={
+            "app_title": APP_TITLE,
+            "initial_form_slug": initial_form_slug,
+            "initial_builder_mode": initial_builder_mode,
+        },
     )
+
+
+@app.get("/", include_in_schema=False)
+def root() -> RedirectResponse:
+    return RedirectResponse(url="/forms", status_code=303)
+
+
+@app.get("/forms", response_class=HTMLResponse)
+def forms_library(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
+    official_groups, extra_groups = split_library_groups(session)
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/library.html",
+        context={
+            "app_title": APP_TITLE,
+            "official_groups": official_groups,
+            "extra_groups": extra_groups,
+        },
+    )
+
+
+@app.get("/forms/new", response_class=HTMLResponse)
+def start_new_form_page(
+    request: Request,
+    source: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    official_groups, extra_groups = split_library_groups(session)
+
+    def enrich_group(group: dict[str, Any]) -> dict[str, Any]:
+        forms = group.get("forms", [])
+        next_form_order = max((int(form.get("form_order") or 0) for form in forms), default=0) + 1
+        return {
+            **group,
+            "next_form_order": next_form_order,
+        }
+
+    official_group_options = [enrich_group(group) for group in official_groups]
+    extra_group_options = [enrich_group(group) for group in extra_groups]
+    all_group_options = [*official_group_options, *extra_group_options]
+
+    source_form = None
+    source_slug = source.strip()
+    if source_slug:
+        source_form = get_form_or_none(session, source_slug)
+        if source_form is None:
+            raise HTTPException(status_code=404, detail="Source form not found.")
+
+    default_group_name = source_form.group_name if source_form else (all_group_options[0]["name"] if all_group_options else "")
+    default_group_order = next(
+        (group["order"] for group in all_group_options if group["name"] == default_group_name),
+        999,
+    )
+    default_form_order = next(
+        (group["next_form_order"] for group in all_group_options if group["name"] == default_group_name),
+        1,
+    )
+
+    preset_options = [
+        {
+            "id": "quick_results",
+            "name": "Quick Results",
+            "description": "Start with one ready section for common result fields.",
+        },
+        {
+            "id": "structured_report",
+            "name": "Structured Report",
+            "description": "Start with simple sections for details, results, and remarks.",
+        },
+    ]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/new.html",
+        context={
+            "app_title": APP_TITLE,
+            "official_group_options": official_group_options,
+            "extra_group_options": extra_group_options,
+            "default_group_name": default_group_name,
+            "default_group_order": default_group_order,
+            "default_form_order": default_form_order,
+            "source_form": source_form,
+            "preset_options": preset_options,
+        },
+    )
+
+
+@app.get("/builder", response_class=HTMLResponse)
+def builder_page(
+    request: Request,
+    slug: str = "",
+    mode: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    initial_slug = slug.strip()
+    if initial_slug and get_form_or_none(session, initial_slug) is None:
+        raise HTTPException(status_code=404, detail="Form not found.")
+    initial_mode = mode.strip().lower()
+    if initial_mode not in {"", "new", "duplicate"}:
+        initial_mode = ""
+    return render_builder_page(
+        request,
+        initial_form_slug=initial_slug,
+        initial_builder_mode=initial_mode,
+    )
+
+
+@app.get("/forms/{slug}/builder", response_class=HTMLResponse)
+def form_builder_page(
+    slug: str,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    definition = get_form_or_none(session, slug)
+    if definition is None:
+        raise HTTPException(status_code=404, detail="Form not found.")
+    return render_builder_page(request, initial_form_slug=definition.slug)
 
 
 @app.get("/api/health")

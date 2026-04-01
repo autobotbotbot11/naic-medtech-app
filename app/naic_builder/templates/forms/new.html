@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Start New Form | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='new-form.css') }}">
+</head>
+<body>
+  <main class="new-form-shell">
+    <header class="new-form-topbar panel">
+      <div class="brand-copy">
+        <p class="eyebrow">Start New Form</p>
+        <h1>{{ app_title }}</h1>
+        <p class="panel-copy">Name the form, choose where it belongs, then pick the easiest way to begin.</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="ghost-button" href="/forms">Back to Library</a>
+      </div>
+    </header>
+
+    <form id="startForm" class="new-form-grid" action="/builder" method="get" novalidate>
+      <input id="modeInput" type="hidden" name="mode" value="{% if source_form %}duplicate{% else %}new{% endif %}">
+      <input id="slugInput" type="hidden" name="slug" value="{{ source_form.slug if source_form else '' }}">
+      <input id="draftNameInput" type="hidden" name="draft_name" value="">
+      <input id="groupNameInput" type="hidden" name="group_name" value="{{ default_group_name }}">
+      <input id="groupKindInput" type="hidden" name="group_kind" value="category">
+      <input id="groupOrderInput" type="hidden" name="group_order" value="{{ default_group_order }}">
+      <input id="formOrderInput" type="hidden" name="form_order" value="{{ default_form_order }}">
+      <input id="templateInput" type="hidden" name="template" value="blank">
+
+      <section class="panel form-flow-card">
+        <div class="section-head">
+          <p class="eyebrow">Step 1</p>
+          <h2>Name this form</h2>
+          <p class="panel-copy">Use the title that staff will actually look for in the library.</p>
+        </div>
+
+        <label class="field-stack">
+          <span>Form name</span>
+          <input
+            id="formName"
+            type="text"
+            placeholder="Example: Urinalysis"
+            value="{{ source_form.name ~ ' Copy' if source_form else '' }}"
+            required
+          >
+        </label>
+      </section>
+
+      <section class="panel form-flow-card">
+        <div class="section-head">
+          <p class="eyebrow">Step 2</p>
+          <h2>Where should it live?</h2>
+          <p class="panel-copy">Pick an existing folder, or create a new one if this form belongs somewhere new.</p>
+        </div>
+
+        <div class="choice-row">
+          <label class="choice-pill">
+            <input type="radio" name="group_source_mode" value="existing" checked>
+            <span>Use existing folder</span>
+          </label>
+          <label class="choice-pill">
+            <input type="radio" name="group_source_mode" value="new">
+            <span>Create new folder</span>
+          </label>
+        </div>
+
+        <div id="existingGroupWrap" class="field-stack">
+          <label class="field-stack">
+            <span>Choose a folder</span>
+            <select id="existingGroupSelect">
+              {% for group in official_group_options %}
+              <option
+                value="{{ group.name }}"
+                data-group-order="{{ group.order }}"
+                data-form-order="{{ group.next_form_order }}"
+                {% if group.name == default_group_name %}selected{% endif %}
+              >{{ group.name }}</option>
+              {% endfor %}
+              {% if extra_group_options %}
+              <optgroup label="Additional working groups">
+                {% for group in extra_group_options %}
+                <option
+                  value="{{ group.name }}"
+                  data-group-order="{{ group.order }}"
+                  data-form-order="{{ group.next_form_order }}"
+                  {% if group.name == default_group_name %}selected{% endif %}
+                >{{ group.name }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endif %}
+            </select>
+          </label>
+        </div>
+
+        <div id="newGroupWrap" class="field-stack hidden" hidden>
+          <label class="field-stack">
+            <span>New folder name</span>
+            <input id="newGroupName" type="text" placeholder="Example: Rapid Tests">
+          </label>
+          <p class="panel-copy">New folders start at the end of the list for now. You can organize them later.</p>
+        </div>
+      </section>
+
+      <section class="panel form-flow-card">
+        <div class="section-head">
+          <p class="eyebrow">Step 3</p>
+          <h2>How do you want to start?</h2>
+          <p class="panel-copy">Most of the time, copying an existing form is the fastest path.</p>
+        </div>
+
+        <div class="start-method-grid">
+          <label class="start-card">
+            <input type="radio" name="start_mode" value="blank" {% if not source_form %}checked{% endif %}>
+            <span class="start-card-eyebrow">Blank</span>
+            <strong>Start empty</strong>
+            <span>Use a clean form and add sections only when you need them.</span>
+          </label>
+
+          <label class="start-card">
+            <input type="radio" name="start_mode" value="duplicate" {% if source_form %}checked{% endif %}>
+            <span class="start-card-eyebrow">Fastest</span>
+            <strong>Duplicate existing form</strong>
+            <span>Copy a similar form so you only adjust the parts that changed.</span>
+          </label>
+
+          <label class="start-card">
+            <input type="radio" name="start_mode" value="preset">
+            <span class="start-card-eyebrow">Guided</span>
+            <strong>Start from preset</strong>
+            <span>Use a small starter pattern and shape it inside the builder.</span>
+          </label>
+        </div>
+
+        <div id="duplicateSourceWrap" class="field-stack{% if not source_form %} hidden{% endif %}" {% if not source_form %}hidden{% endif %}>
+          <label class="field-stack">
+            <span>Copy from</span>
+            <select id="duplicateSourceSelect">
+              {% for group in official_group_options %}
+              <optgroup label="{{ group.name }}">
+                {% for form in group.forms %}
+                <option value="{{ form.slug }}" {% if source_form and source_form.slug == form.slug %}selected{% endif %}>{{ form.name }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+              {% if extra_group_options %}
+              {% for group in extra_group_options %}
+              <optgroup label="{{ group.name }}">
+                {% for form in group.forms %}
+                <option value="{{ form.slug }}" {% if source_form and source_form.slug == form.slug %}selected{% endif %}>{{ form.name }}</option>
+                {% endfor %}
+              </optgroup>
+              {% endfor %}
+              {% endif %}
+            </select>
+          </label>
+        </div>
+
+        <div id="presetWrap" class="field-stack hidden" hidden>
+          <label class="field-stack">
+            <span>Preset</span>
+            <select id="presetSelect">
+              {% for preset in preset_options %}
+              <option value="{{ preset.id }}">{{ preset.name }}</option>
+              {% endfor %}
+            </select>
+          </label>
+          <p id="presetDescription" class="panel-copy">{{ preset_options[0].description }}</p>
+        </div>
+      </section>
+
+      <aside class="panel summary-card">
+        <div class="section-head">
+          <p class="eyebrow">Summary</p>
+          <h2>Ready to continue</h2>
+          <p class="panel-copy">This is only your starting point. You can still rename and refine the form inside the builder.</p>
+        </div>
+
+        <dl class="summary-list">
+          <div>
+            <dt>Form name</dt>
+            <dd id="summaryName">Choose a name</dd>
+          </div>
+          <div>
+            <dt>Folder</dt>
+            <dd id="summaryGroup">{{ default_group_name or 'Choose a folder' }}</dd>
+          </div>
+          <div>
+            <dt>Starting point</dt>
+            <dd id="summaryStart">{% if source_form %}Duplicate existing form{% else %}Start empty{% endif %}</dd>
+          </div>
+        </dl>
+
+        <button class="primary-button" type="submit">Continue to Builder</button>
+      </aside>
+    </form>
+  </main>
+
+  <script id="presetCatalog" type="application/json">{{ preset_options|tojson }}</script>
+  <script src="{{ url_for('static', path='new-form.js') }}" defer></script>
+</body>
+</html>

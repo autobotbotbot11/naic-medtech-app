@@ -12,7 +12,15 @@ The app now starts from a builder-first FastAPI scaffold.
 - phase 1 is the `exam/form builder`
 - the app seeds itself from `../artifacts/schema/naic_medtech_app_schema.json`
 - runtime data lives in `../data/runtime/naic_medtech.db`
-- the active builder UX/spec direction is `../docs/handoff/BUILDER_V2_PLAN.md`
+- the new entry screen is `/forms`, a dedicated `Form Library`
+- new form creation now starts from `/forms/new`, a guided `Start New Form` screen
+- official reference groups are shown in the main library area
+- extra working or scratch groups are tucked into a secondary collapsed area
+- the current long-term builder direction is documented in:
+  - `../docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
+  - `../docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
+  - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
+  - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
 
 ## Run locally
 1. Create and activate a virtual environment.

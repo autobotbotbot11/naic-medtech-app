@@ -4,7 +4,28 @@
   "core_product_direction": "Schema-driven laboratory platform with an exam/form builder.",
   "active_builder_foundation_doc": "docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md",
   "active_builder_data_model_doc": "docs/handoff/BUILDER_DATA_MODEL_SPEC.md",
+  "active_builder_ux_doc": "docs/handoff/BUILDER_UX_FLOW_SPEC.md",
+  "active_builder_wireframe_doc": "docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md",
   "active_builder_direction_doc": "docs/handoff/BUILDER_V2_PLAN.md",
+  "current_implementation_checkpoint": {
+    "entry_route": "/forms",
+    "root_redirects_to_library": true,
+    "form_library_screen": "implemented",
+    "start_new_form_screen": "implemented",
+    "library_behavior": [
+      "official reference groups are shown in the main browse area",
+      "extra working groups are tucked into a secondary collapsed section",
+      "library search works across both primary and secondary groups",
+      "new form, duplicate, and open builder flows are wired from the library"
+    ],
+    "guided_create_behavior": [
+      "new form creation now goes through /forms/new",
+      "the guided create screen collects form name, folder, and start method before opening the builder",
+      "start methods now include blank, duplicate existing form, and starter presets",
+      "builder duplicate actions now route through the guided create screen instead of forking immediately in place"
+    ],
+    "current_builder_surface_note": "The builder page itself still uses the older single-page builder shell."
+  },
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [
     "Create exam/form definitions",
@@ -100,6 +121,45 @@
       "optional presets",
       "versioned records",
       "search and tags later in addition to hierarchy"
+    ]
+  },
+  "recommended_builder_ux_flow": {
+    "screens": [
+      "Form Library",
+      "Start New Form",
+      "Builder Workspace",
+      "Review or Publish"
+    ],
+    "workspace_layout": [
+      "left outline",
+      "center focused editor",
+      "right live preview"
+    ],
+    "simple_default_actions": [
+      "Add Section",
+      "Add Field",
+      "Add Group",
+      "Add Preset",
+      "Duplicate",
+      "Reorder",
+      "Preview",
+      "Save Draft"
+    ],
+    "advanced_hidden_by_default": [
+      "Note blocks",
+      "Divider blocks",
+      "Repeater blocks",
+      "Table blocks",
+      "Columns blocks",
+      "Semantic hints",
+      "Validation rules",
+      "Advanced metadata"
+    ],
+    "main_rules": [
+      "one main editing context visible at a time",
+      "do not expose schema language in the primary UI",
+      "prefer duplication and presets over blank-slate complexity",
+      "keep live preview reassuring, not dominant"
     ]
   },
   "current_group_structure": [

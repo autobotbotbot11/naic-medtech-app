@@ -28,6 +28,10 @@ const FIELD_TYPES = [
   { id: "datetime", label: "Date and time", control: "input", dataType: "datetime" },
 ];
 
+const initialFormSlug = document.body?.dataset?.initialFormSlug || "";
+const initialBuilderMode = document.body?.dataset?.initialBuilderMode || "";
+const initialQuery = new URLSearchParams(window.location.search);
+
 const formListEl = document.getElementById("formList");
 const formSearchEl = document.getElementById("formSearch");
 const statusTextEl = document.getElementById("statusText");
@@ -66,6 +70,7 @@ const confirmDialogConfirmBtnEl = document.getElementById("confirmDialogConfirmB
 
 let dialogResolver = null;
 let dialogReturnFocusEl = null;
+let allowIntentionalUnload = false;
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
@@ -86,6 +91,11 @@ async function api(path, options = {}) {
 
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
+}
+
+function parsePositiveInt(value, fallback) {
+  const parsed = Number(value);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
 }
 
 function slugify(value) {
@@ -621,24 +631,74 @@ function makeBlankSection() {
   };
 }
 
-function makeBlankForm() {
+function navigateWithIntent(url) {
+  allowIntentionalUnload = true;
+  window.location.assign(url);
+}
+
+function makePresetSections(templateId) {
+  if (templateId === "quick_results") {
+    return [
+      {
+        name: "Results",
+        key: "results",
+        notes: [],
+        fields: [],
+      },
+    ];
+  }
+
+  if (templateId === "structured_report") {
+    return [
+      {
+        name: "Specimen Details",
+        key: "specimen_details",
+        notes: [],
+        fields: [],
+      },
+      {
+        name: "Results",
+        key: "results",
+        notes: [],
+        fields: [],
+      },
+      {
+        name: "Remarks",
+        key: "remarks",
+        notes: [],
+        fields: [],
+      },
+    ];
+  }
+
+  return [];
+}
+
+function makeBlankForm(config = {}) {
+  const formName = String(config.name || "").trim() || "Untitled Form";
+  const groupName = String(config.groupName || "").trim() || "Unassigned";
+  const groupKind = String(config.groupKind || "").trim() || "category";
+  const groupOrder = parsePositiveInt(config.groupOrder, 999);
+  const formOrder = parsePositiveInt(config.formOrder, 1);
+  const templateId = String(config.templateId || "").trim() || "blank";
+
   return {
     slug: null,
-    name: "Untitled Form",
-    group_name: "New Category",
-    group_kind: "category",
-    group_order: 999,
-    form_order: 1,
+    name: formName,
+    group_name: groupName,
+    group_kind: groupKind,
+    group_order: groupOrder,
+    form_order: formOrder,
     current_version_number: 0,
     summary: "",
     schema: {
-      name: "Untitled Form",
-      key: "untitled_form",
-      order: 1,
+      name: formName,
+      key: slugify(formName),
+      order: formOrder,
       common_field_set_id: "default_lab_request",
       notes: [],
       fields: [],
-      sections: [],
+      sections: makePresetSections(templateId),
     },
   };
 }
@@ -720,8 +780,23 @@ async function bootstrap() {
   setStatus("Loading builder...");
   state.bootstrap = await api("/api/builder/bootstrap");
   renderFormList();
+  const draftConfig = {
+    name: String(initialQuery.get("draft_name") || "").trim(),
+    groupName: String(initialQuery.get("group_name") || "").trim(),
+    groupKind: String(initialQuery.get("group_kind") || "").trim() || "category",
+    groupOrder: parsePositiveInt(initialQuery.get("group_order"), 999),
+    formOrder: parsePositiveInt(initialQuery.get("form_order"), 1),
+    templateId: String(initialQuery.get("template") || "").trim() || "blank",
+  };
 
-  if (state.bootstrap.selected_form_slug) {
+  if (initialBuilderMode === "new") {
+    startNewForm(draftConfig);
+  } else if (initialFormSlug) {
+    await loadForm(initialFormSlug);
+    if (initialBuilderMode === "duplicate") {
+      duplicateCurrentForm(draftConfig);
+    }
+  } else if (state.bootstrap.selected_form_slug) {
     await loadForm(state.bootstrap.selected_form_slug);
   } else {
     startNewForm();
@@ -752,30 +827,39 @@ async function loadForm(slug) {
   renderAll();
 }
 
-function startNewForm() {
+function startNewForm(config = {}) {
   state.selectedFormSlug = null;
   state.loadedForm = null;
-  state.draft = makeBlankForm();
+  state.draft = makeBlankForm(config);
   state.baselineDraft = deepClone(state.draft);
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
-  setStatus("Started a new blank form.");
+  const templateId = String(config.templateId || "").trim();
+  const startLabel = templateId && templateId !== "blank"
+    ? `Started a new ${state.draft.name} draft from a preset.`
+    : "Started a new blank form.";
+  setStatus(startLabel);
   renderAll();
 }
 
-function duplicateCurrentForm() {
+function duplicateCurrentForm(overrides = {}) {
   if (!state.draft) {
-    startNewForm();
+    startNewForm(overrides);
     return;
   }
   const copy = deepClone(state.draft);
   copy.slug = null;
   copy.current_version_number = 0;
   copy.summary = "";
-  copy.name = makeCopyName(copy.name);
+  copy.name = String(overrides.name || "").trim() || makeCopyName(copy.name);
+  copy.group_name = String(overrides.groupName || "").trim() || copy.group_name;
+  copy.group_kind = String(overrides.groupKind || "").trim() || copy.group_kind;
+  copy.group_order = parsePositiveInt(overrides.groupOrder, parsePositiveInt(copy.group_order, 999));
+  copy.form_order = parsePositiveInt(overrides.formOrder, parsePositiveInt(copy.form_order, 1));
   copy.schema.name = copy.name;
   copy.schema.key = slugify(copy.name);
+  copy.schema.order = copy.form_order;
   state.selectedFormSlug = null;
   state.loadedForm = null;
   state.draft = copy;
@@ -1756,11 +1840,20 @@ document.getElementById("newFormBtn").addEventListener("click", async () => {
   if (!await resolveDirtyBeforeContinue()) {
     return;
   }
-  startNewForm();
+  navigateWithIntent("/forms/new");
 });
 
-document.getElementById("duplicateFormBtn").addEventListener("click", () => {
-  duplicateCurrentForm();
+document.getElementById("duplicateFormBtn").addEventListener("click", async () => {
+  if (!await resolveDirtyBeforeContinue()) {
+    return;
+  }
+
+  if (state.selectedFormSlug) {
+    navigateWithIntent(`/forms/new?source=${encodeURIComponent(state.selectedFormSlug)}`);
+    return;
+  }
+
+  navigateWithIntent("/forms/new");
 });
 
 document.getElementById("saveBtn").addEventListener("click", () => {
@@ -1839,7 +1932,7 @@ document.addEventListener("click", (event) => {
 });
 
 window.addEventListener("beforeunload", (event) => {
-  if (!state.dirty) {
+  if (!state.dirty || allowIntentionalUnload) {
     return;
   }
 
