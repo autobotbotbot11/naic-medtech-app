@@ -94,6 +94,7 @@ What is already true in the current builder:
 - the live preview now stays visible while editing instead of blocking the builder in an overlay
 - the preview panel updates live while the user edits builder fields and form titles
 - on desktop, the preview panel uses its own internal scroll area so long forms remain fully inspectable without losing the builder view
+- the preview hide/show path is now hardened so hiding the panel fully removes it from layout instead of leaving a bottom leak in stacked layouts
 - helper text is now reduced and moved into small `?` popovers in the main editing cards
 - open help popovers and `More` menus now close when the user clicks elsewhere
 - in-app destructive/dirty decisions now use a calmer custom modal instead of browser `confirm()` dialogs
@@ -104,6 +105,8 @@ What is already true in the current builder:
 - open section cards now use a compact header row where section title and quick add-actions live together
 - the save step now uses a single compact inline row (note input + one save action) to reduce vertical weight
 - open field cards now use lighter metadata chrome by default (less repetitive labeling noise)
+- `Advanced mode` toggle is now available in the stage header and defaults to `Off`
+- when `Advanced mode` is `Off`, technical panels are hidden (`Advanced` blocks + `Technical JSON`) to keep first-time editing focused on core actions
 
 What is still not done:
 - final reduction of header and action noise

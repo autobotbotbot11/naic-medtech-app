@@ -120,6 +120,7 @@
         "preview stays visible while editing instead of blocking the builder in an overlay",
         "preview panel updates live while editing builder fields and form titles",
         "desktop preview panel uses its own internal scroll area for long forms",
+        "preview hide/show is hardened so a hidden preview is removed from layout instead of leaking below the editor",
         "persistent helper copy reduced into small question-mark popovers in key cards",
         "open help popovers and action menus close when the user clicks elsewhere",
         "in-app destructive and unsaved-change decisions now use a calmer custom modal instead of browser confirm dialogs",
@@ -129,7 +130,9 @@
         "drag and more controls stay subdued until a row is active or hovered",
         "open section cards use a compact builder-head row where title and quick add-actions stay together",
         "save step uses a compact inline row with note input plus one save action",
-        "open field cards use lighter metadata chrome with less repetitive label noise"
+        "open field cards use lighter metadata chrome with less repetitive label noise",
+        "stage header includes an advanced-mode toggle that defaults to off",
+        "advanced blocks and technical json are hidden while advanced mode is off"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",

@@ -8,6 +8,7 @@ const state = {
   ui: {
     libraryOpen: false,
     previewOpen: true,
+    advancedMode: false,
     setupOpen: true,
     saveOpen: false,
     topFieldsOpen: true,
@@ -46,12 +47,14 @@ const previewCalloutTitleEl = document.getElementById("previewCalloutTitle");
 const previewCalloutMetaEl = document.getElementById("previewCalloutMeta");
 const openPreviewBtnEl = document.getElementById("openPreviewBtn");
 const closePreviewBtnEl = document.getElementById("closePreviewBtn");
+const toggleAdvancedBtnEl = document.getElementById("toggleAdvancedBtn");
 const saveBtnEl = document.getElementById("saveBtn");
 const saveDockEl = document.getElementById("saveDock");
 const saveDockTitleEl = document.getElementById("saveDockTitle");
 const saveDockMetaEl = document.getElementById("saveDockMeta");
 const saveDockBtnEl = document.getElementById("saveDockBtn");
 const resetDraftBtnEl = document.getElementById("resetDraftBtn");
+const devPanelEl = document.querySelector(".dev-panel");
 const dialogScrimEl = document.getElementById("dialogScrim");
 const confirmDialogEl = document.getElementById("confirmDialog");
 const confirmDialogEyebrowEl = document.getElementById("confirmDialogEyebrow");
@@ -296,14 +299,16 @@ function syncShellState() {
 
   if (previewPanelEl) {
     previewPanelEl.hidden = !previewVisible;
+    previewPanelEl.classList.toggle("is-hidden", !previewVisible);
+    previewPanelEl.setAttribute("aria-hidden", String(!previewVisible));
+    if (previewVisible) {
+      previewPanelEl.removeAttribute("inert");
+    } else {
+      previewPanelEl.setAttribute("inert", "");
+    }
+
     if (previewPanelEl.id === "previewDrawer") {
       previewPanelEl.classList.toggle("is-open", previewVisible);
-      previewPanelEl.setAttribute("aria-hidden", String(!previewVisible));
-      if (previewVisible) {
-        previewPanelEl.removeAttribute("inert");
-      } else {
-        previewPanelEl.setAttribute("inert", "");
-      }
     }
   }
 
@@ -315,6 +320,21 @@ function syncShellState() {
     openPreviewBtnEl.textContent = previewVisible ? "Hide Live Preview" : "Show Live Preview";
   }
   renderPreviewCallout();
+}
+
+function syncAdvancedModeUi() {
+  if (toggleAdvancedBtnEl) {
+    const enabled = state.ui.advancedMode;
+    toggleAdvancedBtnEl.textContent = `Advanced: ${enabled ? "On" : "Off"}`;
+    toggleAdvancedBtnEl.setAttribute("aria-pressed", String(enabled));
+  }
+
+  if (devPanelEl) {
+    devPanelEl.hidden = !state.ui.advancedMode;
+    if (!state.ui.advancedMode) {
+      devPanelEl.open = false;
+    }
+  }
 }
 
 function closeDrawers() {
@@ -816,6 +836,7 @@ function renderAll() {
   renderPreview();
   renderJson();
   renderSaveDock();
+  syncAdvancedModeUi();
   syncShellState();
 }
 
@@ -955,20 +976,21 @@ function renderFormSetupCard() {
             </select>
           </label>
         </div>
-
-        <details class="advanced">
-          <summary>Advanced</summary>
-          <div class="advanced-grid">
-            <label>
-              <span>Internal form key</span>
-              <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
-            </label>
-            <label style="grid-column: 1 / -1;">
-              <span>Builder notes</span>
-              <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
-            </label>
-          </div>
-        </details>
+        ${state.ui.advancedMode ? `
+          <details class="advanced">
+            <summary>Advanced</summary>
+            <div class="advanced-grid">
+              <label>
+                <span>Internal form key</span>
+                <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
+              </label>
+              <label style="grid-column: 1 / -1;">
+                <span>Builder notes</span>
+                <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
+              </label>
+            </div>
+          </details>
+        ` : ""}
       ` : `
         <div class="collapsed-copy">
           <strong>${escapeHtml(formName)}</strong>
@@ -1111,19 +1133,21 @@ function renderSectionCard(section, path, number) {
 
         ${renderFieldCollection(section.fields, [...path, "fields"])}
 
-        <details class="advanced">
-          <summary>Advanced</summary>
-          <div class="advanced-grid">
-            <label>
-              <span>Internal section key</span>
-              <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
-            </label>
-            <label style="grid-column: 1 / -1;">
-              <span>Section notes</span>
-              <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
-            </label>
-          </div>
-        </details>
+        ${state.ui.advancedMode ? `
+          <details class="advanced">
+            <summary>Advanced</summary>
+            <div class="advanced-grid">
+              <label>
+                <span>Internal section key</span>
+                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
+              </label>
+              <label style="grid-column: 1 / -1;">
+                <span>Section notes</span>
+                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
+              </label>
+            </div>
+          </details>
+        ` : ""}
       ` : ""}
     </article>
   `;
@@ -1198,29 +1222,31 @@ function renderFieldCard(field, path) {
 
         ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
 
-        <details class="advanced">
-          <summary>Advanced</summary>
-          <div class="advanced-grid">
-            <label>
-              <span>Internal key</span>
-              <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
-            </label>
-            ${isGroup ? "" : `
+        ${state.ui.advancedMode ? `
+          <details class="advanced">
+            <summary>Advanced</summary>
+            <div class="advanced-grid">
               <label>
-                <span>Normal value</span>
-                <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}" placeholder="Example: 4.5 - 11.0">
+                <span>Internal key</span>
+                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
               </label>
-              <label>
-                <span>Unit hint</span>
-                <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}" placeholder="Example: mg/dL">
+              ${isGroup ? "" : `
+                <label>
+                  <span>Normal value</span>
+                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}" placeholder="Example: 4.5 - 11.0">
+                </label>
+                <label>
+                  <span>Unit hint</span>
+                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}" placeholder="Example: mg/dL">
+                </label>
+              `}
+              <label style="grid-column: 1 / -1;">
+                <span>Notes</span>
+                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
               </label>
-            `}
-            <label style="grid-column: 1 / -1;">
-              <span>Notes</span>
-              <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
-            </label>
-          </div>
-        </details>
+            </div>
+          </details>
+        ` : ""}
       ` : ""}
     </article>
   `;
@@ -1714,17 +1740,11 @@ document.getElementById("closeLibraryBtn").addEventListener("click", () => {
   closeDrawers();
 });
 
-if (closePreviewBtnEl) {
-  closePreviewBtnEl.addEventListener("click", () => {
-    state.ui.previewOpen = false;
-    renderShellSummary();
-    syncShellState();
-  });
-}
-
-if (openPreviewBtnEl) {
-  openPreviewBtnEl.addEventListener("click", () => {
-    togglePreview();
+if (toggleAdvancedBtnEl) {
+  toggleAdvancedBtnEl.addEventListener("click", () => {
+    state.ui.advancedMode = !state.ui.advancedMode;
+    closeTransientDetails();
+    renderAll();
   });
 }
 
@@ -1795,6 +1815,27 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
     closeDrawers();
   }
+});
+
+document.addEventListener("click", (event) => {
+  const target = event.target;
+  if (!(target instanceof Element)) {
+    return;
+  }
+
+  const previewToggleButton = target.closest("#openPreviewBtn, #closePreviewBtn");
+  if (!previewToggleButton) {
+    return;
+  }
+
+  if (previewToggleButton.id === "closePreviewBtn") {
+    state.ui.previewOpen = false;
+    renderShellSummary();
+    syncShellState();
+    return;
+  }
+
+  togglePreview();
 });
 
 window.addEventListener("beforeunload", (event) => {

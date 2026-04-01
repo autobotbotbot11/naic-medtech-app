@@ -1,0 +1,7 @@
+INFO:     127.0.0.1:9531 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:2009 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:2009 - "GET /static/app.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58512 - "GET /static/vendor/sortable.min.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:8672 - "GET /static/app.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:8672 - "GET /api/builder/bootstrap HTTP/1.1" 200 OK
+INFO:     127.0.0.1:8672 - "GET /api/forms/semen HTTP/1.1" 200 OK
