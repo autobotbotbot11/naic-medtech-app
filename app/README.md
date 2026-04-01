@@ -51,5 +51,12 @@ uvicorn naic_builder.main:app --reload --app-dir app
 http://127.0.0.1:8000
 ```
 
+## Reset sample builder data
+If the tracked sample runtime DB gets cluttered during builder testing, reset it back to the clean schema-seeded state:
+
+```powershell
+python tools/scripts/reset_builder_runtime_db.py
+```
+
 ## Important note
 This scaffold is intentionally builder-first. Accounts, deeper admin controls, and broader operations modules should come after the form builder foundation is stable.

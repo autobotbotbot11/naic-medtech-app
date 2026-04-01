@@ -100,6 +100,7 @@ What is implemented:
 - the live preview panel now reads more like a polished form surface: read-only controls, stronger section grouping, and a clearer preview paper layout
 - the preview now includes sticky quick-jump section chips for long forms, with active state so the user can navigate the preview faster
 - the left outline and library wording are now less technical, using calmer labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
+- the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface
