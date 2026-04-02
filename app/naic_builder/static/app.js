@@ -813,12 +813,29 @@ function touch(options = {}) {
   renderShellSummary();
   renderPreview();
   renderJson();
+  syncSaveSurface();
   if (options.full) {
     renderEditor();
   }
   if (options.library) {
     renderFormList();
   }
+}
+
+function syncSaveSurface() {
+  const titleEl = document.getElementById("saveStateTitle");
+  const metaEl = document.getElementById("saveStateMeta");
+  if (!titleEl || !metaEl || !state.draft) {
+    return;
+  }
+
+  const dirtyLabel = state.dirty ? "Changes ready" : "Saved";
+  const helperCopy = state.dirty
+    ? "Save when this version feels right."
+    : "Nothing new to save.";
+
+  titleEl.textContent = dirtyLabel;
+  metaEl.textContent = `${currentVersionLabel()} | ${helperCopy}`;
 }
 
 async function bootstrap() {
@@ -986,10 +1003,10 @@ function renderSaveDock() {
   }
 
   const note = String(state.draft.summary || "").trim();
-  saveDockTitleEl.textContent = state.selectedFormSlug ? "Draft changed" : "New draft";
+  saveDockTitleEl.textContent = state.selectedFormSlug ? "Changes ready" : "Ready to save";
   saveDockMetaEl.textContent = note
     ? `Note: ${note}`
-    : "Save now, or add a short note first.";
+    : "Save now or keep editing.";
 }
 
 function renderFormList() {
@@ -1137,7 +1154,7 @@ function renderOutline() {
           <div class="outline-empty">No sections yet.</div>
         `}
         <button class="outline-item ${focusPane === "save" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="save">
-          <span>Save draft</span>
+          <span>Save</span>
         </button>
       </nav>
     `;
@@ -1250,18 +1267,18 @@ function renderSaveCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const saveOpen = focusMode ? true : state.ui.saveOpen;
   const note = String(state.draft.summary || "").trim();
-  const dirtyLabel = state.dirty ? "Ready to save" : "Already saved";
+  const dirtyLabel = state.dirty ? "Changes ready" : "Saved";
   const helperCopy = state.dirty
-    ? "Save this draft when the current changes already look right."
-    : "Everything is saved.";
+    ? "Save when this version feels right."
+    : "Nothing new to save.";
   return `
     <section class="editor-card">
       <div class="card-head">
         <div>
-          <p class="eyebrow">Finish</p>
+          <p class="eyebrow">Save</p>
           <div class="card-title-row">
-            <h3 class="card-title">Save draft</h3>
-            ${renderHelpPopover("Version note help", "Version notes are optional. Add one only when you want to remember what changed.")}
+            <h3 class="card-title">Save</h3>
+            ${renderHelpPopover("Save help", "Notes are optional. Add one only if it helps you remember this version.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -1274,22 +1291,21 @@ function renderSaveCard(options = {}) {
       ${saveOpen ? `
         <div class="save-spotlight">
           <div>
-            <strong>${escapeHtml(dirtyLabel)}</strong>
-            <span>${escapeHtml(currentVersionLabel())} | ${escapeHtml(helperCopy)}</span>
+            <strong id="saveStateTitle">${escapeHtml(dirtyLabel)}</strong>
+            <span id="saveStateMeta">${escapeHtml(currentVersionLabel())} | ${escapeHtml(helperCopy)}</span>
           </div>
-          <span class="chip soft">${currentDraftFieldCount()} fields</span>
         </div>
         <div class="save-step-inline">
           <label>
-            <span>Note (optional)</span>
-            <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Example: Added urine ketone choices">
+            <span>Note</span>
+            <input data-bind="summary" value="${escapeHtml(state.draft.summary || "")}" placeholder="Optional note for this version">
           </label>
-          <button class="secondary" type="button" data-action="save-draft">Save now</button>
+          <button class="secondary" type="button" data-action="save-draft">Save</button>
         </div>
       ` : `
         <div class="collapsed-copy">
-          <strong>${note ? "Current version note" : "Save note is optional"}</strong>
-          ${note ? escapeHtml(note) : "Use the floating save bar when you are ready."}
+          <strong>${note ? "Latest note" : "Note is optional"}</strong>
+          ${note ? escapeHtml(note) : "You can save without adding one."}
         </div>
       `}
     </section>

@@ -279,7 +279,8 @@
         "the center and preview chrome are quieter too: the builder header, Sections header, and preview surfaces no longer repeat summary count badges",
         "the center organizer metadata is quieter too: section rows no longer repeat item counts, field rows use simpler type cues like Dropdown, and the choices editor no longer repeats choice counts in its header and spotlight",
         "the preview wording is calmer too: shorter Show and Hide actions, Live preview callout language, and preview copy that reads more like a live companion than a technical sample panel",
-        "the empty-state and no-data copy are warmer too: builder and library messages now guide the user more gently instead of sounding like raw system states"
+        "the empty-state and no-data copy are warmer too: builder and library messages now guide the user more gently instead of sounding like raw system states",
+        "the save surface is calmer too: Save draft is now just Save, the finish-step wording is softer, the floating save dock is quieter, and the save card now stays in sync with dirty state while editing the note"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",
