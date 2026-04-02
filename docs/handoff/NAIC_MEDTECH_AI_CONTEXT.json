@@ -14,8 +14,6 @@
       "a persisted generic container/form library tree foundation now exists in the backend",
       "the compatibility tree is exposed at /api/library/tree",
       "current forms are backfilled into that tree automatically",
-      "the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at /api/presets",
-      "the backend now also supports creating custom presets via post api/presets",
       "the builder still uses the older fields plus sections schema shape under the hood",
       "form reads now expose a derived compatibility block_schema",
       "api/forms/{slug}/block-schema now exposes the ordered-block view directly",
@@ -48,11 +46,10 @@
     "guided_create_behavior": [
       "new form creation now goes through /forms/new",
       "the guided create screen collects form name, folder, and start method before opening the builder",
-      "start methods now include blank, duplicate existing form, and starter presets",
-      "start from preset is now backed by persisted preset definitions instead of hardcoded starter data",
-      "builder bootstrap now includes stored preset block schemas so preset-started drafts come from real preset blocks",
-      "advanced layout can now insert stored presets into an existing draft, so presets are reusable beyond the new-form entry flow",
-      "advanced layout can now also save the current layout root as a new custom preset, so users can create reusable lego pieces from the builder itself",
+      "start methods now include blank and duplicate existing form",
+      "preset support has been deliberately removed from the active product path so the builder can stay focused on the core flow",
+      "builder bootstrap no longer includes preset data",
+      "advanced layout no longer exposes insert preset or save preset actions",
       "builder duplicate actions now route through the guided create screen instead of forking immediately in place"
     ],
     "workspace_behavior": [
@@ -173,7 +170,7 @@
       "keep the engine highly flexible while keeping the UI simple by default"
     ],
     "supporting_concepts": [
-      "optional presets",
+      "optional reusable blocks later if they can return without harming simplicity",
       "versioned records",
       "search and tags later in addition to hierarchy"
     ]
@@ -194,7 +191,6 @@
       "Add Section",
       "Add Field",
       "Add Group",
-      "Add Preset",
       "Duplicate",
       "Reorder",
       "Preview",
@@ -213,7 +209,7 @@
     "main_rules": [
       "one main editing context visible at a time",
       "do not expose schema language in the primary UI",
-      "prefer duplication and presets over blank-slate complexity",
+      "prefer duplication over blank-slate complexity",
       "keep live preview reassuring, not dominant"
     ]
   },

@@ -6,9 +6,6 @@ const existingGroupSelectEl = document.getElementById("existingGroupSelect");
 const newGroupNameEl = document.getElementById("newGroupName");
 const duplicateSourceWrapEl = document.getElementById("duplicateSourceWrap");
 const duplicateSourceSelectEl = document.getElementById("duplicateSourceSelect");
-const presetWrapEl = document.getElementById("presetWrap");
-const presetSelectEl = document.getElementById("presetSelect");
-const presetDescriptionEl = document.getElementById("presetDescription");
 const modeInputEl = document.getElementById("modeInput");
 const slugInputEl = document.getElementById("slugInput");
 const draftNameInputEl = document.getElementById("draftNameInput");
@@ -16,12 +13,9 @@ const groupNameInputEl = document.getElementById("groupNameInput");
 const groupKindInputEl = document.getElementById("groupKindInput");
 const groupOrderInputEl = document.getElementById("groupOrderInput");
 const formOrderInputEl = document.getElementById("formOrderInput");
-const templateInputEl = document.getElementById("templateInput");
 const summaryNameEl = document.getElementById("summaryName");
 const summaryGroupEl = document.getElementById("summaryGroup");
 const summaryStartEl = document.getElementById("summaryStart");
-
-const presetCatalog = JSON.parse(document.getElementById("presetCatalog")?.textContent || "[]");
 
 function visibleChoice(name) {
   return document.querySelector(`input[name="${name}"]:checked`)?.value || "";
@@ -58,24 +52,13 @@ function syncGroupMode() {
 function syncStartMode() {
   const startMode = visibleChoice("start_mode") || "blank";
   const duplicateSelected = startMode === "duplicate";
-  const presetSelected = startMode === "preset";
 
   duplicateSourceWrapEl?.classList.toggle("hidden", !duplicateSelected);
   duplicateSourceWrapEl && (duplicateSourceWrapEl.hidden = !duplicateSelected);
-  presetWrapEl?.classList.toggle("hidden", !presetSelected);
-  presetWrapEl && (presetWrapEl.hidden = !presetSelected);
 
   if (duplicateSourceSelectEl) {
     duplicateSourceSelectEl.required = duplicateSelected;
   }
-}
-
-function syncPresetDescription() {
-  if (!presetDescriptionEl || !presetSelectEl) {
-    return;
-  }
-  const selected = presetCatalog.find((item) => item.id === presetSelectEl.value) || presetCatalog[0];
-  presetDescriptionEl.textContent = selected?.description || "";
 }
 
 function updateSummary() {
@@ -90,8 +73,6 @@ function updateSummary() {
   let startLabel = "Start empty";
   if (startMode === "duplicate") {
     startLabel = `Duplicate ${selectedDuplicateLabel()}`;
-  } else if (startMode === "preset") {
-    startLabel = presetSelectEl?.selectedOptions?.[0]?.textContent?.trim() || "Start from preset";
   }
 
   if (summaryNameEl) {
@@ -142,9 +123,6 @@ function syncHiddenInputs() {
   if (formOrderInputEl) {
     formOrderInputEl.value = Number.isFinite(formOrder) ? String(formOrder) : "1";
   }
-  if (templateInputEl) {
-    templateInputEl.value = startMode === "preset" ? String(presetSelectEl?.value || "blank") : "blank";
-  }
 }
 
 function handleSourceSelectionAutofill() {
@@ -166,7 +144,6 @@ function handleSourceSelectionAutofill() {
 function refreshScreen() {
   syncGroupMode();
   syncStartMode();
-  syncPresetDescription();
   syncHiddenInputs();
   updateSummary();
 }
@@ -182,7 +159,6 @@ document.querySelectorAll('input[name="group_source_mode"], input[name="start_mo
 
 existingGroupSelectEl?.addEventListener("change", refreshScreen);
 newGroupNameEl?.addEventListener("input", refreshScreen);
-presetSelectEl?.addEventListener("change", refreshScreen);
 duplicateSourceSelectEl?.addEventListener("change", () => {
   handleSourceSelectionAutofill();
   refreshScreen();

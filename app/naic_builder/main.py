@@ -11,17 +11,14 @@ from sqlalchemy.orm import Session
 
 from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
-from .schemas import FormSavePayload, PresetSavePayload
+from .schemas import FormSavePayload
 from .services import (
-    create_preset,
     create_form,
     ensure_block_schema_storage,
-    ensure_preset_seed,
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
     list_library_tree,
-    list_presets,
     list_grouped_forms,
     load_reference_schema,
     serialize_form,
@@ -35,7 +32,6 @@ async def lifespan(_: FastAPI):
     ensure_runtime_schema()
     with SessionLocal() as session:
         ensure_reference_seed(session)
-        ensure_preset_seed(session)
         ensure_block_schema_storage(session)
         ensure_library_tree(session)
     yield
@@ -119,8 +115,6 @@ def start_new_form_page(
         1,
     )
 
-    preset_options = list_presets(session)
-
     return templates.TemplateResponse(
         request=request,
         name="forms/new.html",
@@ -132,7 +126,6 @@ def start_new_form_page(
             "default_group_order": default_group_order,
             "default_form_order": default_form_order,
             "source_form": source_form,
-            "preset_options": preset_options,
         },
     )
 
@@ -183,22 +176,8 @@ def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]
         "app_title": APP_TITLE,
         "common_field_sets": reference.get("common_field_sets", []),
         "groups": groups,
-        "presets": list_presets(session, include_schema=True),
         "selected_form_slug": selected_slug,
     }
-
-
-@app.get("/api/presets")
-def presets_catalog(session: Session = Depends(get_session)) -> dict[str, Any]:
-    return {"presets": list_presets(session, include_schema=True)}
-
-
-@app.post("/api/presets", status_code=201)
-def create_preset_endpoint(payload: PresetSavePayload, session: Session = Depends(get_session)) -> dict[str, Any]:
-    try:
-        return create_preset(session, payload)
-    except ValueError as exc:
-        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.get("/api/library/tree")

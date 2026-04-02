@@ -12,66 +12,14 @@ from sqlalchemy.orm import Session, selectinload
 
 from .config import REFERENCE_SCHEMA_PATH
 from .database import Base, engine
-from .models import FormDefinition, FormVersion, LibraryNode, PresetDefinition
-from .schemas import FormSavePayload, PresetSavePayload
+from .models import FormDefinition, FormVersion, LibraryNode
+from .schemas import FormSavePayload
 
 
 def load_reference_schema() -> dict[str, Any]:
     return json.loads(REFERENCE_SCHEMA_PATH.read_text(encoding="utf-8"))
 
 
-def make_preset_section_block(name: str, key: str, order: int) -> dict[str, Any]:
-    return {
-        "id": f"preset.{key}",
-        "kind": "section",
-        "name": name,
-        "props": {
-            "key": key,
-            "order": order,
-        },
-        "children": [],
-    }
-
-
-def builtin_presets() -> list[dict[str, Any]]:
-    return [
-        {
-            "preset_key": "quick_results",
-            "name": "Quick Results",
-            "description": "Start with one ready section for common result fields.",
-            "preset_order": 1,
-            "block_schema": {
-                "schema_version": 1,
-                "source_kind": "preset_library",
-                "meta": {
-                    "common_field_set_id": "default_lab_request",
-                    "preset_key": "quick_results",
-                },
-                "blocks": [
-                    make_preset_section_block("Results", "results", 1),
-                ],
-            },
-        },
-        {
-            "preset_key": "structured_report",
-            "name": "Structured Report",
-            "description": "Start with simple sections for details, results, and remarks.",
-            "preset_order": 2,
-            "block_schema": {
-                "schema_version": 1,
-                "source_kind": "preset_library",
-                "meta": {
-                    "common_field_set_id": "default_lab_request",
-                    "preset_key": "structured_report",
-                },
-                "blocks": [
-                    make_preset_section_block("Specimen Details", "specimen_details", 1),
-                    make_preset_section_block("Results", "results", 2),
-                    make_preset_section_block("Remarks", "remarks", 3),
-                ],
-            },
-        },
-    ]
 
 
 def slugify(value: str) -> str:
@@ -816,130 +764,6 @@ def list_library_tree(session: Session) -> list[dict[str, Any]]:
         return payload
 
     return [serialize_node(node) for node in children_by_parent.get(None, [])]
-
-
-def ensure_preset_seed(session: Session) -> None:
-    presets = session.scalars(select(PresetDefinition)).all()
-    presets_by_key = {preset.preset_key: preset for preset in presets}
-    changed = False
-
-    for builtin in builtin_presets():
-        preset_key = builtin["preset_key"]
-        preset = presets_by_key.get(preset_key)
-        payload_json = json.dumps(builtin["block_schema"], ensure_ascii=False)
-
-        if preset is None:
-            session.add(
-                PresetDefinition(
-                    preset_key=preset_key,
-                    name=builtin["name"],
-                    description=builtin["description"],
-                    preset_order=int(builtin["preset_order"]),
-                    block_schema_json=payload_json,
-                    is_builtin=True,
-                )
-            )
-            changed = True
-            continue
-
-        if preset.name != builtin["name"]:
-            preset.name = builtin["name"]
-            changed = True
-        if preset.description != builtin["description"]:
-            preset.description = builtin["description"]
-            changed = True
-        if int(preset.preset_order or 0) != int(builtin["preset_order"]):
-            preset.preset_order = int(builtin["preset_order"])
-            changed = True
-        if preset.block_schema_json != payload_json:
-            preset.block_schema_json = payload_json
-            changed = True
-        if not preset.is_builtin:
-            preset.is_builtin = True
-            changed = True
-
-    if changed:
-        session.commit()
-
-
-def list_presets(session: Session, *, include_schema: bool = False) -> list[dict[str, Any]]:
-    presets = session.scalars(
-        select(PresetDefinition).order_by(PresetDefinition.preset_order, PresetDefinition.name)
-    ).all()
-
-    items: list[dict[str, Any]] = []
-    for preset in presets:
-        payload = {
-            "id": preset.preset_key,
-            "name": preset.name,
-            "description": preset.description,
-            "order": int(preset.preset_order or 1),
-            "is_builtin": bool(preset.is_builtin),
-        }
-        if include_schema:
-            try:
-                payload["block_schema"] = json.loads(preset.block_schema_json)
-            except json.JSONDecodeError:
-                payload["block_schema"] = {
-                    "schema_version": 1,
-                    "source_kind": "preset_library",
-                    "meta": {
-                        "common_field_set_id": "default_lab_request",
-                        "preset_key": preset.preset_key,
-                    },
-                    "blocks": [],
-                }
-        items.append(payload)
-
-    return items
-
-
-def next_available_preset_key(session: Session, preferred: str) -> str:
-    base = slugify(preferred)
-    candidate = base
-    suffix = 2
-    while session.scalar(select(PresetDefinition.id).where(PresetDefinition.preset_key == candidate)) is not None:
-        candidate = f"{base}_{suffix}"
-        suffix += 1
-    return candidate
-
-
-def create_preset(session: Session, payload: PresetSavePayload) -> dict[str, Any]:
-    name = compact_text(payload.name) or "Untitled Preset"
-    preset_key = next_available_preset_key(session, name)
-    raw_block_schema = payload.block_schema if isinstance(payload.block_schema, dict) else {}
-    fallback_legacy = block_schema_to_legacy_schema(raw_block_schema)
-    normalized_block_schema = normalize_block_schema_storage(
-        raw_block_schema,
-        normalized_schema=fallback_legacy,
-    )
-    normalized_block_schema["source_kind"] = compact_text(normalized_block_schema.get("source_kind")) or "preset_library_custom"
-    meta = normalized_block_schema.get("meta") if isinstance(normalized_block_schema.get("meta"), dict) else {}
-    meta["preset_key"] = preset_key
-    normalized_block_schema["meta"] = meta
-
-    current_max_order = session.scalar(
-        select(PresetDefinition.preset_order).order_by(PresetDefinition.preset_order.desc()).limit(1)
-    )
-    preset = PresetDefinition(
-        preset_key=preset_key,
-        name=name,
-        description=compact_text(payload.description),
-        preset_order=int(current_max_order or 0) + 1,
-        block_schema_json=json.dumps(normalized_block_schema, ensure_ascii=False),
-        is_builtin=False,
-    )
-    session.add(preset)
-    session.commit()
-
-    return {
-        "id": preset.preset_key,
-        "name": preset.name,
-        "description": preset.description,
-        "order": int(preset.preset_order or 1),
-        "is_builtin": False,
-        "block_schema": normalized_block_schema,
-    }
 
 
 def next_available_slug(session: Session, preferred: str) -> str:

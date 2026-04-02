@@ -28,7 +28,6 @@
       <input id="groupKindInput" type="hidden" name="group_kind" value="category">
       <input id="groupOrderInput" type="hidden" name="group_order" value="{{ default_group_order }}">
       <input id="formOrderInput" type="hidden" name="form_order" value="{{ default_form_order }}">
-      <input id="templateInput" type="hidden" name="template" value="blank">
 
       <section class="panel form-flow-card">
         <div class="section-head">
@@ -126,12 +125,6 @@
             <span>Copy a similar form so you only adjust the parts that changed.</span>
           </label>
 
-          <label class="start-card">
-            <input type="radio" name="start_mode" value="preset">
-            <span class="start-card-eyebrow">Guided</span>
-            <strong>Start from preset</strong>
-            <span>Use a small starter pattern and shape it inside the builder.</span>
-          </label>
         </div>
 
         <div id="duplicateSourceWrap" class="field-stack{% if not source_form %} hidden{% endif %}" {% if not source_form %}hidden{% endif %}>
@@ -156,18 +149,6 @@
               {% endif %}
             </select>
           </label>
-        </div>
-
-        <div id="presetWrap" class="field-stack hidden" hidden>
-          <label class="field-stack">
-            <span>Preset</span>
-            <select id="presetSelect">
-              {% for preset in preset_options %}
-              <option value="{{ preset.id }}">{{ preset.name }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <p id="presetDescription" class="panel-copy">{{ preset_options[0].description }}</p>
         </div>
       </section>
 
@@ -198,7 +179,6 @@
     </form>
   </main>
 
-  <script id="presetCatalog" type="application/json">{{ preset_options|tojson }}</script>
   <script src="{{ url_for('static', path='new-form.js') }}" defer></script>
 </body>
 </html>

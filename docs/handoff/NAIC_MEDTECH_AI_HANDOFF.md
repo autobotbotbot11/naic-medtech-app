@@ -78,8 +78,6 @@ What is implemented:
 - `/` now redirects to `/forms`
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
-- the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at `/api/presets`
-- the backend now supports creating custom presets too via `POST /api/presets`
 - form reads now also expose a derived compatibility `block_schema`
 - `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
 - create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
@@ -110,15 +108,14 @@ What is implemented:
 - guided creation now asks for:
   - form name
   - destination folder
-  - starting method (`Blank`, `Duplicate Existing Form`, or `Start from Preset`)
-- guided `Start from Preset` is now backed by the persisted preset catalog instead of hardcoded starter data
-- builder bootstrap now includes stored preset block schemas so preset-started drafts are created from real preset blocks, not ad-hoc legacy section shortcuts
-- advanced `Layout` can now also insert stored presets into the current form, so presets are reusable inside an existing draft instead of being limited to the new-form entry flow
-- advanced `Layout` can now also save the current layout root as a new custom preset, so reusable lego pieces are now user-creatable and not only seeded by the app
+  - starting method (`Blank` or `Duplicate Existing Form`)
+- preset support has now been deliberately removed from the active product path so the builder can stay focused on the core flow
+- builder bootstrap no longer exposes preset data
+- advanced `Layout` no longer exposes insert/save preset actions
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the old `Top of form` language is now reframed as `Free fields`
-- `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details preset
+- `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details option
 - the sections view now uses a compact section organizer plus one focused section editor
 - inside `Sections` and `Free fields`, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
@@ -144,9 +141,7 @@ Important reading for the next implementation step:
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
 - important limitation: the current builder is now partially block-backed, but the default visible surface still follows the older `fields + sections` mental model
 - richer block kinds like `note` and `divider` are currently exposed only through advanced `Layout`, while the legacy compatibility projection remains limited on purpose
-- current preset coverage is still starter-level, but the preset engine is now persisted and ready for future user-created presets instead of remaining hardcoded
-- current preset insertion is intentionally rooted in advanced top-level `Layout`, so the calmer default workspace is still protected while preset reuse becomes real
-- current custom preset creation is also intentionally advanced-only and layout-root-based, so the normal builder flow stays quiet while reusable building blocks become practical
+- reusable presets are deferred for now because they added cognitive load before the core builder flow was finished
 
 ## Current Builder Progress
 Current implementation status:
@@ -212,7 +207,7 @@ The strongest future-proof direction currently recommended is:
 - organization tree using generic `container | form` nodes
 - block-based form schema instead of special zones like `top_of_form`
 - generic fields instead of hardcoded domain-specific field concepts
-- optional reusable presets instead of mandatory shared blocks
+- optional reusable blocks later if they can be reintroduced without hurting simplicity
 - versioned records separate from form design
 
 This is documented in:

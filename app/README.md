@@ -14,7 +14,6 @@ The app now starts from a builder-first FastAPI scaffold.
 - runtime data lives in `../data/runtime/naic_medtech.db`
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
-- the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at `/api/presets`
 - the backend now also exposes a compatibility `block_schema` bridge on form reads, plus `/api/forms/{slug}/block-schema`
 - create/update flows can now accept either the current legacy `fields + sections` shape or a limited compatible `blocks` shape
 - each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
@@ -34,10 +33,9 @@ The app now starts from a builder-first FastAPI scaffold.
 - advanced mode can now open a real child-layout workspace for a selected section or group, so nested block order can be edited directly without changing the calmer default panes
 - when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the normal flow
 - richer stored block schema is now preserved correctly across save/reload hydration, so advanced-only blocks are no longer dropped when a saved response is reloaded into the calmer builder UI
-- `/forms/new` and builder bootstrap now read from the persisted preset catalog instead of hardcoded starter definitions
-- `Start from preset` now creates drafts from stored preset `block_schema` payloads, not from hardcoded legacy section shortcuts
-- advanced `Layout` can now also insert stored presets into the current form, so presets are reusable inside existing drafts and not just at form creation time
-- advanced `Layout` can now also save the current layout root as a new custom preset through `/api/presets`, so users can start building their own reusable lego pieces
+- presets have been deliberately removed from the active product path for now so the builder stays focused on the core flow
+- `/forms/new` now starts only from `Blank` or `Duplicate existing form`
+- builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
@@ -82,6 +80,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
 - important limitation: the visible builder is now partially block-backed, but the default calm surface still mirrors the older `fields + sections` mental model
 - richer block kinds like `note`, `divider`, and `table` are now available only through advanced `Layout`, while the legacy compatibility projection is still intentionally limited to `field`, `field_group`, and `section`
+- reusable preset concepts are deferred, not active, until the core builder flow is finished and simpler
 
 ## Run locally
 1. Create and activate a virtual environment.
