@@ -14,6 +14,7 @@
       "a persisted generic container/form library tree foundation now exists in the backend",
       "the compatibility tree is exposed at /api/library/tree",
       "current forms are backfilled into that tree automatically",
+      "the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at /api/presets",
       "the builder still uses the older fields plus sections schema shape under the hood",
       "form reads now expose a derived compatibility block_schema",
       "api/forms/{slug}/block-schema now exposes the ordered-block view directly",
@@ -47,6 +48,8 @@
       "new form creation now goes through /forms/new",
       "the guided create screen collects form name, folder, and start method before opening the builder",
       "start methods now include blank, duplicate existing form, and starter presets",
+      "start from preset is now backed by persisted preset definitions instead of hardcoded starter data",
+      "builder bootstrap now includes stored preset block schemas so preset-started drafts come from real preset blocks",
       "builder duplicate actions now route through the guided create screen instead of forking immediately in place"
     ],
     "workspace_behavior": [

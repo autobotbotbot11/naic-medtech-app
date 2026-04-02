@@ -1433,42 +1433,16 @@ function navigateWithIntent(url) {
   window.location.assign(url);
 }
 
-function makePresetSections(templateId) {
-  if (templateId === "quick_results") {
-    return [
-      {
-        name: "Results",
-        key: "results",
-        notes: [],
-        fields: [],
-      },
-    ];
-  }
+function presetCatalog() {
+  return normalizeArray(state.bootstrap?.presets);
+}
 
-  if (templateId === "structured_report") {
-    return [
-      {
-        name: "Specimen Details",
-        key: "specimen_details",
-        notes: [],
-        fields: [],
-      },
-      {
-        name: "Results",
-        key: "results",
-        notes: [],
-        fields: [],
-      },
-      {
-        name: "Remarks",
-        key: "remarks",
-        notes: [],
-        fields: [],
-      },
-    ];
+function getPresetDefinition(presetId) {
+  const normalizedId = String(presetId || "").trim();
+  if (!normalizedId || normalizedId === "blank") {
+    return null;
   }
-
-  return [];
+  return presetCatalog().find((preset) => String(preset?.id || "").trim() === normalizedId) || null;
 }
 
 function makeBlankForm(config = {}) {
@@ -1478,6 +1452,7 @@ function makeBlankForm(config = {}) {
   const groupOrder = parsePositiveInt(config.groupOrder, 999);
   const formOrder = parsePositiveInt(config.formOrder, 1);
   const templateId = String(config.templateId || "").trim() || "blank";
+  const preset = getPresetDefinition(templateId);
 
   const draft = {
     slug: null,
@@ -1495,9 +1470,12 @@ function makeBlankForm(config = {}) {
       common_field_set_id: "default_lab_request",
       notes: [],
       fields: [],
-      sections: makePresetSections(templateId),
+      sections: [],
     },
   };
+  if (preset?.block_schema && typeof preset.block_schema === "object") {
+    draft.block_schema = deepClone(preset.block_schema);
+  }
   return ensureDraftSchemas(draft, { preferBlocks: true });
 }
 
@@ -1675,8 +1653,9 @@ function startNewForm(config = {}) {
   setDirty(true);
   state.ui.libraryOpen = false;
   const templateId = String(config.templateId || "").trim();
-  const startLabel = templateId && templateId !== "blank"
-    ? `${state.draft.name} draft ready`
+  const preset = getPresetDefinition(templateId);
+  const startLabel = preset
+    ? `${preset.name} draft ready`
     : "Blank draft ready";
   setStatus(startLabel);
   renderAll();
@@ -3303,6 +3282,9 @@ async function saveDraft() {
   state.draft = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
   state.baselineDraft = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
   state.bootstrap = await api("/api/builder/bootstrap");
+  if (saved.slug && window.location.pathname !== `/forms/${saved.slug}/builder`) {
+    window.history.replaceState({}, "", `/forms/${saved.slug}/builder`);
+  }
   setDirty(false);
   setStatus(`${saved.name} saved as Version ${saved.current_version_number}`);
   renderAll();

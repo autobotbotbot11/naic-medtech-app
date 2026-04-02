@@ -15,10 +15,12 @@ from .schemas import FormSavePayload
 from .services import (
     create_form,
     ensure_block_schema_storage,
+    ensure_preset_seed,
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
     list_library_tree,
+    list_presets,
     list_grouped_forms,
     load_reference_schema,
     serialize_form,
@@ -32,6 +34,7 @@ async def lifespan(_: FastAPI):
     ensure_runtime_schema()
     with SessionLocal() as session:
         ensure_reference_seed(session)
+        ensure_preset_seed(session)
         ensure_block_schema_storage(session)
         ensure_library_tree(session)
     yield
@@ -115,18 +118,7 @@ def start_new_form_page(
         1,
     )
 
-    preset_options = [
-        {
-            "id": "quick_results",
-            "name": "Quick Results",
-            "description": "Start with one ready section for common result fields.",
-        },
-        {
-            "id": "structured_report",
-            "name": "Structured Report",
-            "description": "Start with simple sections for details, results, and remarks.",
-        },
-    ]
+    preset_options = list_presets(session)
 
     return templates.TemplateResponse(
         request=request,
@@ -190,8 +182,14 @@ def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]
         "app_title": APP_TITLE,
         "common_field_sets": reference.get("common_field_sets", []),
         "groups": groups,
+        "presets": list_presets(session, include_schema=True),
         "selected_form_slug": selected_slug,
     }
+
+
+@app.get("/api/presets")
+def presets_catalog(session: Session = Depends(get_session)) -> dict[str, Any]:
+    return {"presets": list_presets(session, include_schema=True)}
 
 
 @app.get("/api/library/tree")

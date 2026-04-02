@@ -78,6 +78,7 @@ What is implemented:
 - `/` now redirects to `/forms`
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
+- the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at `/api/presets`
 - form reads now also expose a derived compatibility `block_schema`
 - `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
 - create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
@@ -109,6 +110,8 @@ What is implemented:
   - form name
   - destination folder
   - starting method (`Blank`, `Duplicate Existing Form`, or `Start from Preset`)
+- guided `Start from Preset` is now backed by the persisted preset catalog instead of hardcoded starter data
+- builder bootstrap now includes stored preset block schemas so preset-started drafts are created from real preset blocks, not ad-hoc legacy section shortcuts
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the old `Top of form` language is now reframed as `Free fields`
@@ -138,6 +141,7 @@ Important reading for the next implementation step:
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
 - important limitation: the current builder is now partially block-backed, but the default visible surface still follows the older `fields + sections` mental model
 - richer block kinds like `note` and `divider` are currently exposed only through advanced `Layout`, while the legacy compatibility projection remains limited on purpose
+- current preset coverage is still starter-level, but the preset engine is now persisted and ready for future user-created presets instead of remaining hardcoded
 
 ## Current Builder Progress
 Current implementation status:
