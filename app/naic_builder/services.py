@@ -789,6 +789,63 @@ def create_container(
     return container
 
 
+def get_container_or_none(session: Session, node_key: str) -> LibraryNode | None:
+    key = compact_text(node_key)
+    if not key:
+        return None
+    node = session.scalar(select(LibraryNode).where(LibraryNode.node_key == key))
+    if node is None or node.kind != "container":
+        return None
+    return node
+
+
+def rename_container(
+    session: Session,
+    node_key: str,
+    name: str,
+) -> LibraryNode:
+    container = get_container_or_none(session, node_key)
+    if container is None:
+        raise ValueError("Folder not found.")
+
+    container_name = compact_text(name)
+    if not container_name:
+        raise ValueError("Name the folder before you continue.")
+
+    existing_query = select(LibraryNode).where(
+        LibraryNode.kind == "container",
+        LibraryNode.name == container_name,
+        LibraryNode.id != container.id,
+    )
+    if container.parent_id is None:
+        existing_query = existing_query.where(LibraryNode.parent_id.is_(None))
+    else:
+        existing_query = existing_query.where(LibraryNode.parent_id == container.parent_id)
+
+    existing = session.scalar(existing_query.limit(1))
+    if existing is not None:
+        raise ValueError("A folder with this name already exists here.")
+
+    container.name = container_name
+    if container.archived:
+        container.archived = False
+    session.commit()
+    return container
+
+
+def delete_container(session: Session, node_key: str) -> None:
+    container = get_container_or_none(session, node_key)
+    if container is None:
+        raise ValueError("Folder not found.")
+
+    child_node = session.scalar(select(LibraryNode.id).where(LibraryNode.parent_id == container.id).limit(1))
+    if child_node is not None:
+        raise ValueError("This folder is not empty yet. Move or remove the items inside it first.")
+
+    session.delete(container)
+    session.commit()
+
+
 def next_root_form_order(session: Session) -> int:
     tree = list_library_tree(session)
     return max((int(node.get("order") or 0) for node in tree if not node.get("archived")), default=0) + 1

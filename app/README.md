@@ -40,6 +40,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/forms/new` duplicate choices now use the real tree too, showing full folder paths instead of the older grouped optgroup list
 - `/forms/new` can now create a brand-new folder inside an existing folder, and the first save will resolve that pending nested folder into the real library tree
 - `/folders/new` now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them
+- `/folders/edit` now gives folders a real management path too: they can be renamed, and they can be deleted once empty
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it
@@ -48,6 +49,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
 - the default workspace now lands on a single `Content` pane driven by real top-level block order instead of splitting the root flow into separate `Ungrouped fields` and `Sections` panes
 - the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules
+- the left outline now follows that same root content model too, showing real top-level content items instead of a section-only shortcut list
 - in `Advanced` mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into `Layout` just to place them
 - the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact field organizers plus one focused field editor
 - nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end
@@ -87,6 +89,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the library can now show both root-level forms and folders in one calm tree-first browse surface
 - library search now works against the full folder path text instead of only one-level group labels
 - folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
+- folder cards in `/forms` can now also launch `Edit folder`, so the visible tree flow is no longer create-only
 - the library top bar now also has a direct `New folder` path for root-level folder creation
 - the current long-term builder direction is documented in:
   - `../docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`

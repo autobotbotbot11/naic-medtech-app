@@ -15,17 +15,20 @@ from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import FormSavePayload
 from .services import (
     create_container,
+    delete_container,
     create_form,
     ensure_block_schema_storage,
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
+    get_container_or_none,
     list_container_choices,
     list_form_choices,
     list_grouped_forms,
     list_library_tree,
     next_root_form_order,
     load_reference_schema,
+    rename_container,
     serialize_form,
     update_form,
 )
@@ -105,6 +108,37 @@ def render_new_folder_page(
     )
 
 
+def render_edit_folder_page(
+    request: Request,
+    session: Session,
+    *,
+    node_key: str,
+    folder_name: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    container = get_container_or_none(session, node_key)
+    if container is None:
+        raise HTTPException(status_code=404, detail="Folder not found.")
+
+    container_options = list_container_choices(session)
+    current_choice = next((option for option in container_options if option["node_key"] == container.node_key), None)
+    parent_choice = next((option for option in container_options if option["node_key"] == container.parent.node_key), None) if container.parent else None
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/edit_folder.html",
+        context={
+            "app_title": APP_TITLE,
+            "folder_node_key": container.node_key,
+            "folder_name": folder_name or container.name,
+            "folder_path_label": current_choice["path_label"] if current_choice else container.name,
+            "parent_path_label": parent_choice["path_label"] if parent_choice else "Top level",
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
 @app.get("/folders/new", response_class=HTMLResponse)
 def start_new_folder_page(
     request: Request,
@@ -135,6 +169,46 @@ async def create_folder_page(
             status_code=422,
         )
     node_anchor = created.node_key.replace(":", "-")
+    return RedirectResponse(url=f"/forms#node-{node_anchor}", status_code=303)
+
+
+@app.get("/folders/edit", response_class=HTMLResponse)
+def edit_folder_page(
+    request: Request,
+    node: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_edit_folder_page(request, session, node_key=node)
+
+
+@app.post("/folders/edit")
+async def update_folder_page(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    node_key = (form_data.get("node_key") or [""])[0]
+    name = (form_data.get("name") or [""])[0]
+    action = (form_data.get("action") or ["save"])[0]
+
+    try:
+        if action == "delete":
+            delete_container(session, node_key)
+            return RedirectResponse(url="/forms", status_code=303)
+
+        updated = rename_container(session, node_key, name)
+    except ValueError as exc:
+        return render_edit_folder_page(
+            request,
+            session,
+            node_key=node_key,
+            folder_name=name,
+            error_message=str(exc),
+            status_code=422,
+        )
+
+    node_anchor = updated.node_key.replace(":", "-")
     return RedirectResponse(url=f"/forms#node-{node_anchor}", status_code=303)
 
 

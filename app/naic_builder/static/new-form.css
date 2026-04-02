@@ -135,6 +135,11 @@ h2 {
   color: var(--accent);
 }
 
+.warn-button {
+  border-color: rgba(166, 65, 29, 0.22);
+  color: #9f4f19;
+}
+
 .new-form-grid {
   margin-top: 16px;
   display: grid;

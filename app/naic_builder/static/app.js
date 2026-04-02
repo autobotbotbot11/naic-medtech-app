@@ -1889,9 +1889,9 @@ function renderOutline() {
     return;
   }
 
-  const sections = topLevelSectionEntries();
+  const contentEntries = topLevelContentEntries();
   const focusPane = String(state.ui.focusPane || defaultFocusPane());
-  const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
+  const selectedContentEntry = focusPane === "content" ? resolveFocusedTopLevelBlockEntry(contentEntries) : null;
 
   builderOutlineEl.innerHTML = `
       <div class="outline-head">
@@ -1911,20 +1911,15 @@ function renderOutline() {
           <span>Layout</span>
         </button>
         ` : ""}
-      ${sections.length ? `
+      ${contentEntries.length ? `
         <div class="outline-sublist">
-          ${sections.map((entry, index) => {
-            const token = pathKey(entry.path);
-            return `
-              <button class="outline-subitem ${focusPane === "content" && openSectionToken === token ? "active" : ""}" type="button" data-action="focus-section" data-index="${index}">
-                <span>${escapeHtml(entry.view.name || `Section ${index + 1}`)}</span>
-                ${focusPane === "content" && openSectionToken === token ? '<span class="outline-state">Editing</span>' : ""}
-              </button>
-            `;
-          }).join("")}
+          ${contentEntries.map((entry) => renderOutlineContentItem(
+            entry,
+            Boolean(selectedContentEntry) && pathKey(entry.path) === pathKey(selectedContentEntry.path)
+          )).join("")}
         </div>
         ` : `
-          <div class="outline-empty">No sections yet.</div>
+          <div class="outline-empty">No content yet.</div>
         `}
         <button class="outline-item ${focusPane === "save" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="save">
           <span>Save</span>
@@ -2146,6 +2141,26 @@ function renderContentOrganizerItem(entry, active) {
         ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
       </button>
     </div>
+  `;
+}
+
+function renderOutlineContentItem(entry, active) {
+  const kind = blockKind(entry.node);
+  const typeLabel = kind === "section"
+    ? "Section"
+    : kind === "field_group"
+      ? "Group"
+      : summarizeField(entry.node);
+  const title = entry.view.name || "Untitled item";
+
+  return `
+    <button class="outline-subitem ${active ? "active" : ""}" type="button" data-action="focus-content-block" data-path="${encodePath(entry.path)}">
+      <span class="outline-copy">
+        <strong>${escapeHtml(title)}</strong>
+        ${typeLabel && compactText(title).toLowerCase() !== typeLabel.toLowerCase() ? `<span>${escapeHtml(typeLabel)}</span>` : ""}
+      </span>
+      ${active ? '<span class="outline-state">Editing</span>' : ""}
+    </button>
   `;
 }
 
@@ -3599,6 +3614,13 @@ function handleOutlineClick(event) {
 
   if (action === "focus-section") {
     focusSectionAtIndex(Number(actionTarget.dataset.index));
+    return;
+  }
+
+  if (action === "focus-content-block" && actionTarget.dataset.path) {
+    state.ui.focusPane = "content";
+    setLayoutSelection(decodePath(actionTarget.dataset.path));
+    renderAll();
   }
 }
 

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Edit Folder | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='new-form.css') }}">
+</head>
+<body>
+  <main class="new-form-shell">
+    <header class="new-form-topbar panel">
+      <div class="brand-copy">
+        <p class="eyebrow">Edit Folder</p>
+        <h1>{{ app_title }}</h1>
+        <p class="panel-copy">Rename the folder, or remove it once it is empty.</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="ghost-button" href="/forms">Back to Library</a>
+      </div>
+    </header>
+
+    <form class="panel form-flow-card single-flow-card" action="/folders/edit" method="post" novalidate>
+      <input type="hidden" name="node_key" value="{{ folder_node_key }}">
+
+      <div class="section-head">
+        <p class="eyebrow">Folder details</p>
+        <h2>Update the folder</h2>
+        <p class="panel-copy">Current location: {{ folder_path_label }}</p>
+      </div>
+
+      {% if error_message %}
+      <div class="inline-error" role="alert">{{ error_message }}</div>
+      {% endif %}
+
+      <label class="field-stack">
+        <span>Folder name</span>
+        <input type="text" name="name" placeholder="Example: Rapid Tests" value="{{ folder_name }}" required>
+      </label>
+
+      <label class="field-stack">
+        <span>Inside</span>
+        <input type="text" value="{{ parent_path_label }}" disabled>
+      </label>
+
+      <p class="panel-copy">Delete works only when the folder is empty.</p>
+
+      <div class="single-flow-actions">
+        <button class="ghost-button warn-button" type="submit" name="action" value="delete">Delete folder</button>
+        <button class="primary-button" type="submit" name="action" value="save">Save changes</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>
