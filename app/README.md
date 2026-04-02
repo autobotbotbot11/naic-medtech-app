@@ -38,6 +38,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the focused section/field/choice strips are quieter too: they now use small label-style cues like `Section`, `Field`, `Group`, and `Choice` instead of sentence-style `Editing this ...` copy
 - the top-level left outline is quieter too: `Ungrouped fields` and `Sections` no longer show count chips, so the rail reads more like simple navigation
 - the center and preview chrome are quieter too: the builder header, `Sections` header, and preview surfaces no longer repeat summary count badges
+- the center organizer metadata is quieter too: section rows no longer repeat item counts, field rows use simpler type cues like `Dropdown`, and the choices editor no longer repeats choice counts in its header and spotlight
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

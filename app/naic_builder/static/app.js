@@ -1399,7 +1399,6 @@ function renderSectionsCard(options = {}) {
 }
 
 function renderSectionOrganizerItem(section, index, active) {
-    const itemCount = pluralize(normalizeArray(section.fields).length, "item");
     return `
       <div class="section-organizer-item ${active ? "active" : ""}">
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -1408,7 +1407,6 @@ function renderSectionOrganizerItem(section, index, active) {
         <button class="section-organizer-select" type="button" data-action="focus-section" data-index="${index}">
           <span class="section-organizer-copy">
             <strong>${escapeHtml(section.name || `Section ${index + 1}`)}</strong>
-            <span>${escapeHtml(itemCount)}</span>
           </span>
           ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
         </button>
@@ -1419,7 +1417,6 @@ function renderSectionOrganizerItem(section, index, active) {
 function renderSectionCard(section, path, options = {}) {
     const focusedCard = Boolean(options.focusedCard);
     const open = Boolean(options.forceOpen) || isSectionOpen(path);
-    const itemCount = pluralize(normalizeArray(section.fields).length, "item");
     const showHeaderActions = !focusedCard || !options.hideToggle;
     return `
       <article class="section-card ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
@@ -1427,7 +1424,6 @@ function renderSectionCard(section, path, options = {}) {
           <div>
             <div class="chip-row">
               <span class="chip warm">Section</span>
-              <span class="chip soft">${itemCount}</span>
             </div>
             <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
           </div>
@@ -1448,7 +1444,6 @@ function renderSectionCard(section, path, options = {}) {
           ${focusedCard ? `
             <div class="section-spotlight">
               <strong>Section</strong>
-              <span>${escapeHtml(itemCount)}</span>
             </div>
           ` : ""}
           <div class="section-builder-head ${focusedCard ? "compact" : ""}">
@@ -1551,13 +1546,14 @@ function resolveFocusedOptionIndex(path, options) {
 }
 
 function summarizeField(field) {
-  const isGroup = field.kind === "field_group";
-  const childCount = normalizeArray(field.fields).length;
-  const optionCount = normalizeArray(field.options).length;
+  if (field.kind === "field_group") {
+    return "Group";
+  }
   const fieldType = inferFieldType(field);
-  return isGroup
-    ? `${childCount} child fields`
-    : `${FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Short answer"}${optionCount ? ` | ${optionCount} choices` : ""}`;
+  if (fieldType === "choice") {
+    return "Dropdown";
+  }
+  return FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Short answer";
 }
 
 function renderFieldOrganizerItem(field, path, index, active) {
@@ -1570,7 +1566,7 @@ function renderFieldOrganizerItem(field, path, index, active) {
         <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
           <span class="field-organizer-copy">
             <strong>${escapeHtml(field.name || (isGroup ? `Group ${index + 1}` : `Field ${index + 1}`))}</strong>
-            <span>${escapeHtml(summarizeField(field))}</span>
+            ${isGroup ? '<span>Group</span>' : `<span>${escapeHtml(summarizeField(field))}</span>`}
           </span>
           ${active ? '<span class="field-organizer-state">Editing</span>' : ""}
         </button>
@@ -1599,7 +1595,7 @@ function renderFieldCard(field, path, options = {}) {
           <div>
             <div class="field-meta">
               ${isGroup ? '<span class="chip warm">Group</span>' : ""}
-              <span class="field-summary">${escapeHtml(summary)}</span>
+              ${!isGroup ? `<span class="field-summary">${escapeHtml(summary)}</span>` : ""}
             </div>
             <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
@@ -1697,7 +1693,6 @@ function renderOptionsEditor(field, path) {
           <div>
             <div class="card-title-row">
               <h4>Choices</h4>
-              <span class="chip soft">${options.length}</span>
             </div>
           </div>
           <div class="option-actions">
@@ -1722,7 +1717,6 @@ function renderOptionsEditor(field, path) {
             <div class="option-focus-card">
                 <div class="option-spotlight">
                   <strong>Choice</strong>
-                  <span>${escapeHtml(selectedOptionName)}</span>
                 </div>
                 <div class="option-focus-head">
                   <div>
