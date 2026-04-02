@@ -13,7 +13,6 @@ const state = {
     layoutRootPath: null,
     setupOpen: true,
     saveOpen: false,
-    topFieldsOpen: true,
     openSectionPaths: [],
     activeFieldPath: null,
     activeOptionToken: null,
@@ -574,15 +573,6 @@ function topLevelBlocks() {
   return normalizeArray(state.draft?.block_schema?.blocks);
 }
 
-function topLevelFreeFieldEntries() {
-  return topLevelBlocks()
-    .map((node, index) => ({ node, path: ["block_schema", "blocks", index], view: viewNode(node) }))
-    .filter((entry) => {
-      const kind = blockKind(entry.node);
-      return kind === "field" || kind === "field_group";
-    });
-}
-
 function topLevelSectionEntries() {
   return topLevelBlocks()
     .map((node, index) => ({ node, path: ["block_schema", "blocks", index], view: viewNode(node) }))
@@ -667,18 +657,6 @@ function setLayoutSelection(path) {
   state.ui.activeOptionToken = null;
 }
 
-function isSpecialRootCollectionPath(path, kind) {
-  return Array.isArray(path)
-    && path.length === 3
-    && path[0] === "block_schema"
-    && path[1] === "collections"
-    && path[2] === kind;
-}
-
-function topLevelCollectionPath(kind) {
-  return ["block_schema", "collections", kind];
-}
-
 function collectFieldPathKeysFromNode(node, basePath) {
   const keys = [];
   const kind = String(node?.kind || "").trim();
@@ -692,29 +670,6 @@ function collectFieldPathKeysFromNode(node, basePath) {
   });
 
   return keys;
-}
-
-function moveTopLevelCollection(kind, fromIndex, toIndex) {
-  const blocks = topLevelBlocks();
-  const match = kind === "sections"
-    ? (block) => blockKind(block) === "section"
-    : (block) => blockKind(block) === "field" || blockKind(block) === "field_group";
-  const subset = blocks.filter(match);
-  if (!subset.length) {
-    return;
-  }
-
-  const boundedTarget = Math.max(0, Math.min(toIndex, subset.length - 1));
-  if (fromIndex === boundedTarget || !subset[fromIndex]) {
-    return;
-  }
-
-  const reordered = [...subset];
-  const [moved] = reordered.splice(fromIndex, 1);
-  reordered.splice(boundedTarget, 0, moved);
-
-  let subsetCursor = 0;
-  state.draft.block_schema.blocks = blocks.map((block) => (match(block) ? reordered[subsetCursor++] : block));
 }
 
 function insertTopLevelField(kind) {
@@ -1100,10 +1055,8 @@ function renderPreviewCallout() {
 
 function resetEditorPanels() {
   const sections = topLevelSectionEntries();
-  const topFields = topLevelFreeFieldEntries();
   state.ui.setupOpen = !state.selectedFormSlug;
   state.ui.saveOpen = !state.selectedFormSlug;
-  state.ui.topFieldsOpen = !topFields.length;
   state.ui.layoutRootPath = null;
   state.ui.openSectionPaths = sections.length ? [pathKey(sections[0].path)] : [];
   state.ui.activeFieldPath = null;
@@ -1854,7 +1807,7 @@ function defaultFocusPane() {
 
 function syncFocusPane() {
   const focus = String(state.ui.focusPane || "");
-  const valid = new Set(["setup", "content", "free_fields", "sections", "save", "layout"]);
+  const valid = new Set(["setup", "content", "save", "layout"]);
   if (!valid.has(focus)) {
     state.ui.focusPane = defaultFocusPane();
   }
@@ -1991,15 +1944,13 @@ function renderEditor() {
     formEditorEl.innerHTML = renderContentCard();
   } else if (focusPane === "layout") {
     formEditorEl.innerHTML = renderLayoutCard({ focusMode: true });
-  } else if (focusPane === "free_fields") {
-    formEditorEl.innerHTML = renderTopFieldsCard({ focusMode: true });
   } else if (focusPane === "save") {
     formEditorEl.innerHTML = renderSaveCard({ focusMode: true });
   } else {
-    formEditorEl.innerHTML = renderSectionsCard({ focusMode: true });
+    formEditorEl.innerHTML = renderContentCard();
   }
 
-  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-layout", "pane-free_fields", "pane-sections", "pane-save");
+  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-layout", "pane-save");
   formEditorEl.classList.add(`pane-${focusPane}`);
 
   setupSortableCollections();
@@ -2165,35 +2116,6 @@ function renderOptionManageFooter(path, index) {
       </details>
     `;
   }
-
-function renderTopFieldsCard(options = {}) {
-  const focusMode = Boolean(options.focusMode);
-  const topFields = topLevelFreeFieldEntries();
-  const itemCount = pluralize(topFields.length, "item");
-  const topFieldsOpen = focusMode ? true : state.ui.topFieldsOpen;
-  return `
-    <section class="editor-card">
-      <div class="card-head">
-        <div>
-          <div class="card-title-row">
-            <h3 class="card-title">Ungrouped fields</h3>
-            ${renderHelpPopover("Ungrouped fields help", "Use these only when a field should stay outside a named section.")}
-          </div>
-        </div>
-        <div class="top-actions">
-          ${focusMode ? "" : `<button class="ghost mini" type="button" data-action="toggle-top-fields">${topFieldsOpen ? "Done" : "Open"}</button>`}
-          ${topFieldsOpen ? `
-            <button class="secondary mini" type="button" data-action="add-top-field">Add field</button>
-            <button class="ghost mini" type="button" data-action="add-top-group">Add group</button>
-          ` : ""}
-        </div>
-      </div>
-      ${topFieldsOpen
-        ? renderFieldCollection(topFields, topLevelCollectionPath("free_fields"), { focused: true })
-        : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
-    </section>
-  `;
-}
 
 function renderContentOrganizerItem(entry, active) {
   const kind = blockKind(entry.node);
@@ -2469,43 +2391,6 @@ function renderLayoutCard(options = {}) {
       ` : '<div class="empty-state">No blocks yet. Add one when you are ready.</div>'}
     </section>
   `;
-}
-
-function renderSectionsCard(options = {}) {
-    const sections = topLevelSectionEntries();
-  const selectedPath = normalizeArray(state.ui.openSectionPaths)[0]
-    ? parsePathKey(normalizeArray(state.ui.openSectionPaths)[0])
-    : null;
-  const selectedIndex = selectedPath
-    ? sections.findIndex((entry) => pathKey(entry.path) === pathKey(selectedPath))
-    : 0;
-  const selectedEntry = Number.isInteger(selectedIndex) && selectedIndex >= 0 ? sections[selectedIndex] : sections[0] || null;
-
-  return `
-    <section class="editor-card">
-        <div class="card-head">
-          <div>
-            <div class="card-title-row">
-              <h3 class="card-title">Sections</h3>
-              ${renderHelpPopover("Sections help", "Use sections when the form needs named groups of fields. Open one when you want to edit it, and drag to reorder them.")}
-            </div>
-          </div>
-        <div class="top-actions">
-          <button class="secondary mini" type="button" data-action="add-section">Add section</button>
-        </div>
-      </div>
-        ${sections.length ? `
-          <div class="section-organizer" data-collection-path="${encodePath(topLevelCollectionPath("sections"))}">
-            ${sections.map((entry, index) => renderSectionOrganizerItem(entry.view, index, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : index === selectedIndex)).join("")}
-          </div>
-          <div class="section-focus-stage">
-            ${selectedEntry
-              ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
-              : '<div class="empty-state">Pick a section to keep editing.</div>'}
-          </div>
-        ` : '<div class="empty-state">No sections yet. Add your first one when you are ready.</div>'}
-      </section>
-    `;
 }
 
 function renderSectionOrganizerItem(section, index, active) {
@@ -3120,20 +3005,6 @@ function renderJson() {
 }
 
 function moveWithinCollection(collectionPath, fromIndex, toIndex) {
-  if (isSpecialRootCollectionPath(collectionPath, "free_fields")) {
-    moveTopLevelCollection("free_fields", fromIndex, toIndex);
-    remapUiStateAfterMove(collectionPath, fromIndex, toIndex);
-    touch({ full: true, source: "blocks" });
-    return;
-  }
-
-  if (isSpecialRootCollectionPath(collectionPath, "sections")) {
-    moveTopLevelCollection("sections", fromIndex, toIndex);
-    remapUiStateAfterMove(collectionPath, fromIndex, toIndex);
-    touch({ full: true, source: "blocks" });
-    return;
-  }
-
   const collection = getNodeByPath(collectionPath);
   if (!Array.isArray(collection)) {
     return;
@@ -3190,25 +3061,12 @@ function deleteAtPath(path) {
 }
 
 function addFieldAt(path, kind) {
-  if (isSpecialRootCollectionPath(path, "free_fields")) {
-    const actualIndex = insertTopLevelField(kind);
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
-    state.ui.topFieldsOpen = true;
-    state.ui.focusPane = "content";
-    touch({ full: true, source: "blocks" });
-    return;
-  }
-
   const collection = getNodeByPath(path);
   if (!Array.isArray(collection)) {
     return;
   }
   const insertAt = insertChildNodeAtSelection(path, makeBlankField(kind));
   state.ui.activeFieldPath = pathKey([...path, insertAt]);
-  if (pathKey(path) === pathKey(topLevelCollectionPath("free_fields"))) {
-    state.ui.topFieldsOpen = true;
-    state.ui.focusPane = "content";
-  }
   touch({ full: true, source: "blocks" });
 }
 
@@ -3515,14 +3373,6 @@ async function handleEditorClick(event) {
 
   const path = actionTarget.dataset.path ? decodePath(actionTarget.dataset.path) : null;
 
-  if (action === "add-top-field") {
-    addFieldAt(topLevelCollectionPath("free_fields"), "field");
-    return;
-  }
-  if (action === "add-top-group") {
-    addFieldAt(topLevelCollectionPath("free_fields"), "field_group");
-    return;
-  }
   if (action === "add-layout-field") {
     const collection = getNodeByPath(currentLayoutCollectionPath());
     if (!Array.isArray(collection)) {
@@ -3630,12 +3480,6 @@ async function handleEditorClick(event) {
   }
   if (action === "add-content-table") {
     insertTopLevelContentBlock("table");
-    return;
-  }
-  if (action === "toggle-top-fields") {
-    state.ui.topFieldsOpen = !state.ui.topFieldsOpen;
-    state.ui.focusPane = "free_fields";
-    renderEditor();
     return;
   }
   if (action === "toggle-setup") {

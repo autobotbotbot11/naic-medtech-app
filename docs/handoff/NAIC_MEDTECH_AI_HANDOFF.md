@@ -122,6 +122,7 @@ What is implemented:
 - the content pane now uses a compact root organizer plus one focused editor instead of forcing users to switch between separate root buckets
 - nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end
 - selected groups can now add nested groups in the normal flow too, so grouped content is less locked to a field-only structure
+- the old separate root `Ungrouped fields` and `Sections` panes are no longer active workspace paths; the builder now uses one real root `Content` path instead of keeping both models alive
 - selected sections still use a compact section organizer plus one focused section editor
 - inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
