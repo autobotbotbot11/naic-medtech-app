@@ -87,9 +87,9 @@ What is implemented:
 - the frontend builder draft now keeps a compatibility `block_schema` in sync while the current calmer editor still renders the legacy projection
 - builder saves now go out through `block_schema` instead of posting the legacy `fields + sections` shape directly
 - the current focused editor and live preview now also read and write through block-backed paths for real edit flows, not just save-time bridging
-- top-level `Ungrouped fields` and `Sections` organizer flows now operate through block-backed collection handling while the visible UI stays calm
+- top-level content editing now operates through block-backed collection handling while the visible UI stays calm
 - advanced mode now includes a true `Layout` pane for editing the real top-level ordered block list
-- the live preview now follows the actual root block order, including multiple ungrouped-field clusters when top-level fields appear in different positions
+- the live preview now follows the actual root block order, including multiple top-field clusters when top-level fields appear in different positions
 - advanced `Layout` can now add real `note` and `divider` blocks as first visible proof of richer ordered-block editing
 - advanced `Layout` can now also add a real `table` block, including inside nested child-layout workspaces for sections and groups
 - the live preview can now render stored `note` and `divider` blocks while the calmer default panes still stay focused on ordinary fields and sections
@@ -114,10 +114,12 @@ What is implemented:
 - advanced `Layout` no longer exposes insert/save preset actions
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
 - the current builder workspace now has a real left outline plus one focused editing context at a time
+- the default workspace now lands on a single `Content` pane driven by real root block order, instead of splitting the main flow into separate `Ungrouped fields` and `Sections` panes
 - the old `Top of form` language is now reframed as `Free fields`
 - `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details option
-- the sections view now uses a compact section organizer plus one focused section editor
-- inside `Sections` and `Free fields`, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
+- the content pane now uses a compact root organizer plus one focused editor instead of forcing users to switch between separate root buckets
+- selected sections still use a compact section organizer plus one focused section editor
+- inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
 - `Form details` and `Save` now use a calmer narrow centered treatment instead of wide full-width surfaces
 - `Form details` now offers folder suggestions from the existing library to reduce typing friction
@@ -127,7 +129,7 @@ What is implemented:
 - the preview now includes sticky quick-jump section chips for long forms, with active state so the user can navigate the preview faster
 - advanced mode now also exposes a `Layout` pane so the builder can work on the actual root ordered blocks without disturbing the calmer default flow
 - the preview now respects root block order instead of always forcing one single ungrouped-fields area before every section
-- the left outline and library wording are now less technical, using calmer labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
+- the left outline and library wording are now less technical, using calmer labels like `Basics`, `Content`, `Folder`, and `Edit`
 - the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
 - the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
 - the focused section editor is now lighter too: reorder stays in the organizer above, while the selected section uses a compact summary strip and a simpler section basics row
@@ -139,7 +141,7 @@ Important reading for the next implementation step:
 - treat `/forms/new` as the new creation surface
 - the current builder page is still using the older underlying schema shape, but the workspace shell is now significantly calmer
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
-- important limitation: the current builder is now partially block-backed, but the default visible surface still follows the older `fields + sections` mental model
+- important limitation: the current builder is now partially block-backed, but deeper editing still contains compatibility behavior while the root flow moves toward true ordered blocks
 - richer block kinds like `note` and `divider` are currently exposed only through advanced `Layout`, while the legacy compatibility projection remains limited on purpose
 - reusable presets are deferred for now because they added cognitive load before the core builder flow was finished
 

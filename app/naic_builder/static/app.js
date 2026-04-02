@@ -589,6 +589,17 @@ function topLevelSectionEntries() {
     .filter((entry) => entry.node?.kind === "section");
 }
 
+function topLevelContentEntries() {
+  const entries = topLevelBlockEntries();
+  if (state.ui.advancedMode) {
+    return entries;
+  }
+  return entries.filter((entry) => {
+    const kind = blockKind(entry.node);
+    return kind === "field" || kind === "field_group" || kind === "section";
+  });
+}
+
 function topLevelBlockEntries() {
   return topLevelBlocks().map((node, index) => ({
     node,
@@ -775,8 +786,8 @@ function topLevelPreviewSegments() {
     if (!looseFields.length) {
       return;
     }
-    const baseLabel = looseHasLayoutBlocks ? "Layout" : "Ungrouped fields";
-    const baseId = looseHasLayoutBlocks ? "layout" : "free_fields";
+    const baseLabel = looseHasLayoutBlocks ? "Layout" : "Top fields";
+    const baseId = looseHasLayoutBlocks ? "layout" : "top_fields";
     const localIndex = looseHasLayoutBlocks ? ++layoutGroupCount : ++freeFieldGroupCount;
     segments.push({
       id: localIndex === 1 ? `preview_section_${baseId}` : `preview_section_${baseId}_${localIndex}`,
@@ -1816,27 +1827,18 @@ function renderCommonFieldSetOptions(selectedId) {
 }
 
 function defaultFocusPane() {
-  const sections = topLevelSectionEntries();
-  const freeFields = topLevelFreeFieldEntries();
-
   if (!state.selectedFormSlug) {
     return "setup";
   }
   if (state.ui.advancedMode && topLevelBlocks().length) {
     return "layout";
   }
-  if (sections.length) {
-    return "sections";
-  }
-  if (freeFields.length) {
-    return "free_fields";
-  }
-  return "setup";
+  return "content";
 }
 
 function syncFocusPane() {
   const focus = String(state.ui.focusPane || "");
-  const valid = new Set(["setup", "free_fields", "sections", "save", "layout"]);
+  const valid = new Set(["setup", "content", "free_fields", "sections", "save", "layout"]);
   if (!valid.has(focus)) {
     state.ui.focusPane = defaultFocusPane();
   }
@@ -1856,7 +1858,7 @@ function focusSectionAtIndex(index) {
     return;
   }
 
-  state.ui.focusPane = "sections";
+  state.ui.focusPane = "content";
   state.ui.openSectionPaths = [pathKey(sections[index].path)];
   state.ui.activeFieldPath = null;
   renderAll();
@@ -1913,7 +1915,6 @@ function renderOutline() {
   }
 
   const sections = topLevelSectionEntries();
-  const freeFields = topLevelFreeFieldEntries();
   const focusPane = String(state.ui.focusPane || defaultFocusPane());
   const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
 
@@ -1927,25 +1928,22 @@ function renderOutline() {
         <button class="outline-item ${focusPane === "setup" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="setup">
           <span>Basics</span>
         </button>
+        <button class="outline-item ${focusPane === "content" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="content">
+          <span>Content</span>
+        </button>
         ${state.ui.advancedMode ? `
         <button class="outline-item ${focusPane === "layout" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="layout">
           <span>Layout</span>
         </button>
         ` : ""}
-        <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
-          <span>Ungrouped fields</span>
-        </button>
-        <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
-        <span>Sections</span>
-      </button>
       ${sections.length ? `
         <div class="outline-sublist">
           ${sections.map((entry, index) => {
             const token = pathKey(entry.path);
             return `
-              <button class="outline-subitem ${focusPane === "sections" && openSectionToken === token ? "active" : ""}" type="button" data-action="focus-section" data-index="${index}">
+              <button class="outline-subitem ${focusPane === "content" && openSectionToken === token ? "active" : ""}" type="button" data-action="focus-section" data-index="${index}">
                 <span>${escapeHtml(entry.view.name || `Section ${index + 1}`)}</span>
-                ${focusPane === "sections" && openSectionToken === token ? '<span class="outline-state">Editing</span>' : ""}
+                ${focusPane === "content" && openSectionToken === token ? '<span class="outline-state">Editing</span>' : ""}
               </button>
             `;
           }).join("")}
@@ -1973,6 +1971,8 @@ function renderEditor() {
 
   if (focusPane === "setup") {
     formEditorEl.innerHTML = renderFormSetupCard({ focusMode: true });
+  } else if (focusPane === "content") {
+    formEditorEl.innerHTML = renderContentCard();
   } else if (focusPane === "layout") {
     formEditorEl.innerHTML = renderLayoutCard({ focusMode: true });
   } else if (focusPane === "free_fields") {
@@ -1983,7 +1983,7 @@ function renderEditor() {
     formEditorEl.innerHTML = renderSectionsCard({ focusMode: true });
   }
 
-  formEditorEl.classList.remove("pane-setup", "pane-layout", "pane-free_fields", "pane-sections", "pane-save");
+  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-layout", "pane-free_fields", "pane-sections", "pane-save");
   formEditorEl.classList.add(`pane-${focusPane}`);
 
   setupSortableCollections();
@@ -2175,6 +2175,74 @@ function renderTopFieldsCard(options = {}) {
       ${topFieldsOpen
         ? renderFieldCollection(topFields, topLevelCollectionPath("free_fields"), { focused: true })
         : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
+    </section>
+  `;
+}
+
+function renderContentOrganizerItem(entry, active) {
+  const kind = blockKind(entry.node);
+  const typeLabel = kind === "section"
+    ? "Section"
+    : kind === "field_group"
+      ? "Group"
+      : summarizeField(entry.node);
+
+  return `
+    <div class="section-organizer-item ${active ? "active" : ""}">
+      <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+        <span class="drag-dots" aria-hidden="true"></span>
+      </button>
+      <button class="section-organizer-select" type="button" data-action="focus-content-block" data-path="${encodePath(entry.path)}">
+        <span class="section-organizer-copy">
+          <strong>${escapeHtml(entry.view.name || "Untitled item")}</strong>
+          ${typeLabel && compactText(entry.view.name || "").toLowerCase() !== typeLabel.toLowerCase()
+            ? `<span>${escapeHtml(typeLabel)}</span>`
+            : ""}
+        </span>
+        ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
+      </button>
+    </div>
+  `;
+}
+
+function renderContentCard() {
+  const entries = topLevelContentEntries();
+  const hiddenBlockCount = Math.max(0, topLevelBlockEntries().length - entries.length);
+  const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
+  const helpCopy = state.ui.advancedMode
+    ? "This is the main editing flow for the form. Advanced-only layout blocks still follow the same root order."
+    : "This is the main editing flow for the form. Add sections or top-level fields here without thinking about internal schema buckets.";
+
+  return `
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title-row">
+            <h3 class="card-title">Content</h3>
+            ${renderHelpPopover("Content help", helpCopy)}
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="secondary mini" type="button" data-action="add-content-section">Add section</button>
+          <button class="ghost mini" type="button" data-action="add-content-field">Add field</button>
+          <button class="ghost mini" type="button" data-action="add-content-group">Add group</button>
+        </div>
+      </div>
+      ${entries.length ? `
+        <div class="section-organizer" data-collection-path="${encodePath(["block_schema", "blocks"])}">
+          ${entries.map((entry) => renderContentOrganizerItem(entry, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : false)).join("")}
+        </div>
+        <div class="section-focus-stage">
+          ${selectedEntry
+            ? (selectedEntry.node?.kind === "section"
+              ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+              : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
+                ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+                : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
+            : '<div class="empty-state">Pick a block to keep editing.</div>'}
+        </div>
+      ` : '<div class="empty-state">No content yet. Add a section or field when you are ready.</div>'}
+      ${!state.ui.advancedMode && hiddenBlockCount ? '<div class="collapsed-copy">Advanced blocks stay hidden here until you turn on Advanced.</div>' : ""}
     </section>
   `;
 }
@@ -3070,12 +3138,12 @@ function duplicateAtPath(path) {
   const duplicatedNode = getNodeByPath(duplicatedPath);
   if (String(duplicatedNode?.kind || "").trim() === "section") {
     state.ui.openSectionPaths = [pathKey(duplicatedPath)];
-    state.ui.focusPane = "sections";
+    state.ui.focusPane = "content";
     state.ui.activeFieldPath = null;
   } else {
     state.ui.activeFieldPath = pathKey(duplicatedPath);
     if (!pathStartsWith(duplicatedPath, ["block_schema", "blocks"])) {
-      state.ui.focusPane = "sections";
+      state.ui.focusPane = "content";
     }
   }
   if (path.includes("children")) {
@@ -3104,7 +3172,7 @@ function addFieldAt(path, kind) {
     const actualIndex = insertTopLevelField(kind);
     state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
     state.ui.topFieldsOpen = true;
-    state.ui.focusPane = "free_fields";
+    state.ui.focusPane = "content";
     touch({ full: true, source: "blocks" });
     return;
   }
@@ -3117,7 +3185,7 @@ function addFieldAt(path, kind) {
   state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
   if (pathKey(path) === pathKey(topLevelCollectionPath("free_fields"))) {
     state.ui.topFieldsOpen = true;
-    state.ui.focusPane = "free_fields";
+    state.ui.focusPane = "content";
   }
   touch({ full: true, source: "blocks" });
 }
@@ -3143,7 +3211,7 @@ function addSection() {
   topLevelBlocks().push(makeBlankSection());
   state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
   state.ui.activeFieldPath = null;
-  state.ui.focusPane = "sections";
+  state.ui.focusPane = "content";
   touch({ full: true, source: "blocks" });
 }
 
@@ -3455,6 +3523,26 @@ async function handleEditorClick(event) {
     addSection();
     return;
   }
+  if (action === "add-content-section") {
+    addSection();
+    return;
+  }
+  if (action === "add-content-field") {
+    const actualIndex = insertTopLevelField("field");
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
+    state.ui.focusPane = "content";
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "add-content-group") {
+    const actualIndex = insertTopLevelField("field_group");
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
+    state.ui.focusPane = "content";
+    touch({ full: true, source: "blocks" });
+    return;
+  }
   if (action === "toggle-top-fields") {
     state.ui.topFieldsOpen = !state.ui.topFieldsOpen;
     state.ui.focusPane = "free_fields";
@@ -3480,6 +3568,12 @@ async function handleEditorClick(event) {
     focusSectionAtIndex(Number(actionTarget.dataset.index));
     return;
   }
+  if (action === "focus-content-block" && path) {
+    state.ui.focusPane = "content";
+    setLayoutSelection(path);
+    renderAll();
+    return;
+  }
   if (action === "focus-field" && path) {
     state.ui.activeFieldPath = pathKey(path);
     state.ui.activeOptionToken = null;
@@ -3495,7 +3589,7 @@ async function handleEditorClick(event) {
     return;
   }
   if (action === "toggle-section" && path) {
-    state.ui.focusPane = "sections";
+    state.ui.focusPane = "content";
     toggleSection(path);
     return;
   }

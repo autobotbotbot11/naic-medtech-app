@@ -21,12 +21,12 @@ The app now starts from a builder-first FastAPI scaffold.
 - non-legacy block kinds like `note` and `divider` can now be preserved in stored block schema even when the legacy compatibility projection skips them
 - the frontend builder draft now keeps a compatibility `block_schema` in sync while the calmer legacy editor stays intact
 - save requests now go out through `block_schema`
-- the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level ungrouped/section organizer flows
+- the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level content/section organizer flows
 - advanced mode now exposes a real `Layout` pane that works on the top-level ordered `block_schema.blocks` collection
 - advanced `Layout` can now add real `note` and `divider` blocks without forcing them into the calmer default editing panes
 - advanced `Layout` can now also add a real `table` block for richer structured result layouts without exposing that complexity in the default panes
-- the live preview now follows the real top-level block order, including separated ungrouped-field clusters when root fields appear in multiple places
-- the live preview can now render `note` and `divider` blocks from stored `block_schema`, while default `Ungrouped fields` and `Sections` panes stay focused on ordinary field editing
+- the live preview now follows the real top-level block order, including separated top-field clusters when root fields appear in multiple places
+- the live preview can now render `note` and `divider` blocks from stored `block_schema`, while the calm default pane stays focused on ordinary field and section editing
 - the live preview can now render real `table` blocks too, including nested tables inside sections
 - selected sections can now add real `note` and `divider` blocks too, but only in `Advanced` mode so the normal section editor stays simple by default
 - selected groups can now add real `note` and `divider` blocks in `Advanced` mode too, and the live preview now renders those nested utility blocks from the real block tree
@@ -36,18 +36,18 @@ The app now starts from a builder-first FastAPI scaffold.
 - presets have been deliberately removed from the active product path for now so the builder stays focused on the core flow
 - `/forms/new` now starts only from `Blank` or `Duplicate existing form`
 - builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
-- the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
+- the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
-- the `Sections` view now uses a compact organizer plus one focused section editor
-- `Free fields` and selected sections now use compact field organizers plus one focused field editor
+- the default workspace now lands on a single `Content` pane driven by real top-level block order instead of splitting the root flow into separate `Ungrouped fields` and `Sections` panes
+- the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact field organizers plus one focused field editor
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details
 - the top shell now uses a lighter status bar and a more compact workspace header
 - the live preview is now read-only and includes sticky quick-jump section navigation
-- the left outline and library wording now use calmer non-technical labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
+- the left outline and library wording now use calmer non-technical labels like `Basics`, `Content`, `Folder`, and `Edit`
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
 - duplicate and delete for selected sections and fields now live in a quieter footer `More options` area instead of staying in the header
@@ -78,7 +78,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
   - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
-- important limitation: the visible builder is now partially block-backed, but the default calm surface still mirrors the older `fields + sections` mental model
+- important limitation: the visible builder is now partially block-backed, but deeper editing still uses some compatibility behavior while the root flow moves toward true ordered blocks
 - richer block kinds like `note`, `divider`, and `table` are now available only through advanced `Layout`, while the legacy compatibility projection is still intentionally limited to `field`, `field_group`, and `section`
 - reusable preset concepts are deferred, not active, until the core builder flow is finished and simpler
 
