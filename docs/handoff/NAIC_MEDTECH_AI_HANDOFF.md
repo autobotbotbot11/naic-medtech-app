@@ -104,6 +104,7 @@ What is implemented:
 - the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
 - the focused section editor is now lighter too: reorder stays in the organizer above, while the selected section uses a compact summary strip and a simpler section basics row
 - duplicate and delete for selected sections and fields now live in a quieter footer `More options` area instead of staying in the header
+- the `Sections` pane is now less mechanical: it shows a simple section count, removes organizer row numbers, and marks only the active row as `Editing`
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface

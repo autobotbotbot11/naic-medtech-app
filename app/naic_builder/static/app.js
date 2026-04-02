@@ -1357,7 +1357,7 @@ function renderTopFieldsCard(options = {}) {
 }
 
 function renderSectionsCard(options = {}) {
-  const sections = normalizeArray(state.draft.schema.sections);
+    const sections = normalizeArray(state.draft.schema.sections);
   const selectedPath = normalizeArray(state.ui.openSectionPaths)[0]
     ? parsePathKey(normalizeArray(state.ui.openSectionPaths)[0])
     : null;
@@ -1368,13 +1368,14 @@ function renderSectionsCard(options = {}) {
 
   return `
     <section class="editor-card">
-      <div class="card-head">
-        <div>
-          <div class="card-title-row">
-            <h3 class="card-title">Sections</h3>
-            ${renderHelpPopover("Sections help", "Use sections when the form needs named groups of fields. Open one when you want to edit it, and drag to reorder them.")}
+        <div class="card-head">
+          <div>
+            <div class="card-title-row">
+              <h3 class="card-title">Sections</h3>
+              <span class="chip soft">${sections.length}</span>
+              ${renderHelpPopover("Sections help", "Use sections when the form needs named groups of fields. Open one when you want to edit it, and drag to reorder them.")}
+            </div>
           </div>
-        </div>
         <div class="top-actions">
           <button class="secondary mini" type="button" data-action="add-section">Add section</button>
         </div>
@@ -1385,7 +1386,7 @@ function renderSectionsCard(options = {}) {
           </div>
           <div class="section-focus-stage">
             ${selectedSection
-              ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], selectedIndex + 1, { forceOpen: true, hideToggle: true, focusedCard: true })
+              ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], { forceOpen: true, hideToggle: true, focusedCard: true })
               : '<div class="empty-state">Choose a section from the list to keep editing.</div>'}
           </div>
         ` : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
@@ -1394,23 +1395,24 @@ function renderSectionsCard(options = {}) {
 }
 
 function renderSectionOrganizerItem(section, index, active) {
-  return `
-    <div class="section-organizer-item ${active ? "active" : ""}">
-      <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
-        <span class="drag-dots" aria-hidden="true"></span>
-      </button>
-      <button class="section-organizer-select" type="button" data-action="focus-section" data-index="${index}">
-        <span class="section-organizer-copy">
-          <strong>${escapeHtml(section.name || `Section ${index + 1}`)}</strong>
-          <span>${pluralize(normalizeArray(section.fields).length, "item")}</span>
-        </span>
-        <span class="outline-count">${index + 1}</span>
-      </button>
-    </div>
-  `;
-}
-
-function renderSectionCard(section, path, number, options = {}) {
+    const itemCount = pluralize(normalizeArray(section.fields).length, "item");
+    return `
+      <div class="section-organizer-item ${active ? "active" : ""}">
+        <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+          <span class="drag-dots" aria-hidden="true"></span>
+        </button>
+        <button class="section-organizer-select" type="button" data-action="focus-section" data-index="${index}">
+          <span class="section-organizer-copy">
+            <strong>${escapeHtml(section.name || `Section ${index + 1}`)}</strong>
+            <span>${escapeHtml(itemCount)}</span>
+          </span>
+          ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
+        </button>
+      </div>
+    `;
+  }
+  
+function renderSectionCard(section, path, options = {}) {
     const focusedCard = Boolean(options.focusedCard);
     const open = Boolean(options.forceOpen) || isSectionOpen(path);
     const itemCount = pluralize(normalizeArray(section.fields).length, "item");
@@ -1420,7 +1422,7 @@ function renderSectionCard(section, path, number, options = {}) {
         <div class="section-head ${focusedCard ? "section-head-focused" : ""}">
           <div>
             <div class="chip-row">
-              <span class="chip warm">Section ${number}</span>
+              <span class="chip warm">Section</span>
               <span class="chip soft">${itemCount}</span>
             </div>
             <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
