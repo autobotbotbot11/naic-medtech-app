@@ -17,7 +17,11 @@
       "the builder still uses the older fields plus sections schema shape under the hood",
       "form reads now expose a derived compatibility block_schema",
       "api/forms/{slug}/block-schema now exposes the ordered-block view directly",
-      "create and update flows can now accept either legacy fields plus sections or a limited compatible block schema"
+      "create and update flows can now accept either legacy fields plus sections or a limited compatible block schema",
+      "the frontend builder draft now keeps a compatibility block_schema in sync while the calmer editor still renders the legacy projection",
+      "builder saves now go out through block_schema instead of posting the legacy fields plus sections shape directly",
+      "the current focused editor and live preview now also read and write through block-backed paths for real edit flows",
+      "top-level ungrouped fields and sections organizer flows now operate through block-backed collection handling while the visible UI stays calm"
     ],
     "form_library_screen": "implemented",
     "start_new_form_screen": "implemented",
@@ -53,7 +57,7 @@
       "selected section and field destructive actions now live in a quieter footer more-options area",
       "the sections pane is now less mechanical, with a simple count, no organizer row numbers, and an editing badge only on the active row"
     ],
-    "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
+    "current_builder_surface_note": "The builder is now partially block-backed, but the visible workspace still follows the older fields-plus-sections mental model so the UI can stay calm during the migration."
   },
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [

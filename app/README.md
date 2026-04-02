@@ -16,6 +16,10 @@ The app now starts from a builder-first FastAPI scaffold.
 - the compatibility library tree is exposed at `/api/library/tree`
 - the backend now also exposes a compatibility `block_schema` bridge on form reads, plus `/api/forms/{slug}/block-schema`
 - create/update flows can now accept either the current legacy `fields + sections` shape or a limited compatible `blocks` shape
+- the frontend builder draft now keeps a compatibility `block_schema` in sync while the calmer legacy editor stays intact
+- save requests now go out through `block_schema`
+- the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level ungrouped/section organizer flows
+- the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
@@ -57,7 +61,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
   - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
-- important limitation: the visible builder is calmer now, but the editing engine still uses the older `fields + sections` schema under the hood and is not yet fully block-based
+- important limitation: the visible builder is now partially block-backed, but the surface model still mirrors the older `fields + sections` mental model and does not yet expose richer block kinds
 - current block compatibility is intentionally limited to `field`, `field_group`, and `section` so the migration can stay safe
 
 ## Run locally

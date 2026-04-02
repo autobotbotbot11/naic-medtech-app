@@ -81,6 +81,10 @@ What is implemented:
 - form reads now also expose a derived compatibility `block_schema`
 - `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
 - create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
+- the frontend builder draft now keeps a compatibility `block_schema` in sync while the current calmer editor still renders the legacy projection
+- builder saves now go out through `block_schema` instead of posting the legacy `fields + sections` shape directly
+- the current focused editor and live preview now also read and write through block-backed paths for real edit flows, not just save-time bridging
+- top-level `Ungrouped fields` and `Sections` organizer flows now operate through block-backed collection handling while the visible UI stays calm
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area
 - extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
@@ -116,7 +120,7 @@ Important reading for the next implementation step:
 - treat `/forms/new` as the new creation surface
 - the current builder page is still using the older underlying schema shape, but the workspace shell is now significantly calmer
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
-- important limitation: the current builder still stores forms in the older `fields + sections` schema shape under the hood, so the engine is only partially aligned with the newer flexible block-based recommendation
+- important limitation: the current builder is now partially block-backed, but the visible surface still follows the older `fields + sections` mental model and does not yet expose richer block kinds
 
 ## Current Builder Progress
 Current implementation status:
@@ -201,7 +205,7 @@ Current migration status:
 - current library and builder screens still run on compatibility views over the older form/group model
 - the backend now includes a compatibility bridge between the current legacy schema and an ordered-block schema
 - current safe bridge coverage is limited to `field`, `field_group`, and `section`
-- the next engine milestone should be migrating form versions from `fields + sections` into an ordered block schema without breaking the current UI in one jump
+- the next engine milestone should be finishing the frontend migration from compatibility `fields + sections` thinking into true ordered-block editing without breaking the current calm UI in one jump
 
 ## Source Of Truth
 Primary source of truth:

@@ -124,6 +124,490 @@ function compactText(value) {
   return String(value || "").trim();
 }
 
+function normalizeSchemaShape(schema = {}) {
+  return {
+    name: String(schema?.name || "").trim(),
+    key: String(schema?.key || "").trim(),
+    order: parsePositiveInt(schema?.order, 1),
+    common_field_set_id: String(schema?.common_field_set_id || "").trim() || "default_lab_request",
+    notes: normalizeArray(schema?.notes),
+    fields: normalizeArray(schema?.fields),
+    sections: normalizeArray(schema?.sections),
+    ...(schema?.source && typeof schema.source === "object" ? { source: deepClone(schema.source) } : {}),
+  };
+}
+
+function legacyFieldToBlock(field) {
+  const kind = String(field?.kind || "").trim() === "field_group" ? "field_group" : "field";
+  const props = {
+    key: String(field?.key || slugify(field?.name || "field")).trim(),
+    order: parsePositiveInt(field?.order, 1),
+  };
+
+  const notes = normalizeArray(field?.notes);
+  if (notes.length) {
+    props.notes = deepClone(notes);
+  }
+  if (field?.source && typeof field.source === "object") {
+    props.source = deepClone(field.source);
+  }
+
+  if (kind === "field_group") {
+    return {
+      id: String(field?.id || `blk_${slugify(field?.name || "group")}`).trim(),
+      kind: "field_group",
+      name: String(field?.name || "").trim() || "Untitled Group",
+      props,
+      children: normalizeArray(field?.fields).map((child) => legacyFieldToBlock(child)),
+    };
+  }
+
+  props.field_type = field?.control === "select" || field?.data_type === "enum"
+    ? "select"
+    : String(field?.data_type || "text").trim() || "text";
+  props.control = String(field?.control || "input").trim() || "input";
+  props.data_type = String(field?.data_type || "text").trim() || "text";
+  props.required = Boolean(field?.required);
+
+  if (field?.unit_hint) {
+    props.unit_hint = String(field.unit_hint).trim();
+  }
+  if (field?.normal_value) {
+    props.normal_value = String(field.normal_value).trim();
+  }
+
+  const options = normalizeArray(field?.options)
+    .map((option, index) => {
+      const label = String(option?.name || option?.label || "").trim();
+      if (!label) {
+        return null;
+      }
+      return {
+        id: String(option?.id || `${field?.id || "field"}.${slugify(label)}`).trim(),
+        key: String(option?.key || slugify(label)).trim(),
+        label,
+        order: parsePositiveInt(option?.order, index + 1),
+      };
+    })
+    .filter(Boolean);
+  if (options.length) {
+    props.options = options;
+  }
+
+  return {
+    id: String(field?.id || `blk_${slugify(field?.name || "field")}`).trim(),
+    kind: "field",
+    name: String(field?.name || "").trim() || "Untitled Field",
+    props,
+    children: [],
+  };
+}
+
+function legacySectionToBlock(section) {
+  const props = {
+    key: String(section?.key || slugify(section?.name || "section")).trim(),
+    order: parsePositiveInt(section?.order, 1),
+  };
+
+  const notes = normalizeArray(section?.notes);
+  if (notes.length) {
+    props.notes = deepClone(notes);
+  }
+  if (section?.source && typeof section.source === "object") {
+    props.source = deepClone(section.source);
+  }
+
+  return {
+    id: String(section?.id || `blk_${slugify(section?.name || "section")}`).trim(),
+    kind: "section",
+    name: String(section?.name || "").trim() || "Untitled Section",
+    props,
+    children: normalizeArray(section?.fields).map((field) => legacyFieldToBlock(field)),
+  };
+}
+
+function legacySchemaToBlockSchema(schema) {
+  const normalized = normalizeSchemaShape(schema);
+  const meta = {
+    common_field_set_id: normalized.common_field_set_id,
+    legacy_form_key: normalized.key || slugify(normalized.name || "untitled_form"),
+    legacy_order: normalized.order,
+  };
+
+  if (normalized.notes.length) {
+    meta.notes = deepClone(normalized.notes);
+  }
+  if (normalized.source && typeof normalized.source === "object") {
+    meta.source = deepClone(normalized.source);
+  }
+
+  return {
+    schema_version: 1,
+    source_kind: "compat_legacy_fields_sections",
+    meta,
+    blocks: [
+      ...normalized.fields.map((field) => legacyFieldToBlock(field)),
+      ...normalized.sections.map((section) => legacySectionToBlock(section)),
+    ],
+  };
+}
+
+function blockFieldToLegacy(block) {
+  const kind = String(block?.kind || "").trim();
+  const props = block?.props && typeof block.props === "object" ? block.props : {};
+  const legacy = {
+    id: String(block?.id || "").trim(),
+    key: String(props.key || block?.name || "").trim(),
+    name: String(block?.name || "").trim() || "Untitled Field",
+    kind: kind === "field_group" ? "field_group" : "field",
+    order: parsePositiveInt(props.order, 1),
+  };
+
+  const notes = normalizeArray(props.notes);
+  if (notes.length) {
+    legacy.notes = deepClone(notes);
+  }
+  if (props.source && typeof props.source === "object") {
+    legacy.source = deepClone(props.source);
+  }
+
+  if (kind === "field_group") {
+    legacy.fields = normalizeArray(block?.children).map((child) => blockFieldToLegacy(child));
+    return legacy;
+  }
+
+  const fieldType = String(props.field_type || "").trim();
+  if (fieldType === "select" || fieldType === "choice") {
+    legacy.control = "select";
+    legacy.data_type = "enum";
+  } else if (fieldType) {
+    legacy.control = String(props.control || "input").trim() || "input";
+    legacy.data_type = fieldType;
+  } else {
+    legacy.control = String(props.control || "input").trim() || "input";
+    legacy.data_type = String(props.data_type || "text").trim() || "text";
+  }
+
+  if (props.unit_hint) {
+    legacy.unit_hint = String(props.unit_hint).trim();
+  }
+  if (props.normal_value) {
+    legacy.normal_value = String(props.normal_value).trim();
+  }
+
+  const options = normalizeArray(props.options)
+    .map((option, index) => {
+      const name = String(option?.label || option?.name || "").trim();
+      if (!name) {
+        return null;
+      }
+      return {
+        id: String(option?.id || "").trim(),
+        key: String(option?.key || slugify(name)).trim(),
+        name,
+        order: parsePositiveInt(option?.order, index + 1),
+      };
+    })
+    .filter(Boolean);
+  if (options.length) {
+    legacy.options = options;
+  }
+
+  return legacy;
+}
+
+function blockSectionToLegacy(block) {
+  const props = block?.props && typeof block.props === "object" ? block.props : {};
+  const legacy = {
+    id: String(block?.id || "").trim(),
+    key: String(props.key || block?.name || "").trim(),
+    name: String(block?.name || "").trim() || "Untitled Section",
+    order: parsePositiveInt(props.order, 1),
+    fields: normalizeArray(block?.children).map((child) => blockFieldToLegacy(child)),
+  };
+
+  const notes = normalizeArray(props.notes);
+  if (notes.length) {
+    legacy.notes = deepClone(notes);
+  }
+  if (props.source && typeof props.source === "object") {
+    legacy.source = deepClone(props.source);
+  }
+
+  return legacy;
+}
+
+function blockSchemaToLegacySchema(blockSchema, fallback = {}) {
+  const meta = blockSchema?.meta && typeof blockSchema.meta === "object" ? blockSchema.meta : {};
+  const blocks = normalizeArray(blockSchema?.blocks);
+  const fields = [];
+  const sections = [];
+
+  blocks.forEach((block) => {
+    const kind = String(block?.kind || "").trim();
+    if (kind === "section") {
+      sections.push(blockSectionToLegacy(block));
+    } else if (kind === "field" || kind === "field_group") {
+      fields.push(blockFieldToLegacy(block));
+    }
+  });
+
+  return {
+    name: String(fallback?.name || "").trim(),
+    key: String(meta.legacy_form_key || fallback?.schema?.key || slugify(fallback?.name || "untitled_form")).trim(),
+    order: parsePositiveInt(meta.legacy_order, fallback?.form_order || fallback?.schema?.order || 1),
+    common_field_set_id: String(meta.common_field_set_id || fallback?.schema?.common_field_set_id || "default_lab_request").trim() || "default_lab_request",
+    notes: normalizeArray(meta.notes),
+    fields,
+    sections,
+    ...(meta.source && typeof meta.source === "object" ? { source: deepClone(meta.source) } : {}),
+  };
+}
+
+function ensureDraftSchemas(draft, options = {}) {
+  if (!draft || typeof draft !== "object") {
+    return draft;
+  }
+
+  const preferBlocks = Boolean(options.preferBlocks);
+  if (draft.block_schema && (preferBlocks || !draft.schema)) {
+    draft.schema = blockSchemaToLegacySchema(draft.block_schema, draft);
+  }
+
+  draft.schema = normalizeSchemaShape(draft.schema || {});
+  draft.schema.name = String(draft.name || draft.schema.name || "").trim();
+  draft.schema.key = String(draft.schema.key || slugify(draft.schema.name || draft.name || "untitled_form")).trim();
+  draft.schema.order = parsePositiveInt(draft.form_order, draft.schema.order || 1);
+  draft.schema.common_field_set_id = String(draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
+  draft.block_schema = legacySchemaToBlockSchema(draft.schema);
+  return draft;
+}
+
+function ensureBlockSchemaMeta(draft) {
+  if (!draft || typeof draft !== "object") {
+    return null;
+  }
+
+  if (!draft.block_schema || typeof draft.block_schema !== "object") {
+    draft.block_schema = {
+      schema_version: 1,
+      source_kind: "compat_legacy_fields_sections",
+      meta: {},
+      blocks: [],
+    };
+  }
+
+  if (!draft.block_schema.meta || typeof draft.block_schema.meta !== "object") {
+    draft.block_schema.meta = {};
+  }
+
+  draft.block_schema.blocks = normalizeArray(draft.block_schema.blocks);
+  return draft.block_schema.meta;
+}
+
+function syncRootMetaToBlockSchema(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return;
+  }
+
+  const meta = ensureBlockSchemaMeta(draft);
+  if (!meta) {
+    return;
+  }
+
+  const schema = normalizeSchemaShape(draft.schema || {});
+  meta.common_field_set_id = String(schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
+  meta.legacy_form_key = String(schema.key || slugify(draft.name || "untitled_form")).trim() || "untitled_form";
+  meta.legacy_order = parsePositiveInt(draft.form_order, schema.order || 1);
+
+  const notes = normalizeArray(schema.notes);
+  if (notes.length) {
+    meta.notes = deepClone(notes);
+  } else {
+    delete meta.notes;
+  }
+
+  if (schema.source && typeof schema.source === "object") {
+    meta.source = deepClone(schema.source);
+  } else {
+    delete meta.source;
+  }
+}
+
+function syncDraftCompatibilitySchemas(source = "blocks") {
+  if (!state.draft) {
+    return;
+  }
+
+  if (source === "legacy" || !state.draft.block_schema) {
+    ensureDraftSchemas(state.draft);
+    return;
+  }
+
+  syncRootMetaToBlockSchema(state.draft);
+  state.draft.schema = normalizeSchemaShape(blockSchemaToLegacySchema(state.draft.block_schema, state.draft));
+  state.draft.schema.name = String(state.draft.name || state.draft.schema.name || "").trim();
+  state.draft.schema.key = String(state.draft.schema.key || slugify(state.draft.schema.name || state.draft.name || "untitled_form")).trim();
+  state.draft.schema.order = parsePositiveInt(state.draft.form_order, state.draft.schema.order || 1);
+  state.draft.schema.common_field_set_id = String(state.draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
+}
+
+function isBlockNode(node) {
+  const kind = String(node?.kind || "").trim();
+  return kind === "field" || kind === "field_group" || kind === "section";
+}
+
+function getNodeProps(node) {
+  if (!isBlockNode(node)) {
+    return {};
+  }
+  if (!node.props || typeof node.props !== "object") {
+    node.props = {};
+  }
+  return node.props;
+}
+
+function getNodeChildren(node) {
+  if (!isBlockNode(node)) {
+    return normalizeArray(node?.fields);
+  }
+  node.children = normalizeArray(node.children);
+  return node.children;
+}
+
+function getNodeKey(node) {
+  return isBlockNode(node) ? String(getNodeProps(node).key || "").trim() : String(node?.key || "").trim();
+}
+
+function getNodeNotes(node) {
+  return isBlockNode(node) ? normalizeArray(getNodeProps(node).notes) : normalizeArray(node?.notes);
+}
+
+function getFieldControl(field) {
+  return isBlockNode(field)
+    ? String(getNodeProps(field).control || "input").trim() || "input"
+    : String(field?.control || "input").trim() || "input";
+}
+
+function getFieldDataType(field) {
+  return isBlockNode(field)
+    ? String(getNodeProps(field).data_type || getNodeProps(field).field_type || "text").trim() || "text"
+    : String(field?.data_type || "text").trim() || "text";
+}
+
+function getFieldUnitHint(field) {
+  return isBlockNode(field) ? String(getNodeProps(field).unit_hint || "").trim() : String(field?.unit_hint || "").trim();
+}
+
+function getFieldNormalValue(field) {
+  return isBlockNode(field) ? String(getNodeProps(field).normal_value || "").trim() : String(field?.normal_value || "").trim();
+}
+
+function ensureOptionShape(field) {
+  if (isBlockNode(field)) {
+    const props = getNodeProps(field);
+    props.options = normalizeArray(props.options);
+    return props.options;
+  }
+
+  field.options = normalizeArray(field.options);
+  return field.options;
+}
+
+function getFieldOptions(field) {
+  return ensureOptionShape(field);
+}
+
+function viewNode(node) {
+  if (!isBlockNode(node)) {
+    return node;
+  }
+
+  return String(node.kind || "").trim() === "section"
+    ? blockSectionToLegacy(node)
+    : blockFieldToLegacy(node);
+}
+
+function topLevelBlocks() {
+  return normalizeArray(state.draft?.block_schema?.blocks);
+}
+
+function topLevelFreeFieldEntries() {
+  return topLevelBlocks()
+    .map((node, index) => ({ node, path: ["block_schema", "blocks", index], view: viewNode(node) }))
+    .filter((entry) => entry.node?.kind !== "section");
+}
+
+function topLevelSectionEntries() {
+  return topLevelBlocks()
+    .map((node, index) => ({ node, path: ["block_schema", "blocks", index], view: viewNode(node) }))
+    .filter((entry) => entry.node?.kind === "section");
+}
+
+function isSpecialRootCollectionPath(path, kind) {
+  return Array.isArray(path)
+    && path.length === 3
+    && path[0] === "block_schema"
+    && path[1] === "collections"
+    && path[2] === kind;
+}
+
+function topLevelCollectionPath(kind) {
+  return ["block_schema", "collections", kind];
+}
+
+function collectFieldPathKeysFromNode(node, basePath) {
+  const keys = [];
+  const kind = String(node?.kind || "").trim();
+
+  if (kind === "field" || kind === "field_group") {
+    keys.push(pathKey(basePath));
+  }
+
+  getNodeChildren(node).forEach((child, index) => {
+    keys.push(...collectFieldPathKeysFromNode(child, [...basePath, "children", index]));
+  });
+
+  return keys;
+}
+
+function moveTopLevelCollection(kind, fromIndex, toIndex) {
+  const blocks = topLevelBlocks();
+  const match = kind === "sections"
+    ? (block) => String(block?.kind || "").trim() === "section"
+    : (block) => String(block?.kind || "").trim() !== "section";
+  const subset = blocks.filter(match);
+  if (!subset.length) {
+    return;
+  }
+
+  const boundedTarget = Math.max(0, Math.min(toIndex, subset.length - 1));
+  if (fromIndex === boundedTarget || !subset[fromIndex]) {
+    return;
+  }
+
+  const reordered = [...subset];
+  const [moved] = reordered.splice(fromIndex, 1);
+  reordered.splice(boundedTarget, 0, moved);
+
+  let subsetCursor = 0;
+  state.draft.block_schema.blocks = blocks.map((block) => (match(block) ? reordered[subsetCursor++] : block));
+}
+
+function insertTopLevelField(kind) {
+  const blocks = topLevelBlocks();
+  const nextNode = makeBlankField(kind);
+  const firstSectionIndex = blocks.findIndex((block) => String(block?.kind || "").trim() === "section");
+
+  if (firstSectionIndex === -1) {
+    blocks.push(nextNode);
+    return blocks.length - 1;
+  }
+
+  blocks.splice(firstSectionIndex, 0, nextNode);
+  return firstSectionIndex;
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -165,7 +649,7 @@ function currentVersionLabel() {
 }
 
 function currentDraftFieldCount() {
-  return state.draft ? countFields(state.draft.schema) : 0;
+  return state.draft ? countFields({ blocks: topLevelBlocks() }) : 0;
 }
 
 function currentCommonFieldSetName() {
@@ -443,12 +927,12 @@ function renderPreviewCallout() {
 }
 
 function resetEditorPanels() {
-  const sections = normalizeArray(state.draft?.schema?.sections);
-  const topFields = normalizeArray(state.draft?.schema?.fields);
+  const sections = topLevelSectionEntries();
+  const topFields = topLevelFreeFieldEntries();
   state.ui.setupOpen = !state.selectedFormSlug;
   state.ui.saveOpen = !state.selectedFormSlug;
   state.ui.topFieldsOpen = !topFields.length;
-  state.ui.openSectionPaths = sections.length ? [pathKey(["schema", "sections", 0])] : [];
+  state.ui.openSectionPaths = sections.length ? [pathKey(sections[0].path)] : [];
   state.ui.activeFieldPath = null;
   state.ui.activeOptionToken = null;
   state.ui.focusPane = defaultFocusPane();
@@ -456,29 +940,25 @@ function resetEditorPanels() {
 
 function collectFieldPathKeys(container, basePath = []) {
   const paths = [];
-  normalizeArray(container?.fields).forEach((field, index) => {
-    const fieldPath = [...basePath, "fields", index];
-    paths.push(pathKey(fieldPath));
-    if (field.kind === "field_group") {
-      paths.push(...collectFieldPathKeys(field, fieldPath));
-    }
+  normalizeArray(container?.blocks).forEach((block, index) => {
+    paths.push(...collectFieldPathKeysFromNode(block, [...basePath, "blocks", index]));
   });
-  normalizeArray(container?.sections).forEach((section, index) => {
-    paths.push(...collectFieldPathKeys(section, [...basePath, "sections", index]));
+  getNodeChildren(container).forEach((child, index) => {
+    paths.push(...collectFieldPathKeysFromNode(child, [...basePath, "children", index]));
   });
   return paths;
 }
 
 function syncEditorPanels() {
-  const sections = normalizeArray(state.draft?.schema?.sections);
-  const validPaths = new Set(sections.map((_, index) => pathKey(["schema", "sections", index])));
+  const sections = topLevelSectionEntries();
+  const validPaths = new Set(sections.map((entry) => pathKey(entry.path)));
   state.ui.openSectionPaths = normalizeArray(state.ui.openSectionPaths).filter((item) => validPaths.has(item));
 
   if (sections.length && !state.ui.openSectionPaths.length) {
-    state.ui.openSectionPaths = [pathKey(["schema", "sections", 0])];
+    state.ui.openSectionPaths = [pathKey(sections[0].path)];
   }
 
-  const validFieldPaths = new Set(collectFieldPathKeys(state.draft?.schema, ["schema"]));
+  const validFieldPaths = new Set(collectFieldPathKeys(state.draft?.block_schema, ["block_schema"]));
   if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath)) {
     state.ui.activeFieldPath = null;
     state.ui.activeOptionToken = null;
@@ -487,7 +967,7 @@ function syncEditorPanels() {
   if (state.ui.activeOptionToken) {
     const parsed = parseOptionToken(state.ui.activeOptionToken);
     const field = parsed ? getNodeByPath(parsed.path) : null;
-    const options = normalizeArray(field?.options);
+    const options = getFieldOptions(field);
     if (!parsed || !options[parsed.index]) {
       state.ui.activeOptionToken = null;
     }
@@ -630,6 +1110,37 @@ function getParentCollection(path) {
 }
 
 function setBoundValue(target, bind, rawValue) {
+  if (target === state.draft && bind.startsWith("schema.")) {
+    const schemaBind = bind.slice("schema.".length);
+    if (schemaBind === "key") {
+      state.draft.schema.key = rawValue;
+      syncRootMetaToBlockSchema();
+      return;
+    }
+    if (schemaBind === "common_field_set_id") {
+      state.draft.schema.common_field_set_id = rawValue;
+      syncRootMetaToBlockSchema();
+      return;
+    }
+    if (schemaBind === "notes") {
+      state.draft.schema.notes = normalizeArray(rawValue);
+      syncRootMetaToBlockSchema();
+      return;
+    }
+  }
+
+  if (isBlockNode(target)) {
+    const props = getNodeProps(target);
+    if (bind === "name") {
+      target.name = rawValue;
+      return;
+    }
+    if (bind === "key" || bind === "notes" || bind === "normal_value" || bind === "unit_hint") {
+      props[bind] = rawValue;
+      return;
+    }
+  }
+
   const parts = bind.split(".");
   let cursor = target;
   for (let index = 0; index < parts.length - 1; index += 1) {
@@ -646,33 +1157,48 @@ function setBoundValue(target, bind, rawValue) {
 function makeBlankField(kind = "field") {
   if (kind === "field_group") {
     return {
-      name: "New Field Group",
-      key: "new_field_group",
+      id: `blk_${slugify(`group_${Date.now()}`)}`,
       kind: "field_group",
-      notes: [],
-      fields: [],
+      name: "New Field Group",
+      props: {
+        key: "new_field_group",
+        order: 1,
+        notes: [],
+      },
+      children: [],
     };
   }
 
   return {
-    name: "New Field",
-    key: "new_field",
+    id: `blk_${slugify(`field_${Date.now()}`)}`,
     kind: "field",
-    control: "input",
-    data_type: "text",
-    unit_hint: "",
-    normal_value: "",
-    notes: [],
-    options: [],
+    name: "New Field",
+    props: {
+      key: "new_field",
+      order: 1,
+      field_type: "text",
+      control: "input",
+      data_type: "text",
+      unit_hint: "",
+      normal_value: "",
+      notes: [],
+      options: [],
+    },
+    children: [],
   };
 }
 
 function makeBlankSection() {
   return {
+    id: `blk_${slugify(`section_${Date.now()}`)}`,
+    kind: "section",
     name: "New Section",
-    key: "new_section",
-    notes: [],
-    fields: [],
+    props: {
+      key: "new_section",
+      order: 1,
+      notes: [],
+    },
+    children: [],
   };
 }
 
@@ -727,7 +1253,7 @@ function makeBlankForm(config = {}) {
   const formOrder = parsePositiveInt(config.formOrder, 1);
   const templateId = String(config.templateId || "").trim() || "blank";
 
-  return {
+  const draft = {
     slug: null,
     name: formName,
     group_name: groupName,
@@ -746,6 +1272,7 @@ function makeBlankForm(config = {}) {
       sections: makePresetSections(templateId),
     },
   };
+  return ensureDraftSchemas(draft, { preferBlocks: true });
 }
 
 function makeCopyName(name) {
@@ -756,38 +1283,59 @@ function makeCopyName(name) {
 function cloneNode(node) {
   const copy = deepClone(node);
   copy.name = makeCopyName(copy.name);
+  if (isBlockNode(copy)) {
+    const props = getNodeProps(copy);
+    if (props.key) {
+      props.key = `${slugify(props.key)}_copy`;
+    }
+    if (!copy.id) {
+      copy.id = `blk_${slugify(`${copy.kind || "node"}_${Date.now()}`)}`;
+    }
+    return copy;
+  }
   if (copy.key) {
     copy.key = `${slugify(copy.key)}_copy`;
   }
   return copy;
 }
 
-function ensureOptionShape(field) {
-  field.options = normalizeArray(field.options);
-}
-
 function inferFieldType(field) {
-  if (field.control === "select" || field.data_type === "enum") {
+  if (getFieldControl(field) === "select" || getFieldDataType(field) === "enum") {
     return "choice";
   }
-  const match = FIELD_TYPES.find((item) => item.dataType === field.data_type && item.control === field.control);
+  const match = FIELD_TYPES.find((item) => item.dataType === getFieldDataType(field) && item.control === getFieldControl(field));
   return match?.id || "text";
 }
 
 function applyFieldType(field, typeId) {
   const selected = FIELD_TYPES.find((item) => item.id === typeId) || FIELD_TYPES[0];
-  field.control = selected.control;
-  field.data_type = selected.dataType;
+  if (isBlockNode(field)) {
+    const props = getNodeProps(field);
+    props.field_type = selected.id === "choice" ? "select" : selected.dataType;
+    props.control = selected.control;
+    props.data_type = selected.dataType;
+  } else {
+    field.control = selected.control;
+    field.data_type = selected.dataType;
+  }
   if (selected.id === "choice") {
-    ensureOptionShape(field);
-    if (!field.options.length) {
-      field.options.push({ name: "Option 1" });
+    const options = ensureOptionShape(field);
+    if (!options.length) {
+      options.push({ label: "Option 1", key: "option_1", order: 1 });
     }
   }
 }
 
 function syncNodeKeys(node) {
   if (!node || typeof node !== "object") {
+    return;
+  }
+  if (isBlockNode(node)) {
+    const props = getNodeProps(node);
+    if (node.name && !props.key) {
+      props.key = slugify(node.name);
+    }
+    getNodeChildren(node).forEach(syncNodeKeys);
     return;
   }
   if ("name" in node && !node.key) {
@@ -805,10 +1353,13 @@ function syncDraftKeys() {
     state.draft.schema.key = slugify(state.draft.name);
   }
   state.draft.schema.name = state.draft.name;
-  syncNodeKeys(state.draft.schema);
+  syncRootMetaToBlockSchema(state.draft);
+  topLevelBlocks().forEach(syncNodeKeys);
+  syncDraftCompatibilitySchemas("blocks");
 }
 
 function touch(options = {}) {
+  syncDraftCompatibilitySchemas(options.source || "blocks");
   setDirty(true);
   renderShellSummary();
   renderPreview();
@@ -879,9 +1430,9 @@ async function loadForm(slug) {
 
   const form = await api(`/api/forms/${slug}`);
   state.selectedFormSlug = slug;
-  state.loadedForm = form;
-  state.draft = deepClone(form);
-  state.baselineDraft = deepClone(form);
+  state.loadedForm = ensureDraftSchemas(deepClone(form), { preferBlocks: true });
+  state.draft = ensureDraftSchemas(deepClone(form), { preferBlocks: true });
+  state.baselineDraft = ensureDraftSchemas(deepClone(form), { preferBlocks: true });
   resetEditorPanels();
   setDirty(false);
   state.ui.libraryOpen = false;
@@ -892,8 +1443,8 @@ async function loadForm(slug) {
 function startNewForm(config = {}) {
   state.selectedFormSlug = null;
   state.loadedForm = null;
-  state.draft = makeBlankForm(config);
-  state.baselineDraft = deepClone(state.draft);
+  state.draft = ensureDraftSchemas(makeBlankForm(config), { preferBlocks: true });
+  state.baselineDraft = ensureDraftSchemas(deepClone(state.draft), { preferBlocks: true });
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
@@ -924,8 +1475,8 @@ function duplicateCurrentForm(overrides = {}) {
   copy.schema.order = copy.form_order;
   state.selectedFormSlug = null;
   state.loadedForm = null;
-  state.draft = copy;
-  state.baselineDraft = deepClone(copy);
+  state.draft = ensureDraftSchemas(copy, { preferBlocks: true });
+  state.baselineDraft = ensureDraftSchemas(deepClone(copy), { preferBlocks: true });
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
@@ -953,7 +1504,7 @@ async function resetCurrentDraft() {
     return;
   }
 
-  state.draft = deepClone(state.baselineDraft);
+  state.draft = ensureDraftSchemas(deepClone(state.baselineDraft), { preferBlocks: true });
   resetEditorPanels();
   setDirty(false);
   setStatus(state.selectedFormSlug ? "Returned to the last saved version" : "Draft reset");
@@ -1067,8 +1618,8 @@ function renderCommonFieldSetOptions(selectedId) {
 }
 
 function defaultFocusPane() {
-  const sections = normalizeArray(state.draft?.schema?.sections);
-  const freeFields = normalizeArray(state.draft?.schema?.fields);
+  const sections = topLevelSectionEntries();
+  const freeFields = topLevelFreeFieldEntries();
 
   if (!state.selectedFormSlug) {
     return "setup";
@@ -1096,13 +1647,13 @@ function setFocusPane(pane) {
 }
 
 function focusSectionAtIndex(index) {
-  const sections = normalizeArray(state.draft?.schema?.sections);
+  const sections = topLevelSectionEntries();
   if (!sections[index]) {
     return;
   }
 
   state.ui.focusPane = "sections";
-  state.ui.openSectionPaths = [pathKey(["schema", "sections", index])];
+  state.ui.openSectionPaths = [pathKey(sections[index].path)];
   state.ui.activeFieldPath = null;
   renderAll();
 }
@@ -1117,8 +1668,8 @@ function renderOutline() {
     return;
   }
 
-  const sections = normalizeArray(state.draft.schema.sections);
-  const freeFields = normalizeArray(state.draft.schema.fields);
+  const sections = topLevelSectionEntries();
+  const freeFields = topLevelFreeFieldEntries();
   const focusPane = String(state.ui.focusPane || defaultFocusPane());
   const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
 
@@ -1135,16 +1686,16 @@ function renderOutline() {
         <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
           <span>Ungrouped fields</span>
         </button>
-      <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
+        <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
         <span>Sections</span>
       </button>
       ${sections.length ? `
         <div class="outline-sublist">
-          ${sections.map((section, index) => {
-            const token = pathKey(["schema", "sections", index]);
+          ${sections.map((entry, index) => {
+            const token = pathKey(entry.path);
             return `
               <button class="outline-subitem ${focusPane === "sections" && openSectionToken === token ? "active" : ""}" type="button" data-action="focus-section" data-index="${index}">
-                <span>${escapeHtml(section.name || `Section ${index + 1}`)}</span>
+                <span>${escapeHtml(entry.view.name || `Section ${index + 1}`)}</span>
                 ${focusPane === "sections" && openSectionToken === token ? '<span class="outline-state">Editing</span>' : ""}
               </button>
             `;
@@ -1350,7 +1901,7 @@ function renderOptionManageFooter(path, index) {
 
 function renderTopFieldsCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
-  const topFields = normalizeArray(state.draft.schema.fields);
+  const topFields = topLevelFreeFieldEntries();
   const itemCount = pluralize(topFields.length, "item");
   const topFieldsOpen = focusMode ? true : state.ui.topFieldsOpen;
   return `
@@ -1371,21 +1922,21 @@ function renderTopFieldsCard(options = {}) {
         </div>
       </div>
       ${topFieldsOpen
-        ? renderFieldCollection(topFields, ["schema", "fields"], { focused: true })
+        ? renderFieldCollection(topFields, topLevelCollectionPath("free_fields"), { focused: true })
         : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
     </section>
   `;
 }
 
 function renderSectionsCard(options = {}) {
-    const sections = normalizeArray(state.draft.schema.sections);
+    const sections = topLevelSectionEntries();
   const selectedPath = normalizeArray(state.ui.openSectionPaths)[0]
     ? parsePathKey(normalizeArray(state.ui.openSectionPaths)[0])
     : null;
-  const selectedIndex = selectedPath && selectedPath[0] === "schema" && selectedPath[1] === "sections"
-    ? selectedPath[2]
+  const selectedIndex = selectedPath
+    ? sections.findIndex((entry) => pathKey(entry.path) === pathKey(selectedPath))
     : 0;
-  const selectedSection = Number.isInteger(selectedIndex) ? sections[selectedIndex] : null;
+  const selectedEntry = Number.isInteger(selectedIndex) && selectedIndex >= 0 ? sections[selectedIndex] : sections[0] || null;
 
   return `
     <section class="editor-card">
@@ -1401,12 +1952,12 @@ function renderSectionsCard(options = {}) {
         </div>
       </div>
         ${sections.length ? `
-          <div class="section-organizer" data-collection-path="${encodePath(["schema", "sections"])}">
-            ${sections.map((section, index) => renderSectionOrganizerItem(section, index, index === selectedIndex)).join("")}
+          <div class="section-organizer" data-collection-path="${encodePath(topLevelCollectionPath("sections"))}">
+            ${sections.map((entry, index) => renderSectionOrganizerItem(entry.view, index, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : index === selectedIndex)).join("")}
           </div>
           <div class="section-focus-stage">
-            ${selectedSection
-              ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], { forceOpen: true, hideToggle: true, focusedCard: true })
+            ${selectedEntry
+              ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
               : '<div class="empty-state">Pick a section to keep editing.</div>'}
           </div>
         ` : '<div class="empty-state">No sections yet. Add your first one when you are ready.</div>'}
@@ -1434,6 +1985,7 @@ function renderSectionCard(section, path, options = {}) {
     const focusedCard = Boolean(options.focusedCard);
     const open = Boolean(options.forceOpen) || isSectionOpen(path);
     const showHeaderActions = !focusedCard || !options.hideToggle;
+    const sectionNode = getNodeByPath(path);
     return `
       <article class="section-card ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
         <div class="section-head ${focusedCard ? "section-head-focused" : ""}">
@@ -1468,12 +2020,12 @@ function renderSectionCard(section, path, options = {}) {
               <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
             </label>
             <div class="section-quick-actions">
-              <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
-              <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add group</button>
+              <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add field</button>
+              <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "children"])}">Add group</button>
           </div>
         </div>
 
-        ${renderFieldCollection(section.fields, [...path, "fields"], { focused: true })}
+        ${renderFieldCollection(getNodeChildren(sectionNode), [...path, "children"], { focused: true })}
 
           ${state.ui.advancedMode ? `
             <details class="advanced">
@@ -1481,11 +2033,11 @@ function renderSectionCard(section, path, options = {}) {
               <div class="advanced-grid">
               <label>
                 <span>Internal section key</span>
-                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
+                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(sectionNode) || "")}">
               </label>
               <label style="grid-column: 1 / -1;">
                 <span>Section notes</span>
-                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
+                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(sectionNode).join("\n"))}</textarea>
               </label>
               </div>
             </details>
@@ -1497,25 +2049,34 @@ function renderSectionCard(section, path, options = {}) {
   }
 
 function renderFieldCollection(fields, collectionPath, options = {}) {
-    const items = normalizeArray(fields);
-    if (!items.length) {
+    const entries = normalizeArray(fields).map((field, index) => {
+      if (field?.path && field?.view) {
+        return field;
+      }
+      return {
+        node: field,
+        path: [...collectionPath, index],
+        view: viewNode(field),
+      };
+    });
+    if (!entries.length) {
       return '<div class="empty-state">No fields here yet. Add one when you are ready.</div>';
     }
   if (options.focused) {
-    const selectedIndex = resolveFocusedFieldIndex(collectionPath, items);
-    const selectedField = items[selectedIndex] || null;
+    const selectedIndex = resolveFocusedFieldIndex(collectionPath, entries);
+    const selectedEntry = entries[selectedIndex] || null;
     return `
       <div class="field-organizer" data-collection-path="${encodePath(collectionPath)}">
-        ${items.map((field, index) => renderFieldOrganizerItem(field, [...collectionPath, index], index, index === selectedIndex)).join("")}
+        ${entries.map((entry, index) => renderFieldOrganizerItem(entry.node || entry.view, entry.path, index, index === selectedIndex)).join("")}
       </div>
       <div class="field-focus-stage">
-        ${selectedField
-          ? renderFieldCard(selectedField, [...collectionPath, selectedIndex], { forceOpen: true, hideToggle: true, focusedCard: true })
+        ${selectedEntry
+          ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
           : '<div class="empty-state">Pick a field to keep editing.</div>'}
       </div>
     `;
   }
-  return `<div class="field-list" data-collection-path="${encodePath(collectionPath)}">${items.map((field, index) => renderFieldCard(field, [...collectionPath, index])).join("")}</div>`;
+  return `<div class="field-list" data-collection-path="${encodePath(collectionPath)}">${entries.map((entry) => renderFieldCard(entry.view, entry.path)).join("")}</div>`;
 }
 
 function resolveFocusedFieldIndex(collectionPath, items) {
@@ -1528,7 +2089,10 @@ function resolveFocusedFieldIndex(collectionPath, items) {
   }
 
   const activePath = parsePathKey(state.ui.activeFieldPath);
-  const matchIndex = items.findIndex((_, index) => pathStartsWith(activePath, [...collectionPath, index]));
+  const matchIndex = items.findIndex((entry, index) => {
+    const entryPath = entry?.path || [...collectionPath, index];
+    return pathStartsWith(activePath, entryPath);
+  });
   return matchIndex >= 0 ? matchIndex : 0;
 }
 
@@ -1591,14 +2155,15 @@ function renderFieldOrganizerItem(field, path, index, active) {
   }
 
 function renderFieldCard(field, path, options = {}) {
+    const fieldNode = getNodeByPath(path);
     const isGroup = field.kind === "field_group";
     const open = Boolean(options.forceOpen) || isFieldOpen(path);
-    const summary = summarizeField(field);
-    const fieldType = inferFieldType(field);
+    const summary = summarizeField(fieldNode || field);
+    const fieldType = inferFieldType(fieldNode || field);
     const focusedCard = Boolean(options.focusedCard);
     const showHeaderActions = !focusedCard || !options.hideToggle;
-    const compactNormal = compactText(field.normal_value);
-    const compactUnit = compactText(field.unit_hint);
+    const compactNormal = compactText(getFieldNormalValue(fieldNode || field));
+    const compactUnit = compactText(getFieldUnitHint(fieldNode || field));
     const metaBits = [
       summary,
       compactUnit ? `Unit: ${compactUnit}` : "",
@@ -1658,14 +2223,14 @@ function renderFieldCard(field, path, options = {}) {
 
         ${isGroup ? `
           <div class="nested-fields">
-            ${renderFieldCollection(field.fields, [...path, "fields"])}
+            ${renderFieldCollection(getNodeChildren(fieldNode), [...path, "children"])}
           </div>
           <div class="section-actions">
-            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add child field</button>
+            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add child field</button>
           </div>
         ` : ""}
 
-        ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
+        ${!isGroup && inferFieldType(fieldNode || field) === "choice" ? renderOptionsEditor(fieldNode || field, path) : ""}
 
           ${state.ui.advancedMode ? `
             <details class="advanced">
@@ -1673,21 +2238,21 @@ function renderFieldCard(field, path, options = {}) {
               <div class="advanced-grid">
               <label>
                 <span>Internal key</span>
-                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
+                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(fieldNode || field) || "")}">
               </label>
               ${isGroup ? "" : `
                 <label>
                   <span>Normal value</span>
-                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(field.normal_value || "")}" placeholder="Example: 4.5 - 11.0">
+                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getFieldNormalValue(fieldNode || field) || "")}" placeholder="Example: 4.5 - 11.0">
                 </label>
                 <label>
                   <span>Unit hint</span>
-                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(field.unit_hint || "")}" placeholder="Example: mg/dL">
+                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getFieldUnitHint(fieldNode || field) || "")}" placeholder="Example: mg/dL">
                 </label>
               `}
               <label style="grid-column: 1 / -1;">
                 <span>Notes</span>
-                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
+                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(fieldNode || field).join("\n"))}</textarea>
               </label>
               </div>
             </details>
@@ -1699,7 +2264,10 @@ function renderFieldCard(field, path, options = {}) {
   }
 
 function renderOptionsEditor(field, path) {
-    const options = normalizeArray(field.options);
+    const options = getFieldOptions(field).map((option) => ({
+      name: String(option?.label || option?.name || "").trim(),
+      ...option,
+    }));
     const selectedIndex = resolveFocusedOptionIndex(path, options);
     const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
     const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled choice";
@@ -1758,8 +2326,8 @@ function renderPreview() {
     return;
   }
 
-  const freeFields = normalizeArray(state.draft.schema.fields);
-  const sections = normalizeArray(state.draft.schema.sections);
+  const freeFields = topLevelFreeFieldEntries().map((entry) => entry.view);
+  const sections = topLevelSectionEntries().map((entry) => entry.view);
   const previewTargets = [
     ...(freeFields.length ? [{ id: "preview_section_free_fields", label: "Ungrouped fields" }] : []),
     ...sections.map((section, index) => ({
@@ -1799,7 +2367,7 @@ function renderPreview() {
         </div>
         <div class="preview-paper">
           ${freeFields.length ? renderPreviewSection("Ungrouped fields", freeFields, "preview_section_free_fields") : ""}
-          ${sections.map((section, index) => renderPreviewSection(section.name || "Untitled Section", section.fields, previewSectionId(section.name || "Section", index))).join("")}
+          ${sections.map((section, index) => renderPreviewSection(section.name || "Untitled Section", getNodeChildren(section), previewSectionId(section.name || "Section", index))).join("")}
         </div>
       </div>
     </section>
@@ -1847,8 +2415,9 @@ function previewInputType(field) {
 }
 
 function previewPlaceholder(field) {
-  if (field.unit_hint) {
-    return field.unit_hint;
+  const unitHint = getFieldUnitHint(field);
+  if (unitHint) {
+    return unitHint;
   }
   if (inferFieldType(field) === "number") {
     return "Enter value";
@@ -1864,22 +2433,22 @@ function renderPreviewField(field) {
           <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
         </div>
         <div class="preview-grid">
-          ${normalizeArray(field.fields).map(renderPreviewField).join("")}
+          ${getNodeChildren(field).map((child) => renderPreviewField(viewNode(child))).join("")}
         </div>
       </div>
     `;
   }
 
   const hints = [];
-  if (field.unit_hint) hints.push(field.unit_hint);
-  if (field.normal_value) hints.push(`normal ${field.normal_value}`);
+  if (getFieldUnitHint(field)) hints.push(getFieldUnitHint(field));
+  if (getFieldNormalValue(field)) hints.push(`normal ${getFieldNormalValue(field)}`);
 
   return `
     <label class="preview-field">
       <span>${escapeHtml(field.name || "Untitled Field")}</span>
-      ${field.control === "select" ? `
+      ${getFieldControl(field) === "select" ? `
         <select disabled>
-          ${normalizeArray(field.options).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
+          ${getFieldOptions(field).map((option) => `<option>${escapeHtml(option.label || option.name || "Option")}</option>`).join("")}
         </select>
       ` : `<input type="${previewInputType(field)}" placeholder="${escapeHtml(previewPlaceholder(field))}" disabled>`}
       ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
@@ -1889,15 +2458,15 @@ function renderPreviewField(field) {
 
 function countFields(container) {
   let count = 0;
-  normalizeArray(container.fields).forEach((field) => {
-    if (field.kind === "field_group") {
+  normalizeArray(container?.blocks).forEach((block) => {
+    count += countFields(block);
+  });
+  getNodeChildren(container).forEach((field) => {
+    if (String(field?.kind || "").trim() === "field_group" || String(field?.kind || "").trim() === "section") {
       count += countFields(field);
     } else {
       count += 1;
     }
-  });
-  normalizeArray(container.sections).forEach((section) => {
-    count += countFields(section);
   });
   return count;
 }
@@ -1907,6 +2476,20 @@ function renderJson() {
 }
 
 function moveWithinCollection(collectionPath, fromIndex, toIndex) {
+  if (isSpecialRootCollectionPath(collectionPath, "free_fields")) {
+    moveTopLevelCollection("free_fields", fromIndex, toIndex);
+    remapUiStateAfterMove(collectionPath, fromIndex, toIndex);
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+
+  if (isSpecialRootCollectionPath(collectionPath, "sections")) {
+    moveTopLevelCollection("sections", fromIndex, toIndex);
+    remapUiStateAfterMove(collectionPath, fromIndex, toIndex);
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+
   const collection = getNodeByPath(collectionPath);
   if (!Array.isArray(collection)) {
     return;
@@ -1920,7 +2503,7 @@ function moveWithinCollection(collectionPath, fromIndex, toIndex) {
   const [item] = collection.splice(fromIndex, 1);
   collection.splice(boundedTarget, 0, item);
   remapUiStateAfterMove(collectionPath, fromIndex, boundedTarget);
-  touch({ full: true });
+  touch({ full: true, source: "blocks" });
 }
 
 function duplicateAtPath(path) {
@@ -1929,16 +2512,22 @@ function duplicateAtPath(path) {
     return;
   }
   collection.splice(index + 1, 0, cloneNode(collection[index]));
-  if (path.includes("fields")) {
-    state.ui.activeFieldPath = pathKey([...path.slice(0, -1), index + 1]);
-  } else if (path.includes("sections")) {
-    state.ui.openSectionPaths = [pathKey([...path.slice(0, -1), index + 1])];
+  const duplicatedPath = [...path.slice(0, -1), index + 1];
+  const duplicatedNode = getNodeByPath(duplicatedPath);
+  if (String(duplicatedNode?.kind || "").trim() === "section") {
+    state.ui.openSectionPaths = [pathKey(duplicatedPath)];
     state.ui.focusPane = "sections";
     state.ui.activeFieldPath = null;
   } else {
-    state.ui.activeFieldPath = null;
+    state.ui.activeFieldPath = pathKey(duplicatedPath);
+    if (!pathStartsWith(duplicatedPath, ["block_schema", "blocks"])) {
+      state.ui.focusPane = "sections";
+    }
   }
-  touch({ full: true });
+  if (path.includes("children")) {
+    state.ui.activeFieldPath = pathKey([...path.slice(0, -1), index + 1]);
+  }
+  touch({ full: true, source: "blocks" });
 }
 
 function deleteAtPath(path) {
@@ -1949,79 +2538,89 @@ function deleteAtPath(path) {
   if (state.ui.activeFieldPath && pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
     state.ui.activeFieldPath = null;
   }
-  if (path.includes("sections") && isSectionOpen(path)) {
+  if (String(getNodeByPath(path)?.kind || "").trim() === "section" && isSectionOpen(path)) {
     state.ui.openSectionPaths = [];
   }
   collection.splice(index, 1);
-  touch({ full: true });
+  touch({ full: true, source: "blocks" });
 }
 
 function addFieldAt(path, kind) {
+  if (isSpecialRootCollectionPath(path, "free_fields")) {
+    const actualIndex = insertTopLevelField(kind);
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.topFieldsOpen = true;
+    state.ui.focusPane = "free_fields";
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+
   const collection = getNodeByPath(path);
   if (!Array.isArray(collection)) {
     return;
   }
   collection.push(makeBlankField(kind));
   state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
-  if (pathKey(path) === pathKey(["schema", "fields"])) {
+  if (pathKey(path) === pathKey(topLevelCollectionPath("free_fields"))) {
     state.ui.topFieldsOpen = true;
     state.ui.focusPane = "free_fields";
   }
-  touch({ full: true });
+  touch({ full: true, source: "blocks" });
 }
 
 function addSection() {
-  state.draft.schema.sections.push(makeBlankSection());
-  state.ui.openSectionPaths = [pathKey(["schema", "sections", state.draft.schema.sections.length - 1])];
+  topLevelBlocks().push(makeBlankSection());
+  state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
   state.ui.activeFieldPath = null;
   state.ui.focusPane = "sections";
-  touch({ full: true });
+  touch({ full: true, source: "blocks" });
 }
 
 function addOption(path) {
   const field = getNodeByPath(path);
-  ensureOptionShape(field);
-  field.options.push({ name: `Option ${field.options.length + 1}` });
-  state.ui.activeOptionToken = optionToken(path, field.options.length - 1);
-  touch({ full: true });
+  const options = ensureOptionShape(field);
+  options.push({ label: `Option ${options.length + 1}`, key: `option_${options.length + 1}`, order: options.length + 1 });
+  state.ui.activeOptionToken = optionToken(path, options.length - 1);
+  touch({ full: true, source: "blocks" });
 }
 
 function duplicateOption(path, index) {
   const field = getNodeByPath(path);
-  ensureOptionShape(field);
-  const source = field.options[index];
+  const options = ensureOptionShape(field);
+  const source = options[index];
   if (!source) {
     return;
   }
   const duplicate = deepClone(source);
-  const baseName = String(duplicate.name || "").trim() || "Untitled choice";
-  duplicate.name = `${baseName} Copy`;
-  field.options.splice(index + 1, 0, duplicate);
+  const baseName = String(duplicate.label || duplicate.name || "").trim() || "Untitled choice";
+  duplicate.label = `${baseName} Copy`;
+  duplicate.key = slugify(duplicate.label);
+  options.splice(index + 1, 0, duplicate);
   state.ui.activeOptionToken = optionToken(path, index + 1);
-  touch({ full: true });
+  touch({ full: true, source: "blocks" });
 }
 
 function deleteOption(path, index) {
   const field = getNodeByPath(path);
-  ensureOptionShape(field);
-  field.options.splice(index, 1);
-  if (field.options.length) {
-    state.ui.activeOptionToken = optionToken(path, Math.max(0, Math.min(index, field.options.length - 1)));
+  const options = ensureOptionShape(field);
+  options.splice(index, 1);
+  if (options.length) {
+    state.ui.activeOptionToken = optionToken(path, Math.max(0, Math.min(index, options.length - 1)));
   } else {
     state.ui.activeOptionToken = null;
   }
-  touch({ full: true });
+  touch({ full: true, source: "blocks" });
 }
 
 async function confirmDeleteOption(path, index) {
   const field = getNodeByPath(path);
-  ensureOptionShape(field);
-  const option = field.options[index];
+  const options = ensureOptionShape(field);
+  const option = options[index];
   if (!option) {
     return;
   }
 
-  const optionName = String(option.name || "").trim() || "this choice";
+  const optionName = String(option.label || option.name || "").trim() || "this choice";
   const decision = await openDecisionDialog({
     eyebrow: "Delete choice",
     title: `Delete ${optionName}?`,
@@ -2093,7 +2692,7 @@ async function saveDraft() {
     group_order: Number(state.draft.group_order || 999),
     form_order: Number(state.draft.form_order || 1),
     summary: state.draft.summary || "",
-    schema: state.draft.schema,
+    schema: state.draft.block_schema,
   };
 
   const saved = state.selectedFormSlug
@@ -2101,9 +2700,9 @@ async function saveDraft() {
     : await api("/api/forms", { method: "POST", body: JSON.stringify(payload) });
 
   state.selectedFormSlug = saved.slug;
-  state.loadedForm = saved;
-  state.draft = deepClone(saved);
-  state.baselineDraft = deepClone(saved);
+  state.loadedForm = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
+  state.draft = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
+  state.baselineDraft = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
   state.bootstrap = await api("/api/builder/bootstrap");
   setDirty(false);
   setStatus(`${saved.name} saved as Version ${saved.current_version_number}`);
@@ -2128,12 +2727,15 @@ function handleRootInput(event) {
     }
     const previousName = bind === "name" ? node.name : "";
     if (event.target.dataset.format === "lines") {
-      node[bind] = splitLines(rawValue);
+      setBoundValue(node, bind, splitLines(rawValue));
     } else {
       setBoundValue(node, bind, rawValue);
     }
-    if (bind === "name" && (!node.key || node.key === slugify(previousName))) {
-      node.key = slugify(rawValue);
+    if (bind === "name") {
+      const currentKey = getNodeKey(node);
+      if (!currentKey || currentKey === slugify(previousName)) {
+        setBoundValue(node, "key", slugify(rawValue));
+      }
     }
   } else {
     const previousName = bind === "name" ? state.draft.name : "";
@@ -2150,7 +2752,7 @@ function handleRootInput(event) {
     }
   }
 
-  touch();
+  touch({ source: "blocks" });
 }
 
 function handleOptionInput(event) {
@@ -2160,9 +2762,13 @@ function handleOptionInput(event) {
     return;
   }
   const field = getNodeByPath(decodePath(path));
-  ensureOptionShape(field);
-  field.options[index].name = event.target.value;
-  touch();
+  const options = ensureOptionShape(field);
+  if (!options[index]) {
+    return;
+  }
+  options[index].label = event.target.value;
+  options[index].key = slugify(event.target.value);
+  touch({ source: "blocks" });
 }
 
 async function handleEditorClick(event) {
@@ -2183,11 +2789,11 @@ async function handleEditorClick(event) {
   const path = actionTarget.dataset.path ? decodePath(actionTarget.dataset.path) : null;
 
   if (action === "add-top-field") {
-    addFieldAt(["schema", "fields"], "field");
+    addFieldAt(topLevelCollectionPath("free_fields"), "field");
     return;
   }
   if (action === "add-top-group") {
-    addFieldAt(["schema", "fields"], "field_group");
+    addFieldAt(topLevelCollectionPath("free_fields"), "field_group");
     return;
   }
   if (action === "add-section") {
@@ -2277,7 +2883,7 @@ function handleEditorChange(event) {
     state.ui.activeOptionToken = event.target.value === "choice"
       ? optionToken(decodePath(event.target.dataset.path), 0)
       : null;
-    touch({ full: true });
+    touch({ full: true, source: "blocks" });
     return;
   }
   handleRootInput(event);
