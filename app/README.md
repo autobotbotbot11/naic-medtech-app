@@ -36,6 +36,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - presets have been deliberately removed from the active product path for now so the builder stays focused on the core flow
 - `/forms/new` now starts only from `Blank` or `Duplicate existing form`
 - `/forms/new` now uses real container choices from the persisted library tree instead of the older one-level grouped-folder list
+- `/forms/new` can now also intentionally place a form at the top level instead of forcing every new form into a folder
+- `/forms/new` duplicate choices now use the real tree too, showing full folder paths instead of the older grouped optgroup list
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it

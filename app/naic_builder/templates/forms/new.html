@@ -20,7 +20,14 @@
       </div>
     </header>
 
-    <form id="startForm" class="new-form-grid" action="/builder" method="get" novalidate>
+    <form
+      id="startForm"
+      class="new-form-grid"
+      action="/builder"
+      method="get"
+      novalidate
+      data-root-form-order="{{ root_form_order }}"
+    >
       <input id="modeInput" type="hidden" name="mode" value="{% if source_form %}duplicate{% else %}new{% endif %}">
       <input id="slugInput" type="hidden" name="slug" value="{{ source_form.slug if source_form else '' }}">
       <input id="draftNameInput" type="hidden" name="draft_name" value="">
@@ -53,16 +60,20 @@
         <div class="section-head">
           <p class="eyebrow">Step 2</p>
           <h2>Where should it live?</h2>
-          <p class="panel-copy">Pick an existing folder, or create a new one if this form belongs somewhere new.</p>
+          <p class="panel-copy">Use an existing folder, keep it at the top level, or create a new one if this form belongs somewhere new.</p>
         </div>
 
         <div class="choice-row">
           <label class="choice-pill">
-            <input type="radio" name="group_source_mode" value="existing" checked>
+            <input type="radio" name="group_source_mode" value="existing" {% if default_group_source_mode == 'existing' %}checked{% endif %}>
             <span>Use existing folder</span>
           </label>
           <label class="choice-pill">
-            <input type="radio" name="group_source_mode" value="new">
+            <input type="radio" name="group_source_mode" value="root" {% if default_group_source_mode == 'root' %}checked{% endif %}>
+            <span>Keep at top level</span>
+          </label>
+          <label class="choice-pill">
+            <input type="radio" name="group_source_mode" value="new" {% if default_group_source_mode == 'new' %}checked{% endif %}>
             <span>Create new folder</span>
           </label>
         </div>
@@ -92,6 +103,9 @@
           </label>
           <p class="panel-copy">New folders start at the end of the list for now. You can organize them later.</p>
         </div>
+        <p id="rootGroupHint" class="panel-copy{% if default_group_source_mode != 'root' %} hidden{% endif %}" {% if default_group_source_mode != 'root' %}hidden{% endif %}>
+          This form will stay at the top level instead of living inside a folder.
+        </p>
       </section>
 
       <section class="panel form-flow-card">
@@ -122,22 +136,13 @@
           <label class="field-stack">
             <span>Copy from</span>
             <select id="duplicateSourceSelect">
-              {% for group in official_groups %}
-              <optgroup label="{{ group.name }}">
-                {% for form in group.forms %}
-                <option value="{{ form.slug }}" {% if source_form and source_form.slug == form.slug %}selected{% endif %}>{{ form.name }}</option>
-                {% endfor %}
-              </optgroup>
+              {% for form in duplicate_options %}
+              <option
+                value="{{ form.slug }}"
+                data-path-label="{{ form.path_label }}"
+                {% if source_form and source_form.slug == form.slug %}selected{% endif %}
+              >{{ form.path_label }}</option>
               {% endfor %}
-              {% if extra_groups %}
-              {% for group in extra_groups %}
-              <optgroup label="{{ group.name }}">
-                {% for form in group.forms %}
-                <option value="{{ form.slug }}" {% if source_form and source_form.slug == form.slug %}selected{% endif %}>{{ form.name }}</option>
-                {% endfor %}
-              </optgroup>
-              {% endfor %}
-              {% endif %}
             </select>
           </label>
         </div>
@@ -156,8 +161,8 @@
             <dd id="summaryName">Choose a name</dd>
           </div>
           <div>
-            <dt>Folder</dt>
-            <dd id="summaryGroup">{{ default_group_name or 'Choose a folder' }}</dd>
+            <dt>Location</dt>
+            <dd id="summaryGroup">{% if default_group_source_mode == 'root' %}Top level{% else %}{{ default_group_name or 'Choose a folder' }}{% endif %}</dd>
           </div>
           <div>
             <dt>Starting point</dt>

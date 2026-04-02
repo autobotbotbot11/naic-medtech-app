@@ -19,11 +19,12 @@ from .services import (
     ensure_reference_seed,
     get_form_or_none,
     list_container_choices,
+    list_form_choices,
     list_grouped_forms,
     list_library_tree,
+    next_root_form_order,
     load_reference_schema,
     serialize_form,
-    split_library_groups,
     update_form,
 )
 
@@ -84,8 +85,9 @@ def start_new_form_page(
     source: str = "",
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
-    official_groups, extra_groups = split_library_groups(session)
     container_options = list_container_choices(session)
+    duplicate_options = list_form_choices(session)
+    root_form_order = next_root_form_order(session)
 
     source_form = None
     source_slug = source.strip()
@@ -95,15 +97,21 @@ def start_new_form_page(
             raise HTTPException(status_code=404, detail="Source form not found.")
 
     default_parent_node_key = ""
+    default_group_source_mode = "existing" if container_options else "root"
     if source_form and source_form.library_parent_node_key:
         default_parent_node_key = source_form.library_parent_node_key
+        default_group_source_mode = "existing"
+    elif source_form and source_form.group_kind == "standalone_form":
+        default_group_source_mode = "root"
     elif source_form and source_form.group_kind != "standalone_form":
         for option in container_options:
             if option["name"] == source_form.group_name:
                 default_parent_node_key = option["node_key"]
+                default_group_source_mode = "existing"
                 break
     elif container_options:
         default_parent_node_key = container_options[0]["node_key"]
+        default_group_source_mode = "existing"
 
     selected_container = next(
         (option for option in container_options if option["node_key"] == default_parent_node_key),
@@ -111,7 +119,7 @@ def start_new_form_page(
     )
     default_group_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
     default_group_order = selected_container["order"] if selected_container else 999
-    default_form_order = selected_container["next_form_order"] if selected_container else 1
+    default_form_order = selected_container["next_form_order"] if selected_container else root_form_order
 
     return templates.TemplateResponse(
         request=request,
@@ -119,12 +127,13 @@ def start_new_form_page(
         context={
             "app_title": APP_TITLE,
             "container_options": container_options,
+            "duplicate_options": duplicate_options,
             "default_parent_node_key": default_parent_node_key,
+            "default_group_source_mode": default_group_source_mode,
             "default_group_name": default_group_name,
             "default_group_order": default_group_order,
             "default_form_order": default_form_order,
-            "official_groups": official_groups,
-            "extra_groups": extra_groups,
+            "root_form_order": root_form_order,
             "source_form": source_form,
         },
     )

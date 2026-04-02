@@ -49,6 +49,8 @@
       "new form creation now goes through /forms/new",
       "the guided create screen collects form name, folder, and start method before opening the builder",
       "start methods now include blank and duplicate existing form",
+      "/forms/new can now intentionally place a form at the top level instead of forcing every new form into a folder",
+      "/forms/new duplicate choices now use the real tree too, showing full folder paths instead of the older grouped optgroup list",
       "preset support has been deliberately removed from the active product path so the builder can stay focused on the core flow",
       "builder bootstrap no longer includes preset data",
       "advanced layout no longer exposes insert preset or save preset actions",

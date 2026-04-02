@@ -666,6 +666,43 @@ def list_container_choices(session: Session) -> list[dict[str, Any]]:
     return choices
 
 
+def list_form_choices(session: Session) -> list[dict[str, Any]]:
+    tree = list_library_tree(session)
+    choices: list[dict[str, Any]] = []
+
+    def walk(nodes: list[dict[str, Any]], path: list[str]) -> None:
+        for node in nodes:
+            if node.get("archived"):
+                continue
+            kind = compact_text(node.get("kind"))
+            if kind == "container":
+                current_path = [*path, compact_text(node.get("name")) or "Untitled Folder"]
+                walk(node.get("children", []), current_path)
+                continue
+            if kind != "form":
+                continue
+            form = node.get("form") or {}
+            form_name = compact_text(form.get("name")) or compact_text(node.get("name")) or "Untitled Form"
+            current_path = [*path, form_name]
+            choices.append(
+                {
+                    "slug": compact_text(form.get("slug")),
+                    "name": form_name,
+                    "path_label": " / ".join(current_path),
+                    "depth": len(path),
+                    "order": int(node.get("order") or 1),
+                }
+            )
+
+    walk(tree, [])
+    return choices
+
+
+def next_root_form_order(session: Session) -> int:
+    tree = list_library_tree(session)
+    return max((int(node.get("order") or 0) for node in tree if not node.get("archived")), default=0) + 1
+
+
 def container_node_key(name: str) -> str:
     return f"container:{slugify(name or 'unassigned')}"
 

@@ -4,6 +4,7 @@ const existingGroupWrapEl = document.getElementById("existingGroupWrap");
 const newGroupWrapEl = document.getElementById("newGroupWrap");
 const existingGroupSelectEl = document.getElementById("existingGroupSelect");
 const newGroupNameEl = document.getElementById("newGroupName");
+const rootGroupHintEl = document.getElementById("rootGroupHint");
 const duplicateSourceWrapEl = document.getElementById("duplicateSourceWrap");
 const duplicateSourceSelectEl = document.getElementById("duplicateSourceSelect");
 const modeInputEl = document.getElementById("modeInput");
@@ -35,15 +36,22 @@ function selectedGroupOption() {
 }
 
 function selectedDuplicateLabel() {
-  return duplicateSourceSelectEl?.selectedOptions?.[0]?.textContent?.trim() || "Duplicate existing form";
+  const option = duplicateSourceSelectEl?.selectedOptions?.[0];
+  return String(option?.dataset.pathLabel || option?.textContent || "").trim() || "Duplicate existing form";
 }
 
 function syncGroupMode() {
-  const useNewGroup = visibleChoice("group_source_mode") === "new";
-  existingGroupWrapEl?.classList.toggle("hidden", useNewGroup);
-  existingGroupWrapEl && (existingGroupWrapEl.hidden = useNewGroup);
+  const mode = visibleChoice("group_source_mode") || "existing";
+  const useExistingGroup = mode === "existing";
+  const useNewGroup = mode === "new";
+  const useRoot = mode === "root";
+
+  existingGroupWrapEl?.classList.toggle("hidden", !useExistingGroup);
+  existingGroupWrapEl && (existingGroupWrapEl.hidden = !useExistingGroup);
   newGroupWrapEl?.classList.toggle("hidden", !useNewGroup);
   newGroupWrapEl && (newGroupWrapEl.hidden = !useNewGroup);
+  rootGroupHintEl?.classList.toggle("hidden", !useRoot);
+  rootGroupHintEl && (rootGroupHintEl.hidden = !useRoot);
 
   if (newGroupNameEl) {
     newGroupNameEl.required = useNewGroup;
@@ -67,9 +75,12 @@ function updateSummary() {
   const groupMode = visibleChoice("group_source_mode") || "existing";
   const startMode = visibleChoice("start_mode") || "blank";
 
-  const groupName = groupMode === "new"
-    ? String(newGroupNameEl?.value || "").trim()
-    : String(selectedGroupOption()?.dataset.pathLabel || selectedGroupOption()?.textContent || "").trim();
+  let groupName = "Top level";
+  if (groupMode === "new") {
+    groupName = String(newGroupNameEl?.value || "").trim();
+  } else if (groupMode === "existing") {
+    groupName = String(selectedGroupOption()?.dataset.pathLabel || selectedGroupOption()?.textContent || "").trim();
+  }
 
   let startLabel = "Start empty";
   if (startMode === "duplicate") {
@@ -91,20 +102,30 @@ function syncHiddenInputs() {
   const groupMode = visibleChoice("group_source_mode") || "existing";
   const startMode = visibleChoice("start_mode") || "blank";
   const selectedOption = selectedGroupOption();
+  const draftName = String(formNameEl?.value || "").trim();
 
   const usingNewGroup = groupMode === "new";
+  const usingRoot = groupMode === "root";
   const parentNodeKey = usingNewGroup
     ? ""
-    : String(selectedOption?.value || "").trim();
-  const groupName = usingNewGroup
+    : usingRoot
+      ? ""
+      : String(selectedOption?.value || "").trim();
+  const groupName = usingRoot
+    ? (draftName || "Untitled Form")
+    : usingNewGroup
     ? String(newGroupNameEl?.value || "").trim()
     : String(selectedOption?.dataset.groupName || "").trim();
   const groupOrder = usingNewGroup
     ? 999
-    : Number(selectedOption?.dataset.groupOrder || 999);
+    : usingRoot
+      ? 999
+      : Number(selectedOption?.dataset.groupOrder || 999);
   const formOrder = usingNewGroup
     ? 1
-    : Number(selectedOption?.dataset.formOrder || 1);
+    : usingRoot
+      ? Number(startFormEl?.dataset.rootFormOrder || 1)
+      : Number(selectedOption?.dataset.formOrder || 1);
 
   if (modeInputEl) {
     modeInputEl.value = startMode === "duplicate" ? "duplicate" : "new";
@@ -119,7 +140,7 @@ function syncHiddenInputs() {
     groupNameInputEl.value = groupName;
   }
   if (groupKindInputEl) {
-    groupKindInputEl.value = "category";
+    groupKindInputEl.value = usingRoot ? "standalone_form" : "category";
   }
   if (groupOrderInputEl) {
     groupOrderInputEl.value = Number.isFinite(groupOrder) ? String(groupOrder) : "999";
