@@ -15,6 +15,7 @@
       "the compatibility tree is exposed at /api/library/tree",
       "current forms are backfilled into that tree automatically",
       "the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at /api/presets",
+      "the backend now also supports creating custom presets via post api/presets",
       "the builder still uses the older fields plus sections schema shape under the hood",
       "form reads now expose a derived compatibility block_schema",
       "api/forms/{slug}/block-schema now exposes the ordered-block view directly",
@@ -51,6 +52,7 @@
       "start from preset is now backed by persisted preset definitions instead of hardcoded starter data",
       "builder bootstrap now includes stored preset block schemas so preset-started drafts come from real preset blocks",
       "advanced layout can now insert stored presets into an existing draft, so presets are reusable beyond the new-form entry flow",
+      "advanced layout can now also save the current layout root as a new custom preset, so users can create reusable lego pieces from the builder itself",
       "builder duplicate actions now route through the guided create screen instead of forking immediately in place"
     ],
     "workspace_behavior": [

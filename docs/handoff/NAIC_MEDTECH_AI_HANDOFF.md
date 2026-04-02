@@ -79,6 +79,7 @@ What is implemented:
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
 - the backend now also includes a persisted preset catalog, seeded with starter presets and exposed at `/api/presets`
+- the backend now supports creating custom presets too via `POST /api/presets`
 - form reads now also expose a derived compatibility `block_schema`
 - `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
 - create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
@@ -113,6 +114,7 @@ What is implemented:
 - guided `Start from Preset` is now backed by the persisted preset catalog instead of hardcoded starter data
 - builder bootstrap now includes stored preset block schemas so preset-started drafts are created from real preset blocks, not ad-hoc legacy section shortcuts
 - advanced `Layout` can now also insert stored presets into the current form, so presets are reusable inside an existing draft instead of being limited to the new-form entry flow
+- advanced `Layout` can now also save the current layout root as a new custom preset, so reusable lego pieces are now user-creatable and not only seeded by the app
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the old `Top of form` language is now reframed as `Free fields`
@@ -144,6 +146,7 @@ Important reading for the next implementation step:
 - richer block kinds like `note` and `divider` are currently exposed only through advanced `Layout`, while the legacy compatibility projection remains limited on purpose
 - current preset coverage is still starter-level, but the preset engine is now persisted and ready for future user-created presets instead of remaining hardcoded
 - current preset insertion is intentionally rooted in advanced top-level `Layout`, so the calmer default workspace is still protected while preset reuse becomes real
+- current custom preset creation is also intentionally advanced-only and layout-root-based, so the normal builder flow stays quiet while reusable building blocks become practical
 
 ## Current Builder Progress
 Current implementation status:

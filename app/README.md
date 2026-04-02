@@ -37,6 +37,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/forms/new` and builder bootstrap now read from the persisted preset catalog instead of hardcoded starter definitions
 - `Start from preset` now creates drafts from stored preset `block_schema` payloads, not from hardcoded legacy section shortcuts
 - advanced `Layout` can now also insert stored presets into the current form, so presets are reusable inside existing drafts and not just at form creation time
+- advanced `Layout` can now also save the current layout root as a new custom preset through `/api/presets`, so users can start building their own reusable lego pieces
 - the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen

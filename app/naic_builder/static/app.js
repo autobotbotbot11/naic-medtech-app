@@ -11,6 +11,8 @@ const state = {
     advancedMode: false,
     focusPane: "setup",
     layoutPresetId: "",
+    layoutPresetDraftName: "",
+    layoutPresetDraftDescription: "",
     layoutRootPath: null,
     setupOpen: true,
     saveOpen: false,
@@ -1095,6 +1097,7 @@ function resetEditorPanels() {
   state.ui.saveOpen = !state.selectedFormSlug;
   state.ui.topFieldsOpen = !topFields.length;
   state.ui.layoutRootPath = null;
+  resetLayoutPresetDraft();
   state.ui.openSectionPaths = sections.length ? [pathKey(sections[0].path)] : [];
   state.ui.activeFieldPath = null;
   state.ui.activeOptionToken = null;
@@ -1454,6 +1457,19 @@ function selectedLayoutPresetId() {
   return String(presetCatalog()[0]?.id || "").trim();
 }
 
+function suggestedLayoutPresetName() {
+  const rootNode = currentLayoutRootNode();
+  if (rootNode && isLayoutRootNode(rootNode)) {
+    return compactText(rootNode.name) || (blockKind(rootNode) === "field_group" ? "Untitled Group Preset" : "Untitled Section Preset");
+  }
+  return compactText(state.draft?.name) ? `${compactText(state.draft.name)} Preset` : "Untitled Preset";
+}
+
+function resetLayoutPresetDraft() {
+  state.ui.layoutPresetDraftName = "";
+  state.ui.layoutPresetDraftDescription = "";
+}
+
 function uniqueSlug(base, used) {
   const root = slugify(base || "item");
   let candidate = root;
@@ -1514,6 +1530,65 @@ function insertPresetIntoCurrentLayout(presetId) {
   state.ui.activeOptionToken = null;
   touch({ full: true, source: "blocks" });
   return true;
+}
+
+function buildPresetBlockSchemaForCurrentLayout() {
+  const rootNode = currentLayoutRootNode();
+  const blocks = rootNode && isLayoutRootNode(rootNode)
+    ? [deepClone(rootNode)]
+    : topLevelBlocks().map((block) => deepClone(block));
+  if (!blocks.length) {
+    return null;
+  }
+  return {
+    schema_version: 1,
+    source_kind: "preset_library_custom",
+    meta: {
+      common_field_set_id: String(state.draft?.schema?.common_field_set_id || "default_lab_request").trim() || "default_lab_request",
+      preset_origin_kind: rootNode && isLayoutRootNode(rootNode) ? blockKind(rootNode) : "root_layout",
+      preset_origin_name: rootNode && isLayoutRootNode(rootNode)
+        ? (compactText(rootNode.name) || blockKind(rootNode))
+        : compactText(state.draft?.name),
+    },
+    blocks,
+  };
+}
+
+async function saveCurrentLayoutAsPreset() {
+  const blockSchema = buildPresetBlockSchemaForCurrentLayout();
+  if (!blockSchema) {
+    setStatus("Add something to this layout before saving it as a preset.", true);
+    return;
+  }
+
+  const name = compactText(state.ui.layoutPresetDraftName) || suggestedLayoutPresetName();
+  if (!name) {
+    setStatus("Give this preset a clear name first.", true);
+    return;
+  }
+
+  const created = await api("/api/presets", {
+    method: "POST",
+    body: JSON.stringify({
+      name,
+      description: compactText(state.ui.layoutPresetDraftDescription),
+      block_schema: blockSchema,
+    }),
+  });
+
+  const existing = presetCatalog().filter((preset) => String(preset?.id || "").trim() !== String(created.id || "").trim());
+  state.bootstrap.presets = [...existing, created].sort((left, right) => {
+    const orderDiff = Number(left?.order || 0) - Number(right?.order || 0);
+    if (orderDiff !== 0) {
+      return orderDiff;
+    }
+    return String(left?.name || "").localeCompare(String(right?.name || ""));
+  });
+  state.ui.layoutPresetId = String(created.id || "").trim();
+  state.ui.layoutPresetDraftName = created.name || "";
+  state.ui.layoutPresetDraftDescription = created.description || "";
+  setStatus(`${created.name} preset saved`);
+  renderEditor();
 }
 
 function makeBlankForm(config = {}) {
@@ -1962,6 +2037,7 @@ function openChildLayout(path) {
 
   state.ui.focusPane = "layout";
   state.ui.layoutRootPath = pathKey(path);
+  resetLayoutPresetDraft();
   state.ui.activeFieldPath = null;
   state.ui.activeOptionToken = null;
   if (blockKind(node) === "section") {
@@ -1978,6 +2054,7 @@ function exitChildLayout() {
 
   const parentPath = currentLayoutParentPath();
   state.ui.layoutRootPath = parentPath ? pathKey(parentPath) : null;
+  resetLayoutPresetDraft();
   state.ui.focusPane = "layout";
   setLayoutSelection(rootPath);
   renderAll();
@@ -2425,6 +2502,8 @@ function renderLayoutCard(options = {}) {
   const nested = Boolean(rootNode);
   const presetId = selectedLayoutPresetId();
   const selectedPreset = getPresetDefinition(presetId);
+  const presetDraftName = state.ui.layoutPresetDraftName || suggestedLayoutPresetName();
+  const presetDraftDescription = state.ui.layoutPresetDraftDescription || "";
   const layoutCopy = nested
     ? `Editing the real block order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
     : "This is the real top-level block order of the form. Use it when you need more control without changing the simpler default flow.";
@@ -2465,6 +2544,17 @@ function renderLayoutCard(options = {}) {
         </div>
         <div class="collapsed-copy">${escapeHtml(selectedPreset.description || "Insert a reusable starter into the current layout.")}</div>
       ` : ""}
+      <div class="layout-preset-row layout-preset-save-row">
+        <label class="layout-preset-select">
+          <span>Save as preset</span>
+          <input data-action="layout-preset-name" value="${escapeHtml(presetDraftName)}" placeholder="Example: Rapid Test Starter">
+        </label>
+        <label class="layout-preset-select">
+          <span>Description</span>
+          <input data-action="layout-preset-description" value="${escapeHtml(presetDraftDescription)}" placeholder="Optional short note">
+        </label>
+        <button class="ghost mini" type="button" data-action="save-layout-preset">Save preset</button>
+      </div>
       ${entries.length ? `
         <div class="section-organizer" data-collection-path="${encodePath(collectionPath)}">
           ${entries.map((entry) => renderLayoutOrganizerItem(entry, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : false)).join("")}
@@ -3550,6 +3640,15 @@ async function handleEditorClick(event) {
     insertPresetIntoCurrentLayout(selectedLayoutPresetId());
     return;
   }
+  if (action === "save-layout-preset") {
+    try {
+      await saveCurrentLayoutAsPreset();
+    } catch (error) {
+      console.error(error);
+      setStatus(`Preset save failed: ${error.message}`, true);
+    }
+    return;
+  }
   if (action === "layout-up") {
     exitChildLayout();
     return;
@@ -3731,6 +3830,14 @@ formListEl.addEventListener("click", (event) => {
 
 formEditorEl.addEventListener("click", handleEditorClick);
 formEditorEl.addEventListener("input", (event) => {
+  if (event.target.dataset.action === "layout-preset-name") {
+    state.ui.layoutPresetDraftName = event.target.value;
+    return;
+  }
+  if (event.target.dataset.action === "layout-preset-description") {
+    state.ui.layoutPresetDraftDescription = event.target.value;
+    return;
+  }
   if (event.target.dataset.action === "option-name") {
     handleOptionInput(event);
     return;

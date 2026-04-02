@@ -935,6 +935,10 @@ button.subtle[aria-pressed="true"] {
   flex: 1 1 260px;
 }
 
+.layout-preset-save-row .layout-preset-select {
+  flex-basis: 220px;
+}
+
 .layout-preset-select span {
   font-size: 0.85rem;
   color: var(--muted);

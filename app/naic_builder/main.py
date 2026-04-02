@@ -11,8 +11,9 @@ from sqlalchemy.orm import Session
 
 from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
-from .schemas import FormSavePayload
+from .schemas import FormSavePayload, PresetSavePayload
 from .services import (
+    create_preset,
     create_form,
     ensure_block_schema_storage,
     ensure_preset_seed,
@@ -190,6 +191,14 @@ def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]
 @app.get("/api/presets")
 def presets_catalog(session: Session = Depends(get_session)) -> dict[str, Any]:
     return {"presets": list_presets(session, include_schema=True)}
+
+
+@app.post("/api/presets", status_code=201)
+def create_preset_endpoint(payload: PresetSavePayload, session: Session = Depends(get_session)) -> dict[str, Any]:
+    try:
+        return create_preset(session, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.get("/api/library/tree")

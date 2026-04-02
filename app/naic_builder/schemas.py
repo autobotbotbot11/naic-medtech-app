@@ -25,3 +25,20 @@ class FormSavePayload(BaseModel):
             normalized["form_schema"] = normalized.pop("schema")
             return normalized
         return value
+
+
+class PresetSavePayload(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    name: str = ""
+    description: str | None = None
+    block_schema: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="before")
+    @classmethod
+    def move_schema_key(cls, value: Any) -> Any:
+        if isinstance(value, dict) and "block_schema" not in value and "schema" in value:
+            normalized = dict(value)
+            normalized["block_schema"] = normalized.pop("schema")
+            return normalized
+        return value

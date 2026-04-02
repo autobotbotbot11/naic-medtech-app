@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session, selectinload
 from .config import REFERENCE_SCHEMA_PATH
 from .database import Base, engine
 from .models import FormDefinition, FormVersion, LibraryNode, PresetDefinition
-from .schemas import FormSavePayload
+from .schemas import FormSavePayload, PresetSavePayload
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -892,6 +892,54 @@ def list_presets(session: Session, *, include_schema: bool = False) -> list[dict
         items.append(payload)
 
     return items
+
+
+def next_available_preset_key(session: Session, preferred: str) -> str:
+    base = slugify(preferred)
+    candidate = base
+    suffix = 2
+    while session.scalar(select(PresetDefinition.id).where(PresetDefinition.preset_key == candidate)) is not None:
+        candidate = f"{base}_{suffix}"
+        suffix += 1
+    return candidate
+
+
+def create_preset(session: Session, payload: PresetSavePayload) -> dict[str, Any]:
+    name = compact_text(payload.name) or "Untitled Preset"
+    preset_key = next_available_preset_key(session, name)
+    raw_block_schema = payload.block_schema if isinstance(payload.block_schema, dict) else {}
+    fallback_legacy = block_schema_to_legacy_schema(raw_block_schema)
+    normalized_block_schema = normalize_block_schema_storage(
+        raw_block_schema,
+        normalized_schema=fallback_legacy,
+    )
+    normalized_block_schema["source_kind"] = compact_text(normalized_block_schema.get("source_kind")) or "preset_library_custom"
+    meta = normalized_block_schema.get("meta") if isinstance(normalized_block_schema.get("meta"), dict) else {}
+    meta["preset_key"] = preset_key
+    normalized_block_schema["meta"] = meta
+
+    current_max_order = session.scalar(
+        select(PresetDefinition.preset_order).order_by(PresetDefinition.preset_order.desc()).limit(1)
+    )
+    preset = PresetDefinition(
+        preset_key=preset_key,
+        name=name,
+        description=compact_text(payload.description),
+        preset_order=int(current_max_order or 0) + 1,
+        block_schema_json=json.dumps(normalized_block_schema, ensure_ascii=False),
+        is_builtin=False,
+    )
+    session.add(preset)
+    session.commit()
+
+    return {
+        "id": preset.preset_key,
+        "name": preset.name,
+        "description": preset.description,
+        "order": int(preset.preset_order or 1),
+        "is_builtin": False,
+        "block_schema": normalized_block_schema,
+    }
 
 
 def next_available_slug(session: Session, preferred: str) -> str:
