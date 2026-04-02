@@ -1120,11 +1120,9 @@ function renderOutline() {
         </button>
         <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
           <span>Ungrouped fields</span>
-          ${freeFields.length ? `<span class="outline-count">${freeFields.length}</span>` : ""}
         </button>
       <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
         <span>Sections</span>
-        ${sections.length ? `<span class="outline-count">${sections.length}</span>` : ""}
       </button>
       ${sections.length ? `
         <div class="outline-sublist">
