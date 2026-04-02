@@ -1482,10 +1482,10 @@ function renderSectionCard(section, path, options = {}) {
   }
 
 function renderFieldCollection(fields, collectionPath, options = {}) {
-  const items = normalizeArray(fields);
-  if (!items.length) {
-    return '<div class="empty-state">Nothing here yet. Add a field when you are ready.</div>';
-  }
+    const items = normalizeArray(fields);
+    if (!items.length) {
+      return '<div class="empty-state">Nothing here yet. Add a field when you are ready.</div>';
+    }
   if (options.focused) {
     const selectedIndex = resolveFocusedFieldIndex(collectionPath, items);
     const selectedField = items[selectedIndex] || null;
@@ -1557,22 +1557,22 @@ function summarizeField(field) {
 }
 
 function renderFieldOrganizerItem(field, path, index, active) {
-  const isGroup = field.kind === "field_group";
-  return `
-    <div class="field-organizer-item ${active ? "active" : ""}">
-      <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
-        <span class="drag-dots" aria-hidden="true"></span>
-      </button>
-      <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
-        <span class="field-organizer-copy">
-          <strong>${escapeHtml(field.name || (isGroup ? `Group ${index + 1}` : `Field ${index + 1}`))}</strong>
-          <span>${escapeHtml(summarizeField(field))}</span>
-        </span>
-        <span class="outline-count">${index + 1}</span>
-      </button>
-    </div>
-  `;
-}
+    const isGroup = field.kind === "field_group";
+    return `
+      <div class="field-organizer-item ${active ? "active" : ""}">
+        <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+          <span class="drag-dots" aria-hidden="true"></span>
+        </button>
+        <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
+          <span class="field-organizer-copy">
+            <strong>${escapeHtml(field.name || (isGroup ? `Group ${index + 1}` : `Field ${index + 1}`))}</strong>
+            <span>${escapeHtml(summarizeField(field))}</span>
+          </span>
+          ${active ? '<span class="field-organizer-state">Editing</span>' : ""}
+        </button>
+      </div>
+    `;
+  }
 
 function renderFieldCard(field, path, options = {}) {
     const isGroup = field.kind === "field_group";
@@ -1686,6 +1686,7 @@ function renderOptionsEditor(field, path) {
     const options = normalizeArray(field.options);
     const selectedIndex = resolveFocusedOptionIndex(path, options);
     const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
+    const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled choice";
     return `
       <section class="field-stack">
         <div class="card-head">
@@ -1705,10 +1706,9 @@ function renderOptionsEditor(field, path) {
             <div class="option-organizer-item ${index === selectedIndex ? "active" : ""}">
               <button class="option-organizer-select" type="button" data-action="focus-option" data-path="${encodePath(path)}" data-index="${index}">
                 <span class="option-organizer-copy">
-                  <strong>${escapeHtml(option.name || `Choice ${index + 1}`)}</strong>
-                  <span>Choice ${index + 1}</span>
+                  <strong>${escapeHtml(option.name || "Untitled choice")}</strong>
                 </span>
-                <span class="outline-count">${index + 1}</span>
+                ${index === selectedIndex ? '<span class="option-organizer-state">Editing</span>' : ""}
               </button>
             </div>
           `).join("")}
@@ -1716,10 +1716,13 @@ function renderOptionsEditor(field, path) {
         <div class="option-focus-stage">
           ${selectedOption ? `
             <div class="option-focus-card">
+                <div class="option-spotlight">
+                  <strong>Editing this choice</strong>
+                  <span>${escapeHtml(selectedOptionName)}</span>
+                </div>
                 <div class="option-focus-head">
                   <div>
-                    <span class="field-summary">Choice ${selectedIndex + 1}</span>
-                    <h5>${escapeHtml(selectedOption.name || `Choice ${selectedIndex + 1}`)}</h5>
+                    <h5>${escapeHtml(selectedOptionName)}</h5>
                   </div>
                   <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${selectedIndex}">Delete</button>
                 </div>

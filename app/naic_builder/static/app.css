@@ -1046,8 +1046,38 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-organizer-copy span {
-  color: var(--muted);
-  font-size: 12px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.field-organizer-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(30, 93, 82, 0.12);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.option-organizer-state {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(30, 93, 82, 0.12);
+    color: var(--accent);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
 }
 
 .option-organizer-copy span {
@@ -1389,6 +1419,24 @@ button.subtle[aria-pressed="true"] {
     border-radius: var(--radius-lg);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.94));
     max-width: 520px;
+}
+
+.option-spotlight {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid rgba(30, 93, 82, 0.12);
+    border-radius: var(--radius-md);
+    background: rgba(241, 248, 245, 0.94);
+}
+
+.option-spotlight strong {
+    font-size: 13px;
+}
+
+.option-spotlight span {
+    color: var(--muted);
+    font-size: 12px;
 }
 
 .option-focus-head {

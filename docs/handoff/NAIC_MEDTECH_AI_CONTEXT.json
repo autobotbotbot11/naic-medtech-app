@@ -265,6 +265,8 @@
         "open field cards use lighter metadata chrome with less repetitive label noise",
         "stage header includes an advanced-mode toggle that defaults to off",
         "advanced blocks and technical json are hidden while advanced mode is off"
+        ,
+        "nested choice organizers are less mechanical: no choice row numbers, only the active choice shows Editing, and the selected choice uses a calmer spotlight card"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",

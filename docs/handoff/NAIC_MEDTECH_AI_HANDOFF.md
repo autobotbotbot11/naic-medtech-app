@@ -267,6 +267,14 @@ Current builder implementation is still:
 - vanilla JS
 - local `SortableJS`
 
+## Current Builder UX Checkpoint
+- the builder now uses calmer non-technical wording such as `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
+- the workspace uses `outline + focused editor + live preview`
+- the live preview is read-only and uses sticky quick-jump section navigation
+- selected sections and fields keep destructive actions in a quieter footer `More options` area
+- the `Sections` pane is less mechanical: simple count, no organizer row numbers, only the active section shows `Editing`
+- the nested `Choices` organizer now follows the same calmer pattern: no choice row numbers, only the active choice shows `Editing`, and the selected choice uses a smaller spotlight card
+
 The repo has not been migrated to Alpine.js. Alpine.js was only a possible helper direction discussed for future UI simplification, not a current dependency.
 
 ## Current Domain Structure
