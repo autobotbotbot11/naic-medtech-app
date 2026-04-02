@@ -1367,18 +1367,18 @@ function renderSectionsCard(options = {}) {
           <button class="secondary mini" type="button" data-action="add-section">Add section</button>
         </div>
       </div>
-      ${sections.length ? `
-        <div class="section-organizer" data-collection-path="${encodePath(["schema", "sections"])}">
-          ${sections.map((section, index) => renderSectionOrganizerItem(section, index, index === selectedIndex)).join("")}
-        </div>
-        <div class="section-focus-stage">
-          ${selectedSection
-            ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], selectedIndex + 1)
-            : '<div class="empty-state">Choose a section from the list to keep editing.</div>'}
-        </div>
-      ` : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
-    </section>
-  `;
+        ${sections.length ? `
+          <div class="section-organizer" data-collection-path="${encodePath(["schema", "sections"])}">
+            ${sections.map((section, index) => renderSectionOrganizerItem(section, index, index === selectedIndex)).join("")}
+          </div>
+          <div class="section-focus-stage">
+            ${selectedSection
+              ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], selectedIndex + 1, { forceOpen: true, hideToggle: true, focusedCard: true })
+              : '<div class="empty-state">Choose a section from the list to keep editing.</div>'}
+          </div>
+        ` : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
+      </section>
+    `;
 }
 
 function renderSectionOrganizerItem(section, index, active) {
@@ -1398,37 +1398,46 @@ function renderSectionOrganizerItem(section, index, active) {
   `;
 }
 
-function renderSectionCard(section, path, number) {
-  const open = isSectionOpen(path);
-  const itemCount = pluralize(normalizeArray(section.fields).length, "item");
-  return `
-    <article class="section-card ${open ? "is-open" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
-      <div class="section-head">
-        <div>
-          <div class="chip-row">
-            <span class="chip warm">Section ${number}</span>
-            <span class="chip soft">${itemCount}</span>
+function renderSectionCard(section, path, number, options = {}) {
+    const focusedCard = Boolean(options.focusedCard);
+    const open = Boolean(options.forceOpen) || isSectionOpen(path);
+    const itemCount = pluralize(normalizeArray(section.fields).length, "item");
+    return `
+      <article class="section-card ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
+        <div class="section-head ${focusedCard ? "section-head-focused" : ""}">
+          <div>
+            <div class="chip-row">
+              <span class="chip warm">Section ${number}</span>
+              <span class="chip soft">${itemCount}</span>
+            </div>
+            <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
           </div>
-          <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
+          <div class="row-actions">
+            ${focusedCard ? "" : `
+            <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+              <span class="drag-dots" aria-hidden="true"></span>
+            </button>
+            `}
+            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Done" : "Open"}</button>`}
+            ${renderNodeActionMenu(path)}
+          </div>
         </div>
-        <div class="row-actions">
-          <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
-            <span class="drag-dots" aria-hidden="true"></span>
-          </button>
-          <button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Done" : "Open"}</button>
-          ${renderNodeActionMenu(path)}
-        </div>
-      </div>
-
-      ${open ? `
-        <div class="section-builder-head">
-          <label class="section-title-wrap">
-            <span>Section title</span>
-            <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
-          </label>
-          <div class="section-quick-actions">
-            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
-            <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add group</button>
+  
+        ${open ? `
+          ${focusedCard ? `
+            <div class="section-spotlight">
+              <strong>Editing this section</strong>
+              <span>${escapeHtml(itemCount)}</span>
+            </div>
+          ` : ""}
+          <div class="section-builder-head ${focusedCard ? "compact" : ""}">
+            <label class="section-title-wrap">
+              <span>Name</span>
+              <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
+            </label>
+            <div class="section-quick-actions">
+              <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "fields"])}">Add field</button>
+              <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "fields"])}">Add group</button>
           </div>
         </div>
 

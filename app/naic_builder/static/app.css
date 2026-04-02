@@ -1041,8 +1041,9 @@ button.subtle[aria-pressed="true"] {
 }
 
 .section-focus-stage {
-  display: grid;
-  gap: 10px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
 }
 
 .field-focus-stage {
@@ -1057,9 +1058,13 @@ button.subtle[aria-pressed="true"] {
 }
 
 .section-card {
-  display: grid;
-  gap: 10px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(250, 245, 238, 0.9));
+    display: grid;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.97), rgba(250, 245, 238, 0.9));
+}
+
+.section-card.is-focused {
+    max-width: 860px;
 }
 
 .section-card.is-open {
@@ -1083,8 +1088,12 @@ button.subtle[aria-pressed="true"] {
 }
 
 .section-display-title {
-  margin: 4px 0 0;
-  font-size: 16px;
+    margin: 4px 0 0;
+    font-size: 16px;
+}
+
+.section-head-focused {
+    align-items: center;
 }
 
 .field-display-title {
@@ -1412,11 +1421,33 @@ details.advanced summary {
 }
 
 .section-builder-head {
-  padding-bottom: 2px;
+    padding-bottom: 2px;
+}
+
+.section-builder-head.compact {
+    align-items: end;
 }
 
 .section-quick-actions {
-  justify-content: flex-end;
+    justify-content: flex-end;
+}
+
+.section-spotlight {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid rgba(201, 106, 41, 0.14);
+    border-radius: var(--radius-md);
+    background: rgba(255, 248, 240, 0.96);
+}
+
+.section-spotlight strong {
+    font-size: 13px;
+}
+
+.section-spotlight span {
+    color: var(--muted);
+    font-size: 12px;
 }
 
 .preview-title {
