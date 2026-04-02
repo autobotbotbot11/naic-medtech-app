@@ -12,6 +12,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - phase 1 is the `exam/form builder`
 - the app seeds itself from `../artifacts/schema/naic_medtech_app_schema.json`
 - runtime data lives in `../data/runtime/naic_medtech.db`
+- the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
+- the compatibility library tree is exposed at `/api/library/tree`
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
@@ -45,6 +47,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the library page is calmer too: folder jump counts and repeated folder metadata are gone, and form card actions now use shorter labels like `Copy` and `Edit`
 - the library cards are lighter too: version labels are subtler (`v1`), card spacing is tighter, and the secondary library area now reads as `Older forms` with calmer copy
 - the top of the library page is calmer too: shorter header copy, quieter `Find` search affordance, and a lighter `New` action for a cleaner first glance
+- the library header itself is tighter too: spacing is calmer, the top band sits lower visually, and the first impression is less crowded
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:
@@ -52,6 +55,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
   - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
+- important limitation: the visible builder is calmer now, but the editing engine still uses the older `fields + sections` schema under the hood and is not yet fully block-based
 
 ## Run locally
 1. Create and activate a virtual environment.

@@ -14,8 +14,10 @@ from .database import Base, SessionLocal, engine, get_session
 from .schemas import FormSavePayload
 from .services import (
     create_form,
+    ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
+    list_library_tree,
     list_grouped_forms,
     load_reference_schema,
     serialize_form,
@@ -29,6 +31,7 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     with SessionLocal() as session:
         ensure_reference_seed(session)
+        ensure_library_tree(session)
     yield
 
 
@@ -187,6 +190,11 @@ def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]
         "groups": groups,
         "selected_form_slug": selected_slug,
     }
+
+
+@app.get("/api/library/tree")
+def library_tree(session: Session = Depends(get_session)) -> dict[str, Any]:
+    return {"nodes": list_library_tree(session)}
 
 
 @app.get("/api/forms/{slug}")

@@ -35,6 +35,10 @@ class FormDefinition(Base):
         cascade="all, delete-orphan",
         order_by="FormVersion.version_number",
     )
+    library_node: Mapped["LibraryNode | None"] = relationship(
+        back_populates="form_definition",
+        uselist=False,
+    )
 
 
 class FormVersion(Base):
@@ -51,3 +55,39 @@ class FormVersion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     form: Mapped[FormDefinition] = relationship(back_populates="versions")
+
+
+class LibraryNode(Base):
+    __tablename__ = "library_nodes"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    node_key: Mapped[str] = mapped_column(String(160), unique=True, index=True)
+    kind: Mapped[str] = mapped_column(String(40))
+    name: Mapped[str] = mapped_column(String(255))
+    parent_id: Mapped[int | None] = mapped_column(ForeignKey("library_nodes.id"), nullable=True)
+    node_order: Mapped[int] = mapped_column(Integer, default=1)
+    archived: Mapped[bool] = mapped_column(Boolean, default=False)
+    form_definition_id: Mapped[int | None] = mapped_column(
+        ForeignKey("form_definitions.id"),
+        nullable=True,
+        unique=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+    parent: Mapped["LibraryNode | None"] = relationship(
+        "LibraryNode",
+        remote_side="LibraryNode.id",
+        back_populates="children",
+    )
+    children: Mapped[list["LibraryNode"]] = relationship(
+        "LibraryNode",
+        back_populates="parent",
+    )
+    form_definition: Mapped[FormDefinition | None] = relationship(
+        back_populates="library_node",
+    )

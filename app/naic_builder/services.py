@@ -11,7 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from .config import REFERENCE_SCHEMA_PATH
-from .models import FormDefinition, FormVersion
+from .models import FormDefinition, FormVersion, LibraryNode
 from .schemas import FormSavePayload
 
 
@@ -287,6 +287,133 @@ def split_library_groups(session: Session) -> tuple[list[dict[str, Any]], list[d
     return official_groups, extra_groups
 
 
+def container_node_key(name: str) -> str:
+    return f"container:{slugify(name or 'unassigned')}"
+
+
+def form_node_key(slug: str) -> str:
+    return f"form:{slug}"
+
+
+def ensure_library_tree(session: Session) -> None:
+    definitions = session.scalars(
+        select(FormDefinition)
+        .options(selectinload(FormDefinition.versions), selectinload(FormDefinition.library_node))
+        .order_by(FormDefinition.group_order, FormDefinition.form_order, FormDefinition.name)
+    ).all()
+
+    nodes = session.scalars(select(LibraryNode)).all()
+    nodes_by_key = {node.node_key: node for node in nodes}
+    changed = False
+
+    for definition in definitions:
+        group_name = compact_text(definition.group_name) or "Unassigned"
+        group_kind = compact_text(definition.group_kind) or "category"
+        parent_id = None
+
+        if group_kind != "standalone_form":
+            container_key = container_node_key(group_name)
+            container = nodes_by_key.get(container_key)
+            if container is None:
+                container = LibraryNode(
+                    node_key=container_key,
+                    kind="container",
+                    name=group_name,
+                    node_order=int(definition.group_order or 999),
+                    archived=False,
+                )
+                session.add(container)
+                session.flush()
+                nodes_by_key[container_key] = container
+                changed = True
+            else:
+                if container.kind != "container":
+                    container.kind = "container"
+                    changed = True
+                if container.name != group_name:
+                    container.name = group_name
+                    changed = True
+                if container.node_order != int(definition.group_order or 999):
+                    container.node_order = int(definition.group_order or 999)
+                    changed = True
+                if container.archived:
+                    container.archived = False
+                    changed = True
+            parent_id = container.id
+
+        node_key = form_node_key(definition.slug)
+        form_node = nodes_by_key.get(node_key)
+        if form_node is None:
+            form_node = LibraryNode(
+                node_key=node_key,
+                kind="form",
+                name=definition.name,
+                parent_id=parent_id,
+                node_order=int(definition.form_order or 1),
+                archived=False,
+                form_definition_id=definition.id,
+            )
+            session.add(form_node)
+            nodes_by_key[node_key] = form_node
+            changed = True
+            continue
+
+        if form_node.kind != "form":
+            form_node.kind = "form"
+            changed = True
+        if form_node.name != definition.name:
+            form_node.name = definition.name
+            changed = True
+        if form_node.parent_id != parent_id:
+            form_node.parent_id = parent_id
+            changed = True
+        if form_node.node_order != int(definition.form_order or 1):
+            form_node.node_order = int(definition.form_order or 1)
+            changed = True
+        if form_node.archived:
+            form_node.archived = False
+            changed = True
+        if form_node.form_definition_id != definition.id:
+            form_node.form_definition_id = definition.id
+            changed = True
+
+    if changed:
+        session.commit()
+
+
+def list_library_tree(session: Session) -> list[dict[str, Any]]:
+    ensure_library_tree(session)
+    nodes = session.scalars(
+        select(LibraryNode)
+        .options(selectinload(LibraryNode.form_definition).selectinload(FormDefinition.versions))
+        .order_by(LibraryNode.parent_id, LibraryNode.node_order, LibraryNode.name)
+    ).all()
+
+    children_by_parent: dict[int | None, list[LibraryNode]] = {}
+    for node in nodes:
+        children_by_parent.setdefault(node.parent_id, []).append(node)
+
+    def serialize_node(node: LibraryNode) -> dict[str, Any]:
+        payload: dict[str, Any] = {
+            "id": node.node_key,
+            "kind": node.kind,
+            "name": node.name,
+            "order": node.node_order,
+            "archived": node.archived,
+            "children": [serialize_node(child) for child in children_by_parent.get(node.id, [])],
+        }
+        if node.kind == "form" and node.form_definition is not None:
+            version = current_version(node.form_definition)
+            payload["form"] = {
+                "slug": node.form_definition.slug,
+                "name": node.form_definition.name,
+                "current_version_number": version.version_number if version else 0,
+            }
+        return payload
+
+    return [serialize_node(node) for node in children_by_parent.get(None, [])]
+
+
 def next_available_slug(session: Session, preferred: str) -> str:
     base = slugify(preferred)
     slug = base
@@ -344,6 +471,7 @@ def ensure_reference_seed(session: Session) -> None:
                 session.add(version)
 
         session.commit()
+        ensure_library_tree(session)
     except IntegrityError:
         session.rollback()
         if session.scalar(select(FormDefinition.id).limit(1)) is None:
@@ -387,6 +515,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     )
     session.add(version)
     session.commit()
+    ensure_library_tree(session)
     return serialize_form(get_form_or_none(session, slug))
 
 
@@ -426,4 +555,5 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     )
     session.add(version)
     session.commit()
+    ensure_library_tree(session)
     return serialize_form(get_form_or_none(session, slug))

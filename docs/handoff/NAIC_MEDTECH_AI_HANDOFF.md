@@ -76,6 +76,8 @@ The first real screen from the newer builder direction now exists.
 
 What is implemented:
 - `/` now redirects to `/forms`
+- the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
+- the compatibility tree is exposed at `/api/library/tree`
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area
 - extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
@@ -111,6 +113,7 @@ Important reading for the next implementation step:
 - treat `/forms/new` as the new creation surface
 - the current builder page is still using the older underlying schema shape, but the workspace shell is now significantly calmer
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
+- important limitation: the current builder still stores forms in the older `fields + sections` schema shape under the hood, so the engine is only partially aligned with the newer flexible block-based recommendation
 
 ## Current Builder Progress
 Current implementation status:
@@ -188,6 +191,12 @@ This is documented in:
 Important:
 - the engine should be highly flexible
 - the UI should still stay very simple for non-technical users
+
+Current migration status:
+- the generic library tree foundation has started in the real backend via a new persisted `library_nodes` table
+- current forms are automatically backfilled into that tree for compatibility
+- current library and builder screens still run on compatibility views over the older form/group model
+- the next engine milestone should be migrating form versions from `fields + sections` into an ordered block schema without breaking the current UI in one jump
 
 ## Source Of Truth
 Primary source of truth:
@@ -291,6 +300,7 @@ Current builder implementation is still:
 - the library page is calmer too: folder jump counts and repeated folder metadata are gone, and form card actions now use shorter labels like `Copy` and `Edit`
 - the library cards are lighter too: version labels are subtler (`v1`), card spacing is tighter, and the secondary library area now reads as `Older forms` with calmer copy
 - the top of the library page is calmer too: shorter header copy, quieter `Find` search affordance, and a lighter `New` action for a cleaner first glance
+- the library header itself is tighter too: spacing is calmer, the top band sits lower visually, and the first impression is less crowded
 
 The repo has not been migrated to Alpine.js. Alpine.js was only a possible helper direction discussed for future UI simplification, not a current dependency.
 
