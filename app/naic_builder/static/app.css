@@ -718,17 +718,17 @@ button.subtle[aria-pressed="true"] {
 
 .builder-outline {
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .outline-head {
   display: grid;
-  gap: 6px;
+  gap: 3px;
 }
 
 .outline-head h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: 20px;
 }
 
 .outline-nav,

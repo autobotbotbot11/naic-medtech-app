@@ -33,6 +33,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the top shell is calmer too: the status strip is more subtle, status messages are shorter, and the live-preview callout uses steadier less repetitive copy
 - the top-right app-bar actions are quieter now: `New` and `Save` stay visible, while `Duplicate` moved into a small overflow menu
 - the preview panel header is quieter too: shorter heading/copy, shorter hide action, and less repeated live/read-only wording inside the preview card
+- the left rail header is quieter too: `This form` became `Outline`, the extra summary line was removed, and the navigation block reads less like a mini dashboard
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

@@ -271,7 +271,8 @@
         "the left outline is lighter: section subitems no longer show per-row counts, and only the active section shows Editing",
         "the top shell is calmer: the status strip is subtler, status messages are shorter, and the live-preview callout uses steadier less repetitive copy",
         "the top-right app-bar actions are quieter: New and Save stay visible, while Duplicate now lives in a small overflow menu",
-        "the preview panel header is quieter: shorter heading/copy, shorter hide action, and less repeated live/read-only wording inside the preview card"
+        "the preview panel header is quieter: shorter heading/copy, shorter hide action, and less repeated live/read-only wording inside the preview card",
+        "the left rail header is quieter: This form became Outline, the extra summary line was removed, and the navigation block reads less like a mini dashboard"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",

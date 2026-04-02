@@ -1107,16 +1107,11 @@ function renderOutline() {
   const freeFields = normalizeArray(state.draft.schema.fields);
   const focusPane = String(state.ui.focusPane || defaultFocusPane());
   const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
-  const outlineMeta = [
-    pluralize(sections.length, "section"),
-    freeFields.length ? pluralize(freeFields.length, "ungrouped field", "ungrouped fields") : "",
-  ].filter(Boolean).join(" | ");
 
   builderOutlineEl.innerHTML = `
       <div class="outline-head">
-        <p class="eyebrow">This form</p>
+        <p class="eyebrow">Outline</p>
         <h3>${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-        <p class="panel-copy">${escapeHtml(outlineMeta)}</p>
       </div>
 
       <nav class="outline-nav">
