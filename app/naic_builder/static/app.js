@@ -360,7 +360,7 @@ function syncShellState() {
   drawerScrimEl.classList.toggle("hidden", !state.ui.libraryOpen);
   document.body.classList.toggle("drawer-open", state.ui.libraryOpen);
   if (openPreviewBtnEl) {
-    openPreviewBtnEl.textContent = previewVisible ? "Hide Preview" : "Show Preview";
+    openPreviewBtnEl.textContent = previewVisible ? "Hide" : "Show";
   }
   renderPreviewCallout();
 }
@@ -425,21 +425,21 @@ function renderPreviewCallout() {
   }
 
   if (!state.draft) {
-    previewCalloutTitleEl.textContent = "Preview";
-    previewCalloutMetaEl.textContent = "Open a form to see it here.";
+    previewCalloutTitleEl.textContent = "Live preview";
+    previewCalloutMetaEl.textContent = "Open a form to show it here.";
     openPreviewBtnEl.disabled = true;
     return;
   }
 
   openPreviewBtnEl.disabled = false;
-  previewCalloutTitleEl.textContent = "Preview";
+  previewCalloutTitleEl.textContent = "Live preview";
 
   if (state.ui.previewOpen) {
-    previewCalloutMetaEl.textContent = "Live beside the editor.";
+    previewCalloutMetaEl.textContent = "Updates while you edit.";
     return;
   }
 
-  previewCalloutMetaEl.textContent = "Open it when you want a quick check.";
+  previewCalloutMetaEl.textContent = "Open it for a quick check.";
 }
 
 function resetEditorPanels() {
@@ -1765,7 +1765,7 @@ function renderPreview() {
                 <span class="live-dot"></span>
                 Live
               </span>
-              <span class="preview-sync-copy">Sample only</span>
+              <span class="preview-sync-copy">Preview only</span>
             </div>
             <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
             <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
