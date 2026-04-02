@@ -566,6 +566,7 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         "group_kind": definition.group_kind,
         "group_order": definition.group_order,
         "form_order": definition.form_order,
+        "library_parent_node_key": definition.library_parent_node_key,
         "common_field_set_id": definition.common_field_set_id,
         "current_version_number": version.version_number,
         "summary": version.summary,
@@ -638,6 +639,33 @@ def split_library_groups(session: Session) -> tuple[list[dict[str, Any]], list[d
     return official_groups, extra_groups
 
 
+def list_container_choices(session: Session) -> list[dict[str, Any]]:
+    tree = list_library_tree(session)
+    choices: list[dict[str, Any]] = []
+
+    def walk(nodes: list[dict[str, Any]], path: list[str]) -> None:
+        for node in nodes:
+            if compact_text(node.get("kind")) != "container" or node.get("archived"):
+                continue
+            current_path = [*path, compact_text(node.get("name")) or "Untitled Folder"]
+            children = node.get("children", [])
+            next_form_order = max((int(child.get("order") or 0) for child in children), default=0) + 1
+            choices.append(
+                {
+                    "node_key": compact_text(node.get("id")),
+                    "name": compact_text(node.get("name")) or "Untitled Folder",
+                    "path_label": " / ".join(current_path),
+                    "depth": len(path),
+                    "order": int(node.get("order") or 999),
+                    "next_form_order": next_form_order,
+                }
+            )
+            walk(children, current_path)
+
+    walk(tree, [])
+    return choices
+
+
 def container_node_key(name: str) -> str:
     return f"container:{slugify(name or 'unassigned')}"
 
@@ -662,8 +690,17 @@ def ensure_library_tree(session: Session) -> None:
         group_name = compact_text(definition.group_name) or "Unassigned"
         group_kind = compact_text(definition.group_kind) or "category"
         parent_id = None
+        explicit_parent_key = compact_text(definition.library_parent_node_key)
 
-        if group_kind != "standalone_form":
+        if explicit_parent_key:
+            explicit_parent = nodes_by_key.get(explicit_parent_key)
+            if explicit_parent is not None and explicit_parent.kind == "container":
+                if explicit_parent.archived:
+                    explicit_parent.archived = False
+                    changed = True
+                parent_id = explicit_parent.id
+
+        if parent_id is None and group_kind != "standalone_form":
             container_key = container_node_key(group_name)
             container = nodes_by_key.get(container_key)
             if container is None:
@@ -869,6 +906,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         group_kind=payload.group_kind,
         group_order=payload.group_order,
         form_order=payload.form_order,
+        library_parent_node_key=compact_text(payload.library_parent_node_key) or None,
         common_field_set_id=normalized_schema.get("common_field_set_id"),
     )
     session.add(definition)
@@ -915,6 +953,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     definition.group_kind = payload.group_kind
     definition.group_order = payload.group_order
     definition.form_order = payload.form_order
+    definition.library_parent_node_key = compact_text(payload.library_parent_node_key) or None
     definition.common_field_set_id = normalized_schema.get("common_field_set_id")
 
     version = FormVersion(

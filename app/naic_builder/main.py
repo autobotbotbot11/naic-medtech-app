@@ -18,8 +18,8 @@ from .services import (
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
+    list_container_choices,
     list_library_tree,
-    list_grouped_forms,
     load_reference_schema,
     serialize_form,
     split_library_groups,
@@ -85,18 +85,7 @@ def start_new_form_page(
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
     official_groups, extra_groups = split_library_groups(session)
-
-    def enrich_group(group: dict[str, Any]) -> dict[str, Any]:
-        forms = group.get("forms", [])
-        next_form_order = max((int(form.get("form_order") or 0) for form in forms), default=0) + 1
-        return {
-            **group,
-            "next_form_order": next_form_order,
-        }
-
-    official_group_options = [enrich_group(group) for group in official_groups]
-    extra_group_options = [enrich_group(group) for group in extra_groups]
-    all_group_options = [*official_group_options, *extra_group_options]
+    container_options = list_container_choices(session)
 
     source_form = None
     source_slug = source.strip()
@@ -105,26 +94,37 @@ def start_new_form_page(
         if source_form is None:
             raise HTTPException(status_code=404, detail="Source form not found.")
 
-    default_group_name = source_form.group_name if source_form else (all_group_options[0]["name"] if all_group_options else "")
-    default_group_order = next(
-        (group["order"] for group in all_group_options if group["name"] == default_group_name),
-        999,
+    default_parent_node_key = ""
+    if source_form and source_form.library_parent_node_key:
+        default_parent_node_key = source_form.library_parent_node_key
+    elif source_form and source_form.group_kind != "standalone_form":
+        for option in container_options:
+            if option["name"] == source_form.group_name:
+                default_parent_node_key = option["node_key"]
+                break
+    elif container_options:
+        default_parent_node_key = container_options[0]["node_key"]
+
+    selected_container = next(
+        (option for option in container_options if option["node_key"] == default_parent_node_key),
+        None,
     )
-    default_form_order = next(
-        (group["next_form_order"] for group in all_group_options if group["name"] == default_group_name),
-        1,
-    )
+    default_group_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
+    default_group_order = selected_container["order"] if selected_container else 999
+    default_form_order = selected_container["next_form_order"] if selected_container else 1
 
     return templates.TemplateResponse(
         request=request,
         name="forms/new.html",
         context={
             "app_title": APP_TITLE,
-            "official_group_options": official_group_options,
-            "extra_group_options": extra_group_options,
+            "container_options": container_options,
+            "default_parent_node_key": default_parent_node_key,
             "default_group_name": default_group_name,
             "default_group_order": default_group_order,
             "default_form_order": default_form_order,
+            "official_groups": official_groups,
+            "extra_groups": extra_groups,
             "source_form": source_form,
         },
     )

@@ -1443,6 +1443,7 @@ function makeBlankForm(config = {}) {
     group_kind: groupKind,
     group_order: groupOrder,
     form_order: formOrder,
+    library_parent_node_key: String(config.libraryParentNodeKey || "").trim() || null,
     current_version_number: 0,
     summary: "",
     schema: {
@@ -1582,6 +1583,7 @@ async function bootstrap() {
     groupKind: String(initialQuery.get("group_kind") || "").trim() || "category",
     groupOrder: parsePositiveInt(initialQuery.get("group_order"), 999),
     formOrder: parsePositiveInt(initialQuery.get("form_order"), 1),
+    libraryParentNodeKey: String(initialQuery.get("library_parent_node_key") || "").trim(),
   };
 
   if (initialBuilderMode === "new") {
@@ -1648,6 +1650,7 @@ function duplicateCurrentForm(overrides = {}) {
   copy.group_kind = String(overrides.groupKind || "").trim() || copy.group_kind;
   copy.group_order = parsePositiveInt(overrides.groupOrder, parsePositiveInt(copy.group_order, 999));
   copy.form_order = parsePositiveInt(overrides.formOrder, parsePositiveInt(copy.form_order, 1));
+  copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
   copy.schema.name = copy.name;
   copy.schema.key = slugify(copy.name);
   copy.schema.order = copy.form_order;
@@ -3306,6 +3309,7 @@ async function saveDraft() {
     group_kind: state.draft.group_kind,
     group_order: Number(state.draft.group_order || 999),
     form_order: Number(state.draft.form_order || 1),
+    library_parent_node_key: state.draft.library_parent_node_key || null,
     summary: state.draft.summary || "",
     schema: state.draft.block_schema,
   };
@@ -3367,6 +3371,8 @@ function handleRootInput(event) {
       if (!state.draft.schema.key || state.draft.schema.key === slugify(previousName)) {
         state.draft.schema.key = slugify(rawValue);
       }
+    } else if (bind === "group_name") {
+      state.draft.library_parent_node_key = null;
     }
   }
 

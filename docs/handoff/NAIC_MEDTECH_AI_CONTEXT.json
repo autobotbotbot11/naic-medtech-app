@@ -33,7 +33,9 @@
       "selected groups can now add note, divider, and table blocks in advanced mode too, and the live preview now renders those nested utility blocks from the real block tree",
       "advanced mode can now open a real child-layout workspace for a selected section or group, with back navigation to the parent layout, so nested ordered blocks can be edited directly",
       "when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the standard flow",
-      "richer stored block schema now survives builder hydration correctly, so advanced-only blocks remain intact after normal save and reload flows"
+      "richer stored block schema now survives builder hydration correctly, so advanced-only blocks remain intact after normal save and reload flows",
+      "/forms/new now uses real container choices from the persisted library tree instead of the older one-level grouped-folder list",
+      "the first save path can now carry a real library_parent_node_key, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption"
     ],
     "form_library_screen": "implemented",
     "start_new_form_screen": "implemented",

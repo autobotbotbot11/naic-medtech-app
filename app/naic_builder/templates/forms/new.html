@@ -28,6 +28,7 @@
       <input id="groupKindInput" type="hidden" name="group_kind" value="category">
       <input id="groupOrderInput" type="hidden" name="group_order" value="{{ default_group_order }}">
       <input id="formOrderInput" type="hidden" name="form_order" value="{{ default_form_order }}">
+      <input id="parentNodeKeyInput" type="hidden" name="library_parent_node_key" value="{{ default_parent_node_key }}">
 
       <section class="panel form-flow-card">
         <div class="section-head">
@@ -70,26 +71,16 @@
           <label class="field-stack">
             <span>Choose a folder</span>
             <select id="existingGroupSelect">
-              {% for group in official_group_options %}
+              {% for container in container_options %}
               <option
-                value="{{ group.name }}"
-                data-group-order="{{ group.order }}"
-                data-form-order="{{ group.next_form_order }}"
-                {% if group.name == default_group_name %}selected{% endif %}
-              >{{ group.name }}</option>
+                value="{{ container.node_key }}"
+                data-group-name="{{ container.name }}"
+                data-group-order="{{ container.order }}"
+                data-form-order="{{ container.next_form_order }}"
+                data-path-label="{{ container.path_label }}"
+                {% if container.node_key == default_parent_node_key %}selected{% endif %}
+              >{{ container.path_label }}</option>
               {% endfor %}
-              {% if extra_group_options %}
-              <optgroup label="Additional working groups">
-                {% for group in extra_group_options %}
-                <option
-                  value="{{ group.name }}"
-                  data-group-order="{{ group.order }}"
-                  data-form-order="{{ group.next_form_order }}"
-                  {% if group.name == default_group_name %}selected{% endif %}
-                >{{ group.name }}</option>
-                {% endfor %}
-              </optgroup>
-              {% endif %}
             </select>
           </label>
         </div>
@@ -131,15 +122,15 @@
           <label class="field-stack">
             <span>Copy from</span>
             <select id="duplicateSourceSelect">
-              {% for group in official_group_options %}
+              {% for group in official_groups %}
               <optgroup label="{{ group.name }}">
                 {% for form in group.forms %}
                 <option value="{{ form.slug }}" {% if source_form and source_form.slug == form.slug %}selected{% endif %}>{{ form.name }}</option>
                 {% endfor %}
               </optgroup>
               {% endfor %}
-              {% if extra_group_options %}
-              {% for group in extra_group_options %}
+              {% if extra_groups %}
+              {% for group in extra_groups %}
               <optgroup label="{{ group.name }}">
                 {% for form in group.forms %}
                 <option value="{{ form.slug }}" {% if source_form and source_form.slug == form.slug %}selected{% endif %}>{{ form.name }}</option>

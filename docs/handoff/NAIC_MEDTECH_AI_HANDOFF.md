@@ -113,6 +113,8 @@ What is implemented:
 - builder bootstrap no longer exposes preset data
 - advanced `Layout` no longer exposes insert/save preset actions
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
+- `/forms/new` now uses real container choices from the persisted library tree instead of the older one-level grouped-folder list
+- the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the default workspace now lands on a single `Content` pane driven by real root block order, instead of splitting the main flow into separate `Ungrouped fields` and `Sections` panes
 - the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules

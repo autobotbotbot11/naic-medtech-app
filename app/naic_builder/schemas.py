@@ -14,6 +14,7 @@ class FormSavePayload(BaseModel):
     group_kind: Literal["category", "standalone_form"] = "category"
     group_order: int = 999
     form_order: int = 1
+    library_parent_node_key: str | None = None
     summary: str | None = None
     form_schema: dict[str, Any] = Field(default_factory=dict)
 
@@ -25,4 +26,3 @@ class FormSavePayload(BaseModel):
             normalized["form_schema"] = normalized.pop("schema")
             return normalized
         return value
-

@@ -13,6 +13,7 @@ const groupNameInputEl = document.getElementById("groupNameInput");
 const groupKindInputEl = document.getElementById("groupKindInput");
 const groupOrderInputEl = document.getElementById("groupOrderInput");
 const formOrderInputEl = document.getElementById("formOrderInput");
+const parentNodeKeyInputEl = document.getElementById("parentNodeKeyInput");
 const summaryNameEl = document.getElementById("summaryName");
 const summaryGroupEl = document.getElementById("summaryGroup");
 const summaryStartEl = document.getElementById("summaryStart");
@@ -68,7 +69,7 @@ function updateSummary() {
 
   const groupName = groupMode === "new"
     ? String(newGroupNameEl?.value || "").trim()
-    : String(selectedGroupOption()?.value || "");
+    : String(selectedGroupOption()?.dataset.pathLabel || selectedGroupOption()?.textContent || "").trim();
 
   let startLabel = "Start empty";
   if (startMode === "duplicate") {
@@ -92,9 +93,12 @@ function syncHiddenInputs() {
   const selectedOption = selectedGroupOption();
 
   const usingNewGroup = groupMode === "new";
+  const parentNodeKey = usingNewGroup
+    ? ""
+    : String(selectedOption?.value || "").trim();
   const groupName = usingNewGroup
     ? String(newGroupNameEl?.value || "").trim()
-    : String(selectedOption?.value || "");
+    : String(selectedOption?.dataset.groupName || "").trim();
   const groupOrder = usingNewGroup
     ? 999
     : Number(selectedOption?.dataset.groupOrder || 999);
@@ -122,6 +126,9 @@ function syncHiddenInputs() {
   }
   if (formOrderInputEl) {
     formOrderInputEl.value = Number.isFinite(formOrder) ? String(formOrder) : "1";
+  }
+  if (parentNodeKeyInputEl) {
+    parentNodeKeyInputEl.value = parentNodeKey;
   }
 }
 

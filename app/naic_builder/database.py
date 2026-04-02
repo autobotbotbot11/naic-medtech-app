@@ -28,6 +28,12 @@ def ensure_runtime_schema() -> None:
         }
         if "block_schema_json" not in columns:
             connection.exec_driver_sql("ALTER TABLE form_versions ADD COLUMN block_schema_json TEXT")
+        form_definition_columns = {
+            str(row[1])
+            for row in connection.exec_driver_sql("PRAGMA table_info(form_definitions)").all()
+        }
+        if "library_parent_node_key" not in form_definition_columns:
+            connection.exec_driver_sql("ALTER TABLE form_definitions ADD COLUMN library_parent_node_key TEXT")
 
 
 def get_session() -> Generator[Session, None, None]:

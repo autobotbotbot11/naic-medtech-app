@@ -35,6 +35,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - richer stored block schema is now preserved correctly across save/reload hydration, so advanced-only blocks are no longer dropped when a saved response is reloaded into the calmer builder UI
 - presets have been deliberately removed from the active product path for now so the builder stays focused on the core flow
 - `/forms/new` now starts only from `Blank` or `Duplicate existing form`
+- `/forms/new` now uses real container choices from the persisted library tree instead of the older one-level grouped-folder list
+- the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
