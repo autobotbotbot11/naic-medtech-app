@@ -34,7 +34,6 @@
           {% for group in official_groups %}
           <a href="#group-{{ loop.index }}" class="group-jump-link" data-group-link="{{ group.name|lower }}">
             <span>{{ group.name }}</span>
-            <span class="group-jump-count">{{ group.forms|length }}</span>
           </a>
           {% endfor %}
         </nav>
@@ -57,7 +56,6 @@
             <div>
               <p class="eyebrow">Folder</p>
               <h2>{{ group.name }}</h2>
-              <p class="panel-copy">{{ group.forms|length }} form{% if group.forms|length != 1 %}s{% endif %}</p>
             </div>
           </div>
 
@@ -67,11 +65,10 @@
               <div class="form-card-copy">
                 <p class="form-card-meta">Version {{ form.current_version_number }}</p>
                 <h3>{{ form.name }}</h3>
-                <p class="panel-copy">{{ group.name }}</p>
               </div>
               <div class="form-card-actions">
-                <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Duplicate</a>
-                <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit Form</a>
+                <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Copy</a>
+                <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit</a>
               </div>
             </article>
             {% endfor %}
@@ -87,7 +84,6 @@
               <h2>More Folders</h2>
               <p class="panel-copy">Older or scratch forms stay here so the main library stays focused.</p>
             </div>
-            <span class="group-jump-count">{{ extra_groups|length }} group{% if extra_groups|length != 1 %}s{% endif %}</span>
           </summary>
 
           <div class="extra-groups-body">
@@ -100,7 +96,6 @@
                 <div>
                   <p class="eyebrow">Extra Folder</p>
                   <h2>{{ group.name }}</h2>
-                  <p class="panel-copy">{{ group.forms|length }} form{% if group.forms|length != 1 %}s{% endif %}</p>
                 </div>
               </div>
 
@@ -110,11 +105,10 @@
                   <div class="form-card-copy">
                     <p class="form-card-meta">Version {{ form.current_version_number }}</p>
                     <h3>{{ form.name }}</h3>
-                    <p class="panel-copy">{{ group.name }}</p>
                   </div>
                   <div class="form-card-actions">
-                    <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Duplicate</a>
-                    <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit Form</a>
+                    <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Copy</a>
+                    <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit</a>
                   </div>
                 </article>
                 {% endfor %}
