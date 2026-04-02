@@ -1783,7 +1783,7 @@ function renderPreview() {
                 <span class="live-dot"></span>
                 Live
               </span>
-              <span class="preview-sync-copy">Read-only sample while you edit</span>
+              <span class="preview-sync-copy">Sample only</span>
             </div>
             <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
             <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>

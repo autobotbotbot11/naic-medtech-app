@@ -813,6 +813,15 @@ button.subtle[aria-pressed="true"] {
   overflow: hidden;
 }
 
+.preview-panel-head h3 {
+  font-size: 20px;
+}
+
+.preview-panel-head .panel-copy {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
 .preview-panel[hidden],
 .preview-panel.is-hidden {
   display: none !important;
@@ -1604,11 +1613,11 @@ details.advanced summary {
 }
 
 .preview-title {
-  font-size: 26px;
+  font-size: 24px;
 }
 
 .preview-live-row {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .preview-index {
