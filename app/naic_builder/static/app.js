@@ -1453,7 +1453,7 @@ function renderSectionCard(section, path, options = {}) {
         ${open ? `
           ${focusedCard ? `
             <div class="section-spotlight">
-              <strong>Editing this section</strong>
+              <strong>Section</strong>
               <span>${escapeHtml(itemCount)}</span>
             </div>
           ` : ""}
@@ -1625,7 +1625,7 @@ function renderFieldCard(field, path, options = {}) {
         ${open ? `
           ${focusedCard ? `
             <div class="field-spotlight">
-              <strong>${escapeHtml(isGroup ? "Editing this group" : "Editing this field")}</strong>
+              <strong>${escapeHtml(isGroup ? "Group" : "Field")}</strong>
               <span>${escapeHtml(metaBits.join(" | "))}</span>
             </div>
           ` : ""}
@@ -1727,7 +1727,7 @@ function renderOptionsEditor(field, path) {
           ${selectedOption ? `
             <div class="option-focus-card">
                 <div class="option-spotlight">
-                  <strong>Editing this choice</strong>
+                  <strong>Choice</strong>
                   <span>${escapeHtml(selectedOptionName)}</span>
                 </div>
                 <div class="option-focus-head">

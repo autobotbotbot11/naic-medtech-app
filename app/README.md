@@ -35,6 +35,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the preview panel header is quieter too: shorter heading/copy, shorter hide action, and less repeated live/read-only wording inside the preview card
 - the left rail header is quieter too: `This form` became `Outline`, the extra summary line was removed, and the navigation block reads less like a mini dashboard
 - the center workspace header is quieter too: `Editing` became `Builder`, the title now uses the form name directly, and the supporting copy is shorter and less repetitive
+- the focused section/field/choice strips are quieter too: they now use small label-style cues like `Section`, `Field`, `Group`, and `Choice` instead of sentence-style `Editing this ...` copy
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

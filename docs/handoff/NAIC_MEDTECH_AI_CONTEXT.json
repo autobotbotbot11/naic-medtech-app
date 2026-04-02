@@ -273,7 +273,8 @@
         "the top-right app-bar actions are quieter: New and Save stay visible, while Duplicate now lives in a small overflow menu",
         "the preview panel header is quieter: shorter heading/copy, shorter hide action, and less repeated live/read-only wording inside the preview card",
         "the left rail header is quieter: This form became Outline, the extra summary line was removed, and the navigation block reads less like a mini dashboard",
-        "the center workspace header is quieter: Editing became Builder, the title now uses the form name directly, and the supporting copy is shorter and less repetitive"
+        "the center workspace header is quieter: Editing became Builder, the title now uses the form name directly, and the supporting copy is shorter and less repetitive",
+        "the focused section, field, group, and choice strips are quieter: they now use small label-style cues instead of sentence-style Editing this copy"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",

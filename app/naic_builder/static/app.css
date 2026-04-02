@@ -1398,16 +1398,29 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-spotlight {
-    display: grid;
-    gap: 4px;
-    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 8px 10px;
     border: 1px solid rgba(30, 93, 82, 0.12);
     border-radius: var(--radius-md);
     background: rgba(241, 248, 245, 0.94);
 }
 
 .field-spotlight strong {
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: rgba(30, 93, 82, 0.12);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .field-spotlight span {
@@ -1488,16 +1501,29 @@ button.subtle[aria-pressed="true"] {
 }
 
 .option-spotlight {
-    display: grid;
-    gap: 4px;
-    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 8px 10px;
     border: 1px solid rgba(30, 93, 82, 0.12);
     border-radius: var(--radius-md);
     background: rgba(241, 248, 245, 0.94);
 }
 
 .option-spotlight strong {
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: rgba(30, 93, 82, 0.12);
+    color: var(--accent);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .option-spotlight span {
@@ -1595,16 +1621,29 @@ details.advanced summary {
 }
 
 .section-spotlight {
-    display: grid;
-    gap: 4px;
-    padding: 10px 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 8px 10px;
     border: 1px solid rgba(201, 106, 41, 0.14);
     border-radius: var(--radius-md);
     background: rgba(255, 248, 240, 0.96);
 }
 
 .section-spotlight strong {
-    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 22px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: rgba(201, 106, 41, 0.14);
+    color: var(--warm);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
 
 .section-spotlight span {
