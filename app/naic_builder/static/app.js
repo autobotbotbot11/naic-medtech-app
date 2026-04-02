@@ -2784,13 +2784,13 @@ function renderFieldCard(field, path, options = {}) {
 
           <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""}">
             <label>
-              <span>${isGroup ? "Group name" : "Label"}</span>
+              <span>${isGroup ? "Name" : "Label"}</span>
               <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
             ${isGroup ? `
               <label>
                 <span>Type</span>
-                <input value="Field group" disabled>
+                <input value="Group" disabled>
               </label>
             ` : `
               <label>
@@ -2807,7 +2807,8 @@ function renderFieldCard(field, path, options = {}) {
             ${renderFieldCollection(getNodeChildren(fieldNode), [...path, "children"])}
           </div>
           <div class="section-actions">
-            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add child field</button>
+            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add field</button>
+            <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "children"])}">Add group</button>
             ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
             ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
             ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-table" data-path="${encodePath([...path, "children"])}">Add table</button>` : ""}
@@ -3047,7 +3048,7 @@ function renderPreviewField(field) {
     return `
       <div class="preview-group">
         <div class="preview-group-head">
-          <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
+          <div class="preview-group-title">${escapeHtml(field.name || "Group")}</div>
         </div>
         <div class="preview-grid">
           ${getNodeChildren(field).map((child) => renderPreviewField(child)).join("")}
