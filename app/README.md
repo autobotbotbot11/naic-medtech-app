@@ -16,6 +16,9 @@ The app now starts from a builder-first FastAPI scaffold.
 - the compatibility library tree is exposed at `/api/library/tree`
 - the backend now also exposes a compatibility `block_schema` bridge on form reads, plus `/api/forms/{slug}/block-schema`
 - create/update flows can now accept either the current legacy `fields + sections` shape or a limited compatible `blocks` shape
+- each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
+- startup now backfills missing stored block schemas for older versions
+- non-legacy block kinds like `note` and `divider` can now be preserved in stored block schema even when the legacy compatibility projection skips them
 - the frontend builder draft now keeps a compatibility `block_schema` in sync while the calmer legacy editor stays intact
 - save requests now go out through `block_schema`
 - the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level ungrouped/section organizer flows

@@ -81,6 +81,9 @@ What is implemented:
 - form reads now also expose a derived compatibility `block_schema`
 - `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
 - create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
+- each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
+- startup now backfills missing stored block schemas for older versions
+- non-legacy block kinds like `note` and `divider` can now be preserved in stored block schema even when the legacy compatibility projection skips them
 - the frontend builder draft now keeps a compatibility `block_schema` in sync while the current calmer editor still renders the legacy projection
 - builder saves now go out through `block_schema` instead of posting the legacy `fields + sections` shape directly
 - the current focused editor and live preview now also read and write through block-backed paths for real edit flows, not just save-time bridging
@@ -209,6 +212,7 @@ Current migration status:
 - current library and builder screens still run on compatibility views over the older form/group model
 - the backend now includes a compatibility bridge between the current legacy schema and an ordered-block schema
 - current safe bridge coverage is limited to `field`, `field_group`, and `section`
+- stored block schemas can now preserve extra block kinds even when the legacy compatibility projection cannot render them directly
 - the next engine milestone should be expanding true ordered-block editing beyond the new advanced `Layout` pane and reducing the remaining compatibility-only `fields + sections` thinking without breaking the calm UI in one jump
 
 ## Source Of Truth

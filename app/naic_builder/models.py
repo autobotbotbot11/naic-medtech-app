@@ -50,6 +50,7 @@ class FormVersion(Base):
     version_number: Mapped[int] = mapped_column(Integer)
     summary: Mapped[str | None] = mapped_column(Text, nullable=True)
     schema_json: Mapped[str] = mapped_column(Text)
+    block_schema_json: Mapped[str | None] = mapped_column(Text, nullable=True)
     source: Mapped[str] = mapped_column(String(40), default="builder")
     is_current: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)

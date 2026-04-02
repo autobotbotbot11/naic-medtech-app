@@ -19,6 +19,17 @@ engine = create_engine(f"sqlite:///{DB_PATH}", future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
+def ensure_runtime_schema() -> None:
+    Base.metadata.create_all(bind=engine)
+    with engine.begin() as connection:
+        columns = {
+            str(row[1])
+            for row in connection.exec_driver_sql("PRAGMA table_info(form_versions)").all()
+        }
+        if "block_schema_json" not in columns:
+            connection.exec_driver_sql("ALTER TABLE form_versions ADD COLUMN block_schema_json TEXT")
+
+
 def get_session() -> Generator[Session, None, None]:
     session = SessionLocal()
     try:

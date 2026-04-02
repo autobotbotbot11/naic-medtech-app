@@ -10,10 +10,11 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 
 from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
-from .database import Base, SessionLocal, engine, get_session
+from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import FormSavePayload
 from .services import (
     create_form,
+    ensure_block_schema_storage,
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
@@ -28,9 +29,10 @@ from .services import (
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    ensure_runtime_schema()
     with SessionLocal() as session:
         ensure_reference_seed(session)
+        ensure_block_schema_storage(session)
         ensure_library_tree(session)
     yield
 
