@@ -20,19 +20,20 @@
       "create and update flows can now accept either legacy fields plus sections or a limited compatible block schema",
       "each form version now stores a real block_schema_json payload alongside the legacy schema_json",
       "startup now backfills missing stored block schemas for older versions",
-      "non-legacy block kinds like note and divider can now be preserved in stored block schema even when the compatibility projection skips them",
+      "non-legacy block kinds like note, divider, and table can now be preserved in stored block schema even when the compatibility projection skips them",
       "the frontend builder draft now keeps a compatibility block_schema in sync while the calmer editor still renders the legacy projection",
       "builder saves now go out through block_schema instead of posting the legacy fields plus sections shape directly",
       "the current focused editor and live preview now also read and write through block-backed paths for real edit flows",
       "top-level ungrouped fields and sections organizer flows now operate through block-backed collection handling while the visible UI stays calm",
       "advanced mode now includes a true Layout pane for the real top-level ordered block list",
       "the live preview now follows actual root block order, including separated ungrouped-field clusters when top-level fields appear in multiple positions",
-      "advanced Layout can now add real note and divider blocks without pushing them into the calmer default editing panes",
-      "the live preview can now render note and divider blocks from stored block_schema while the default panes remain focused on ordinary fields and sections",
+      "advanced Layout can now add real note, divider, and table blocks without pushing them into the calmer default editing panes",
+      "the live preview can now render note, divider, and table blocks from stored block_schema while the default panes remain focused on ordinary fields and sections",
       "selected sections can now add note and divider blocks too, but only in advanced mode so the normal section flow stays calm by default",
       "selected groups can now add note and divider blocks in advanced mode too, and the live preview now renders those nested utility blocks from the real block tree",
       "advanced mode can now open a real child-layout workspace for a selected section or group, with back navigation to the parent layout, so nested ordered blocks can be edited directly",
-      "when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the standard flow"
+      "when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the standard flow",
+      "richer stored block schema now survives builder hydration correctly, so advanced-only blocks remain intact after normal save and reload flows"
     ],
     "form_library_screen": "implemented",
     "start_new_form_screen": "implemented",
@@ -63,7 +64,7 @@
       "the preview is now read-only and includes sticky quick-jump section navigation",
       "advanced mode now includes a Layout pane for editing the actual top-level block order",
       "the preview now respects root block order instead of forcing one single ungrouped-fields area before all sections",
-      "advanced Layout now exposes real note and divider blocks while the calm default panes still hide them",
+      "advanced Layout now exposes real note, divider, and table blocks while the calm default panes still hide them",
       "selected sections can now add note and divider blocks in advanced mode, while the default section editor hides those utility blocks behind a quiet hint",
       "the left outline and library wording now use calmer non-technical labels",
       "the committed sample runtime DB has been reset to clean schema-seeded state and can be reset again with tools/scripts/reset_builder_runtime_db.py",
@@ -72,7 +73,7 @@
       "selected section and field destructive actions now live in a quieter footer more-options area",
       "the sections pane is now less mechanical, with a simple count, no organizer row numbers, and an editing badge only on the active row"
     ],
-    "current_builder_surface_note": "The builder is now partially block-backed, and advanced mode exposes a real Layout pane with early richer block support like note and divider, but the default visible workspace still follows the older fields-plus-sections mental model so the UI can stay calm during the migration."
+    "current_builder_surface_note": "The builder is now partially block-backed, and advanced mode exposes a real Layout pane with early richer block support like note, divider, and table, but the default visible workspace still follows the older fields-plus-sections mental model so the UI can stay calm during the migration."
   },
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [

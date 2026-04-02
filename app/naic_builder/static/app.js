@@ -385,8 +385,12 @@ function ensureDraftSchemas(draft, options = {}) {
   }
 
   const preferBlocks = Boolean(options.preferBlocks);
-  if (draft.block_schema && (preferBlocks || !draft.schema)) {
-    draft.schema = blockSchemaToLegacySchema(draft.block_schema, draft);
+  const existingBlockSchema = draft.block_schema && typeof draft.block_schema === "object"
+    ? deepClone(draft.block_schema)
+    : null;
+
+  if (existingBlockSchema && (preferBlocks || !draft.schema)) {
+    draft.schema = blockSchemaToLegacySchema(existingBlockSchema, draft);
   }
 
   draft.schema = normalizeSchemaShape(draft.schema || {});
@@ -394,7 +398,8 @@ function ensureDraftSchemas(draft, options = {}) {
   draft.schema.key = String(draft.schema.key || slugify(draft.schema.name || draft.name || "untitled_form")).trim();
   draft.schema.order = parsePositiveInt(draft.form_order, draft.schema.order || 1);
   draft.schema.common_field_set_id = String(draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
-  draft.block_schema = legacySchemaToBlockSchema(draft.schema);
+  draft.block_schema = existingBlockSchema || legacySchemaToBlockSchema(draft.schema);
+  syncRootMetaToBlockSchema(draft);
   return draft;
 }
 
@@ -474,12 +479,12 @@ function isBlockNode(node) {
 
 function isStoredBlockNode(node) {
   const kind = blockKind(node);
-  return kind === "field" || kind === "field_group" || kind === "section" || kind === "note" || kind === "divider";
+  return kind === "field" || kind === "field_group" || kind === "section" || kind === "note" || kind === "divider" || kind === "table";
 }
 
 function isUtilityBlockNode(node) {
   const kind = blockKind(node);
-  return kind === "note" || kind === "divider";
+  return kind === "note" || kind === "divider" || kind === "table";
 }
 
 function getNodeProps(node) {
@@ -667,7 +672,7 @@ function collectFieldPathKeysFromNode(node, basePath) {
   const keys = [];
   const kind = String(node?.kind || "").trim();
 
-  if (kind === "field" || kind === "field_group" || kind === "note" || kind === "divider") {
+  if (kind === "field" || kind === "field_group" || kind === "note" || kind === "divider" || kind === "table") {
     keys.push(pathKey(basePath));
   }
 
@@ -796,6 +801,9 @@ function topLevelPreviewSegments() {
     }
 
     if (entry.node?.kind === "note" || entry.node?.kind === "divider") {
+      looseHasLayoutBlocks = true;
+    }
+    if (entry.node?.kind === "table") {
       looseHasLayoutBlocks = true;
     }
     looseFields.push(entry.node);
@@ -1303,7 +1311,11 @@ function setBoundValue(target, bind, rawValue) {
       target.name = rawValue;
       return;
     }
-    if (bind === "key" || bind === "notes" || bind === "normal_value" || bind === "unit_hint" || bind === "content") {
+    if (bind === "sample_rows") {
+      props.sample_rows = parsePositiveInt(rawValue, 3);
+      return;
+    }
+    if (bind === "key" || bind === "notes" || bind === "normal_value" || bind === "unit_hint" || bind === "content" || bind === "columns") {
       props[bind] = rawValue;
       return;
     }
@@ -1394,6 +1406,22 @@ function makeBlankDivider() {
       key: "divider",
       order: 1,
       content: "",
+      notes: [],
+    },
+    children: [],
+  };
+}
+
+function makeBlankTable() {
+  return {
+    id: `blk_${slugify(`table_${Date.now()}`)}`,
+    kind: "table",
+    name: "Results Table",
+    props: {
+      key: "results_table",
+      order: 1,
+      columns: ["Test", "Result", "Reference Range"],
+      sample_rows: 3,
       notes: [],
     },
     children: [],
@@ -2236,12 +2264,30 @@ function utilityBlockContent(node) {
   return String(getNodeProps(node).content || "").trim();
 }
 
+function getTableColumns(node) {
+  const columns = normalizeArray(getNodeProps(node).columns)
+    .map((value) => String(value || "").trim())
+    .filter(Boolean);
+  return columns.length ? columns : ["Column 1", "Column 2"];
+}
+
+function getTableSampleRows(node) {
+  return Math.max(1, Math.min(parsePositiveInt(getNodeProps(node).sample_rows, 3), 6));
+}
+
 function renderUtilityBlockCard(node, path) {
   const kind = blockKind(node);
   const isNote = kind === "note";
-  const title = isNote ? "Note" : "Divider";
-  const namePlaceholder = isNote ? "Example: Preparation Note" : "Optional divider label";
+  const isTable = kind === "table";
+  const title = isNote ? "Note" : isTable ? "Table" : "Divider";
+  const namePlaceholder = isNote
+    ? "Example: Preparation Note"
+    : isTable
+      ? "Example: Results Table"
+      : "Optional divider label";
   const content = utilityBlockContent(node);
+  const columns = getTableColumns(node);
+  const sampleRows = getTableSampleRows(node);
 
   return `
     <article class="field-card utility-card is-open is-focused" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
@@ -2256,7 +2302,13 @@ function renderUtilityBlockCard(node, path) {
 
       <div class="field-spotlight">
         <strong>${escapeHtml(title)}</strong>
-        <span>${escapeHtml(isNote ? "Shows a read-only note in the preview." : "Adds a visual break in the preview.")}</span>
+        <span>${escapeHtml(
+          isNote
+            ? "Shows a read-only note in the preview."
+            : isTable
+              ? "Shows a read-only sample table in the preview."
+              : "Adds a visual break in the preview."
+        )}</span>
       </div>
 
       <div class="inline-grid field-basics-grid compact">
@@ -2271,6 +2323,17 @@ function renderUtilityBlockCard(node, path) {
           <span>Text</span>
           <textarea data-path="${encodePath(path)}" data-bind="content" rows="5" placeholder="Write the note that should appear in the preview.">${escapeHtml(content)}</textarea>
         </label>
+      ` : isTable ? `
+        <label class="stacked-input">
+          <span>Columns</span>
+          <textarea data-path="${encodePath(path)}" data-bind="columns" data-format="lines" rows="4" placeholder="One column label per line">${escapeHtml(columns.join("\n"))}</textarea>
+        </label>
+        <div class="inline-grid field-basics-grid compact">
+          <label>
+            <span>Preview rows</span>
+            <input type="number" min="1" max="6" data-path="${encodePath(path)}" data-bind="sample_rows" value="${escapeHtml(sampleRows)}">
+          </label>
+        </div>
       ` : `
         <label class="stacked-input">
           <span>Caption</span>
@@ -2326,6 +2389,7 @@ function renderLayoutCard(options = {}) {
           <button class="secondary mini" type="button" data-action="add-layout-field">Add field</button>
           <button class="ghost mini" type="button" data-action="add-layout-group">Add group</button>
           ${nested ? "" : `<button class="ghost mini" type="button" data-action="add-layout-section">Add section</button>`}
+          <button class="ghost mini" type="button" data-action="add-layout-table">Add table</button>
           <button class="ghost mini" type="button" data-action="add-layout-note">Add note</button>
           <button class="ghost mini" type="button" data-action="add-layout-divider">Add divider</button>
         </div>
@@ -2576,6 +2640,9 @@ function summarizeField(field) {
   }
   if (field.kind === "divider") {
     return "Divider";
+  }
+  if (field.kind === "table") {
+    return "Table";
   }
   if (field.kind === "field_group") {
     return "Group";
@@ -2928,6 +2995,32 @@ function renderPreviewField(field) {
     `;
   }
 
+  if (field.kind === "table") {
+    const title = String(field.name || "").trim();
+    const columns = getTableColumns(field);
+    const sampleRows = getTableSampleRows(field);
+    const showTitle = title && title.toLowerCase() !== "table";
+    return `
+      <div class="preview-table">
+        ${showTitle ? `<div class="preview-table-title">${escapeHtml(title)}</div>` : ""}
+        <div class="preview-table-shell">
+          <table>
+            <thead>
+              <tr>${columns.map((column) => `<th>${escapeHtml(column)}</th>`).join("")}</tr>
+            </thead>
+            <tbody>
+              ${Array.from({ length: sampleRows }, () => `
+                <tr>
+                  ${columns.map(() => '<td><span class="preview-table-placeholder"></span></td>').join("")}
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
   const hints = [];
   if (getFieldUnitHint(field)) hints.push(getFieldUnitHint(field));
   if (getFieldNormalValue(field)) hints.push(`normal ${getFieldNormalValue(field)}`);
@@ -3062,7 +3155,13 @@ function addUtilityAt(path, kind) {
   if (!Array.isArray(collection)) {
     return;
   }
-  collection.push(kind === "divider" ? makeBlankDivider() : makeBlankNote());
+  collection.push(
+    kind === "divider"
+      ? makeBlankDivider()
+      : kind === "table"
+        ? makeBlankTable()
+        : makeBlankNote()
+  );
   state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
   state.ui.activeOptionToken = null;
   touch({ full: true, source: "blocks" });
@@ -3340,6 +3439,19 @@ async function handleEditorClick(event) {
       return;
     }
     collection.push(makeBlankNote());
+    const actualIndex = collection.length - 1;
+    state.ui.focusPane = "layout";
+    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
+    state.ui.activeOptionToken = null;
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "add-layout-table") {
+    const collection = getNodeByPath(currentLayoutCollectionPath());
+    if (!Array.isArray(collection)) {
+      return;
+    }
+    collection.push(makeBlankTable());
     const actualIndex = collection.length - 1;
     state.ui.focusPane = "layout";
     state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);

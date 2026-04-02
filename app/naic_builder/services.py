@@ -884,6 +884,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     session.add(version)
     session.commit()
     ensure_library_tree(session)
+    session.expire_all()
     return serialize_form(get_form_or_none(session, slug))
 
 
@@ -926,4 +927,5 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     session.add(version)
     session.commit()
     ensure_library_tree(session)
+    session.expire_all()
     return serialize_form(get_form_or_none(session, slug))
