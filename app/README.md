@@ -28,8 +28,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - the live preview now follows the real top-level block order, including separated top-field clusters when root fields appear in multiple places
 - the live preview can now render `note` and `divider` blocks from stored `block_schema`, while the calm default pane stays focused on ordinary field and section editing
 - the live preview can now render real `table` blocks too, including nested tables inside sections
-- selected sections can now add real `note` and `divider` blocks too, but only in `Advanced` mode so the normal section editor stays simple by default
-- selected groups can now add real `note` and `divider` blocks in `Advanced` mode too, and the live preview now renders those nested utility blocks from the real block tree
+- selected sections can now add real `note`, `divider`, and `table` blocks too, but only in `Advanced` mode so the normal section editor stays simple by default
+- selected groups can now add real `note`, `divider`, and `table` blocks in `Advanced` mode too, and the live preview now renders those nested utility blocks from the real block tree
 - advanced mode can now open a real child-layout workspace for a selected section or group, so nested block order can be edited directly without changing the calmer default panes
 - when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the normal flow
 - richer stored block schema is now preserved correctly across save/reload hydration, so advanced-only blocks are no longer dropped when a saved response is reloaded into the calmer builder UI
@@ -41,6 +41,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
 - the default workspace now lands on a single `Content` pane driven by real top-level block order instead of splitting the root flow into separate `Ungrouped fields` and `Sections` panes
+- the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules
+- in `Advanced` mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into `Layout` just to place them
 - the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact field organizers plus one focused field editor
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces

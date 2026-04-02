@@ -94,8 +94,8 @@ What is implemented:
 - advanced `Layout` can now also add a real `table` block, including inside nested child-layout workspaces for sections and groups
 - the live preview can now render stored `note` and `divider` blocks while the calmer default panes still stay focused on ordinary fields and sections
 - the live preview can now render real `table` blocks too, including nested tables inside sections
-- selected sections can now add `note` and `divider` blocks too, but only in advanced mode so the normal section flow stays calm by default
-- selected groups can now add `note` and `divider` blocks in advanced mode too, and the live preview now renders those nested utility blocks from the real block tree
+- selected sections can now add `note`, `divider`, and `table` blocks too, but only in advanced mode so the normal section flow stays calm by default
+- selected groups can now add `note`, `divider`, and `table` blocks in advanced mode too, and the live preview now renders those nested utility blocks from the real block tree
 - advanced mode can now open a real child-layout workspace for a selected section or group, with back navigation to the parent layout, so nested ordered blocks can be edited directly
 - when a section contains advanced utility blocks, the default section editor now hides them and shows a small hint instead of exposing extra controls in the standard flow
 - richer stored block schema now survives builder hydration correctly, so advanced-only blocks are preserved after normal save/reload flows instead of collapsing back to the legacy projection in the frontend
@@ -115,6 +115,8 @@ What is implemented:
 - guided creation now hands the user off into the current builder with cleaner defaults instead of dropping them straight into `Untitled Form`
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the default workspace now lands on a single `Content` pane driven by real root block order, instead of splitting the main flow into separate `Ungrouped fields` and `Sections` panes
+- the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules
+- in advanced mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into `Layout` just to place them
 - the old `Top of form` language is now reframed as `Free fields`
 - `Shared patient info` is no longer a primary always-visible setting in the default form-details surface; it now sits in advanced mode as a default record-details option
 - the content pane now uses a compact root organizer plus one focused editor instead of forcing users to switch between separate root buckets

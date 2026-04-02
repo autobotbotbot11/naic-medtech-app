@@ -1439,6 +1439,22 @@ function makeBlankTable() {
   };
 }
 
+function makeBlankBlock(kind) {
+  if (kind === "section") {
+    return makeBlankSection();
+  }
+  if (kind === "note") {
+    return makeBlankNote();
+  }
+  if (kind === "divider") {
+    return makeBlankDivider();
+  }
+  if (kind === "table") {
+    return makeBlankTable();
+  }
+  return makeBlankField(kind);
+}
+
 function navigateWithIntent(url) {
   allowIntentionalUnload = true;
   window.location.assign(url);
@@ -2226,6 +2242,9 @@ function renderContentCard() {
           <button class="secondary mini" type="button" data-action="add-content-section">Add section</button>
           <button class="ghost mini" type="button" data-action="add-content-field">Add field</button>
           <button class="ghost mini" type="button" data-action="add-content-group">Add group</button>
+          ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-content-note">Add note</button>` : ""}
+          ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-content-divider">Add divider</button>` : ""}
+          ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-content-table">Add table</button>` : ""}
         </div>
       </div>
       ${entries.length ? `
@@ -2548,6 +2567,7 @@ function renderSectionCard(section, path, options = {}) {
               <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "children"])}">Add group</button>
               ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
               ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
+              ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-table" data-path="${encodePath([...path, "children"])}">Add table</button>` : ""}
           </div>
         </div>
 
@@ -2597,7 +2617,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       if (hiddenUtilityCount) {
         return '<div class="empty-state">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>';
       }
-      return '<div class="empty-state">No fields here yet. Add one when you are ready.</div>';
+      return '<div class="empty-state">No content here yet. Add one when you are ready.</div>';
     }
   if (options.focused) {
     const selectedIndex = resolveFocusedFieldIndex(collectionPath, visibleEntries);
@@ -2790,6 +2810,7 @@ function renderFieldCard(field, path, options = {}) {
             <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add child field</button>
             ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
             ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
+            ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-table" data-path="${encodePath([...path, "children"])}">Add table</button>` : ""}
           </div>
         ` : ""}
 
@@ -3215,6 +3236,48 @@ function addSection() {
   touch({ full: true, source: "blocks" });
 }
 
+function insertTopLevelContentBlock(kind) {
+  const blocks = topLevelBlocks();
+  const selectedEntry = resolveFocusedTopLevelBlockEntry(topLevelContentEntries());
+  const nextNode = makeBlankBlock(kind);
+
+  if (selectedEntry) {
+    const selectedIndex = Number(selectedEntry.path[selectedEntry.path.length - 1]);
+    const insertAt = Number.isInteger(selectedIndex) ? selectedIndex + 1 : blocks.length;
+    blocks.splice(insertAt, 0, nextNode);
+    if (kind === "section") {
+      state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", insertAt])];
+      state.ui.activeFieldPath = null;
+    } else {
+      state.ui.activeFieldPath = pathKey(["block_schema", "blocks", insertAt]);
+      state.ui.activeOptionToken = null;
+    }
+    state.ui.focusPane = "content";
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+
+  if (kind === "section") {
+    addSection();
+    return;
+  }
+
+  if (kind === "field" || kind === "field_group") {
+    const actualIndex = insertTopLevelField(kind);
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
+    state.ui.focusPane = "content";
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+
+  blocks.push(nextNode);
+  state.ui.activeFieldPath = pathKey(["block_schema", "blocks", blocks.length - 1]);
+  state.ui.activeOptionToken = null;
+  state.ui.focusPane = "content";
+  touch({ full: true, source: "blocks" });
+}
+
 function addOption(path) {
   const field = getNodeByPath(path);
   const options = ensureOptionShape(field);
@@ -3524,23 +3587,27 @@ async function handleEditorClick(event) {
     return;
   }
   if (action === "add-content-section") {
-    addSection();
+    insertTopLevelContentBlock("section");
     return;
   }
   if (action === "add-content-field") {
-    const actualIndex = insertTopLevelField("field");
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
-    state.ui.activeOptionToken = null;
-    state.ui.focusPane = "content";
-    touch({ full: true, source: "blocks" });
+    insertTopLevelContentBlock("field");
     return;
   }
   if (action === "add-content-group") {
-    const actualIndex = insertTopLevelField("field_group");
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
-    state.ui.activeOptionToken = null;
-    state.ui.focusPane = "content";
-    touch({ full: true, source: "blocks" });
+    insertTopLevelContentBlock("field_group");
+    return;
+  }
+  if (action === "add-content-note") {
+    insertTopLevelContentBlock("note");
+    return;
+  }
+  if (action === "add-content-divider") {
+    insertTopLevelContentBlock("divider");
+    return;
+  }
+  if (action === "add-content-table") {
+    insertTopLevelContentBlock("table");
     return;
   }
   if (action === "toggle-top-fields") {
@@ -3611,6 +3678,10 @@ async function handleEditorClick(event) {
   }
   if (action === "add-divider" && path) {
     addUtilityAt(path, "divider");
+    return;
+  }
+  if (action === "add-table" && path) {
+    addUtilityAt(path, "table");
     return;
   }
   if (action === "duplicate-node" && path) {
