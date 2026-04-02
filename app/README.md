@@ -19,6 +19,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - the frontend builder draft now keeps a compatibility `block_schema` in sync while the calmer legacy editor stays intact
 - save requests now go out through `block_schema`
 - the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level ungrouped/section organizer flows
+- advanced mode now exposes a real `Layout` pane that works on the top-level ordered `block_schema.blocks` collection
+- the live preview now follows the real top-level block order, including separated ungrouped-field clusters when root fields appear in multiple places
 - the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen

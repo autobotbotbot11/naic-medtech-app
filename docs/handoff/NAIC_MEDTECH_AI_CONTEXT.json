@@ -21,7 +21,9 @@
       "the frontend builder draft now keeps a compatibility block_schema in sync while the calmer editor still renders the legacy projection",
       "builder saves now go out through block_schema instead of posting the legacy fields plus sections shape directly",
       "the current focused editor and live preview now also read and write through block-backed paths for real edit flows",
-      "top-level ungrouped fields and sections organizer flows now operate through block-backed collection handling while the visible UI stays calm"
+      "top-level ungrouped fields and sections organizer flows now operate through block-backed collection handling while the visible UI stays calm",
+      "advanced mode now includes a true Layout pane for the real top-level ordered block list",
+      "the live preview now follows actual root block order, including separated ungrouped-field clusters when top-level fields appear in multiple positions"
     ],
     "form_library_screen": "implemented",
     "start_new_form_screen": "implemented",
@@ -50,6 +52,8 @@
       "save now shows a clearer draft-state spotlight with a simpler optional note field",
       "the top shell now uses a lighter status bar and a more compact workspace header",
       "the preview is now read-only and includes sticky quick-jump section navigation",
+      "advanced mode now includes a Layout pane for editing the actual top-level block order",
+      "the preview now respects root block order instead of forcing one single ungrouped-fields area before all sections",
       "the left outline and library wording now use calmer non-technical labels",
       "the committed sample runtime DB has been reset to clean schema-seeded state and can be reset again with tools/scripts/reset_builder_runtime_db.py",
       "the focused field editor is now lighter, with drag left in the organizer and a more compact basics and choices treatment",
@@ -57,7 +61,7 @@
       "selected section and field destructive actions now live in a quieter footer more-options area",
       "the sections pane is now less mechanical, with a simple count, no organizer row numbers, and an editing badge only on the active row"
     ],
-    "current_builder_surface_note": "The builder is now partially block-backed, but the visible workspace still follows the older fields-plus-sections mental model so the UI can stay calm during the migration."
+    "current_builder_surface_note": "The builder is now partially block-backed, and advanced mode exposes a real Layout pane, but the default visible workspace still follows the older fields-plus-sections mental model so the UI can stay calm during the migration."
   },
   "phase_1_priority": "exam_form_builder",
   "phase_1_goals": [

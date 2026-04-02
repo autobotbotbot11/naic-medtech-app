@@ -544,6 +544,14 @@ function topLevelSectionEntries() {
     .filter((entry) => entry.node?.kind === "section");
 }
 
+function topLevelBlockEntries() {
+  return topLevelBlocks().map((node, index) => ({
+    node,
+    path: ["block_schema", "blocks", index],
+    view: viewNode(node),
+  }));
+}
+
 function isSpecialRootCollectionPath(path, kind) {
   return Array.isArray(path)
     && path.length === 3
@@ -650,6 +658,44 @@ function currentVersionLabel() {
 
 function currentDraftFieldCount() {
   return state.draft ? countFields({ blocks: topLevelBlocks() }) : 0;
+}
+
+function topLevelPreviewSegments() {
+  const segments = [];
+  let looseFields = [];
+  let looseGroupIndex = 0;
+
+  const flushLooseFields = () => {
+    if (!looseFields.length) {
+      return;
+    }
+    looseGroupIndex += 1;
+    segments.push({
+      id: looseGroupIndex === 1 ? "preview_section_free_fields" : `preview_section_free_fields_${looseGroupIndex}`,
+      label: looseGroupIndex === 1 ? "Ungrouped fields" : `Ungrouped fields ${looseGroupIndex}`,
+      title: looseGroupIndex === 1 ? "Ungrouped fields" : `Ungrouped fields ${looseGroupIndex}`,
+      fields: looseFields,
+    });
+    looseFields = [];
+  };
+
+  topLevelBlockEntries().forEach((entry, index) => {
+    if (entry.node?.kind === "section") {
+      flushLooseFields();
+      segments.push({
+        id: previewSectionId(entry.view.name || "Section", index),
+        label: entry.view.name || "Section",
+        title: entry.view.name || "Untitled Section",
+        fields: getNodeChildren(entry.node).map((child) => viewNode(child)),
+      });
+      return;
+    }
+
+    looseFields.push(entry.view);
+  });
+
+  flushLooseFields();
+  return segments;
 }
 
 function currentCommonFieldSetName() {
@@ -1624,6 +1670,9 @@ function defaultFocusPane() {
   if (!state.selectedFormSlug) {
     return "setup";
   }
+  if (state.ui.advancedMode && topLevelBlocks().length) {
+    return "layout";
+  }
   if (sections.length) {
     return "sections";
   }
@@ -1635,8 +1684,11 @@ function defaultFocusPane() {
 
 function syncFocusPane() {
   const focus = String(state.ui.focusPane || "");
-  const valid = new Set(["setup", "free_fields", "sections", "save"]);
+  const valid = new Set(["setup", "free_fields", "sections", "save", "layout"]);
   if (!valid.has(focus)) {
+    state.ui.focusPane = defaultFocusPane();
+  }
+  if (!state.ui.advancedMode && focus === "layout") {
     state.ui.focusPane = defaultFocusPane();
   }
 }
@@ -1655,6 +1707,23 @@ function focusSectionAtIndex(index) {
   state.ui.focusPane = "sections";
   state.ui.openSectionPaths = [pathKey(sections[index].path)];
   state.ui.activeFieldPath = null;
+  renderAll();
+}
+
+function focusLayoutBlock(path) {
+  const node = getNodeByPath(path);
+  if (!node) {
+    return;
+  }
+
+  state.ui.focusPane = "layout";
+  if (String(node?.kind || "").trim() === "section") {
+    state.ui.openSectionPaths = [pathKey(path)];
+    state.ui.activeFieldPath = null;
+  } else {
+    state.ui.activeFieldPath = pathKey(path);
+    state.ui.activeOptionToken = null;
+  }
   renderAll();
 }
 
@@ -1683,6 +1752,11 @@ function renderOutline() {
         <button class="outline-item ${focusPane === "setup" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="setup">
           <span>Basics</span>
         </button>
+        ${state.ui.advancedMode ? `
+        <button class="outline-item ${focusPane === "layout" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="layout">
+          <span>Layout</span>
+        </button>
+        ` : ""}
         <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
           <span>Ungrouped fields</span>
         </button>
@@ -1724,6 +1798,8 @@ function renderEditor() {
 
   if (focusPane === "setup") {
     formEditorEl.innerHTML = renderFormSetupCard({ focusMode: true });
+  } else if (focusPane === "layout") {
+    formEditorEl.innerHTML = renderLayoutCard({ focusMode: true });
   } else if (focusPane === "free_fields") {
     formEditorEl.innerHTML = renderTopFieldsCard({ focusMode: true });
   } else if (focusPane === "save") {
@@ -1732,7 +1808,7 @@ function renderEditor() {
     formEditorEl.innerHTML = renderSectionsCard({ focusMode: true });
   }
 
-  formEditorEl.classList.remove("pane-setup", "pane-free_fields", "pane-sections", "pane-save");
+  formEditorEl.classList.remove("pane-setup", "pane-layout", "pane-free_fields", "pane-sections", "pane-save");
   formEditorEl.classList.add(`pane-${focusPane}`);
 
   setupSortableCollections();
@@ -1924,6 +2000,85 @@ function renderTopFieldsCard(options = {}) {
       ${topFieldsOpen
         ? renderFieldCollection(topFields, topLevelCollectionPath("free_fields"), { focused: true })
         : `<div class="collapsed-copy">${escapeHtml(itemCount)} hidden here.</div>`}
+    </section>
+  `;
+}
+
+function resolveFocusedTopLevelBlockEntry(entries) {
+  if (!entries.length) {
+    return null;
+  }
+
+  const activeFieldPath = state.ui.activeFieldPath ? parsePathKey(state.ui.activeFieldPath) : null;
+  if (activeFieldPath) {
+    const matchingFieldEntry = entries.find((entry) => pathStartsWith(activeFieldPath, entry.path));
+    if (matchingFieldEntry) {
+      return matchingFieldEntry;
+    }
+  }
+
+  const openSectionPath = normalizeArray(state.ui.openSectionPaths)[0] ? parsePathKey(normalizeArray(state.ui.openSectionPaths)[0]) : null;
+  if (openSectionPath) {
+    const sectionMatch = entries.find((entry) => pathKey(entry.path) === pathKey(openSectionPath));
+    if (sectionMatch) {
+      return sectionMatch;
+    }
+  }
+
+  return entries[0];
+}
+
+function renderLayoutOrganizerItem(entry, active) {
+  const kind = String(entry.node?.kind || "").trim();
+  const typeLabel = kind === "section" ? "Section" : kind === "field_group" ? "Group" : summarizeField(entry.node);
+  return `
+    <div class="section-organizer-item ${active ? "active" : ""}">
+      <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+        <span class="drag-dots" aria-hidden="true"></span>
+      </button>
+      <button class="section-organizer-select" type="button" data-action="focus-layout-block" data-path="${encodePath(entry.path)}">
+        <span class="section-organizer-copy">
+          <strong>${escapeHtml(entry.view.name || "Untitled item")}</strong>
+          <span>${escapeHtml(typeLabel)}</span>
+        </span>
+        ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
+      </button>
+    </div>
+  `;
+}
+
+function renderLayoutCard(options = {}) {
+  const focusMode = Boolean(options.focusMode);
+  const entries = topLevelBlockEntries();
+  const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
+
+  return `
+    <section class="editor-card">
+      <div class="card-head">
+        <div>
+          <div class="card-title-row">
+            <h3 class="card-title">Layout</h3>
+            ${renderHelpPopover("Layout help", "This is the real top-level block order of the form. Use it when you need more control without changing the simpler default flow.")}
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="secondary mini" type="button" data-action="add-layout-field">Add field</button>
+          <button class="ghost mini" type="button" data-action="add-layout-group">Add group</button>
+          <button class="ghost mini" type="button" data-action="add-layout-section">Add section</button>
+        </div>
+      </div>
+      ${entries.length ? `
+        <div class="section-organizer" data-collection-path="${encodePath(["block_schema", "blocks"])}">
+          ${entries.map((entry) => renderLayoutOrganizerItem(entry, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : false)).join("")}
+        </div>
+        <div class="section-focus-stage">
+          ${selectedEntry
+            ? (selectedEntry.node?.kind === "section"
+              ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+              : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
+            : '<div class="empty-state">Pick a block to keep editing.</div>'}
+        </div>
+      ` : '<div class="empty-state">No blocks yet. Add one when you are ready.</div>'}
     </section>
   `;
 }
@@ -2326,15 +2481,11 @@ function renderPreview() {
     return;
   }
 
-  const freeFields = topLevelFreeFieldEntries().map((entry) => entry.view);
-  const sections = topLevelSectionEntries().map((entry) => entry.view);
-  const previewTargets = [
-    ...(freeFields.length ? [{ id: "preview_section_free_fields", label: "Ungrouped fields" }] : []),
-    ...sections.map((section, index) => ({
-      id: previewSectionId(section.name || "Section", index),
-      label: section.name || "Section",
-    })),
-  ];
+  const previewSegments = topLevelPreviewSegments();
+  const previewTargets = previewSegments.map((segment) => ({
+    id: segment.id,
+    label: segment.label,
+  }));
   const activePreviewSectionId = previewTargets.some((item) => item.id === state.ui.activePreviewSectionId)
     ? state.ui.activePreviewSectionId
     : (previewTargets[0]?.id || null);
@@ -2366,8 +2517,7 @@ function renderPreview() {
           `).join("")}
         </div>
         <div class="preview-paper">
-          ${freeFields.length ? renderPreviewSection("Ungrouped fields", freeFields, "preview_section_free_fields") : ""}
-          ${sections.map((section, index) => renderPreviewSection(section.name || "Untitled Section", getNodeChildren(section), previewSectionId(section.name || "Section", index))).join("")}
+          ${previewSegments.map((segment) => renderPreviewSection(segment.title, segment.fields, segment.id)).join("")}
         </div>
       </div>
     </section>
@@ -2796,6 +2946,32 @@ async function handleEditorClick(event) {
     addFieldAt(topLevelCollectionPath("free_fields"), "field_group");
     return;
   }
+  if (action === "add-layout-field") {
+    topLevelBlocks().push(makeBlankField("field"));
+    const actualIndex = topLevelBlocks().length - 1;
+    state.ui.focusPane = "layout";
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "add-layout-group") {
+    topLevelBlocks().push(makeBlankField("field_group"));
+    const actualIndex = topLevelBlocks().length - 1;
+    state.ui.focusPane = "layout";
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "add-layout-section") {
+    topLevelBlocks().push(makeBlankSection());
+    state.ui.focusPane = "layout";
+    state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
+    state.ui.activeFieldPath = null;
+    touch({ full: true, source: "blocks" });
+    return;
+  }
   if (action === "add-section") {
     addSection();
     return;
@@ -2829,6 +3005,10 @@ async function handleEditorClick(event) {
     state.ui.activeFieldPath = pathKey(path);
     state.ui.activeOptionToken = null;
     renderAll();
+    return;
+  }
+  if (action === "focus-layout-block" && path) {
+    focusLayoutBlock(path);
     return;
   }
   if (action === "toggle-section" && path) {

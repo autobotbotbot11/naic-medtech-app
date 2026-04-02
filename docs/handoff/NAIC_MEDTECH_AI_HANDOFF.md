@@ -85,6 +85,8 @@ What is implemented:
 - builder saves now go out through `block_schema` instead of posting the legacy `fields + sections` shape directly
 - the current focused editor and live preview now also read and write through block-backed paths for real edit flows, not just save-time bridging
 - top-level `Ungrouped fields` and `Sections` organizer flows now operate through block-backed collection handling while the visible UI stays calm
+- advanced mode now includes a true `Layout` pane for editing the real top-level ordered block list
+- the live preview now follows the actual root block order, including multiple ungrouped-field clusters when top-level fields appear in different positions
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area
 - extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
@@ -108,6 +110,8 @@ What is implemented:
 - the top shell is now more compact: lighter status bar, calmer workspace header, and a tighter preview/advanced control strip
 - the live preview panel now reads more like a polished form surface: read-only controls, stronger section grouping, and a clearer preview paper layout
 - the preview now includes sticky quick-jump section chips for long forms, with active state so the user can navigate the preview faster
+- advanced mode now also exposes a `Layout` pane so the builder can work on the actual root ordered blocks without disturbing the calmer default flow
+- the preview now respects root block order instead of always forcing one single ungrouped-fields area before every section
 - the left outline and library wording are now less technical, using calmer labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
 - the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
 - the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
@@ -205,7 +209,7 @@ Current migration status:
 - current library and builder screens still run on compatibility views over the older form/group model
 - the backend now includes a compatibility bridge between the current legacy schema and an ordered-block schema
 - current safe bridge coverage is limited to `field`, `field_group`, and `section`
-- the next engine milestone should be finishing the frontend migration from compatibility `fields + sections` thinking into true ordered-block editing without breaking the current calm UI in one jump
+- the next engine milestone should be expanding true ordered-block editing beyond the new advanced `Layout` pane and reducing the remaining compatibility-only `fields + sections` thinking without breaking the calm UI in one jump
 
 ## Source Of Truth
 Primary source of truth:
