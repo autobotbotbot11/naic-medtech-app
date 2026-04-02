@@ -1108,12 +1108,16 @@ function renderOutline() {
   const freeFields = normalizeArray(state.draft.schema.fields);
   const focusPane = String(state.ui.focusPane || defaultFocusPane());
   const openSectionToken = normalizeArray(state.ui.openSectionPaths)[0] || "";
+  const outlineMeta = [
+    pluralize(sections.length, "section"),
+    freeFields.length ? pluralize(freeFields.length, "ungrouped field", "ungrouped fields") : "",
+  ].filter(Boolean).join(" | ");
 
   builderOutlineEl.innerHTML = `
       <div class="outline-head">
         <p class="eyebrow">This form</p>
         <h3>${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-        <p class="panel-copy">${pluralize(sections.length, "section")} | ${pluralize(freeFields.length, "ungrouped field", "ungrouped fields")}</p>
+        <p class="panel-copy">${escapeHtml(outlineMeta)}</p>
       </div>
 
       <nav class="outline-nav">
@@ -1122,11 +1126,11 @@ function renderOutline() {
         </button>
         <button class="outline-item ${focusPane === "free_fields" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="free_fields">
           <span>Ungrouped fields</span>
-          <span class="outline-count">${freeFields.length}</span>
+          ${freeFields.length ? `<span class="outline-count">${freeFields.length}</span>` : ""}
         </button>
       <button class="outline-item ${focusPane === "sections" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="sections">
         <span>Sections</span>
-        <span class="outline-count">${sections.length}</span>
+        ${sections.length ? `<span class="outline-count">${sections.length}</span>` : ""}
       </button>
       ${sections.length ? `
         <div class="outline-sublist">
@@ -1135,7 +1139,7 @@ function renderOutline() {
             return `
               <button class="outline-subitem ${focusPane === "sections" && openSectionToken === token ? "active" : ""}" type="button" data-action="focus-section" data-index="${index}">
                 <span>${escapeHtml(section.name || `Section ${index + 1}`)}</span>
-                <span class="outline-count">${normalizeArray(section.fields).length}</span>
+                ${focusPane === "sections" && openSectionToken === token ? '<span class="outline-state">Editing</span>' : ""}
               </button>
             `;
           }).join("")}
