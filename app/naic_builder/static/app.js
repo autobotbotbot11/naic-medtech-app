@@ -400,8 +400,8 @@ function renderShellSummary() {
   if (!state.draft) {
     currentFormNameEl.textContent = "No form selected";
     currentFormMetaEl.textContent = "Open a form or start a blank draft.";
-    stageTitleEl.textContent = "Choose or build a form";
-    stageDescriptionEl.textContent = "Use the library first, then edit one area at a time.";
+    stageTitleEl.textContent = "Open a form";
+    stageDescriptionEl.textContent = "Edit one area at a time.";
     renderPreviewCallout();
     return;
   }
@@ -413,10 +413,10 @@ function renderShellSummary() {
 
   currentFormNameEl.textContent = formName;
   currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
-  stageTitleEl.textContent = `${formName} form`;
+  stageTitleEl.textContent = formName;
   stageDescriptionEl.textContent = state.ui.previewOpen
-    ? "Edit in the center and keep the live preview beside it."
-    : "Edit in the center and open the preview whenever you need a live check.";
+    ? "Edit one area at a time."
+    : "Edit one area at a time. Open preview anytime.";
   renderPreviewCallout();
 }
 
@@ -426,8 +426,8 @@ function renderPreviewCallout() {
   }
 
   if (!state.draft) {
-    previewCalloutTitleEl.textContent = "Live preview";
-    previewCalloutMetaEl.textContent = "Open a form to see the entry screen here.";
+    previewCalloutTitleEl.textContent = "Preview";
+    previewCalloutMetaEl.textContent = "Open a form to see it here.";
     openPreviewBtnEl.disabled = true;
     return;
   }
@@ -435,14 +435,14 @@ function renderPreviewCallout() {
   const sectionCount = pluralize(normalizeArray(state.draft.schema.sections).length, "section");
   const fieldCount = pluralize(currentDraftFieldCount(), "field");
   openPreviewBtnEl.disabled = false;
-  previewCalloutTitleEl.textContent = "Live preview";
+  previewCalloutTitleEl.textContent = "Preview";
 
   if (state.ui.previewOpen) {
-    previewCalloutMetaEl.textContent = `Shown beside the editor. ${sectionCount} | ${fieldCount}.`;
+    previewCalloutMetaEl.textContent = `Live beside the editor. ${sectionCount} | ${fieldCount}.`;
     return;
   }
 
-  previewCalloutMetaEl.textContent = `Hidden for now. ${sectionCount} | ${fieldCount}.`;
+  previewCalloutMetaEl.textContent = `Open it when you want a quick check. ${sectionCount} | ${fieldCount}.`;
 }
 
 function resetEditorPanels() {

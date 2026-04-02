@@ -613,7 +613,7 @@ textarea:focus {
 
 .stage-copy {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -636,7 +636,7 @@ textarea:focus {
 }
 
 .stage-signal strong {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .stage-signal span {
