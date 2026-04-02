@@ -364,6 +364,10 @@ function blockSchemaToLegacySchema(blockSchema, fallback = {}) {
   };
 }
 
+function blockKind(node) {
+  return String(node?.kind || "").trim();
+}
+
 function ensureDraftSchemas(draft, options = {}) {
   if (!draft || typeof draft !== "object") {
     return draft;
@@ -453,12 +457,17 @@ function syncDraftCompatibilitySchemas(source = "blocks") {
 }
 
 function isBlockNode(node) {
-  const kind = String(node?.kind || "").trim();
+  const kind = blockKind(node);
   return kind === "field" || kind === "field_group" || kind === "section";
 }
 
+function isStoredBlockNode(node) {
+  const kind = blockKind(node);
+  return kind === "field" || kind === "field_group" || kind === "section" || kind === "note" || kind === "divider";
+}
+
 function getNodeProps(node) {
-  if (!isBlockNode(node)) {
+  if (!isStoredBlockNode(node)) {
     return {};
   }
   if (!node.props || typeof node.props !== "object") {
@@ -468,7 +477,7 @@ function getNodeProps(node) {
 }
 
 function getNodeChildren(node) {
-  if (!isBlockNode(node)) {
+  if (!isStoredBlockNode(node)) {
     return normalizeArray(node?.fields);
   }
   node.children = normalizeArray(node.children);
@@ -476,11 +485,11 @@ function getNodeChildren(node) {
 }
 
 function getNodeKey(node) {
-  return isBlockNode(node) ? String(getNodeProps(node).key || "").trim() : String(node?.key || "").trim();
+  return isStoredBlockNode(node) ? String(getNodeProps(node).key || "").trim() : String(node?.key || "").trim();
 }
 
 function getNodeNotes(node) {
-  return isBlockNode(node) ? normalizeArray(getNodeProps(node).notes) : normalizeArray(node?.notes);
+  return isStoredBlockNode(node) ? normalizeArray(getNodeProps(node).notes) : normalizeArray(node?.notes);
 }
 
 function getFieldControl(field) {
@@ -519,13 +528,25 @@ function getFieldOptions(field) {
 }
 
 function viewNode(node) {
-  if (!isBlockNode(node)) {
+  if (!isStoredBlockNode(node)) {
     return node;
   }
 
-  return String(node.kind || "").trim() === "section"
-    ? blockSectionToLegacy(node)
-    : blockFieldToLegacy(node);
+  if (blockKind(node) === "section") {
+    return blockSectionToLegacy(node);
+  }
+
+  if (blockKind(node) === "field" || blockKind(node) === "field_group") {
+    return blockFieldToLegacy(node);
+  }
+
+  return {
+    id: String(node?.id || "").trim(),
+    kind: blockKind(node),
+    name: String(node?.name || "").trim(),
+    props: deepClone(getNodeProps(node)),
+    children: [],
+  };
 }
 
 function topLevelBlocks() {
@@ -535,7 +556,10 @@ function topLevelBlocks() {
 function topLevelFreeFieldEntries() {
   return topLevelBlocks()
     .map((node, index) => ({ node, path: ["block_schema", "blocks", index], view: viewNode(node) }))
-    .filter((entry) => entry.node?.kind !== "section");
+    .filter((entry) => {
+      const kind = blockKind(entry.node);
+      return kind === "field" || kind === "field_group";
+    });
 }
 
 function topLevelSectionEntries() {
@@ -582,8 +606,8 @@ function collectFieldPathKeysFromNode(node, basePath) {
 function moveTopLevelCollection(kind, fromIndex, toIndex) {
   const blocks = topLevelBlocks();
   const match = kind === "sections"
-    ? (block) => String(block?.kind || "").trim() === "section"
-    : (block) => String(block?.kind || "").trim() !== "section";
+    ? (block) => blockKind(block) === "section"
+    : (block) => blockKind(block) === "field" || blockKind(block) === "field_group";
   const subset = blocks.filter(match);
   if (!subset.length) {
     return;
@@ -663,20 +687,25 @@ function currentDraftFieldCount() {
 function topLevelPreviewSegments() {
   const segments = [];
   let looseFields = [];
-  let looseGroupIndex = 0;
+  let looseHasLayoutBlocks = false;
+  let freeFieldGroupCount = 0;
+  let layoutGroupCount = 0;
 
   const flushLooseFields = () => {
     if (!looseFields.length) {
       return;
     }
-    looseGroupIndex += 1;
+    const baseLabel = looseHasLayoutBlocks ? "Layout" : "Ungrouped fields";
+    const baseId = looseHasLayoutBlocks ? "layout" : "free_fields";
+    const localIndex = looseHasLayoutBlocks ? ++layoutGroupCount : ++freeFieldGroupCount;
     segments.push({
-      id: looseGroupIndex === 1 ? "preview_section_free_fields" : `preview_section_free_fields_${looseGroupIndex}`,
-      label: looseGroupIndex === 1 ? "Ungrouped fields" : `Ungrouped fields ${looseGroupIndex}`,
-      title: looseGroupIndex === 1 ? "Ungrouped fields" : `Ungrouped fields ${looseGroupIndex}`,
+      id: localIndex === 1 ? `preview_section_${baseId}` : `preview_section_${baseId}_${localIndex}`,
+      label: localIndex === 1 ? baseLabel : `${baseLabel} ${localIndex}`,
+      title: localIndex === 1 ? baseLabel : `${baseLabel} ${localIndex}`,
       fields: looseFields,
     });
     looseFields = [];
+    looseHasLayoutBlocks = false;
   };
 
   topLevelBlockEntries().forEach((entry, index) => {
@@ -691,6 +720,9 @@ function topLevelPreviewSegments() {
       return;
     }
 
+    if (entry.node?.kind === "note" || entry.node?.kind === "divider") {
+      looseHasLayoutBlocks = true;
+    }
     looseFields.push(entry.view);
   });
 
@@ -1005,7 +1037,12 @@ function syncEditorPanels() {
   }
 
   const validFieldPaths = new Set(collectFieldPathKeys(state.draft?.block_schema, ["block_schema"]));
-  if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath)) {
+  const validLayoutPaths = new Set(
+    topLevelBlockEntries()
+      .filter((entry) => blockKind(entry.node) !== "section")
+      .map((entry) => pathKey(entry.path)),
+  );
+  if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath) && !validLayoutPaths.has(state.ui.activeFieldPath)) {
     state.ui.activeFieldPath = null;
     state.ui.activeOptionToken = null;
   }
@@ -1175,13 +1212,13 @@ function setBoundValue(target, bind, rawValue) {
     }
   }
 
-  if (isBlockNode(target)) {
+  if (isStoredBlockNode(target)) {
     const props = getNodeProps(target);
     if (bind === "name") {
       target.name = rawValue;
       return;
     }
-    if (bind === "key" || bind === "notes" || bind === "normal_value" || bind === "unit_hint") {
+    if (bind === "key" || bind === "notes" || bind === "normal_value" || bind === "unit_hint" || bind === "content") {
       props[bind] = rawValue;
       return;
     }
@@ -1242,6 +1279,36 @@ function makeBlankSection() {
     props: {
       key: "new_section",
       order: 1,
+      notes: [],
+    },
+    children: [],
+  };
+}
+
+function makeBlankNote() {
+  return {
+    id: `blk_${slugify(`note_${Date.now()}`)}`,
+    kind: "note",
+    name: "Note",
+    props: {
+      key: "note",
+      order: 1,
+      content: "Add note text here.",
+      notes: [],
+    },
+    children: [],
+  };
+}
+
+function makeBlankDivider() {
+  return {
+    id: `blk_${slugify(`divider_${Date.now()}`)}`,
+    kind: "divider",
+    name: "Divider",
+    props: {
+      key: "divider",
+      order: 1,
+      content: "",
       notes: [],
     },
     children: [],
@@ -1329,7 +1396,7 @@ function makeCopyName(name) {
 function cloneNode(node) {
   const copy = deepClone(node);
   copy.name = makeCopyName(copy.name);
-  if (isBlockNode(copy)) {
+  if (isStoredBlockNode(copy)) {
     const props = getNodeProps(copy);
     if (props.key) {
       props.key = `${slugify(props.key)}_copy`;
@@ -1376,7 +1443,7 @@ function syncNodeKeys(node) {
   if (!node || typeof node !== "object") {
     return;
   }
-  if (isBlockNode(node)) {
+  if (isStoredBlockNode(node)) {
     const props = getNodeProps(node);
     if (node.name && !props.key) {
       props.key = slugify(node.name);
@@ -2029,8 +2096,16 @@ function resolveFocusedTopLevelBlockEntry(entries) {
 }
 
 function renderLayoutOrganizerItem(entry, active) {
-  const kind = String(entry.node?.kind || "").trim();
-  const typeLabel = kind === "section" ? "Section" : kind === "field_group" ? "Group" : summarizeField(entry.node);
+  const kind = blockKind(entry.node);
+  const typeLabel = kind === "section"
+    ? "Section"
+    : kind === "field_group"
+      ? "Group"
+      : kind === "note"
+        ? "Note"
+        : kind === "divider"
+          ? "Divider"
+          : summarizeField(entry.node);
   return `
     <div class="section-organizer-item ${active ? "active" : ""}">
       <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -2039,11 +2114,79 @@ function renderLayoutOrganizerItem(entry, active) {
       <button class="section-organizer-select" type="button" data-action="focus-layout-block" data-path="${encodePath(entry.path)}">
         <span class="section-organizer-copy">
           <strong>${escapeHtml(entry.view.name || "Untitled item")}</strong>
-          <span>${escapeHtml(typeLabel)}</span>
+          ${typeLabel && compactText(entry.view.name || "").toLowerCase() !== typeLabel.toLowerCase()
+            ? `<span>${escapeHtml(typeLabel)}</span>`
+            : ""}
         </span>
         ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
       </button>
     </div>
+  `;
+}
+
+function utilityBlockContent(node) {
+  return String(getNodeProps(node).content || "").trim();
+}
+
+function renderUtilityBlockCard(node, path) {
+  const kind = blockKind(node);
+  const isNote = kind === "note";
+  const title = isNote ? "Note" : "Divider";
+  const namePlaceholder = isNote ? "Example: Preparation Note" : "Optional divider label";
+  const content = utilityBlockContent(node);
+
+  return `
+    <article class="field-card utility-card is-open is-focused" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
+      <div class="field-head field-head-focused">
+        <div>
+          <div class="field-meta">
+            <span class="field-summary">${escapeHtml(title)}</span>
+          </div>
+          <h4 class="field-display-title">${escapeHtml(node.name || title)}</h4>
+        </div>
+      </div>
+
+      <div class="field-spotlight">
+        <strong>${escapeHtml(title)}</strong>
+        <span>${escapeHtml(isNote ? "Shows a read-only note in the preview." : "Adds a visual break in the preview.")}</span>
+      </div>
+
+      <div class="inline-grid field-basics-grid compact">
+        <label>
+          <span>Label</span>
+          <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(node.name || "")}" placeholder="${escapeHtml(namePlaceholder)}">
+        </label>
+      </div>
+
+      ${isNote ? `
+        <label class="stacked-input">
+          <span>Text</span>
+          <textarea data-path="${encodePath(path)}" data-bind="content" rows="5" placeholder="Write the note that should appear in the preview.">${escapeHtml(content)}</textarea>
+        </label>
+      ` : `
+        <label class="stacked-input">
+          <span>Caption</span>
+          <input data-path="${encodePath(path)}" data-bind="content" value="${escapeHtml(content)}" placeholder="Optional short caption">
+        </label>
+      `}
+
+      ${state.ui.advancedMode ? `
+        <details class="advanced">
+          <summary>Advanced</summary>
+          <div class="advanced-grid">
+            <label>
+              <span>Internal key</span>
+              <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(node) || "")}">
+            </label>
+            <label style="grid-column: 1 / -1;">
+              <span>Notes</span>
+              <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(node).join("\n"))}</textarea>
+            </label>
+          </div>
+        </details>
+      ` : ""}
+      ${renderManageFooter(path)}
+    </article>
   `;
 }
 
@@ -2065,6 +2208,8 @@ function renderLayoutCard(options = {}) {
           <button class="secondary mini" type="button" data-action="add-layout-field">Add field</button>
           <button class="ghost mini" type="button" data-action="add-layout-group">Add group</button>
           <button class="ghost mini" type="button" data-action="add-layout-section">Add section</button>
+          <button class="ghost mini" type="button" data-action="add-layout-note">Add note</button>
+          <button class="ghost mini" type="button" data-action="add-layout-divider">Add divider</button>
         </div>
       </div>
       ${entries.length ? `
@@ -2075,7 +2220,9 @@ function renderLayoutCard(options = {}) {
           ${selectedEntry
             ? (selectedEntry.node?.kind === "section"
               ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
-              : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
+              : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
+                ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+                : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
             : '<div class="empty-state">Pick a block to keep editing.</div>'}
         </div>
       ` : '<div class="empty-state">No blocks yet. Add one when you are ready.</div>'}
@@ -2547,6 +2694,10 @@ function renderPreviewSection(title, fields, previewId) {
   `;
 }
 
+function previewRichText(value) {
+  return escapeHtml(String(value || "")).replaceAll("\n", "<br>");
+}
+
 function previewInputType(field) {
   const fieldType = inferFieldType(field);
   if (fieldType === "number") {
@@ -2576,6 +2727,35 @@ function previewPlaceholder(field) {
 }
 
 function renderPreviewField(field) {
+  if (field.kind === "note") {
+    const title = String(field.name || "").trim();
+    const content = utilityBlockContent(field);
+    const showTitle = title && title.toLowerCase() !== "note";
+    return `
+      <div class="preview-note">
+        ${showTitle ? `<div class="preview-note-title">${escapeHtml(title)}</div>` : ""}
+        <div class="preview-note-body">${previewRichText(content || "Note text")}</div>
+      </div>
+    `;
+  }
+
+  if (field.kind === "divider") {
+    const label = String(field.name || "").trim();
+    const caption = utilityBlockContent(field);
+    const showLabel = label && label.toLowerCase() !== "divider";
+    return `
+      <div class="preview-divider">
+        <div class="preview-divider-line"></div>
+        ${(showLabel || caption) ? `
+          <div class="preview-divider-copy">
+            ${showLabel ? `<span class="preview-divider-label">${escapeHtml(label)}</span>` : ""}
+            ${caption ? `<span class="preview-divider-caption">${escapeHtml(caption)}</span>` : ""}
+          </div>
+        ` : ""}
+      </div>
+    `;
+  }
+
   if (field.kind === "field_group") {
     return `
       <div class="preview-group">
@@ -2969,6 +3149,24 @@ async function handleEditorClick(event) {
     state.ui.focusPane = "layout";
     state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
     state.ui.activeFieldPath = null;
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "add-layout-note") {
+    topLevelBlocks().push(makeBlankNote());
+    const actualIndex = topLevelBlocks().length - 1;
+    state.ui.focusPane = "layout";
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "add-layout-divider") {
+    topLevelBlocks().push(makeBlankDivider());
+    const actualIndex = topLevelBlocks().length - 1;
+    state.ui.focusPane = "layout";
+    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeOptionToken = null;
     touch({ full: true, source: "blocks" });
     return;
   }

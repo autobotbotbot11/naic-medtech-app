@@ -23,7 +23,9 @@ The app now starts from a builder-first FastAPI scaffold.
 - save requests now go out through `block_schema`
 - the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level ungrouped/section organizer flows
 - advanced mode now exposes a real `Layout` pane that works on the top-level ordered `block_schema.blocks` collection
+- advanced `Layout` can now add real `note` and `divider` blocks without forcing them into the calmer default editing panes
 - the live preview now follows the real top-level block order, including separated ungrouped-field clusters when root fields appear in multiple places
+- the live preview can now render `note` and `divider` blocks from stored `block_schema`, while default `Ungrouped fields` and `Sections` panes stay focused on ordinary field editing
 - the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
@@ -66,8 +68,8 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
   - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
-- important limitation: the visible builder is now partially block-backed, but the surface model still mirrors the older `fields + sections` mental model and does not yet expose richer block kinds
-- current block compatibility is intentionally limited to `field`, `field_group`, and `section` so the migration can stay safe
+- important limitation: the visible builder is now partially block-backed, but the default calm surface still mirrors the older `fields + sections` mental model
+- richer block kinds like `note` and `divider` are now available only through advanced `Layout`, while the legacy compatibility projection is still intentionally limited to `field`, `field_group`, and `section`
 
 ## Run locally
 1. Create and activate a virtual environment.

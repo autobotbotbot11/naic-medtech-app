@@ -90,6 +90,8 @@ What is implemented:
 - top-level `Ungrouped fields` and `Sections` organizer flows now operate through block-backed collection handling while the visible UI stays calm
 - advanced mode now includes a true `Layout` pane for editing the real top-level ordered block list
 - the live preview now follows the actual root block order, including multiple ungrouped-field clusters when top-level fields appear in different positions
+- advanced `Layout` can now add real `note` and `divider` blocks as first visible proof of richer ordered-block editing
+- the live preview can now render stored `note` and `divider` blocks while the calmer default panes still stay focused on ordinary fields and sections
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area
 - extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
@@ -127,7 +129,8 @@ Important reading for the next implementation step:
 - treat `/forms/new` as the new creation surface
 - the current builder page is still using the older underlying schema shape, but the workspace shell is now significantly calmer
 - the next large build step should continue from the newer flexible builder docs, not from a full V3 reset
-- important limitation: the current builder is now partially block-backed, but the visible surface still follows the older `fields + sections` mental model and does not yet expose richer block kinds
+- important limitation: the current builder is now partially block-backed, but the default visible surface still follows the older `fields + sections` mental model
+- richer block kinds like `note` and `divider` are currently exposed only through advanced `Layout`, while the legacy compatibility projection remains limited on purpose
 
 ## Current Builder Progress
 Current implementation status:
@@ -213,6 +216,7 @@ Current migration status:
 - the backend now includes a compatibility bridge between the current legacy schema and an ordered-block schema
 - current safe bridge coverage is limited to `field`, `field_group`, and `section`
 - stored block schemas can now preserve extra block kinds even when the legacy compatibility projection cannot render them directly
+- advanced `Layout` now provides the first UI foothold for extra block kinds like `note` and `divider`
 - the next engine milestone should be expanding true ordered-block editing beyond the new advanced `Layout` pane and reducing the remaining compatibility-only `fields + sections` thinking without breaking the calm UI in one jump
 
 ## Source Of Truth

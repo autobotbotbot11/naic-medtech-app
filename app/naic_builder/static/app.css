@@ -1376,6 +1376,12 @@ button.subtle[aria-pressed="true"] {
   background: linear-gradient(180deg, rgba(255, 250, 244, 0.99), rgba(255, 244, 232, 0.92));
 }
 
+.field-card.utility-card {
+  border-style: dashed;
+  border-color: rgba(111, 130, 124, 0.22);
+  background: linear-gradient(180deg, rgba(251, 253, 252, 0.99), rgba(243, 248, 246, 0.96));
+}
+
 .field-meta {
     display: flex;
     gap: 8px;
@@ -1426,6 +1432,17 @@ button.subtle[aria-pressed="true"] {
 .field-spotlight span {
     color: var(--muted);
     font-size: 12px;
+}
+
+.stacked-input {
+    display: grid;
+    gap: 6px;
+    margin-top: 12px;
+}
+
+.stacked-input textarea {
+    min-height: 116px;
+    resize: vertical;
 }
 
 .field-basics-grid.compact {
@@ -1743,6 +1760,65 @@ details.advanced summary {
   font-size: 13px;
   font-weight: 800;
   color: #9f4f19;
+}
+
+.preview-note,
+.preview-divider {
+  grid-column: 1 / -1;
+}
+
+.preview-note {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(30, 93, 82, 0.12);
+  border-radius: var(--radius-md);
+  background: rgba(241, 248, 245, 0.92);
+}
+
+.preview-note-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+
+.preview-note-body {
+  color: var(--text);
+  line-height: 1.6;
+  font-size: 13px;
+}
+
+.preview-divider {
+  display: grid;
+  gap: 8px;
+  padding: 6px 0 2px;
+}
+
+.preview-divider-line {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(201, 106, 41, 0.24), rgba(68, 54, 40, 0.12));
+}
+
+.preview-divider-copy {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.preview-divider-label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--warm);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.preview-divider-caption {
+  font-size: 12px;
+  color: var(--muted);
 }
 
 .preview-field {
