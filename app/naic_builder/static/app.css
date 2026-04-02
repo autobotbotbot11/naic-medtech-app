@@ -1183,9 +1183,42 @@ button.subtle[aria-pressed="true"] {
 }
 
 .action-menu button {
-  display: flex;
-  width: 100%;
-  justify-content: center;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+.manage-details {
+    padding-top: 2px;
+}
+
+.manage-details summary {
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.manage-details summary::-webkit-details-marker {
+    display: none;
+}
+
+.manage-details[open] summary {
+    color: var(--accent);
+}
+
+.manage-actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-top: 10px;
 }
 
 .field-card {

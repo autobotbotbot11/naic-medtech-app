@@ -40,7 +40,8 @@
       "the left outline and library wording now use calmer non-technical labels",
       "the committed sample runtime DB has been reset to clean schema-seeded state and can be reset again with tools/scripts/reset_builder_runtime_db.py",
       "the focused field editor is now lighter, with drag left in the organizer and a more compact basics and choices treatment",
-      "the focused section editor is now lighter too, with drag left in the organizer and a more compact section basics treatment"
+      "the focused section editor is now lighter too, with drag left in the organizer and a more compact section basics treatment",
+      "selected section and field destructive actions now live in a quieter footer more-options area"
     ],
     "current_builder_surface_note": "The builder still uses the older underlying schema shape, but the visible workspace is now significantly calmer than the original single long-stack editor."
   },

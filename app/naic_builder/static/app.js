@@ -217,7 +217,7 @@ function closeTransientDetails() {
     return;
   }
 
-  formEditorEl.querySelectorAll(".action-details[open], .inline-help[open]").forEach((item) => {
+  formEditorEl.querySelectorAll(".action-details[open], .manage-details[open], .inline-help[open]").forEach((item) => {
     item.open = false;
   });
 }
@@ -1304,16 +1304,28 @@ function renderSaveCard(options = {}) {
 }
 
 function renderNodeActionMenu(path) {
-  return `
-    <details class="action-details">
-      <summary aria-label="More actions" title="More actions">...</summary>
-      <div class="action-menu">
-        <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
-        <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
-      </div>
-    </details>
-  `;
-}
+    return `
+      <details class="action-details">
+        <summary aria-label="More actions" title="More actions">...</summary>
+        <div class="action-menu">
+          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+        </div>
+      </details>
+    `;
+  }
+
+function renderManageFooter(path) {
+    return `
+      <details class="manage-details">
+        <summary>More options</summary>
+        <div class="manage-actions">
+          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+        </div>
+      </details>
+    `;
+  }
 
 function renderTopFieldsCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
@@ -1402,6 +1414,7 @@ function renderSectionCard(section, path, number, options = {}) {
     const focusedCard = Boolean(options.focusedCard);
     const open = Boolean(options.forceOpen) || isSectionOpen(path);
     const itemCount = pluralize(normalizeArray(section.fields).length, "item");
+    const showHeaderActions = !focusedCard || !options.hideToggle;
     return `
       <article class="section-card ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
         <div class="section-head ${focusedCard ? "section-head-focused" : ""}">
@@ -1412,6 +1425,7 @@ function renderSectionCard(section, path, number, options = {}) {
             </div>
             <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
           </div>
+          ${showHeaderActions ? `
           <div class="row-actions">
             ${focusedCard ? "" : `
             <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -1421,6 +1435,7 @@ function renderSectionCard(section, path, number, options = {}) {
             ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Done" : "Open"}</button>`}
             ${renderNodeActionMenu(path)}
           </div>
+          ` : ""}
         </div>
   
         ${open ? `
@@ -1443,10 +1458,10 @@ function renderSectionCard(section, path, number, options = {}) {
 
         ${renderFieldCollection(section.fields, [...path, "fields"], { focused: true })}
 
-        ${state.ui.advancedMode ? `
-          <details class="advanced">
-            <summary>Advanced</summary>
-            <div class="advanced-grid">
+          ${state.ui.advancedMode ? `
+            <details class="advanced">
+              <summary>Advanced</summary>
+              <div class="advanced-grid">
               <label>
                 <span>Internal section key</span>
                 <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(section.key || "")}">
@@ -1455,13 +1470,14 @@ function renderSectionCard(section, path, number, options = {}) {
                 <span>Section notes</span>
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(section.notes).join("\n"))}</textarea>
               </label>
-            </div>
-          </details>
+              </div>
+            </details>
+          ` : ""}
+          ${focusedCard ? renderManageFooter(path) : ""}
         ` : ""}
-      ` : ""}
-    </article>
-  `;
-}
+      </article>
+    `;
+  }
 
 function renderFieldCollection(fields, collectionPath, options = {}) {
   const items = normalizeArray(fields);
@@ -1562,6 +1578,7 @@ function renderFieldCard(field, path, options = {}) {
     const summary = summarizeField(field);
     const fieldType = inferFieldType(field);
     const focusedCard = Boolean(options.focusedCard);
+    const showHeaderActions = !focusedCard || !options.hideToggle;
     const compactNormal = compactText(field.normal_value);
     const compactUnit = compactText(field.unit_hint);
     const metaBits = [
@@ -1580,6 +1597,7 @@ function renderFieldCard(field, path, options = {}) {
             </div>
             <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
+          ${showHeaderActions ? `
           <div class="row-actions">
             ${focusedCard ? "" : `
             <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -1589,6 +1607,7 @@ function renderFieldCard(field, path, options = {}) {
             ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>`}
             ${renderNodeActionMenu(path)}
           </div>
+          ` : ""}
         </div>
   
         ${open ? `
@@ -1630,10 +1649,10 @@ function renderFieldCard(field, path, options = {}) {
 
         ${!isGroup && field.control === "select" ? renderOptionsEditor(field, path) : ""}
 
-        ${state.ui.advancedMode ? `
-          <details class="advanced">
-            <summary>Advanced</summary>
-            <div class="advanced-grid">
+          ${state.ui.advancedMode ? `
+            <details class="advanced">
+              <summary>Advanced</summary>
+              <div class="advanced-grid">
               <label>
                 <span>Internal key</span>
                 <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(field.key || "")}">
@@ -1652,13 +1671,14 @@ function renderFieldCard(field, path, options = {}) {
                 <span>Notes</span>
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(normalizeArray(field.notes).join("\n"))}</textarea>
               </label>
-            </div>
-          </details>
+              </div>
+            </details>
+          ` : ""}
+          ${focusedCard ? renderManageFooter(path) : ""}
         ` : ""}
-      ` : ""}
-    </article>
-  `;
-}
+      </article>
+    `;
+  }
 
 function renderOptionsEditor(field, path) {
     const options = normalizeArray(field.options);
@@ -2300,8 +2320,8 @@ formEditorEl.addEventListener("toggle", (event) => {
     return;
   }
 
-  if (details.classList.contains("action-details")) {
-    formEditorEl.querySelectorAll(".action-details[open]").forEach((item) => {
+  if (details.classList.contains("action-details") || details.classList.contains("manage-details")) {
+    formEditorEl.querySelectorAll(".action-details[open], .manage-details[open]").forEach((item) => {
       if (item !== details) {
         item.open = false;
       }
@@ -2327,7 +2347,7 @@ document.addEventListener("click", (event) => {
     return;
   }
 
-  if (target.closest(".action-details, .inline-help")) {
+  if (target.closest(".action-details, .manage-details, .inline-help")) {
     return;
   }
 

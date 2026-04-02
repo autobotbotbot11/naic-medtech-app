@@ -25,6 +25,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the left outline and library wording now use calmer non-technical labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
+- duplicate and delete for selected sections and fields now live in a quieter footer `More options` area instead of staying in the header
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:
