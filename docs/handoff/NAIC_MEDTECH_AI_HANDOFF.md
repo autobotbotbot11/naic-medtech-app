@@ -276,6 +276,7 @@ Current builder implementation is still:
 - the nested `Choices` organizer now follows the same calmer pattern: no choice row numbers, only the active choice shows `Editing`, and the selected choice uses a smaller spotlight card
 - selected choice actions now follow the same quiet pattern too: footer `More options`, `Duplicate`, and a calmer confirmed `Delete` dialog
 - the left outline is lighter too: section subitems no longer show per-row counts, and only the active section shows `Editing`
+- the top shell is calmer now as well: the status strip is subtler, status messages are shorter, and the live-preview callout uses steadier less repetitive copy
 
 The repo has not been migrated to Alpine.js. Alpine.js was only a possible helper direction discussed for future UI simplification, not a current dependency.
 

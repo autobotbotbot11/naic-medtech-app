@@ -426,8 +426,8 @@ function renderPreviewCallout() {
   }
 
   if (!state.draft) {
-    previewCalloutTitleEl.textContent = "No preview yet";
-    previewCalloutMetaEl.textContent = "The live side panel appears after you open a form.";
+    previewCalloutTitleEl.textContent = "Live preview";
+    previewCalloutMetaEl.textContent = "Open a form to see the entry screen here.";
     openPreviewBtnEl.disabled = true;
     return;
   }
@@ -435,15 +435,14 @@ function renderPreviewCallout() {
   const sectionCount = pluralize(normalizeArray(state.draft.schema.sections).length, "section");
   const fieldCount = pluralize(currentDraftFieldCount(), "field");
   openPreviewBtnEl.disabled = false;
+  previewCalloutTitleEl.textContent = "Live preview";
 
   if (state.ui.previewOpen) {
-    previewCalloutTitleEl.textContent = "Preview is live";
-    previewCalloutMetaEl.textContent = `${sectionCount} | ${fieldCount}`;
+    previewCalloutMetaEl.textContent = `Shown beside the editor. ${sectionCount} | ${fieldCount}.`;
     return;
   }
 
-  previewCalloutTitleEl.textContent = "Preview is hidden";
-  previewCalloutMetaEl.textContent = `${sectionCount} | ${fieldCount}`;
+  previewCalloutMetaEl.textContent = `Hidden for now. ${sectionCount} | ${fieldCount}.`;
 }
 
 function resetEditorPanels() {
@@ -614,7 +613,7 @@ function setDirty(value) {
 
 function setStatus(message, isError = false) {
   statusTextEl.textContent = message;
-  statusTextEl.style.color = isError ? "#9f3d17" : "";
+  statusTextEl.dataset.tone = isError ? "error" : "normal";
 }
 
 function getNodeByPath(path) {
@@ -826,7 +825,7 @@ function touch(options = {}) {
 }
 
 async function bootstrap() {
-  setStatus("Loading builder...");
+  setStatus("Loading builder");
   state.bootstrap = await api("/api/builder/bootstrap");
   renderFormList();
   const draftConfig = {
@@ -855,7 +854,7 @@ async function bootstrap() {
 async function loadForm(slug) {
   if (slug === state.selectedFormSlug && state.draft) {
     state.ui.libraryOpen = false;
-    setStatus(`Still editing ${state.draft.name}.`);
+    setStatus(`Still in ${state.draft.name}`);
     renderAll();
     return;
   }
@@ -872,7 +871,7 @@ async function loadForm(slug) {
   resetEditorPanels();
   setDirty(false);
   state.ui.libraryOpen = false;
-  setStatus(`Loaded ${form.name}.`);
+  setStatus(`${form.name} ready`);
   renderAll();
 }
 
@@ -886,8 +885,8 @@ function startNewForm(config = {}) {
   state.ui.libraryOpen = false;
   const templateId = String(config.templateId || "").trim();
   const startLabel = templateId && templateId !== "blank"
-    ? `Started a new ${state.draft.name} draft from a preset.`
-    : "Started a new blank form.";
+    ? `${state.draft.name} draft ready`
+    : "Blank draft ready";
   setStatus(startLabel);
   renderAll();
 }
@@ -916,7 +915,7 @@ function duplicateCurrentForm(overrides = {}) {
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
-  setStatus("Duplicated the current form into a new draft.");
+  setStatus("New draft copied from the current form");
   renderAll();
 }
 
@@ -943,7 +942,7 @@ async function resetCurrentDraft() {
   state.draft = deepClone(state.baselineDraft);
   resetEditorPanels();
   setDirty(false);
-  setStatus(state.selectedFormSlug ? `Restored ${state.draft.name} to its last saved version.` : "Reset the current draft.");
+  setStatus(state.selectedFormSlug ? "Returned to the last saved version" : "Draft reset");
   renderAll();
 }
 
@@ -2124,7 +2123,7 @@ async function saveDraft() {
   state.baselineDraft = deepClone(saved);
   state.bootstrap = await api("/api/builder/bootstrap");
   setDirty(false);
-  setStatus(`Saved ${saved.name} as version ${saved.current_version_number}.`);
+  setStatus(`${saved.name} saved as Version ${saved.current_version_number}`);
   renderAll();
 }
 

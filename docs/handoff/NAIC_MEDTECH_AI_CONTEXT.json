@@ -268,7 +268,8 @@
         ,
         "nested choice organizers are less mechanical: no choice row numbers, only the active choice shows Editing, and the selected choice uses a calmer spotlight card",
         "selected choice actions now use a quieter footer More options area with Duplicate and a calmer confirmed Delete flow",
-        "the left outline is lighter: section subitems no longer show per-row counts, and only the active section shows Editing"
+        "the left outline is lighter: section subitems no longer show per-row counts, and only the active section shows Editing",
+        "the top shell is calmer: the status strip is subtler, status messages are shorter, and the live-preview callout uses steadier less repetitive copy"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",
