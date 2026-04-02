@@ -73,6 +73,7 @@
       "the content pane now uses a compact root organizer plus one focused editor",
       "nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end",
       "selected groups can now add nested groups in the normal flow too, so grouped content is less locked to a field-only structure",
+      "selected groups now use the same compact child organizer plus one focused child editor pattern as selected sections, instead of spilling every child card open at once",
       "the old separate root ungrouped-fields and sections panes are no longer active workspace paths; the builder now uses one real root Content path instead of keeping both models alive",
       "advanced Layout add actions now insert relative to the current selected block when possible, so the true ordered-block surface no longer blindly appends new blocks",
       "selected sections still use a compact section organizer plus one focused section editor",

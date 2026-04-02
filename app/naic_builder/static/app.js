@@ -2710,7 +2710,7 @@ function renderFieldCard(field, path, options = {}) {
 
         ${isGroup ? `
           <div class="nested-fields">
-            ${renderFieldCollection(getNodeChildren(fieldNode), [...path, "children"])}
+            ${renderFieldCollection(getNodeChildren(fieldNode), [...path, "children"], focusedCard ? { focused: true } : {})}
           </div>
           <div class="section-actions">
             <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add field</button>
