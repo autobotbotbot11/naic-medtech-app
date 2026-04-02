@@ -103,6 +103,7 @@ What is implemented:
 - `/forms` now renders directly from the real persisted `container | form` tree instead of the older one-level grouped library view
 - the library can now show both root-level forms and folders in one calm tree-first browse surface
 - library search now works against the full folder path text instead of only one-level group labels
+- folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
 - `/forms/new` now renders a dedicated guided `Start New Form` screen
 - `New Form`, `Open Builder`, and `Duplicate` are all routed from the new library screen
 - guided creation now asks for:

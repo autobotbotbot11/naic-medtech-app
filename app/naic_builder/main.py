@@ -83,6 +83,8 @@ def forms_library(request: Request, session: Session = Depends(get_session)) -> 
 def start_new_form_page(
     request: Request,
     source: str = "",
+    parent: str = "",
+    create_folder: bool = False,
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
     container_options = list_container_choices(session)
@@ -96,6 +98,7 @@ def start_new_form_page(
         if source_form is None:
             raise HTTPException(status_code=404, detail="Source form not found.")
 
+    explicit_parent_node_key = parent.strip()
     default_parent_node_key = ""
     default_group_source_mode = "existing" if container_options else "root"
     if source_form and source_form.library_parent_node_key:
@@ -113,6 +116,15 @@ def start_new_form_page(
         default_parent_node_key = container_options[0]["node_key"]
         default_group_source_mode = "existing"
 
+    if explicit_parent_node_key:
+        matching_parent = next(
+            (option for option in container_options if option["node_key"] == explicit_parent_node_key),
+            None,
+        )
+        if matching_parent is not None:
+            default_parent_node_key = matching_parent["node_key"]
+            default_group_source_mode = "new" if create_folder else "existing"
+
     selected_container = next(
         (option for option in container_options if option["node_key"] == default_parent_node_key),
         None,
@@ -120,7 +132,7 @@ def start_new_form_page(
     default_group_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
     default_group_order = selected_container["order"] if selected_container else 999
     default_form_order = selected_container["next_form_order"] if selected_container else root_form_order
-    default_new_folder_parent_key = default_parent_node_key if default_group_source_mode == "existing" else ""
+    default_new_folder_parent_key = default_parent_node_key if default_group_source_mode in {"existing", "new"} else ""
 
     return templates.TemplateResponse(
         request=request,

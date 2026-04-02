@@ -85,6 +85,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/forms` now renders directly from the real persisted `container | form` tree instead of the older one-level grouped library view
 - the library can now show both root-level forms and folders in one calm tree-first browse surface
 - library search now works against the full folder path text instead of only one-level group labels
+- folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
 - the current long-term builder direction is documented in:
   - `../docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
   - `../docs/handoff/BUILDER_DATA_MODEL_SPEC.md`
