@@ -50,6 +50,7 @@
       "start methods now include blank, duplicate existing form, and starter presets",
       "start from preset is now backed by persisted preset definitions instead of hardcoded starter data",
       "builder bootstrap now includes stored preset block schemas so preset-started drafts come from real preset blocks",
+      "advanced layout can now insert stored presets into an existing draft, so presets are reusable beyond the new-form entry flow",
       "builder duplicate actions now route through the guided create screen instead of forking immediately in place"
     ],
     "workspace_behavior": [

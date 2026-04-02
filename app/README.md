@@ -36,6 +36,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - richer stored block schema is now preserved correctly across save/reload hydration, so advanced-only blocks are no longer dropped when a saved response is reloaded into the calmer builder UI
 - `/forms/new` and builder bootstrap now read from the persisted preset catalog instead of hardcoded starter definitions
 - `Start from preset` now creates drafts from stored preset `block_schema` payloads, not from hardcoded legacy section shortcuts
+- advanced `Layout` can now also insert stored presets into the current form, so presets are reusable inside existing drafts and not just at form creation time
 - the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen

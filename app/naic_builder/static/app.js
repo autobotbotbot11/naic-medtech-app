@@ -10,6 +10,7 @@ const state = {
     previewOpen: true,
     advancedMode: false,
     focusPane: "setup",
+    layoutPresetId: "",
     layoutRootPath: null,
     setupOpen: true,
     saveOpen: false,
@@ -1445,6 +1446,76 @@ function getPresetDefinition(presetId) {
   return presetCatalog().find((preset) => String(preset?.id || "").trim() === normalizedId) || null;
 }
 
+function selectedLayoutPresetId() {
+  const selected = String(state.ui.layoutPresetId || "").trim();
+  if (selected && getPresetDefinition(selected)) {
+    return selected;
+  }
+  return String(presetCatalog()[0]?.id || "").trim();
+}
+
+function uniqueSlug(base, used) {
+  const root = slugify(base || "item");
+  let candidate = root;
+  let suffix = 2;
+  while (used.has(candidate)) {
+    candidate = `${root}_${suffix}`;
+    suffix += 1;
+  }
+  used.add(candidate);
+  return candidate;
+}
+
+function freshBlockId(kind, key) {
+  return `blk_${slugify(`${kind}_${key}_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`)}`;
+}
+
+function clonePresetBlockNode(node, usedSiblingKeys = new Set()) {
+  const clone = deepClone(node);
+  if (!isStoredBlockNode(clone)) {
+    return clone;
+  }
+
+  const kind = blockKind(clone) || "field";
+  const props = getNodeProps(clone);
+  const baseKey = compactText(props.key) || compactText(clone.name) || kind;
+  const nextKey = uniqueSlug(baseKey, usedSiblingKeys);
+  props.key = nextKey;
+  clone.id = freshBlockId(kind, nextKey);
+
+  const childKeys = new Set();
+  clone.children = normalizeArray(clone.children).map((child) => clonePresetBlockNode(child, childKeys));
+  return clone;
+}
+
+function insertPresetIntoCurrentLayout(presetId) {
+  const preset = getPresetDefinition(presetId);
+  const collectionPath = currentLayoutCollectionPath();
+  const collection = getNodeByPath(collectionPath);
+  if (!preset?.block_schema || !Array.isArray(collection)) {
+    return false;
+  }
+
+  const sourceBlocks = normalizeArray(preset.block_schema.blocks).filter((block) => block && typeof block === "object");
+  if (!sourceBlocks.length) {
+    return false;
+  }
+
+  const usedKeys = new Set(
+    collection
+      .map((node) => compactText(getNodeKey(node)))
+      .filter(Boolean)
+  );
+  const clonedBlocks = sourceBlocks.map((block) => clonePresetBlockNode(block, usedKeys));
+  const startIndex = collection.length;
+  collection.push(...clonedBlocks);
+  state.ui.focusPane = "layout";
+  state.ui.activeFieldPath = pathKey([...collectionPath, startIndex]);
+  state.ui.activeOptionToken = null;
+  touch({ full: true, source: "blocks" });
+  return true;
+}
+
 function makeBlankForm(config = {}) {
   const formName = String(config.name || "").trim() || "Untitled Form";
   const groupName = String(config.groupName || "").trim() || "Unassigned";
@@ -1596,6 +1667,9 @@ function syncSaveSurface() {
 async function bootstrap() {
   setStatus("Loading builder");
   state.bootstrap = await api("/api/builder/bootstrap");
+  if (!state.ui.layoutPresetId && presetCatalog().length) {
+    state.ui.layoutPresetId = String(presetCatalog()[0].id || "").trim();
+  }
   renderFormList();
   const draftConfig = {
     name: String(initialQuery.get("draft_name") || "").trim(),
@@ -2349,6 +2423,8 @@ function renderLayoutCard(options = {}) {
   const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
   const collectionPath = currentLayoutCollectionPath();
   const nested = Boolean(rootNode);
+  const presetId = selectedLayoutPresetId();
+  const selectedPreset = getPresetDefinition(presetId);
   const layoutCopy = nested
     ? `Editing the real block order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
     : "This is the real top-level block order of the form. Use it when you need more control without changing the simpler default flow.";
@@ -2373,6 +2449,22 @@ function renderLayoutCard(options = {}) {
           <button class="ghost mini" type="button" data-action="add-layout-divider">Add divider</button>
         </div>
       </div>
+      ${!nested && selectedPreset ? `
+        <div class="layout-preset-row">
+          <label class="layout-preset-select">
+            <span>Insert preset</span>
+            <select data-action="select-layout-preset">
+              ${presetCatalog().map((preset) => `
+                <option value="${escapeHtml(String(preset.id || ""))}"${String(preset.id || "") === presetId ? " selected" : ""}>
+                  ${escapeHtml(String(preset.name || "Preset"))}
+                </option>
+              `).join("")}
+            </select>
+          </label>
+          <button class="ghost mini" type="button" data-action="insert-layout-preset">Insert</button>
+        </div>
+        <div class="collapsed-copy">${escapeHtml(selectedPreset.description || "Insert a reusable starter into the current layout.")}</div>
+      ` : ""}
       ${entries.length ? `
         <div class="section-organizer" data-collection-path="${encodePath(collectionPath)}">
           ${entries.map((entry) => renderLayoutOrganizerItem(entry, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : false)).join("")}
@@ -3454,6 +3546,10 @@ async function handleEditorClick(event) {
     touch({ full: true, source: "blocks" });
     return;
   }
+  if (action === "insert-layout-preset") {
+    insertPresetIntoCurrentLayout(selectedLayoutPresetId());
+    return;
+  }
   if (action === "layout-up") {
     exitChildLayout();
     return;
@@ -3555,6 +3651,11 @@ async function handleEditorClick(event) {
 }
 
 function handleEditorChange(event) {
+  if (event.target.dataset.action === "select-layout-preset") {
+    state.ui.layoutPresetId = String(event.target.value || "").trim();
+    renderEditor();
+    return;
+  }
   if (event.target.dataset.action === "field-type") {
     const field = getNodeByPath(decodePath(event.target.dataset.path));
     applyFieldType(field, event.target.value);

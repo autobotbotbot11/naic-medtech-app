@@ -921,6 +921,25 @@ button.subtle[aria-pressed="true"] {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.layout-preset-row {
+  display: flex;
+  align-items: end;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.layout-preset-select {
+  display: grid;
+  gap: 6px;
+  flex: 1 1 260px;
+}
+
+.layout-preset-select span {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
 .advanced-actions {
   display: flex;
   gap: 10px;
