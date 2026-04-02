@@ -398,9 +398,9 @@ function togglePreview() {
 
 function renderShellSummary() {
   if (!state.draft) {
-    currentFormNameEl.textContent = "No form selected";
-    currentFormMetaEl.textContent = "Open a form or start a blank draft.";
-    stageTitleEl.textContent = "Open a form";
+    currentFormNameEl.textContent = "Start with a form";
+    currentFormMetaEl.textContent = "Open one from the library or create a new one.";
+    stageTitleEl.textContent = "Choose a form";
     stageDescriptionEl.textContent = "Edit one area at a time.";
     renderPreviewCallout();
     return;
@@ -426,7 +426,7 @@ function renderPreviewCallout() {
 
   if (!state.draft) {
     previewCalloutTitleEl.textContent = "Live preview";
-    previewCalloutMetaEl.textContent = "Open a form to show it here.";
+    previewCalloutMetaEl.textContent = "Open a form to see it here.";
     openPreviewBtnEl.disabled = true;
     return;
   }
@@ -1037,7 +1037,7 @@ function renderFormList() {
   }
 
   if (!formListEl.children.length) {
-    formListEl.innerHTML = '<div class="empty-state">No matching forms found.</div>';
+    formListEl.innerHTML = '<div class="empty-state">No forms match that search yet.</div>';
   }
 }
 
@@ -1096,7 +1096,7 @@ function renderOutline() {
   }
 
   if (!state.draft) {
-    builderOutlineEl.innerHTML = '<div class="empty-state">No draft loaded.</div>';
+    builderOutlineEl.innerHTML = '<div class="empty-state">Open a form to start editing.</div>';
     return;
   }
 
@@ -1147,7 +1147,7 @@ function renderEditor() {
   destroySortables();
 
   if (!state.draft) {
-    formEditorEl.innerHTML = '<div class="empty-state">No draft loaded.</div>';
+    formEditorEl.innerHTML = '<div class="empty-state">Open a form to start editing.</div>';
     return;
   }
 
@@ -1253,7 +1253,7 @@ function renderSaveCard(options = {}) {
   const dirtyLabel = state.dirty ? "Ready to save" : "Already saved";
   const helperCopy = state.dirty
     ? "Save this draft when the current changes already look right."
-    : "No unsaved changes right now.";
+    : "Everything is saved.";
   return `
     <section class="editor-card">
       <div class="card-head">
@@ -1391,9 +1391,9 @@ function renderSectionsCard(options = {}) {
           <div class="section-focus-stage">
             ${selectedSection
               ? renderSectionCard(selectedSection, ["schema", "sections", selectedIndex], { forceOpen: true, hideToggle: true, focusedCard: true })
-              : '<div class="empty-state">Choose a section from the list to keep editing.</div>'}
+              : '<div class="empty-state">Pick a section to keep editing.</div>'}
           </div>
-        ` : '<div class="empty-state">No sections yet. Add one to start organizing the form.</div>'}
+        ` : '<div class="empty-state">No sections yet. Add your first one when you are ready.</div>'}
       </section>
     `;
 }
@@ -1483,7 +1483,7 @@ function renderSectionCard(section, path, options = {}) {
 function renderFieldCollection(fields, collectionPath, options = {}) {
     const items = normalizeArray(fields);
     if (!items.length) {
-      return '<div class="empty-state">Nothing here yet. Add a field when you are ready.</div>';
+      return '<div class="empty-state">No fields here yet. Add one when you are ready.</div>';
     }
   if (options.focused) {
     const selectedIndex = resolveFocusedFieldIndex(collectionPath, items);
@@ -1495,7 +1495,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       <div class="field-focus-stage">
         ${selectedField
           ? renderFieldCard(selectedField, [...collectionPath, selectedIndex], { forceOpen: true, hideToggle: true, focusedCard: true })
-          : '<div class="empty-state">Choose a field from the list to keep editing.</div>'}
+          : '<div class="empty-state">Pick a field to keep editing.</div>'}
       </div>
     `;
   }
@@ -1729,16 +1729,16 @@ function renderOptionsEditor(field, path) {
                 </label>
                 ${renderOptionManageFooter(path, selectedIndex)}
               </div>
-          ` : '<div class="empty-state">Choose a choice to keep editing.</div>'}
+          ` : '<div class="empty-state">Pick a choice to keep editing.</div>'}
         </div>
-      ` : '<div class="empty-state">This dropdown has no choices yet.</div>'}
+      ` : '<div class="empty-state">No choices yet. Add one when you are ready.</div>'}
     </section>
   `;
 }
 
 function renderPreview() {
   if (!state.draft) {
-    previewCanvasEl.innerHTML = '<div class="empty-state">No preview yet.</div>';
+    previewCanvasEl.innerHTML = '<div class="empty-state">Your preview will appear here.</div>';
     return;
   }
 
