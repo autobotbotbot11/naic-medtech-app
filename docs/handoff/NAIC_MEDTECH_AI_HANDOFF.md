@@ -92,6 +92,8 @@ What is implemented:
 - the live preview now follows the actual root block order, including multiple ungrouped-field clusters when top-level fields appear in different positions
 - advanced `Layout` can now add real `note` and `divider` blocks as first visible proof of richer ordered-block editing
 - the live preview can now render stored `note` and `divider` blocks while the calmer default panes still stay focused on ordinary fields and sections
+- selected sections can now add `note` and `divider` blocks too, but only in advanced mode so the normal section flow stays calm by default
+- when a section contains advanced utility blocks, the default section editor now hides them and shows a small hint instead of exposing extra controls in the standard flow
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area
 - extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer

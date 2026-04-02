@@ -332,7 +332,7 @@ def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: in
         raw_field["fields"] = [
             block_field_to_legacy_field(child, raw_field.get("id") or parent_id, child_order, child_used)
             for child_order, child in enumerate(normalize_items(block.get("children")), start=1)
-            if isinstance(child, dict)
+            if isinstance(child, dict) and compact_text(child.get("kind")) in {"field", "field_group"}
         ]
         return normalize_field(raw_field, parent_id, order, used_keys)
 
@@ -404,7 +404,7 @@ def block_section_to_legacy_section(block: dict[str, Any], form_id: str, order: 
     raw_section["fields"] = [
         block_field_to_legacy_field(child, compact_text(raw_section.get("id")) or form_id, child_order, field_used)
         for child_order, child in enumerate(normalize_items(block.get("children")), start=1)
-        if isinstance(child, dict)
+        if isinstance(child, dict) and compact_text(child.get("kind")) in {"field", "field_group"}
     ]
 
     return normalize_section(raw_section, form_id, order, used_keys)

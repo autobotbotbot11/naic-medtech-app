@@ -28,7 +28,9 @@
       "advanced mode now includes a true Layout pane for the real top-level ordered block list",
       "the live preview now follows actual root block order, including separated ungrouped-field clusters when top-level fields appear in multiple positions",
       "advanced Layout can now add real note and divider blocks without pushing them into the calmer default editing panes",
-      "the live preview can now render note and divider blocks from stored block_schema while the default panes remain focused on ordinary fields and sections"
+      "the live preview can now render note and divider blocks from stored block_schema while the default panes remain focused on ordinary fields and sections",
+      "selected sections can now add note and divider blocks too, but only in advanced mode so the normal section flow stays calm by default",
+      "when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the standard flow"
     ],
     "form_library_screen": "implemented",
     "start_new_form_screen": "implemented",
@@ -60,6 +62,7 @@
       "advanced mode now includes a Layout pane for editing the actual top-level block order",
       "the preview now respects root block order instead of forcing one single ungrouped-fields area before all sections",
       "advanced Layout now exposes real note and divider blocks while the calm default panes still hide them",
+      "selected sections can now add note and divider blocks in advanced mode, while the default section editor hides those utility blocks behind a quiet hint",
       "the left outline and library wording now use calmer non-technical labels",
       "the committed sample runtime DB has been reset to clean schema-seeded state and can be reset again with tools/scripts/reset_builder_runtime_db.py",
       "the focused field editor is now lighter, with drag left in the organizer and a more compact basics and choices treatment",

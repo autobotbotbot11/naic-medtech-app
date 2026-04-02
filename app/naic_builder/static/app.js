@@ -272,7 +272,12 @@ function blockFieldToLegacy(block) {
   }
 
   if (kind === "field_group") {
-    legacy.fields = normalizeArray(block?.children).map((child) => blockFieldToLegacy(child));
+    legacy.fields = normalizeArray(block?.children)
+      .filter((child) => {
+        const childKind = blockKind(child);
+        return childKind === "field" || childKind === "field_group";
+      })
+      .map((child) => blockFieldToLegacy(child));
     return legacy;
   }
 
@@ -323,7 +328,12 @@ function blockSectionToLegacy(block) {
     key: String(props.key || block?.name || "").trim(),
     name: String(block?.name || "").trim() || "Untitled Section",
     order: parsePositiveInt(props.order, 1),
-    fields: normalizeArray(block?.children).map((child) => blockFieldToLegacy(child)),
+    fields: normalizeArray(block?.children)
+      .filter((child) => {
+        const childKind = blockKind(child);
+        return childKind === "field" || childKind === "field_group";
+      })
+      .map((child) => blockFieldToLegacy(child)),
   };
 
   const notes = normalizeArray(props.notes);
@@ -466,6 +476,11 @@ function isStoredBlockNode(node) {
   return kind === "field" || kind === "field_group" || kind === "section" || kind === "note" || kind === "divider";
 }
 
+function isUtilityBlockNode(node) {
+  const kind = blockKind(node);
+  return kind === "note" || kind === "divider";
+}
+
 function getNodeProps(node) {
   if (!isStoredBlockNode(node)) {
     return {};
@@ -592,7 +607,7 @@ function collectFieldPathKeysFromNode(node, basePath) {
   const keys = [];
   const kind = String(node?.kind || "").trim();
 
-  if (kind === "field" || kind === "field_group") {
+  if (kind === "field" || kind === "field_group" || kind === "note" || kind === "divider") {
     keys.push(pathKey(basePath));
   }
 
@@ -2324,6 +2339,8 @@ function renderSectionCard(section, path, options = {}) {
             <div class="section-quick-actions">
               <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add field</button>
               <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "children"])}">Add group</button>
+              ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
+              ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
           </div>
         </div>
 
@@ -2361,24 +2378,44 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
         view: viewNode(field),
       };
     });
-    if (!entries.length) {
+    const showUtility = options.showUtility ?? state.ui.advancedMode;
+    const hiddenUtilityCount = showUtility ? 0 : entries.filter((entry) => isUtilityBlockNode(entry.node || entry.view)).length;
+    const visibleEntries = showUtility
+      ? entries
+      : entries.filter((entry) => !isUtilityBlockNode(entry.node || entry.view));
+    if (!visibleEntries.length) {
+      if (hiddenUtilityCount) {
+        return '<div class="empty-state">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>';
+      }
       return '<div class="empty-state">No fields here yet. Add one when you are ready.</div>';
     }
   if (options.focused) {
-    const selectedIndex = resolveFocusedFieldIndex(collectionPath, entries);
-    const selectedEntry = entries[selectedIndex] || null;
+    const selectedIndex = resolveFocusedFieldIndex(collectionPath, visibleEntries);
+    const selectedEntry = visibleEntries[selectedIndex] || null;
     return `
       <div class="field-organizer" data-collection-path="${encodePath(collectionPath)}">
-        ${entries.map((entry, index) => renderFieldOrganizerItem(entry.node || entry.view, entry.path, index, index === selectedIndex)).join("")}
+        ${visibleEntries.map((entry, index) => renderFieldOrganizerItem(entry.node || entry.view, entry.path, index, index === selectedIndex)).join("")}
       </div>
       <div class="field-focus-stage">
         ${selectedEntry
-          ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+          ? (isUtilityBlockNode(selectedEntry.node)
+            ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
+            : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
           : '<div class="empty-state">Pick a field to keep editing.</div>'}
       </div>
+      ${hiddenUtilityCount ? '<div class="collapsed-copy">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>' : ""}
     `;
   }
-  return `<div class="field-list" data-collection-path="${encodePath(collectionPath)}">${entries.map((entry) => renderFieldCard(entry.view, entry.path)).join("")}</div>`;
+  return `
+    <div class="field-list" data-collection-path="${encodePath(collectionPath)}">
+      ${visibleEntries.map((entry) => (
+        isUtilityBlockNode(entry.node)
+          ? renderUtilityBlockCard(entry.node, entry.path)
+          : renderFieldCard(entry.view, entry.path)
+      )).join("")}
+    </div>
+    ${hiddenUtilityCount ? '<div class="collapsed-copy">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>' : ""}
+  `;
 }
 
 function resolveFocusedFieldIndex(collectionPath, items) {
@@ -2428,6 +2465,12 @@ function resolveFocusedOptionIndex(path, options) {
 }
 
 function summarizeField(field) {
+  if (field.kind === "note") {
+    return "Note";
+  }
+  if (field.kind === "divider") {
+    return "Divider";
+  }
   if (field.kind === "field_group") {
     return "Group";
   }
@@ -2440,6 +2483,9 @@ function summarizeField(field) {
 
 function renderFieldOrganizerItem(field, path, index, active) {
     const isGroup = field.kind === "field_group";
+    const isUtility = isUtilityBlockNode(field);
+    const summary = summarizeField(field);
+    const title = field.name || (isUtility ? summary : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
     return `
       <div class="field-organizer-item ${active ? "active" : ""}">
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -2447,8 +2493,8 @@ function renderFieldOrganizerItem(field, path, index, active) {
         </button>
         <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
           <span class="field-organizer-copy">
-            <strong>${escapeHtml(field.name || (isGroup ? `Group ${index + 1}` : `Field ${index + 1}`))}</strong>
-            ${isGroup ? '<span>Group</span>' : `<span>${escapeHtml(summarizeField(field))}</span>`}
+            <strong>${escapeHtml(title)}</strong>
+            ${compactText(title).toLowerCase() !== summary.toLowerCase() ? `<span>${escapeHtml(summary)}</span>` : ""}
           </span>
           ${active ? '<span class="field-organizer-state">Editing</span>' : ""}
         </button>
@@ -2898,6 +2944,17 @@ function addFieldAt(path, kind) {
   touch({ full: true, source: "blocks" });
 }
 
+function addUtilityAt(path, kind) {
+  const collection = getNodeByPath(path);
+  if (!Array.isArray(collection)) {
+    return;
+  }
+  collection.push(kind === "divider" ? makeBlankDivider() : makeBlankNote());
+  state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
+  state.ui.activeOptionToken = null;
+  touch({ full: true, source: "blocks" });
+}
+
 function addSection() {
   topLevelBlocks().push(makeBlankSection());
   state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
@@ -3224,6 +3281,14 @@ async function handleEditorClick(event) {
   }
   if (action === "add-group" && path) {
     addFieldAt(path, "field_group");
+    return;
+  }
+  if (action === "add-note" && path) {
+    addUtilityAt(path, "note");
+    return;
+  }
+  if (action === "add-divider" && path) {
+    addUtilityAt(path, "divider");
     return;
   }
   if (action === "duplicate-node" && path) {
