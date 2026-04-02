@@ -266,7 +266,8 @@
         "stage header includes an advanced-mode toggle that defaults to off",
         "advanced blocks and technical json are hidden while advanced mode is off"
         ,
-        "nested choice organizers are less mechanical: no choice row numbers, only the active choice shows Editing, and the selected choice uses a calmer spotlight card"
+        "nested choice organizers are less mechanical: no choice row numbers, only the active choice shows Editing, and the selected choice uses a calmer spotlight card",
+        "selected choice actions now use a quieter footer More options area with Duplicate and a calmer confirmed Delete flow"
       ],
       "remaining_builder_v2_gaps": [
         "less header and action noise",

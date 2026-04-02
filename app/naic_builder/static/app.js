@@ -1327,6 +1327,18 @@ function renderManageFooter(path) {
     `;
   }
 
+function renderOptionManageFooter(path, index) {
+    return `
+      <details class="manage-details">
+        <summary>More options</summary>
+        <div class="manage-actions">
+          <button class="ghost mini" type="button" data-action="duplicate-option" data-path="${encodePath(path)}" data-index="${index}">Duplicate</button>
+          <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${index}">Delete</button>
+        </div>
+      </details>
+    `;
+  }
+
 function renderTopFieldsCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const topFields = normalizeArray(state.draft.schema.fields);
@@ -1724,12 +1736,12 @@ function renderOptionsEditor(field, path) {
                   <div>
                     <h5>${escapeHtml(selectedOptionName)}</h5>
                   </div>
-                  <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${selectedIndex}">Delete</button>
                 </div>
                 <label class="option-focus-input">
                   <span>Label</span>
                   <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Option name">
                 </label>
+                ${renderOptionManageFooter(path, selectedIndex)}
               </div>
           ` : '<div class="empty-state">Choose a choice to keep editing.</div>'}
         </div>
@@ -1988,6 +2000,21 @@ function addOption(path) {
   touch({ full: true });
 }
 
+function duplicateOption(path, index) {
+  const field = getNodeByPath(path);
+  ensureOptionShape(field);
+  const source = field.options[index];
+  if (!source) {
+    return;
+  }
+  const duplicate = deepClone(source);
+  const baseName = String(duplicate.name || "").trim() || "Untitled choice";
+  duplicate.name = `${baseName} Copy`;
+  field.options.splice(index + 1, 0, duplicate);
+  state.ui.activeOptionToken = optionToken(path, index + 1);
+  touch({ full: true });
+}
+
 function deleteOption(path, index) {
   const field = getNodeByPath(path);
   ensureOptionShape(field);
@@ -1998,6 +2025,31 @@ function deleteOption(path, index) {
     state.ui.activeOptionToken = null;
   }
   touch({ full: true });
+}
+
+async function confirmDeleteOption(path, index) {
+  const field = getNodeByPath(path);
+  ensureOptionShape(field);
+  const option = field.options[index];
+  if (!option) {
+    return;
+  }
+
+  const optionName = String(option.name || "").trim() || "this choice";
+  const decision = await openDecisionDialog({
+    eyebrow: "Delete choice",
+    title: `Delete ${optionName}?`,
+    message: "This choice will be removed from the dropdown.",
+    cancelLabel: "Keep choice",
+    confirmLabel: "Delete choice",
+    destructive: true,
+  });
+
+  if (decision !== "confirm") {
+    return;
+  }
+
+  deleteOption(path, index);
 }
 
 function destroySortables() {
@@ -2216,8 +2268,12 @@ async function handleEditorClick(event) {
     addOption(path);
     return;
   }
+  if (action === "duplicate-option" && path) {
+    duplicateOption(path, Number(actionTarget.dataset.index));
+    return;
+  }
   if (action === "delete-option" && path) {
-    deleteOption(path, Number(actionTarget.dataset.index));
+    await confirmDeleteOption(path, Number(actionTarget.dataset.index));
     return;
   }
   if (action === "save-draft") {

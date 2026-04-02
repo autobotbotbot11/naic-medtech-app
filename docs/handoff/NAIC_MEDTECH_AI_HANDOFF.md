@@ -274,6 +274,7 @@ Current builder implementation is still:
 - selected sections and fields keep destructive actions in a quieter footer `More options` area
 - the `Sections` pane is less mechanical: simple count, no organizer row numbers, only the active section shows `Editing`
 - the nested `Choices` organizer now follows the same calmer pattern: no choice row numbers, only the active choice shows `Editing`, and the selected choice uses a smaller spotlight card
+- selected choice actions now follow the same quiet pattern too: footer `More options`, `Duplicate`, and a calmer confirmed `Delete` dialog
 
 The repo has not been migrated to Alpine.js. Alpine.js was only a possible helper direction discussed for future UI simplification, not a current dependency.
 
