@@ -409,10 +409,9 @@ function renderShellSummary() {
   const formName = state.draft.name || "Untitled Form";
   const groupName = state.draft.group_name || "Unassigned";
   const version = currentVersionLabel();
-  const fieldCount = pluralize(currentDraftFieldCount(), "field");
 
   currentFormNameEl.textContent = formName;
-  currentFormMetaEl.textContent = `${groupName} | ${version} | ${fieldCount}`;
+  currentFormMetaEl.textContent = `${groupName} | ${version}`;
   stageTitleEl.textContent = formName;
   stageDescriptionEl.textContent = state.ui.previewOpen
     ? "Edit one area at a time."
@@ -432,17 +431,15 @@ function renderPreviewCallout() {
     return;
   }
 
-  const sectionCount = pluralize(normalizeArray(state.draft.schema.sections).length, "section");
-  const fieldCount = pluralize(currentDraftFieldCount(), "field");
   openPreviewBtnEl.disabled = false;
   previewCalloutTitleEl.textContent = "Preview";
 
   if (state.ui.previewOpen) {
-    previewCalloutMetaEl.textContent = `Live beside the editor. ${sectionCount} | ${fieldCount}.`;
+    previewCalloutMetaEl.textContent = "Live beside the editor.";
     return;
   }
 
-  previewCalloutMetaEl.textContent = `Open it when you want a quick check. ${sectionCount} | ${fieldCount}.`;
+  previewCalloutMetaEl.textContent = "Open it when you want a quick check.";
 }
 
 function resetEditorPanels() {
@@ -1380,7 +1377,6 @@ function renderSectionsCard(options = {}) {
           <div>
             <div class="card-title-row">
               <h3 class="card-title">Sections</h3>
-              <span class="chip soft">${sections.length}</span>
               ${renderHelpPopover("Sections help", "Use sections when the form needs named groups of fields. Open one when you want to edit it, and drag to reorder them.")}
             </div>
           </div>
@@ -1752,7 +1748,6 @@ function renderPreview() {
     return;
   }
 
-  const totalFields = countFields(state.draft.schema);
   const freeFields = normalizeArray(state.draft.schema.fields);
   const sections = normalizeArray(state.draft.schema.sections);
   const previewTargets = [
@@ -1781,10 +1776,6 @@ function renderPreview() {
             <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
             <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
           </div>
-        </div>
-        <div class="preview-badges">
-          <span class="chip">${totalFields} fields</span>
-          <span class="chip soft">${sections.length} sections</span>
         </div>
         <div class="preview-index">
           ${previewTargets.map((item) => `
@@ -1820,22 +1811,12 @@ function renderPreviewSection(title, fields, previewId) {
     <section class="preview-section" id="${escapeHtml(previewId)}">
       <div class="preview-section-head">
         <h4>${escapeHtml(title)}</h4>
-        <span class="chip soft">${countPreviewFields(normalizedFields)} fields</span>
       </div>
       <div class="preview-grid">
         ${normalizedFields.map(renderPreviewField).join("")}
       </div>
     </section>
   `;
-}
-
-function countPreviewFields(fields) {
-  return normalizeArray(fields).reduce((count, field) => {
-    if (field?.kind === "field_group") {
-      return count + countPreviewFields(field.fields);
-    }
-    return count + 1;
-  }, 0);
 }
 
 function previewInputType(field) {
@@ -1871,7 +1852,6 @@ function renderPreviewField(field) {
       <div class="preview-group">
         <div class="preview-group-head">
           <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
-          <span class="chip warm">${countPreviewFields(field.fields)} fields</span>
         </div>
         <div class="preview-grid">
           ${normalizeArray(field.fields).map(renderPreviewField).join("")}
