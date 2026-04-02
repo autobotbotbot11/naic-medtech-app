@@ -34,7 +34,7 @@
           <div class="tree-node-body">
             <div class="tree-folder-actions">
               <a class="ghost-button" href="/forms/new?parent={{ node.id }}">New form here</a>
-              <a class="ghost-button" href="/forms/new?parent={{ node.id }}&create_folder=1">New folder here</a>
+              <a class="ghost-button" href="/folders/new?parent={{ node.id }}">New folder here</a>
             </div>
             <div class="tree-children">
               {{ render_nodes(node.children, current_path, level + 1) }}
@@ -79,6 +79,7 @@
           <span>Find</span>
           <input id="librarySearch" type="search" placeholder="Search forms">
         </label>
+        <a class="ghost-button" href="/folders/new">New folder</a>
         <a class="primary-button" href="/forms/new">New</a>
       </div>
     </header>

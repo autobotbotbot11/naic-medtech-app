@@ -269,6 +269,26 @@ select:focus {
   font-weight: 700;
 }
 
+.single-flow-card {
+  width: min(760px, 100%);
+  margin: 16px auto 0;
+}
+
+.single-flow-actions {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.inline-error {
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(201, 106, 41, 0.24);
+  background: rgba(201, 106, 41, 0.08);
+  color: #7a3f13;
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .hidden {
   display: none !important;
 }

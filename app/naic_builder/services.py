@@ -754,6 +754,41 @@ def ensure_container_node(
     return container
 
 
+def create_container(
+    session: Session,
+    name: str,
+    parent_node_key: str | None = None,
+) -> LibraryNode:
+    container_name = compact_text(name)
+    if not container_name:
+        raise ValueError("Name the folder before you continue.")
+
+    parent_key = compact_text(parent_node_key)
+    parent_id: int | None = None
+    if parent_key:
+        parent = session.scalar(select(LibraryNode).where(LibraryNode.node_key == parent_key))
+        if parent is None or parent.kind != "container":
+            raise ValueError("Parent folder not found.")
+        parent_id = parent.id
+
+    existing_query = select(LibraryNode).where(
+        LibraryNode.kind == "container",
+        LibraryNode.name == container_name,
+    )
+    if parent_id is None:
+        existing_query = existing_query.where(LibraryNode.parent_id.is_(None))
+    else:
+        existing_query = existing_query.where(LibraryNode.parent_id == parent_id)
+
+    existing = session.scalar(existing_query.limit(1))
+    if existing is not None:
+        raise ValueError("A folder with this name already exists here.")
+
+    container = ensure_container_node(session, container_name, parent_key or None)
+    session.commit()
+    return container
+
+
 def next_root_form_order(session: Session) -> int:
     tree = list_library_tree(session)
     return max((int(node.get("order") or 0) for node in tree if not node.get("archived")), default=0) + 1

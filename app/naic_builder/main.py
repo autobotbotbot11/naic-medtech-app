@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from typing import Any
+from urllib.parse import parse_qs
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -13,6 +14,7 @@ from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import FormSavePayload
 from .services import (
+    create_container,
     create_form,
     ensure_block_schema_storage,
     ensure_library_tree,
@@ -77,6 +79,63 @@ def forms_library(request: Request, session: Session = Depends(get_session)) -> 
             "library_tree": library_tree,
         },
     )
+
+
+def render_new_folder_page(
+    request: Request,
+    session: Session,
+    *,
+    folder_name: str = "",
+    parent_node_key: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    container_options = list_container_choices(session)
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/new_folder.html",
+        context={
+            "app_title": APP_TITLE,
+            "container_options": container_options,
+            "folder_name": folder_name,
+            "selected_parent_key": parent_node_key.strip(),
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+@app.get("/folders/new", response_class=HTMLResponse)
+def start_new_folder_page(
+    request: Request,
+    parent: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_new_folder_page(request, session, parent_node_key=parent)
+
+
+@app.post("/folders/new")
+async def create_folder_page(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    name = (form_data.get("name") or [""])[0]
+    parent_node_key = (form_data.get("parent_node_key") or [""])[0]
+    try:
+        created = create_container(session, name, parent_node_key or None)
+    except ValueError as exc:
+        return render_new_folder_page(
+            request,
+            session,
+            folder_name=name,
+            parent_node_key=parent_node_key,
+            error_message=str(exc),
+            status_code=422,
+        )
+    node_anchor = created.node_key.replace(":", "-")
+    return RedirectResponse(url=f"/forms#node-{node_anchor}", status_code=303)
 
 
 @app.get("/forms/new", response_class=HTMLResponse)
