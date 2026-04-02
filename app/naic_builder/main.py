@@ -120,6 +120,7 @@ def start_new_form_page(
     default_group_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
     default_group_order = selected_container["order"] if selected_container else 999
     default_form_order = selected_container["next_form_order"] if selected_container else root_form_order
+    default_new_folder_parent_key = default_parent_node_key if default_group_source_mode == "existing" else ""
 
     return templates.TemplateResponse(
         request=request,
@@ -133,6 +134,7 @@ def start_new_form_page(
             "default_group_name": default_group_name,
             "default_group_order": default_group_order,
             "default_form_order": default_form_order,
+            "default_new_folder_parent_key": default_new_folder_parent_key,
             "root_form_order": root_form_order,
             "source_form": source_form,
         },

@@ -698,6 +698,62 @@ def list_form_choices(session: Session) -> list[dict[str, Any]]:
     return choices
 
 
+def next_available_container_node_key(session: Session, preferred: str) -> str:
+    base = f"container:{slugify(preferred or 'folder')}"
+    key = base
+    suffix = 2
+    while session.scalar(select(LibraryNode.id).where(LibraryNode.node_key == key)) is not None:
+        key = f"{base}_{suffix}"
+        suffix += 1
+    return key
+
+
+def ensure_container_node(
+    session: Session,
+    name: str,
+    parent_node_key: str | None = None,
+) -> LibraryNode:
+    container_name = compact_text(name) or "Untitled Folder"
+    parent_key = compact_text(parent_node_key)
+    parent_id: int | None = None
+
+    if parent_key:
+        parent = session.scalar(select(LibraryNode).where(LibraryNode.node_key == parent_key))
+        if parent is not None and parent.kind == "container":
+            parent_id = parent.id
+            if parent.archived:
+                parent.archived = False
+
+    query = select(LibraryNode).where(
+        LibraryNode.kind == "container",
+        LibraryNode.name == container_name,
+    )
+    if parent_id is None:
+        query = query.where(LibraryNode.parent_id.is_(None))
+    else:
+        query = query.where(LibraryNode.parent_id == parent_id)
+
+    existing = session.scalar(query.order_by(LibraryNode.id))
+    if existing is not None:
+        if existing.archived:
+            existing.archived = False
+        return existing
+
+    sibling_query = select(LibraryNode).where(LibraryNode.parent_id == parent_id) if parent_id is not None else select(LibraryNode).where(LibraryNode.parent_id.is_(None))
+    next_order = max((node.node_order for node in session.scalars(sibling_query).all()), default=0) + 1
+    container = LibraryNode(
+        node_key=next_available_container_node_key(session, container_name),
+        kind="container",
+        name=container_name,
+        parent_id=parent_id,
+        node_order=next_order,
+        archived=False,
+    )
+    session.add(container)
+    session.flush()
+    return container
+
+
 def next_root_form_order(session: Session) -> int:
     tree = list_library_tree(session)
     return max((int(node.get("order") or 0) for node in tree if not node.get("archived")), default=0) + 1
@@ -927,23 +983,28 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         payload.slug or raw_schema.get("key") or payload.name or "untitled_form",
     )
     name = compact_text(payload.name or raw_schema.get("name")) or "Untitled Form"
+    resolved_parent_key = compact_text(payload.library_parent_node_key) or None
+    pending_container_name = compact_text(payload.library_new_container_name) or None
+    if payload.group_kind != "standalone_form" and pending_container_name:
+        resolved_parent_key = ensure_container_node(session, pending_container_name, resolved_parent_key).node_key
+    group_name_value = pending_container_name or compact_text(payload.group_name) or "Unassigned"
     normalized_schema = normalize_form_schema(
         raw_schema,
         slug=slug,
         name=name,
         form_order=payload.form_order,
-        group_name=payload.group_name,
+        group_name=group_name_value,
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
     definition = FormDefinition(
         slug=slug,
         name=name,
-        group_name=compact_text(payload.group_name) or "Unassigned",
+        group_name=group_name_value,
         group_kind=payload.group_kind,
         group_order=payload.group_order,
         form_order=payload.form_order,
-        library_parent_node_key=compact_text(payload.library_parent_node_key) or None,
+        library_parent_node_key=resolved_parent_key,
         common_field_set_id=normalized_schema.get("common_field_set_id"),
     )
     session.add(definition)
@@ -972,12 +1033,17 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
 
     raw_schema = coerce_legacy_schema(payload.form_schema)
     name = compact_text(payload.name or raw_schema.get("name")) or definition.name
+    resolved_parent_key = compact_text(payload.library_parent_node_key) or None
+    pending_container_name = compact_text(payload.library_new_container_name) or None
+    if payload.group_kind != "standalone_form" and pending_container_name:
+        resolved_parent_key = ensure_container_node(session, pending_container_name, resolved_parent_key).node_key
+    group_name_value = pending_container_name or compact_text(payload.group_name) or definition.group_name
     normalized_schema = normalize_form_schema(
         raw_schema,
         slug=definition.slug,
         name=name,
         form_order=payload.form_order,
-        group_name=payload.group_name,
+        group_name=group_name_value,
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
@@ -986,11 +1052,11 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         version.is_current = False
 
     definition.name = name
-    definition.group_name = compact_text(payload.group_name) or definition.group_name
+    definition.group_name = group_name_value
     definition.group_kind = payload.group_kind
     definition.group_order = payload.group_order
     definition.form_order = payload.form_order
-    definition.library_parent_node_key = compact_text(payload.library_parent_node_key) or None
+    definition.library_parent_node_key = resolved_parent_key
     definition.common_field_set_id = normalized_schema.get("common_field_set_id")
 
     version = FormVersion(

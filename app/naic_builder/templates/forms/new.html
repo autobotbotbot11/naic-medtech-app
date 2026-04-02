@@ -36,6 +36,7 @@
       <input id="groupOrderInput" type="hidden" name="group_order" value="{{ default_group_order }}">
       <input id="formOrderInput" type="hidden" name="form_order" value="{{ default_form_order }}">
       <input id="parentNodeKeyInput" type="hidden" name="library_parent_node_key" value="{{ default_parent_node_key }}">
+      <input id="newContainerNameInput" type="hidden" name="library_new_container_name" value="">
 
       <section class="panel form-flow-card">
         <div class="section-head">
@@ -100,6 +101,19 @@
           <label class="field-stack">
             <span>New folder name</span>
             <input id="newGroupName" type="text" placeholder="Example: Rapid Tests">
+          </label>
+          <label class="field-stack">
+            <span>Place new folder inside</span>
+            <select id="newGroupParentSelect">
+              <option value="" {% if not default_new_folder_parent_key %}selected{% endif %}>Top level</option>
+              {% for container in container_options %}
+              <option
+                value="{{ container.node_key }}"
+                data-path-label="{{ container.path_label }}"
+                {% if container.node_key == default_new_folder_parent_key %}selected{% endif %}
+              >{{ container.path_label }}</option>
+              {% endfor %}
+            </select>
           </label>
           <p class="panel-copy">New folders start at the end of the list for now. You can organize them later.</p>
         </div>

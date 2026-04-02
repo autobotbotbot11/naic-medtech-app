@@ -116,6 +116,7 @@ What is implemented:
 - `/forms/new` now uses real container choices from the persisted library tree instead of the older one-level grouped-folder list
 - `/forms/new` can now also intentionally place a form at the top level instead of forcing every new form into a folder
 - `/forms/new` duplicate choices now use the real tree too, showing full folder paths instead of the older grouped optgroup list
+- `/forms/new` can now also create a brand-new folder inside an existing folder, and the first save path resolves that pending nested folder into the real library tree
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the default workspace now lands on a single `Content` pane driven by real root block order, instead of splitting the main flow into separate `Ungrouped fields` and `Sections` panes

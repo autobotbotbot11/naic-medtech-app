@@ -1444,6 +1444,7 @@ function makeBlankForm(config = {}) {
     group_order: groupOrder,
     form_order: formOrder,
     library_parent_node_key: String(config.libraryParentNodeKey || "").trim() || null,
+    library_new_container_name: String(config.libraryNewContainerName || "").trim() || null,
     current_version_number: 0,
     summary: "",
     schema: {
@@ -1584,6 +1585,7 @@ async function bootstrap() {
     groupOrder: parsePositiveInt(initialQuery.get("group_order"), 999),
     formOrder: parsePositiveInt(initialQuery.get("form_order"), 1),
     libraryParentNodeKey: String(initialQuery.get("library_parent_node_key") || "").trim(),
+    libraryNewContainerName: String(initialQuery.get("library_new_container_name") || "").trim(),
   };
 
   if (initialBuilderMode === "new") {
@@ -1651,6 +1653,7 @@ function duplicateCurrentForm(overrides = {}) {
   copy.group_order = parsePositiveInt(overrides.groupOrder, parsePositiveInt(copy.group_order, 999));
   copy.form_order = parsePositiveInt(overrides.formOrder, parsePositiveInt(copy.form_order, 1));
   copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
+  copy.library_new_container_name = String(overrides.libraryNewContainerName || "").trim() || copy.library_new_container_name || null;
   copy.schema.name = copy.name;
   copy.schema.key = slugify(copy.name);
   copy.schema.order = copy.form_order;
@@ -3310,6 +3313,7 @@ async function saveDraft() {
     group_order: Number(state.draft.group_order || 999),
     form_order: Number(state.draft.form_order || 1),
     library_parent_node_key: state.draft.library_parent_node_key || null,
+    library_new_container_name: state.draft.library_new_container_name || null,
     summary: state.draft.summary || "",
     schema: state.draft.block_schema,
   };
@@ -3372,7 +3376,11 @@ function handleRootInput(event) {
         state.draft.schema.key = slugify(rawValue);
       }
     } else if (bind === "group_name") {
-      state.draft.library_parent_node_key = null;
+      if (state.draft.library_new_container_name) {
+        state.draft.library_new_container_name = compactText(rawValue) || null;
+      } else {
+        state.draft.library_parent_node_key = null;
+      }
     }
   }
 

@@ -4,6 +4,7 @@ const existingGroupWrapEl = document.getElementById("existingGroupWrap");
 const newGroupWrapEl = document.getElementById("newGroupWrap");
 const existingGroupSelectEl = document.getElementById("existingGroupSelect");
 const newGroupNameEl = document.getElementById("newGroupName");
+const newGroupParentSelectEl = document.getElementById("newGroupParentSelect");
 const rootGroupHintEl = document.getElementById("rootGroupHint");
 const duplicateSourceWrapEl = document.getElementById("duplicateSourceWrap");
 const duplicateSourceSelectEl = document.getElementById("duplicateSourceSelect");
@@ -15,6 +16,7 @@ const groupKindInputEl = document.getElementById("groupKindInput");
 const groupOrderInputEl = document.getElementById("groupOrderInput");
 const formOrderInputEl = document.getElementById("formOrderInput");
 const parentNodeKeyInputEl = document.getElementById("parentNodeKeyInput");
+const newContainerNameInputEl = document.getElementById("newContainerNameInput");
 const summaryNameEl = document.getElementById("summaryName");
 const summaryGroupEl = document.getElementById("summaryGroup");
 const summaryStartEl = document.getElementById("summaryStart");
@@ -33,6 +35,10 @@ function copyName(value) {
 
 function selectedGroupOption() {
   return existingGroupSelectEl?.selectedOptions?.[0] || null;
+}
+
+function selectedNewGroupParentOption() {
+  return newGroupParentSelectEl?.selectedOptions?.[0] || null;
 }
 
 function selectedDuplicateLabel() {
@@ -77,7 +83,9 @@ function updateSummary() {
 
   let groupName = "Top level";
   if (groupMode === "new") {
-    groupName = String(newGroupNameEl?.value || "").trim();
+    const parentPath = String(selectedNewGroupParentOption()?.dataset.pathLabel || "").trim();
+    const newFolderName = String(newGroupNameEl?.value || "").trim();
+    groupName = [parentPath, newFolderName].filter(Boolean).join(" / ");
   } else if (groupMode === "existing") {
     groupName = String(selectedGroupOption()?.dataset.pathLabel || selectedGroupOption()?.textContent || "").trim();
   }
@@ -102,12 +110,13 @@ function syncHiddenInputs() {
   const groupMode = visibleChoice("group_source_mode") || "existing";
   const startMode = visibleChoice("start_mode") || "blank";
   const selectedOption = selectedGroupOption();
+  const selectedNewParentOption = selectedNewGroupParentOption();
   const draftName = String(formNameEl?.value || "").trim();
 
   const usingNewGroup = groupMode === "new";
   const usingRoot = groupMode === "root";
   const parentNodeKey = usingNewGroup
-    ? ""
+    ? String(selectedNewParentOption?.value || "").trim()
     : usingRoot
       ? ""
       : String(selectedOption?.value || "").trim();
@@ -151,6 +160,9 @@ function syncHiddenInputs() {
   if (parentNodeKeyInputEl) {
     parentNodeKeyInputEl.value = parentNodeKey;
   }
+  if (newContainerNameInputEl) {
+    newContainerNameInputEl.value = usingNewGroup ? String(newGroupNameEl?.value || "").trim() : "";
+  }
 }
 
 function handleSourceSelectionAutofill() {
@@ -187,6 +199,7 @@ document.querySelectorAll('input[name="group_source_mode"], input[name="start_mo
 
 existingGroupSelectEl?.addEventListener("change", refreshScreen);
 newGroupNameEl?.addEventListener("input", refreshScreen);
+newGroupParentSelectEl?.addEventListener("change", refreshScreen);
 duplicateSourceSelectEl?.addEventListener("change", () => {
   handleSourceSelectionAutofill();
   refreshScreen();
