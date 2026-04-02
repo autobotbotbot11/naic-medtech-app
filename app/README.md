@@ -28,6 +28,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the live preview can now render `note` and `divider` blocks from stored `block_schema`, while default `Ungrouped fields` and `Sections` panes stay focused on ordinary field editing
 - selected sections can now add real `note` and `divider` blocks too, but only in `Advanced` mode so the normal section editor stays simple by default
 - selected groups can now add real `note` and `divider` blocks in `Advanced` mode too, and the live preview now renders those nested utility blocks from the real block tree
+- advanced mode can now open a real child-layout workspace for a selected section or group, so nested block order can be edited directly without changing the calmer default panes
 - when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the normal flow
 - the visible surface still keeps a compatibility `fields + sections` projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`

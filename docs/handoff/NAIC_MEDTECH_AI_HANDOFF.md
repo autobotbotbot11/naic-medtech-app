@@ -94,6 +94,7 @@ What is implemented:
 - the live preview can now render stored `note` and `divider` blocks while the calmer default panes still stay focused on ordinary fields and sections
 - selected sections can now add `note` and `divider` blocks too, but only in advanced mode so the normal section flow stays calm by default
 - selected groups can now add `note` and `divider` blocks in advanced mode too, and the live preview now renders those nested utility blocks from the real block tree
+- advanced mode can now open a real child-layout workspace for a selected section or group, with back navigation to the parent layout, so nested ordered blocks can be edited directly
 - when a section contains advanced utility blocks, the default section editor now hides them and shows a small hint instead of exposing extra controls in the standard flow
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area

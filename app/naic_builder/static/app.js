@@ -10,6 +10,7 @@ const state = {
     previewOpen: true,
     advancedMode: false,
     focusPane: "setup",
+    layoutRootPath: null,
     setupOpen: true,
     saveOpen: false,
     topFieldsOpen: true,
@@ -591,6 +592,65 @@ function topLevelBlockEntries() {
   }));
 }
 
+function isLayoutRootNode(node) {
+  const kind = blockKind(node);
+  return kind === "section" || kind === "field_group";
+}
+
+function currentLayoutRootPath() {
+  return state.ui.layoutRootPath ? parsePathKey(state.ui.layoutRootPath) : null;
+}
+
+function currentLayoutRootNode() {
+  const rootPath = currentLayoutRootPath();
+  return rootPath ? getNodeByPath(rootPath) : null;
+}
+
+function currentLayoutCollectionPath() {
+  const rootPath = currentLayoutRootPath();
+  return rootPath ? [...rootPath, "children"] : ["block_schema", "blocks"];
+}
+
+function currentLayoutEntries() {
+  const rootPath = currentLayoutRootPath();
+  if (!rootPath) {
+    return topLevelBlockEntries();
+  }
+
+  const rootNode = getNodeByPath(rootPath);
+  return getNodeChildren(rootNode).map((node, index) => ({
+    node,
+    path: [...rootPath, "children", index],
+    view: viewNode(node),
+  }));
+}
+
+function currentLayoutParentPath() {
+  const rootPath = currentLayoutRootPath();
+  if (!rootPath || rootPath.length <= 3) {
+    return null;
+  }
+
+  const parentPath = rootPath.slice(0, -2);
+  const parentNode = getNodeByPath(parentPath);
+  return isLayoutRootNode(parentNode) ? parentPath : null;
+}
+
+function setLayoutSelection(path) {
+  const node = getNodeByPath(path);
+  if (!node) {
+    return;
+  }
+
+  if (blockKind(node) === "section") {
+    state.ui.openSectionPaths = [pathKey(path)];
+    state.ui.activeFieldPath = null;
+  } else {
+    state.ui.activeFieldPath = pathKey(path);
+  }
+  state.ui.activeOptionToken = null;
+}
+
 function isSpecialRootCollectionPath(path, kind) {
   return Array.isArray(path)
     && path.length === 3
@@ -1025,6 +1085,7 @@ function resetEditorPanels() {
   state.ui.setupOpen = !state.selectedFormSlug;
   state.ui.saveOpen = !state.selectedFormSlug;
   state.ui.topFieldsOpen = !topFields.length;
+  state.ui.layoutRootPath = null;
   state.ui.openSectionPaths = sections.length ? [pathKey(sections[0].path)] : [];
   state.ui.activeFieldPath = null;
   state.ui.activeOptionToken = null;
@@ -1043,6 +1104,15 @@ function collectFieldPathKeys(container, basePath = []) {
 }
 
 function syncEditorPanels() {
+  if (!state.ui.advancedMode) {
+    state.ui.layoutRootPath = null;
+  } else if (state.ui.layoutRootPath) {
+    const layoutRoot = getNodeByPath(parsePathKey(state.ui.layoutRootPath));
+    if (!isLayoutRootNode(layoutRoot)) {
+      state.ui.layoutRootPath = null;
+    }
+  }
+
   const sections = topLevelSectionEntries();
   const validPaths = new Set(sections.map((entry) => pathKey(entry.path)));
   state.ui.openSectionPaths = normalizeArray(state.ui.openSectionPaths).filter((item) => validPaths.has(item));
@@ -1799,13 +1869,36 @@ function focusLayoutBlock(path) {
   }
 
   state.ui.focusPane = "layout";
-  if (String(node?.kind || "").trim() === "section") {
-    state.ui.openSectionPaths = [pathKey(path)];
-    state.ui.activeFieldPath = null;
-  } else {
-    state.ui.activeFieldPath = pathKey(path);
-    state.ui.activeOptionToken = null;
+  setLayoutSelection(path);
+  renderAll();
+}
+
+function openChildLayout(path) {
+  const node = getNodeByPath(path);
+  if (!isLayoutRootNode(node)) {
+    return;
   }
+
+  state.ui.focusPane = "layout";
+  state.ui.layoutRootPath = pathKey(path);
+  state.ui.activeFieldPath = null;
+  state.ui.activeOptionToken = null;
+  if (blockKind(node) === "section") {
+    state.ui.openSectionPaths = [pathKey(path)];
+  }
+  renderAll();
+}
+
+function exitChildLayout() {
+  const rootPath = currentLayoutRootPath();
+  if (!rootPath) {
+    return;
+  }
+
+  const parentPath = currentLayoutParentPath();
+  state.ui.layoutRootPath = parentPath ? pathKey(parentPath) : null;
+  state.ui.focusPane = "layout";
+  setLayoutSelection(rootPath);
   renderAll();
 }
 
@@ -2207,8 +2300,16 @@ function renderUtilityBlockCard(node, path) {
 
 function renderLayoutCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
-  const entries = topLevelBlockEntries();
+  const rootNode = currentLayoutRootNode();
+  const rootName = String(rootNode?.name || "").trim();
+  const rootKind = blockKind(rootNode);
+  const entries = currentLayoutEntries();
   const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
+  const collectionPath = currentLayoutCollectionPath();
+  const nested = Boolean(rootNode);
+  const layoutCopy = nested
+    ? `Editing the real block order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
+    : "This is the real top-level block order of the form. Use it when you need more control without changing the simpler default flow.";
 
   return `
     <section class="editor-card">
@@ -2216,19 +2317,21 @@ function renderLayoutCard(options = {}) {
         <div>
           <div class="card-title-row">
             <h3 class="card-title">Layout</h3>
-            ${renderHelpPopover("Layout help", "This is the real top-level block order of the form. Use it when you need more control without changing the simpler default flow.")}
+            ${renderHelpPopover("Layout help", layoutCopy)}
           </div>
+          ${nested ? `<div class="collapsed-copy">Inside ${escapeHtml(rootName || (rootKind === "field_group" ? "this group" : "this section"))}</div>` : ""}
         </div>
         <div class="top-actions">
+          ${nested ? `<button class="ghost mini" type="button" data-action="layout-up">Back</button>` : ""}
           <button class="secondary mini" type="button" data-action="add-layout-field">Add field</button>
           <button class="ghost mini" type="button" data-action="add-layout-group">Add group</button>
-          <button class="ghost mini" type="button" data-action="add-layout-section">Add section</button>
+          ${nested ? "" : `<button class="ghost mini" type="button" data-action="add-layout-section">Add section</button>`}
           <button class="ghost mini" type="button" data-action="add-layout-note">Add note</button>
           <button class="ghost mini" type="button" data-action="add-layout-divider">Add divider</button>
         </div>
       </div>
       ${entries.length ? `
-        <div class="section-organizer" data-collection-path="${encodePath(["block_schema", "blocks"])}">
+        <div class="section-organizer" data-collection-path="${encodePath(collectionPath)}">
           ${entries.map((entry) => renderLayoutOrganizerItem(entry, selectedEntry ? pathKey(entry.path) === pathKey(selectedEntry.path) : false)).join("")}
         </div>
         <div class="section-focus-stage">
@@ -2358,6 +2461,9 @@ function renderSectionCard(section, path, options = {}) {
                 <span>Section notes</span>
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(sectionNode).join("\n"))}</textarea>
               </label>
+              <div class="advanced-actions" style="grid-column: 1 / -1;">
+                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open child layout</button>
+              </div>
               </div>
             </details>
           ` : ""}
@@ -2604,6 +2710,11 @@ function renderFieldCard(field, path, options = {}) {
                 <span>Notes</span>
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(fieldNode || field).join("\n"))}</textarea>
               </label>
+              ${isGroup ? `
+                <div class="advanced-actions" style="grid-column: 1 / -1;">
+                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open child layout</button>
+                </div>
+              ` : ""}
               </div>
             </details>
           ` : ""}
@@ -3186,47 +3297,71 @@ async function handleEditorClick(event) {
     return;
   }
   if (action === "add-layout-field") {
-    topLevelBlocks().push(makeBlankField("field"));
-    const actualIndex = topLevelBlocks().length - 1;
+    const collection = getNodeByPath(currentLayoutCollectionPath());
+    if (!Array.isArray(collection)) {
+      return;
+    }
+    collection.push(makeBlankField("field"));
+    const actualIndex = collection.length - 1;
     state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
     state.ui.activeOptionToken = null;
     touch({ full: true, source: "blocks" });
     return;
   }
   if (action === "add-layout-group") {
-    topLevelBlocks().push(makeBlankField("field_group"));
-    const actualIndex = topLevelBlocks().length - 1;
+    const collection = getNodeByPath(currentLayoutCollectionPath());
+    if (!Array.isArray(collection)) {
+      return;
+    }
+    collection.push(makeBlankField("field_group"));
+    const actualIndex = collection.length - 1;
     state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
     state.ui.activeOptionToken = null;
     touch({ full: true, source: "blocks" });
     return;
   }
   if (action === "add-layout-section") {
-    topLevelBlocks().push(makeBlankSection());
+    const collection = getNodeByPath(currentLayoutCollectionPath());
+    if (!Array.isArray(collection)) {
+      return;
+    }
+    collection.push(makeBlankSection());
     state.ui.focusPane = "layout";
-    state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
+    state.ui.openSectionPaths = [pathKey([...currentLayoutCollectionPath(), collection.length - 1])];
     state.ui.activeFieldPath = null;
     touch({ full: true, source: "blocks" });
     return;
   }
   if (action === "add-layout-note") {
-    topLevelBlocks().push(makeBlankNote());
-    const actualIndex = topLevelBlocks().length - 1;
+    const collection = getNodeByPath(currentLayoutCollectionPath());
+    if (!Array.isArray(collection)) {
+      return;
+    }
+    collection.push(makeBlankNote());
+    const actualIndex = collection.length - 1;
     state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
     state.ui.activeOptionToken = null;
     touch({ full: true, source: "blocks" });
     return;
   }
   if (action === "add-layout-divider") {
-    topLevelBlocks().push(makeBlankDivider());
-    const actualIndex = topLevelBlocks().length - 1;
+    const collection = getNodeByPath(currentLayoutCollectionPath());
+    if (!Array.isArray(collection)) {
+      return;
+    }
+    collection.push(makeBlankDivider());
+    const actualIndex = collection.length - 1;
     state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
     state.ui.activeOptionToken = null;
     touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "layout-up") {
+    exitChildLayout();
     return;
   }
   if (action === "add-section") {
@@ -3266,6 +3401,10 @@ async function handleEditorClick(event) {
   }
   if (action === "focus-layout-block" && path) {
     focusLayoutBlock(path);
+    return;
+  }
+  if (action === "open-child-layout" && path) {
+    openChildLayout(path);
     return;
   }
   if (action === "toggle-section" && path) {
