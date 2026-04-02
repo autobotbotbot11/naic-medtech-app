@@ -44,6 +44,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules
 - in `Advanced` mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into `Layout` just to place them
 - the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact field organizers plus one focused field editor
+- nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details

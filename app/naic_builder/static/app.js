@@ -2631,7 +2631,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
           ? (isUtilityBlockNode(selectedEntry.node)
             ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
             : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
-          : '<div class="empty-state">Pick a field to keep editing.</div>'}
+          : '<div class="empty-state">Pick an item to keep editing.</div>'}
       </div>
       ${hiddenUtilityCount ? '<div class="collapsed-copy">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>' : ""}
     `;
@@ -3202,8 +3202,8 @@ function addFieldAt(path, kind) {
   if (!Array.isArray(collection)) {
     return;
   }
-  collection.push(makeBlankField(kind));
-  state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
+  const insertAt = insertChildNodeAtSelection(path, makeBlankField(kind));
+  state.ui.activeFieldPath = pathKey([...path, insertAt]);
   if (pathKey(path) === pathKey(topLevelCollectionPath("free_fields"))) {
     state.ui.topFieldsOpen = true;
     state.ui.focusPane = "content";
@@ -3216,16 +3216,37 @@ function addUtilityAt(path, kind) {
   if (!Array.isArray(collection)) {
     return;
   }
-  collection.push(
+  const insertAt = insertChildNodeAtSelection(
+    path,
     kind === "divider"
       ? makeBlankDivider()
       : kind === "table"
         ? makeBlankTable()
         : makeBlankNote()
   );
-  state.ui.activeFieldPath = pathKey([...path, collection.length - 1]);
+  state.ui.activeFieldPath = pathKey([...path, insertAt]);
   state.ui.activeOptionToken = null;
   touch({ full: true, source: "blocks" });
+}
+
+function insertChildNodeAtSelection(collectionPath, node) {
+  const collection = getNodeByPath(collectionPath);
+  if (!Array.isArray(collection)) {
+    return -1;
+  }
+
+  const activePath = state.ui.activeFieldPath ? parsePathKey(state.ui.activeFieldPath) : null;
+  if (activePath && pathStartsWith(activePath, collectionPath)) {
+    const nextSegment = activePath[collectionPath.length];
+    if (Number.isInteger(nextSegment)) {
+      const insertAt = Math.max(0, Math.min(nextSegment + 1, collection.length));
+      collection.splice(insertAt, 0, node);
+      return insertAt;
+    }
+  }
+
+  collection.push(node);
+  return collection.length - 1;
 }
 
 function addSection() {

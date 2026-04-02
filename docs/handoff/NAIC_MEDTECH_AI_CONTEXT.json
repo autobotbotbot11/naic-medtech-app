@@ -60,6 +60,7 @@
       "the old top of form area is now reframed as free fields",
       "default shared record details are tucked into advanced mode instead of staying in the primary form-details surface",
       "the content pane now uses a compact root organizer plus one focused editor",
+      "nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end",
       "selected sections still use a compact section organizer plus one focused section editor",
       "selected sections and groups use compact field organizers plus one focused field editor",
       "dropdown fields now use compact choice organizers plus one focused choice editor",
