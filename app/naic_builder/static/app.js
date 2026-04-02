@@ -3158,6 +3158,39 @@ function insertTopLevelContentBlock(kind) {
   touch({ full: true, source: "blocks" });
 }
 
+function insertCurrentLayoutBlock(kind) {
+  const collectionPath = currentLayoutCollectionPath();
+  const collection = getNodeByPath(collectionPath);
+  if (!Array.isArray(collection)) {
+    return;
+  }
+
+  const entries = currentLayoutEntries();
+  const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
+  const nextNode = makeBlankBlock(kind);
+
+  let insertAt = collection.length;
+  if (selectedEntry) {
+    const selectedIndex = Number(selectedEntry.path[selectedEntry.path.length - 1]);
+    if (Number.isInteger(selectedIndex)) {
+      insertAt = Math.max(0, Math.min(selectedIndex + 1, collection.length));
+    }
+  }
+
+  collection.splice(insertAt, 0, nextNode);
+  state.ui.focusPane = "layout";
+  state.ui.activeOptionToken = null;
+
+  if (kind === "section") {
+    state.ui.openSectionPaths = [pathKey([...collectionPath, insertAt])];
+    state.ui.activeFieldPath = null;
+  } else {
+    state.ui.activeFieldPath = pathKey([...collectionPath, insertAt]);
+  }
+
+  touch({ full: true, source: "blocks" });
+}
+
 function addOption(path) {
   const field = getNodeByPath(path);
   const options = ensureOptionShape(field);
@@ -3374,80 +3407,27 @@ async function handleEditorClick(event) {
   const path = actionTarget.dataset.path ? decodePath(actionTarget.dataset.path) : null;
 
   if (action === "add-layout-field") {
-    const collection = getNodeByPath(currentLayoutCollectionPath());
-    if (!Array.isArray(collection)) {
-      return;
-    }
-    collection.push(makeBlankField("field"));
-    const actualIndex = collection.length - 1;
-    state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
-    state.ui.activeOptionToken = null;
-    touch({ full: true, source: "blocks" });
+    insertCurrentLayoutBlock("field");
     return;
   }
   if (action === "add-layout-group") {
-    const collection = getNodeByPath(currentLayoutCollectionPath());
-    if (!Array.isArray(collection)) {
-      return;
-    }
-    collection.push(makeBlankField("field_group"));
-    const actualIndex = collection.length - 1;
-    state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
-    state.ui.activeOptionToken = null;
-    touch({ full: true, source: "blocks" });
+    insertCurrentLayoutBlock("field_group");
     return;
   }
   if (action === "add-layout-section") {
-    const collection = getNodeByPath(currentLayoutCollectionPath());
-    if (!Array.isArray(collection)) {
-      return;
-    }
-    collection.push(makeBlankSection());
-    state.ui.focusPane = "layout";
-    state.ui.openSectionPaths = [pathKey([...currentLayoutCollectionPath(), collection.length - 1])];
-    state.ui.activeFieldPath = null;
-    touch({ full: true, source: "blocks" });
+    insertCurrentLayoutBlock("section");
     return;
   }
   if (action === "add-layout-note") {
-    const collection = getNodeByPath(currentLayoutCollectionPath());
-    if (!Array.isArray(collection)) {
-      return;
-    }
-    collection.push(makeBlankNote());
-    const actualIndex = collection.length - 1;
-    state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
-    state.ui.activeOptionToken = null;
-    touch({ full: true, source: "blocks" });
+    insertCurrentLayoutBlock("note");
     return;
   }
   if (action === "add-layout-table") {
-    const collection = getNodeByPath(currentLayoutCollectionPath());
-    if (!Array.isArray(collection)) {
-      return;
-    }
-    collection.push(makeBlankTable());
-    const actualIndex = collection.length - 1;
-    state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
-    state.ui.activeOptionToken = null;
-    touch({ full: true, source: "blocks" });
+    insertCurrentLayoutBlock("table");
     return;
   }
   if (action === "add-layout-divider") {
-    const collection = getNodeByPath(currentLayoutCollectionPath());
-    if (!Array.isArray(collection)) {
-      return;
-    }
-    collection.push(makeBlankDivider());
-    const actualIndex = collection.length - 1;
-    state.ui.focusPane = "layout";
-    state.ui.activeFieldPath = pathKey([...currentLayoutCollectionPath(), actualIndex]);
-    state.ui.activeOptionToken = null;
-    touch({ full: true, source: "blocks" });
+    insertCurrentLayoutBlock("divider");
     return;
   }
   if (action === "layout-up") {
