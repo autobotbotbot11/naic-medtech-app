@@ -14,6 +14,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - runtime data lives in `../data/runtime/naic_medtech.db`
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
+- the backend now also exposes a compatibility `block_schema` bridge on form reads, plus `/api/forms/{slug}/block-schema`
+- create/update flows can now accept either the current legacy `fields + sections` shape or a limited compatible `blocks` shape
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
@@ -56,6 +58,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
 - important limitation: the visible builder is calmer now, but the editing engine still uses the older `fields + sections` schema under the hood and is not yet fully block-based
+- current block compatibility is intentionally limited to `field`, `field_group`, and `section` so the migration can stay safe
 
 ## Run locally
 1. Create and activate a virtual environment.

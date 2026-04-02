@@ -11,6 +11,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from .config import REFERENCE_SCHEMA_PATH
+from .database import Base, engine
 from .models import FormDefinition, FormVersion, LibraryNode
 from .schemas import FormSavePayload
 
@@ -26,6 +27,10 @@ def slugify(value: str) -> str:
 
 def compact_text(value: Any) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
+
+
+def normalize_items(value: Any) -> list[Any]:
+    return value if isinstance(value, list) else []
 
 
 def normalize_notes(raw_notes: Any) -> list[str]:
@@ -156,6 +161,301 @@ def normalize_section(section: dict[str, Any], form_id: str, order: int, used_ke
     return normalized
 
 
+def infer_block_field_type(field: dict[str, Any]) -> str:
+    control = compact_text(field.get("control")) or "input"
+    data_type = compact_text(field.get("data_type")) or "text"
+    if control == "select":
+        return "select"
+    if data_type == "date_or_datetime":
+        return "datetime"
+    return data_type or "text"
+
+
+def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
+    field_id = compact_text(field.get("id")) or f"blk_{slugify(field.get('name') or 'field')}"
+    kind = "field_group" if compact_text(field.get("kind")) == "field_group" else "field"
+    props: dict[str, Any] = {
+        "key": compact_text(field.get("key")) or slugify(field.get("name") or field_id),
+        "order": int(field.get("order") or 1),
+    }
+
+    notes = normalize_notes(field.get("notes"))
+    if notes:
+        props["notes"] = notes
+
+    source = field.get("source")
+    if isinstance(source, dict) and source:
+        props["source"] = source
+
+    if kind == "field_group":
+        return {
+            "id": field_id,
+            "kind": "field_group",
+            "name": compact_text(field.get("name")) or "Untitled Group",
+            "props": props,
+            "children": [
+                legacy_field_to_block(child)
+                for child in normalize_items(field.get("fields"))
+                if isinstance(child, dict)
+            ],
+        }
+
+    props["field_type"] = infer_block_field_type(field)
+    props["control"] = compact_text(field.get("control")) or "input"
+    props["data_type"] = compact_text(field.get("data_type")) or "text"
+    props["required"] = bool(field.get("required") or False)
+
+    unit_hint = compact_text(field.get("unit_hint"))
+    if unit_hint:
+        props["unit_hint"] = unit_hint
+
+    normal_value = compact_text(field.get("normal_value"))
+    if normal_value:
+        props["normal_value"] = normal_value
+
+    options = []
+    for option in normalize_items(field.get("options")):
+        if not isinstance(option, dict):
+            continue
+        label = compact_text(option.get("name"))
+        if not label:
+            continue
+        options.append(
+            {
+                "id": compact_text(option.get("id")) or f"{field_id}.{slugify(label)}",
+                "key": compact_text(option.get("key")) or slugify(label),
+                "label": label,
+                "order": int(option.get("order") or len(options) + 1),
+            }
+        )
+    if options:
+        props["options"] = options
+
+    return {
+        "id": field_id,
+        "kind": "field",
+        "name": compact_text(field.get("name")) or "Untitled Field",
+        "props": props,
+        "children": [],
+    }
+
+
+def legacy_section_to_block(section: dict[str, Any]) -> dict[str, Any]:
+    section_id = compact_text(section.get("id")) or f"blk_{slugify(section.get('name') or 'section')}"
+    props: dict[str, Any] = {
+        "key": compact_text(section.get("key")) or slugify(section.get("name") or section_id),
+        "order": int(section.get("order") or 1),
+    }
+
+    notes = normalize_notes(section.get("notes"))
+    if notes:
+        props["notes"] = notes
+
+    source = section.get("source")
+    if isinstance(source, dict) and source:
+        props["source"] = source
+
+    return {
+        "id": section_id,
+        "kind": "section",
+        "name": compact_text(section.get("name")) or "Untitled Section",
+        "props": props,
+        "children": [
+            legacy_field_to_block(field)
+            for field in normalize_items(section.get("fields"))
+            if isinstance(field, dict)
+        ],
+    }
+
+
+def legacy_schema_to_block_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
+    meta: dict[str, Any] = {
+        "common_field_set_id": compact_text(raw_schema.get("common_field_set_id")) or "default_lab_request",
+        "legacy_form_id": compact_text(raw_schema.get("id")),
+        "legacy_form_key": compact_text(raw_schema.get("key")),
+        "legacy_order": int(raw_schema.get("order") or 1),
+    }
+
+    notes = normalize_notes(raw_schema.get("notes"))
+    if notes:
+        meta["notes"] = notes
+
+    source = raw_schema.get("source")
+    if isinstance(source, dict) and source:
+        meta["source"] = source
+
+    blocks = [
+        *[
+            legacy_field_to_block(field)
+            for field in normalize_items(raw_schema.get("fields"))
+            if isinstance(field, dict)
+        ],
+        *[
+            legacy_section_to_block(section)
+            for section in normalize_items(raw_schema.get("sections"))
+            if isinstance(section, dict)
+        ],
+    ]
+
+    return {
+        "schema_version": 1,
+        "source_kind": "compat_legacy_fields_sections",
+        "meta": meta,
+        "blocks": blocks,
+    }
+
+
+def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: int, used_keys: set[str]) -> dict[str, Any]:
+    kind = compact_text(block.get("kind"))
+    if kind not in {"field", "field_group"}:
+        raise ValueError(f"Unsupported block kind for legacy field bridge: {kind or 'unknown'}")
+
+    props = block.get("props") if isinstance(block.get("props"), dict) else {}
+    raw_field: dict[str, Any] = {
+        "id": compact_text(block.get("id")) or "",
+        "key": compact_text(props.get("key")) or compact_text(block.get("name")),
+        "name": compact_text(block.get("name")) or "Untitled Field",
+        "kind": "field_group" if kind == "field_group" else "field",
+        "order": int(props.get("order") or order),
+    }
+
+    notes = normalize_notes(props.get("notes"))
+    if notes:
+        raw_field["notes"] = notes
+
+    source = props.get("source")
+    if isinstance(source, dict) and source:
+        raw_field["source"] = source
+
+    if kind == "field_group":
+        child_used: set[str] = set()
+        raw_field["fields"] = [
+            block_field_to_legacy_field(child, raw_field.get("id") or parent_id, child_order, child_used)
+            for child_order, child in enumerate(normalize_items(block.get("children")), start=1)
+            if isinstance(child, dict)
+        ]
+        return normalize_field(raw_field, parent_id, order, used_keys)
+
+    field_type = compact_text(props.get("field_type")) or "text"
+    if field_type == "select":
+        control = "select"
+        data_type = "enum"
+    elif field_type in {"date", "time", "datetime", "number", "text", "textarea"}:
+        control = "input"
+        data_type = field_type
+    else:
+        control = compact_text(props.get("control")) or "input"
+        data_type = compact_text(props.get("data_type")) or "text"
+
+    raw_field["control"] = control
+    raw_field["data_type"] = data_type
+
+    unit_hint = compact_text(props.get("unit_hint"))
+    if unit_hint:
+        raw_field["unit_hint"] = unit_hint
+
+    normal_value = compact_text(props.get("normal_value"))
+    if normal_value:
+        raw_field["normal_value"] = normal_value
+
+    options = []
+    for option in normalize_items(props.get("options")):
+        if not isinstance(option, dict):
+            continue
+        label = compact_text(option.get("label") or option.get("name"))
+        if not label:
+            continue
+        options.append(
+            {
+                "id": compact_text(option.get("id")) or "",
+                "key": compact_text(option.get("key")) or slugify(label),
+                "name": label,
+                "order": int(option.get("order") or len(options) + 1),
+            }
+        )
+    if options:
+        raw_field["options"] = options
+
+    return normalize_field(raw_field, parent_id, order, used_keys)
+
+
+def block_section_to_legacy_section(block: dict[str, Any], form_id: str, order: int, used_keys: set[str]) -> dict[str, Any]:
+    if compact_text(block.get("kind")) != "section":
+        raise ValueError("Only section blocks can be bridged into legacy sections.")
+
+    props = block.get("props") if isinstance(block.get("props"), dict) else {}
+    raw_section: dict[str, Any] = {
+        "id": compact_text(block.get("id")) or "",
+        "key": compact_text(props.get("key")) or compact_text(block.get("name")),
+        "name": compact_text(block.get("name")) or "Untitled Section",
+        "order": int(props.get("order") or order),
+        "fields": [],
+    }
+
+    notes = normalize_notes(props.get("notes"))
+    if notes:
+        raw_section["notes"] = notes
+
+    source = props.get("source")
+    if isinstance(source, dict) and source:
+        raw_section["source"] = source
+
+    field_used: set[str] = set()
+    raw_section["fields"] = [
+        block_field_to_legacy_field(child, compact_text(raw_section.get("id")) or form_id, child_order, field_used)
+        for child_order, child in enumerate(normalize_items(block.get("children")), start=1)
+        if isinstance(child, dict)
+    ]
+
+    return normalize_section(raw_section, form_id, order, used_keys)
+
+
+def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
+    blocks = normalize_items(raw_schema.get("blocks"))
+    meta = raw_schema.get("meta") if isinstance(raw_schema.get("meta"), dict) else {}
+    form_id = compact_text(meta.get("legacy_form_id")) or "form.compat"
+    used_field_keys: set[str] = set()
+    used_section_keys: set[str] = set()
+
+    fields: list[dict[str, Any]] = []
+    sections: list[dict[str, Any]] = []
+    for order, block in enumerate(blocks, start=1):
+        if not isinstance(block, dict):
+            continue
+        kind = compact_text(block.get("kind"))
+        if kind in {"field", "field_group"}:
+            fields.append(block_field_to_legacy_field(block, form_id, order, used_field_keys))
+            continue
+        if kind == "section":
+            sections.append(block_section_to_legacy_section(block, form_id, len(sections) + 1, used_section_keys))
+            continue
+        raise ValueError(f"Unsupported block kind for current compatibility bridge: {kind or 'unknown'}")
+
+    legacy: dict[str, Any] = {
+        "common_field_set_id": compact_text(meta.get("common_field_set_id")) or "default_lab_request",
+        "fields": fields,
+        "sections": sections,
+    }
+
+    notes = normalize_notes(meta.get("notes"))
+    if notes:
+        legacy["notes"] = notes
+
+    source = meta.get("source")
+    if isinstance(source, dict) and source:
+        legacy["source"] = source
+
+    return legacy
+
+
+def coerce_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
+    if not isinstance(raw_schema, dict):
+        return {}
+    if "blocks" in raw_schema and "fields" not in raw_schema and "sections" not in raw_schema:
+        return block_schema_to_legacy_schema(raw_schema)
+    return raw_schema
+
+
 def normalize_form_schema(
     raw_schema: dict[str, Any],
     *,
@@ -164,6 +464,7 @@ def normalize_form_schema(
     form_order: int,
     group_name: str,
 ) -> dict[str, Any]:
+    raw_schema = coerce_legacy_schema(raw_schema)
     form_id = f"{slugify(group_name)}.{slug}"
     field_used: set[str] = set()
     section_used: set[str] = set()
@@ -209,6 +510,8 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     if version is None:
         raise ValueError(f"Form '{definition.slug}' has no versions.")
 
+    schema = json.loads(version.schema_json)
+
     return {
         "slug": definition.slug,
         "name": definition.name,
@@ -220,7 +523,8 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         "current_version_number": version.version_number,
         "summary": version.summary,
         "updated_at": definition.updated_at.astimezone(timezone.utc).isoformat(),
-        "schema": json.loads(version.schema_json),
+        "schema": schema,
+        "block_schema": legacy_schema_to_block_schema(schema),
     }
 
 
@@ -296,6 +600,7 @@ def form_node_key(slug: str) -> str:
 
 
 def ensure_library_tree(session: Session) -> None:
+    Base.metadata.create_all(bind=engine)
     definitions = session.scalars(
         select(FormDefinition)
         .options(selectinload(FormDefinition.versions), selectinload(FormDefinition.library_node))
@@ -479,7 +784,7 @@ def ensure_reference_seed(session: Session) -> None:
 
 
 def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
-    raw_schema = payload.form_schema
+    raw_schema = coerce_legacy_schema(payload.form_schema)
     slug = next_available_slug(
         session,
         payload.slug or raw_schema.get("key") or payload.name or "untitled_form",
@@ -524,7 +829,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     if definition is None:
         raise KeyError(slug)
 
-    raw_schema = payload.form_schema
+    raw_schema = coerce_legacy_schema(payload.form_schema)
     name = compact_text(payload.name or raw_schema.get("name")) or definition.name
     normalized_schema = normalize_form_schema(
         raw_schema,

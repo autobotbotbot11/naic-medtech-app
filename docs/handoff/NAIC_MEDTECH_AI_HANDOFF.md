@@ -78,6 +78,9 @@ What is implemented:
 - `/` now redirects to `/forms`
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
+- form reads now also expose a derived compatibility `block_schema`
+- `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
+- create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
 - `/forms` now renders a dedicated `Form Library` screen
 - the main library shows only the official reference groups in the primary browse area
 - extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
@@ -196,6 +199,8 @@ Current migration status:
 - the generic library tree foundation has started in the real backend via a new persisted `library_nodes` table
 - current forms are automatically backfilled into that tree for compatibility
 - current library and builder screens still run on compatibility views over the older form/group model
+- the backend now includes a compatibility bridge between the current legacy schema and an ordered-block schema
+- current safe bridge coverage is limited to `field`, `field_group`, and `section`
 - the next engine milestone should be migrating form versions from `fields + sections` into an ordered block schema without breaking the current UI in one jump
 
 ## Source Of Truth

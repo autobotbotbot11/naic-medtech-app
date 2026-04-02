@@ -14,7 +14,10 @@
       "a persisted generic container/form library tree foundation now exists in the backend",
       "the compatibility tree is exposed at /api/library/tree",
       "current forms are backfilled into that tree automatically",
-      "the builder still uses the older fields plus sections schema shape under the hood"
+      "the builder still uses the older fields plus sections schema shape under the hood",
+      "form reads now expose a derived compatibility block_schema",
+      "api/forms/{slug}/block-schema now exposes the ordered-block view directly",
+      "create and update flows can now accept either legacy fields plus sections or a limited compatible block schema"
     ],
     "form_library_screen": "implemented",
     "start_new_form_screen": "implemented",
