@@ -1046,8 +1046,9 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-focus-stage {
-  display: grid;
-  gap: 10px;
+    display: grid;
+    gap: 10px;
+    align-content: start;
 }
 
 .option-focus-stage {
@@ -1179,8 +1180,13 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-card {
-  padding: 12px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.92));
+    padding: 12px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.92));
+}
+
+.field-card.is-focused {
+    max-width: 760px;
+    padding: 14px;
 }
 
 .section-card.is-dragging,
@@ -1218,20 +1224,46 @@ button.subtle[aria-pressed="true"] {
 }
 
 .field-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.field-head-focused {
+    align-items: center;
 }
 
 .field-summary {
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 700;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 700;
 }
 
 .row-actions {
-  gap: 6px;
+    gap: 6px;
+}
+
+.field-spotlight {
+    display: grid;
+    gap: 4px;
+    padding: 10px 12px;
+    border: 1px solid rgba(30, 93, 82, 0.12);
+    border-radius: var(--radius-md);
+    background: rgba(241, 248, 245, 0.94);
+}
+
+.field-spotlight strong {
+    font-size: 13px;
+}
+
+.field-spotlight span {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.field-basics-grid.compact {
+    align-items: end;
 }
 
 .row-actions > .ghost,
@@ -1293,12 +1325,13 @@ button.subtle[aria-pressed="true"] {
 }
 
 .option-focus-card {
-  display: grid;
-  gap: 12px;
-  padding: 12px;
-  border: 1px solid rgba(68, 54, 40, 0.1);
-  border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.94));
+    display: grid;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid rgba(68, 54, 40, 0.1);
+    border-radius: var(--radius-lg);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.94));
+    max-width: 520px;
 }
 
 .option-focus-head {

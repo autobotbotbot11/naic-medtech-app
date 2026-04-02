@@ -120,6 +120,10 @@ function splitLines(value) {
     .filter(Boolean);
 }
 
+function compactText(value) {
+  return String(value || "").trim();
+}
+
 function escapeHtml(value) {
   return String(value || "")
     .replaceAll("&", "&amp;")
@@ -1464,7 +1468,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       </div>
       <div class="field-focus-stage">
         ${selectedField
-          ? renderFieldCard(selectedField, [...collectionPath, selectedIndex], { forceOpen: true, hideToggle: true })
+          ? renderFieldCard(selectedField, [...collectionPath, selectedIndex], { forceOpen: true, hideToggle: true, focusedCard: true })
           : '<div class="empty-state">Choose a field from the list to keep editing.</div>'}
       </div>
     `;
@@ -1544,50 +1548,67 @@ function renderFieldOrganizerItem(field, path, index, active) {
 }
 
 function renderFieldCard(field, path, options = {}) {
-  const isGroup = field.kind === "field_group";
-  const open = Boolean(options.forceOpen) || isFieldOpen(path);
-  const summary = summarizeField(field);
-  const fieldType = inferFieldType(field);
-
-  return `
-    <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
-      <div class="field-head">
-        <div>
-          <div class="field-meta">
-            ${isGroup ? '<span class="chip warm">Group</span>' : ""}
-            <span class="field-summary">${escapeHtml(summary)}</span>
+    const isGroup = field.kind === "field_group";
+    const open = Boolean(options.forceOpen) || isFieldOpen(path);
+    const summary = summarizeField(field);
+    const fieldType = inferFieldType(field);
+    const focusedCard = Boolean(options.focusedCard);
+    const compactNormal = compactText(field.normal_value);
+    const compactUnit = compactText(field.unit_hint);
+    const metaBits = [
+      summary,
+      compactUnit ? `Unit: ${compactUnit}` : "",
+      compactNormal ? `Normal: ${compactNormal}` : "",
+    ].filter(Boolean);
+  
+    return `
+      <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
+        <div class="field-head ${focusedCard ? "field-head-focused" : ""}">
+          <div>
+            <div class="field-meta">
+              ${isGroup ? '<span class="chip warm">Group</span>' : ""}
+              <span class="field-summary">${escapeHtml(summary)}</span>
+            </div>
+            <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
-          <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
+          <div class="row-actions">
+            ${focusedCard ? "" : `
+            <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
+              <span class="drag-dots" aria-hidden="true"></span>
+            </button>
+            `}
+            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>`}
+            ${renderNodeActionMenu(path)}
+          </div>
         </div>
-        <div class="row-actions">
-          <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
-            <span class="drag-dots" aria-hidden="true"></span>
-          </button>
-          ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>`}
-          ${renderNodeActionMenu(path)}
-        </div>
-      </div>
+  
+        ${open ? `
+          ${focusedCard ? `
+            <div class="field-spotlight">
+              <strong>${escapeHtml(isGroup ? "Editing this group" : "Editing this field")}</strong>
+              <span>${escapeHtml(metaBits.join(" | "))}</span>
+            </div>
+          ` : ""}
 
-      ${open ? `
-        <div class="inline-grid">
-          <label>
-            <span>${isGroup ? "Group title" : "Field label"}</span>
-            <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
-          </label>
-          ${isGroup ? `
+          <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""}">
             <label>
-              <span>Type</span>
-              <input value="Field group" disabled>
+              <span>${isGroup ? "Group name" : "Label"}</span>
+              <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
-          ` : `
-            <label>
-              <span>Answer type</span>
-              <select data-action="field-type" data-path="${encodePath(path)}">
-                ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
-              </select>
-            </label>
-          `}
-        </div>
+            ${isGroup ? `
+              <label>
+                <span>Type</span>
+                <input value="Field group" disabled>
+              </label>
+            ` : `
+              <label>
+                <span>Type</span>
+                <select data-action="field-type" data-path="${encodePath(path)}">
+                  ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
+                </select>
+              </label>
+            `}
+          </div>
 
         ${isGroup ? `
           <div class="nested-fields">
@@ -1631,19 +1652,22 @@ function renderFieldCard(field, path, options = {}) {
 }
 
 function renderOptionsEditor(field, path) {
-  const options = normalizeArray(field.options);
-  const selectedIndex = resolveFocusedOptionIndex(path, options);
-  const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
-  return `
-    <section class="field-stack">
-      <div class="card-head">
-        <div>
-          <h4>Choices</h4>
+    const options = normalizeArray(field.options);
+    const selectedIndex = resolveFocusedOptionIndex(path, options);
+    const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
+    return `
+      <section class="field-stack">
+        <div class="card-head">
+          <div>
+            <div class="card-title-row">
+              <h4>Choices</h4>
+              <span class="chip soft">${options.length}</span>
+            </div>
+          </div>
+          <div class="option-actions">
+            <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
+          </div>
         </div>
-        <div class="option-actions">
-          <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
-        </div>
-      </div>
       ${options.length ? `
         <div class="option-organizer">
           ${options.map((option, index) => `
@@ -1661,18 +1685,18 @@ function renderOptionsEditor(field, path) {
         <div class="option-focus-stage">
           ${selectedOption ? `
             <div class="option-focus-card">
-              <div class="option-focus-head">
-                <div>
-                  <span class="field-summary">Choice ${selectedIndex + 1}</span>
-                  <h5>${escapeHtml(selectedOption.name || `Choice ${selectedIndex + 1}`)}</h5>
+                <div class="option-focus-head">
+                  <div>
+                    <span class="field-summary">Choice ${selectedIndex + 1}</span>
+                    <h5>${escapeHtml(selectedOption.name || `Choice ${selectedIndex + 1}`)}</h5>
+                  </div>
+                  <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${selectedIndex}">Delete</button>
                 </div>
-                <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${selectedIndex}">Delete</button>
+                <label class="option-focus-input">
+                  <span>Label</span>
+                  <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Option name">
+                </label>
               </div>
-              <label class="option-focus-input">
-                <span>Choice label</span>
-                <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Option name">
-              </label>
-            </div>
           ` : '<div class="empty-state">Choose a choice to keep editing.</div>'}
         </div>
       ` : '<div class="empty-state">This dropdown has no choices yet.</div>'}

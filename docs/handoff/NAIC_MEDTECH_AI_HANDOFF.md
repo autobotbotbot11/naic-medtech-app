@@ -101,6 +101,7 @@ What is implemented:
 - the preview now includes sticky quick-jump section chips for long forms, with active state so the user can navigate the preview faster
 - the left outline and library wording are now less technical, using calmer labels like `Basics`, `Ungrouped fields`, `Folder`, and `Edit Form`
 - the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
+- the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
 
 Important reading for the next implementation step:
 - treat `/forms` as the new entry surface
