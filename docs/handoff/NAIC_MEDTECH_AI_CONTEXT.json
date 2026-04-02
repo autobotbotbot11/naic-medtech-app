@@ -30,6 +30,7 @@
       "advanced Layout can now add real note and divider blocks without pushing them into the calmer default editing panes",
       "the live preview can now render note and divider blocks from stored block_schema while the default panes remain focused on ordinary fields and sections",
       "selected sections can now add note and divider blocks too, but only in advanced mode so the normal section flow stays calm by default",
+      "selected groups can now add note and divider blocks in advanced mode too, and the live preview now renders those nested utility blocks from the real block tree",
       "when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the standard flow"
     ],
     "form_library_screen": "implemented",

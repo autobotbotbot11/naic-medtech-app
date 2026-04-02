@@ -730,7 +730,7 @@ function topLevelPreviewSegments() {
         id: previewSectionId(entry.view.name || "Section", index),
         label: entry.view.name || "Section",
         title: entry.view.name || "Untitled Section",
-        fields: getNodeChildren(entry.node).map((child) => viewNode(child)),
+        fields: getNodeChildren(entry.node),
       });
       return;
     }
@@ -738,7 +738,7 @@ function topLevelPreviewSegments() {
     if (entry.node?.kind === "note" || entry.node?.kind === "divider") {
       looseHasLayoutBlocks = true;
     }
-    looseFields.push(entry.view);
+    looseFields.push(entry.node);
   });
 
   flushLooseFields();
@@ -2575,6 +2575,8 @@ function renderFieldCard(field, path, options = {}) {
           </div>
           <div class="section-actions">
             <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add child field</button>
+            ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
+            ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
           </div>
         ` : ""}
 
@@ -2809,7 +2811,7 @@ function renderPreviewField(field) {
           <div class="preview-group-title">${escapeHtml(field.name || "Field group")}</div>
         </div>
         <div class="preview-grid">
-          ${getNodeChildren(field).map((child) => renderPreviewField(viewNode(child))).join("")}
+          ${getNodeChildren(field).map((child) => renderPreviewField(child)).join("")}
         </div>
       </div>
     `;
