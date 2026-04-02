@@ -39,8 +39,8 @@
         </nav>
         {% if extra_groups %}
         <div class="sidebar-note">
-          <p class="eyebrow">More</p>
-          <p class="panel-copy">Extra folders stay tucked below so the main library stays calm.</p>
+          <p class="eyebrow">Extra</p>
+          <p class="panel-copy">Less-used folders stay tucked below.</p>
         </div>
         {% endif %}
       </aside>
@@ -63,7 +63,7 @@
             {% for form in group.forms %}
             <article class="form-card" data-form-name="{{ form.name|lower }}" data-group-name="{{ group.name|lower }}">
               <div class="form-card-copy">
-                <p class="form-card-meta">Version {{ form.current_version_number }}</p>
+                <p class="form-card-meta">v{{ form.current_version_number }}</p>
                 <h3>{{ form.name }}</h3>
               </div>
               <div class="form-card-actions">
@@ -80,9 +80,9 @@
         <details class="panel extra-groups-shell" data-extra-groups>
           <summary class="extra-groups-summary">
             <div>
-              <p class="eyebrow">More</p>
-              <h2>More Folders</h2>
-              <p class="panel-copy">Older or scratch forms stay here so the main library stays focused.</p>
+              <p class="eyebrow">Extra</p>
+              <h2>Older forms</h2>
+              <p class="panel-copy">Open this only when you need less-used folders.</p>
             </div>
           </summary>
 
@@ -103,7 +103,7 @@
                 {% for form in group.forms %}
                 <article class="form-card" data-form-name="{{ form.name|lower }}" data-group-name="{{ group.name|lower }}">
                   <div class="form-card-copy">
-                    <p class="form-card-meta">Version {{ form.current_version_number }}</p>
+                    <p class="form-card-meta">v{{ form.current_version_number }}</p>
                     <h3>{{ form.name }}</h3>
                   </div>
                   <div class="form-card-actions">
