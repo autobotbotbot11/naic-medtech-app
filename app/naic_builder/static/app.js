@@ -213,11 +213,11 @@ function isDialogOpen() {
 }
 
 function closeTransientDetails() {
-  if (!formEditorEl) {
+  if (!document.body) {
     return;
   }
 
-  formEditorEl.querySelectorAll(".action-details[open], .manage-details[open], .inline-help[open]").forEach((item) => {
+  document.querySelectorAll(".action-details[open], .manage-details[open], .inline-help[open]").forEach((item) => {
     item.open = false;
   });
 }

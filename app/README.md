@@ -31,6 +31,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - selected choice actions now use a quieter footer `More options` area too, with `Duplicate` and a calmer confirmed `Delete` flow
 - the left outline is less manager-like now: section subitems no longer show per-row counts, and only the active section shows `Editing`
 - the top shell is calmer too: the status strip is more subtle, status messages are shorter, and the live-preview callout uses steadier less repetitive copy
+- the top-right app-bar actions are quieter now: `New` and `Save` stay visible, while `Duplicate` moved into a small overflow menu
 - official reference groups are shown in the main library area
 - extra working or scratch groups are tucked into a secondary collapsed area
 - the current long-term builder direction is documented in:

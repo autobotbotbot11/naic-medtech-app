@@ -120,12 +120,23 @@ textarea {
 
 .action-row {
   justify-content: flex-end;
+  gap: 8px;
 }
 
 .app-bar .action-row button,
 .app-bar .brand-block button {
   padding: 8px 12px;
   font-size: 12px;
+}
+
+.topbar-actions summary {
+  width: 32px;
+  height: 32px;
+  opacity: 0.72;
+}
+
+.topbar-actions .action-menu {
+  min-width: 150px;
 }
 
 .eyebrow {
