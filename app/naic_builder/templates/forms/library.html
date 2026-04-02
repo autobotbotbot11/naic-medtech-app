@@ -8,6 +8,61 @@
   <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
 </head>
 <body>
+  {% macro render_nodes(nodes, path_label='', level=0) %}
+    {% for node in nodes if not node.archived %}
+      {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
+      {% if node.kind == 'container' %}
+        {% set current_path = path_label ~ (' / ' if path_label else '') ~ node.name %}
+        <details
+          id="{{ node_anchor }}"
+          class="tree-folder panel{% if level > 0 %} tree-folder-nested{% endif %}"
+          data-node-kind="container"
+          data-node-id="{{ node.id }}"
+          data-search-text="{{ current_path|lower }}"
+          data-default-open="{{ 'true' if level == 0 else 'false' }}"
+          {% if level == 0 %}open{% endif %}
+        >
+          <summary class="tree-folder-summary">
+            <div class="tree-node-copy">
+              <p class="eyebrow">{{ 'Folder' if level == 0 else 'Inside' }}</p>
+              <h2 class="tree-node-title">{{ node.name }}</h2>
+              {% if path_label %}
+              <p class="panel-copy tree-node-path">{{ path_label }}</p>
+              {% endif %}
+            </div>
+          </summary>
+          <div class="tree-node-body">
+            <div class="tree-children">
+              {{ render_nodes(node.children, current_path, level + 1) }}
+            </div>
+          </div>
+        </details>
+      {% elif node.kind == 'form' and node.form %}
+        {% set form_name = node.form.name %}
+        {% set current_path = path_label ~ (' / ' if path_label else '') ~ form_name %}
+        <article
+          id="{{ node_anchor }}"
+          class="form-card tree-form-card"
+          data-node-kind="form"
+          data-node-id="{{ node.id }}"
+          data-search-text="{{ current_path|lower }}"
+        >
+          <div class="form-card-copy">
+            <p class="form-card-meta">{{ 'v' ~ node.form.current_version_number }}</p>
+            <h3>{{ form_name }}</h3>
+            {% if path_label %}
+            <p class="panel-copy tree-form-path">{{ path_label }}</p>
+            {% endif %}
+          </div>
+          <div class="form-card-actions">
+            <a class="ghost-button" href="/forms/new?source={{ node.form.slug }}">Copy</a>
+            <a class="primary-button" href="/forms/{{ node.form.slug }}/builder">Edit</a>
+          </div>
+        </article>
+      {% endif %}
+    {% endfor %}
+  {% endmacro %}
+
   <main class="library-shell">
     <header class="library-topbar panel">
       <div class="brand-copy">
@@ -28,96 +83,35 @@
       <aside class="panel library-sidebar">
         <div class="sidebar-head">
           <p class="eyebrow">Library</p>
-          <h2>Folders</h2>
+          <h2>Browse</h2>
         </div>
         <nav class="group-jump-list">
-          {% for group in official_groups %}
-          <a href="#group-{{ loop.index }}" class="group-jump-link" data-group-link="{{ group.name|lower }}">
-            <span>{{ group.name }}</span>
+          {% for node in library_tree if not node.archived %}
+          {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
+          {% set jump_name = node.form.name if node.kind == 'form' and node.form else node.name %}
+          <a href="#{{ node_anchor }}" class="group-jump-link" data-jump-link="{{ node.id }}">
+            <span>{{ jump_name }}</span>
+            <small class="tree-link-kind">{{ 'Form' if node.kind == 'form' else 'Folder' }}</small>
           </a>
           {% endfor %}
         </nav>
-        {% if extra_groups %}
         <div class="sidebar-note">
-          <p class="eyebrow">Extra</p>
-          <p class="panel-copy">Less-used folders stay tucked below.</p>
+          <p class="eyebrow">Tip</p>
+          <p class="panel-copy">Folders can stay nested as the library grows. Search works across the full path.</p>
         </div>
-        {% endif %}
       </aside>
 
       <section class="library-main">
-        {% for group in official_groups %}
-        <section
-          id="group-{{ loop.index }}"
-          class="panel group-section"
-          data-group-name="{{ group.name|lower }}"
-        >
-          <div class="group-head">
-            <div>
-              <p class="eyebrow">Folder</p>
-              <h2>{{ group.name }}</h2>
-            </div>
+        <div class="library-tree" data-library-root>
+          {% if library_tree %}
+            {{ render_nodes(library_tree) }}
+          {% else %}
+          <div class="panel empty-state">
+            <h2>Start with a form</h2>
+            <p class="panel-copy">Your library is empty right now. Create a new form when you are ready.</p>
           </div>
-
-          <div class="form-card-grid">
-            {% for form in group.forms %}
-            <article class="form-card" data-form-name="{{ form.name|lower }}" data-group-name="{{ group.name|lower }}">
-              <div class="form-card-copy">
-                <p class="form-card-meta">v{{ form.current_version_number }}</p>
-                <h3>{{ form.name }}</h3>
-              </div>
-              <div class="form-card-actions">
-                <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Copy</a>
-                <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit</a>
-              </div>
-            </article>
-            {% endfor %}
-          </div>
-        </section>
-        {% endfor %}
-
-        {% if extra_groups %}
-        <details class="panel extra-groups-shell" data-extra-groups>
-          <summary class="extra-groups-summary">
-            <div>
-              <p class="eyebrow">Extra</p>
-              <h2>Older forms</h2>
-              <p class="panel-copy">Open this only when you need less-used folders.</p>
-            </div>
-          </summary>
-
-          <div class="extra-groups-body">
-            {% for group in extra_groups %}
-            <section
-              class="group-section group-section-secondary"
-              data-group-name="{{ group.name|lower }}"
-            >
-              <div class="group-head">
-                <div>
-                  <p class="eyebrow">Extra Folder</p>
-                  <h2>{{ group.name }}</h2>
-                </div>
-              </div>
-
-              <div class="form-card-grid">
-                {% for form in group.forms %}
-                <article class="form-card" data-form-name="{{ form.name|lower }}" data-group-name="{{ group.name|lower }}">
-                  <div class="form-card-copy">
-                    <p class="form-card-meta">v{{ form.current_version_number }}</p>
-                    <h3>{{ form.name }}</h3>
-                  </div>
-                  <div class="form-card-actions">
-                    <a class="ghost-button" href="/forms/new?source={{ form.slug }}">Copy</a>
-                    <a class="primary-button" href="/forms/{{ form.slug }}/builder">Edit</a>
-                  </div>
-                </article>
-                {% endfor %}
-              </div>
-            </section>
-            {% endfor %}
-          </div>
-        </details>
-        {% endif %}
+          {% endif %}
+        </div>
 
         <div id="emptySearchState" class="panel empty-state hidden">
           <h2>No matching forms</h2>

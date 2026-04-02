@@ -183,6 +183,14 @@ input:focus {
   gap: 10px;
 }
 
+.tree-link-kind {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .sidebar-note {
   margin-top: 18px;
   padding-top: 16px;
@@ -213,55 +221,80 @@ input:focus {
   gap: 16px;
 }
 
-.extra-groups-shell {
-  padding: 18px;
-  background: rgba(255, 250, 244, 0.88);
+.library-tree {
+  display: grid;
+  gap: 16px;
 }
 
-.extra-groups-shell.hidden {
-  display: none;
+.tree-folder {
+  padding: 16px 18px;
 }
 
-.extra-groups-summary {
+.tree-folder.hidden,
+.tree-form-card.hidden {
+  display: none !important;
+}
+
+.tree-folder-nested {
+  border-radius: var(--radius-lg);
+  background: rgba(255, 250, 244, 0.78);
+  box-shadow: none;
+}
+
+.tree-folder-summary {
   list-style: none;
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  align-items: center;
+  align-items: start;
   cursor: pointer;
 }
 
-.extra-groups-summary::-webkit-details-marker {
+.tree-folder-summary::-webkit-details-marker {
   display: none;
 }
 
-.extra-groups-body {
+.tree-folder-summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  color: var(--accent);
+  font-size: 24px;
+  line-height: 1;
+  font-weight: 400;
+}
+
+.tree-folder[open] > .tree-folder-summary::after {
+  content: "-";
+}
+
+.tree-node-copy {
+  display: grid;
+  gap: 5px;
+}
+
+.tree-node-title {
+  font-size: clamp(22px, 2vw, 28px);
+}
+
+.tree-node-path {
+  max-width: 620px;
+}
+
+.tree-node-body {
   margin-top: 16px;
+}
+
+.tree-children {
   display: grid;
   gap: 14px;
 }
 
-.group-section-secondary {
-  padding: 0;
-  border: 0;
-  box-shadow: none;
-  background: transparent;
+.tree-form-card {
+  background: rgba(255, 255, 255, 0.8);
 }
 
-.group-section {
-  padding: 18px;
-}
-
-.group-section.hidden {
-  display: none;
-}
-
-.group-head {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: start;
-  margin-bottom: 16px;
+.tree-form-path {
+  margin: 0;
 }
 
 .form-card-grid {
@@ -314,8 +347,7 @@ input:focus {
 
 @media (max-width: 980px) {
   .library-topbar,
-  .group-head,
-  .extra-groups-summary {
+  .tree-folder-summary {
     flex-direction: column;
     align-items: stretch;
   }
@@ -346,7 +378,7 @@ input:focus {
 
   .library-topbar,
   .library-sidebar,
-  .group-section {
+  .tree-folder {
     padding: 14px;
   }
 

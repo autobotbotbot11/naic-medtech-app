@@ -19,6 +19,7 @@ from .services import (
     ensure_reference_seed,
     get_form_or_none,
     list_container_choices,
+    list_grouped_forms,
     list_library_tree,
     load_reference_schema,
     serialize_form,
@@ -66,14 +67,13 @@ def root() -> RedirectResponse:
 
 @app.get("/forms", response_class=HTMLResponse)
 def forms_library(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
-    official_groups, extra_groups = split_library_groups(session)
+    library_tree = list_library_tree(session)
     return templates.TemplateResponse(
         request=request,
         name="forms/library.html",
         context={
             "app_title": APP_TITLE,
-            "official_groups": official_groups,
-            "extra_groups": extra_groups,
+            "library_tree": library_tree,
         },
     )
 

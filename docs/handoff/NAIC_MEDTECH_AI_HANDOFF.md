@@ -100,9 +100,9 @@ What is implemented:
 - when a section contains advanced utility blocks, the default section editor now hides them and shows a small hint instead of exposing extra controls in the standard flow
 - richer stored block schema now survives builder hydration correctly, so advanced-only blocks are preserved after normal save/reload flows instead of collapsing back to the legacy projection in the frontend
 - `/forms` now renders a dedicated `Form Library` screen
-- the main library shows only the official reference groups in the primary browse area
-- extra working or scratch groups are still accessible, but tucked into a secondary collapsed area so the main screen stays calmer
-- library search works across both the primary groups and the tucked-away extra groups
+- `/forms` now renders directly from the real persisted `container | form` tree instead of the older one-level grouped library view
+- the library can now show both root-level forms and folders in one calm tree-first browse surface
+- library search now works against the full folder path text instead of only one-level group labels
 - `/forms/new` now renders a dedicated guided `Start New Form` screen
 - `New Form`, `Open Builder`, and `Duplicate` are all routed from the new library screen
 - guided creation now asks for:
@@ -233,7 +233,7 @@ Important:
 Current migration status:
 - the generic library tree foundation has started in the real backend via a new persisted `library_nodes` table
 - current forms are automatically backfilled into that tree for compatibility
-- current library and builder screens still run on compatibility views over the older form/group model
+- the visible library now runs on the real persisted tree, while the builder still contains compatibility behavior during the ordered-block migration
 - the backend now includes a compatibility bridge between the current legacy schema and an ordered-block schema
 - current safe bridge coverage is limited to `field`, `field_group`, and `section`
 - stored block schemas can now preserve extra block kinds even when the legacy compatibility projection cannot render them directly
@@ -340,7 +340,7 @@ Current builder implementation is still:
 - the empty-state and no-data copy are warmer too: builder and library messages now guide the user more gently instead of sounding like raw system states
 - the save surface is calmer too: `Save draft` is now just `Save`, the finish-step wording is softer, the floating save dock is quieter, and the save card now stays in sync with dirty state while editing the note
 - the library page is calmer too: folder jump counts and repeated folder metadata are gone, and form card actions now use shorter labels like `Copy` and `Edit`
-- the library cards are lighter too: version labels are subtler (`v1`), card spacing is tighter, and the secondary library area now reads as `Older forms` with calmer copy
+- the library cards are lighter too: version labels are subtler (`v1`), card spacing is tighter, and the library now reads more like a calm folder browser than an admin list
 - the top of the library page is calmer too: shorter header copy, quieter `Find` search affordance, and a lighter `New` action for a cleaner first glance
 - the library header itself is tighter too: spacing is calmer, the top band sits lower visually, and the first impression is less crowded
 
