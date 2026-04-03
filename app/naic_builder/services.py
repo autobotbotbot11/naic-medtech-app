@@ -352,14 +352,14 @@ def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: in
     for option in normalize_items(props.get("options")):
         if not isinstance(option, dict):
             continue
-        label = compact_text(option.get("label") or option.get("name"))
-        if not label:
+        name = compact_text(option.get("name"))
+        if not name:
             continue
         options.append(
             {
                 "id": compact_text(option.get("id")) or "",
-                "key": compact_text(option.get("key")) or slugify(label),
-                "name": label,
+                "key": compact_text(option.get("key")) or slugify(name),
+                "name": name,
                 "order": int(option.get("order") or len(options) + 1),
             }
         )
@@ -563,7 +563,9 @@ def build_form_version_storage_documents(
     name: str,
     form_order: int,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    legacy_storage_source = build_legacy_storage_schema_from_blocks(raw_block_schema)
+    normalized_block_schema = json.loads(json.dumps(raw_block_schema))
+    normalize_active_block_storage_schema(normalized_block_schema)
+    legacy_storage_source = build_legacy_storage_schema_from_blocks(normalized_block_schema)
     legacy_storage_schema = build_legacy_storage_payload(
         legacy_storage_source,
         slug=slug,
@@ -571,7 +573,7 @@ def build_form_version_storage_documents(
         form_order=form_order,
     )
     stored_block_schema = build_block_storage_payload(
-        raw_block_schema,
+        normalized_block_schema,
         legacy_storage_schema=legacy_storage_schema,
     )
     return legacy_storage_schema, stored_block_schema
