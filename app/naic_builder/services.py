@@ -271,11 +271,13 @@ def legacy_section_to_block(section: dict[str, Any]) -> dict[str, Any]:
 
 def legacy_schema_to_block_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
     meta: dict[str, Any] = {
-        "common_field_set_id": compact_text(raw_schema.get("common_field_set_id")) or "default_lab_request",
         "legacy_form_id": compact_text(raw_schema.get("id")),
         "legacy_form_key": compact_text(raw_schema.get("key")),
         "legacy_order": int(raw_schema.get("order") or 1),
     }
+    common_field_set_id = compact_text(raw_schema.get("common_field_set_id"))
+    if common_field_set_id:
+        meta["common_field_set_id"] = common_field_set_id
 
     notes = normalize_notes(raw_schema.get("notes"))
     if notes:
@@ -435,10 +437,12 @@ def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
         raise ValueError(f"Unsupported block kind for current compatibility bridge: {kind or 'unknown'}")
 
     legacy: dict[str, Any] = {
-        "common_field_set_id": compact_text(meta.get("common_field_set_id")) or "default_lab_request",
         "fields": fields,
         "sections": sections,
     }
+    common_field_set_id = compact_text(meta.get("common_field_set_id"))
+    if common_field_set_id:
+        legacy["common_field_set_id"] = common_field_set_id
 
     notes = normalize_notes(meta.get("notes"))
     if notes:
@@ -474,7 +478,11 @@ def normalize_block_schema_storage(
     block_schema["blocks"] = normalize_items(block_schema.get("blocks"))
 
     meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
-    meta["common_field_set_id"] = compact_text(normalized_schema.get("common_field_set_id")) or "default_lab_request"
+    common_field_set_id = compact_text(normalized_schema.get("common_field_set_id"))
+    if common_field_set_id:
+        meta["common_field_set_id"] = common_field_set_id
+    else:
+        meta.pop("common_field_set_id", None)
     meta["legacy_form_id"] = compact_text(normalized_schema.get("id"))
     meta["legacy_form_key"] = compact_text(normalized_schema.get("key"))
     meta["legacy_order"] = int(normalized_schema.get("order") or 1)
@@ -513,7 +521,6 @@ def normalize_form_schema(
         "key": slug,
         "name": compact_text(name) or "Untitled Form",
         "order": form_order,
-        "common_field_set_id": compact_text(raw_schema.get("common_field_set_id")) or "default_lab_request",
         "fields": [
             normalize_field(field, form_id, field_order, field_used)
             for field_order, field in enumerate(raw_schema.get("fields") or [], start=1)
@@ -525,6 +532,9 @@ def normalize_form_schema(
             if isinstance(section, dict)
         ],
     }
+    common_field_set_id = compact_text(raw_schema.get("common_field_set_id"))
+    if common_field_set_id:
+        normalized["common_field_set_id"] = common_field_set_id
 
     notes = normalize_notes(raw_schema.get("notes"))
     if notes:
