@@ -101,7 +101,7 @@ What is implemented:
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
 - form reads now also expose a derived compatibility `block_schema`
-- `/api/forms/{slug}/block-schema` now exposes the ordered-block view directly
+- `/api/forms/{slug}` now carries the ordered-block view directly via `block_schema`
 - create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
 - each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
 - startup now backfills missing stored block schemas for older versions
@@ -209,6 +209,9 @@ What is implemented:
 - the backend resolver path is thinner too: `ensure_library_tree()` now reads schema order directly instead of going through a leftover legacy location-hint wrapper, and `resolve_form_location_metadata()` no longer returns unused `resolved_parent_name` / `resolved_parent_order` scaffolding
 - the live contract is thinner too: save validation no longer maps `group_name` into `location_name`, and `/builder` new-draft startup now reads only `location_name` instead of tolerating old grouped-era query params
 - the live save contract is thinner too: the builder now posts `form_schema` directly, and backend validation no longer remaps old `schema` into `form_schema`
+- the live save contract is stricter too: `FormSavePayload` now expects the block-based `form_schema` shape in active API usage, so old `fields/sections` save payloads are no longer part of the live builder contract
+- the live form-read contract is thinner too: `/api/forms/{slug}` now returns only `block_schema` for the active form shape, and the builder derives any temporary legacy projection locally
+- backend naming is more honest too: the no-op save alias validator is gone, and the remaining form-definition helpers in `services.py` now read like tree-first helpers instead of grouped-era compatibility names
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths

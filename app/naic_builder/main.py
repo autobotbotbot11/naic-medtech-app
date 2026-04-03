@@ -477,20 +477,6 @@ def get_form(slug: str, session: Session = Depends(get_session)) -> dict[str, An
     return serialize_form(definition)
 
 
-@app.get("/api/forms/{slug}/block-schema")
-def get_form_block_schema(slug: str, session: Session = Depends(get_session)) -> dict[str, Any]:
-    definition = get_form_or_none(session, slug)
-    if definition is None:
-        raise HTTPException(status_code=404, detail="Form not found.")
-    payload = serialize_form(definition)
-    return {
-        "slug": payload["slug"],
-        "name": payload["name"],
-        "current_version_number": payload["current_version_number"],
-        "block_schema": payload["block_schema"],
-    }
-
-
 @app.post("/api/forms", status_code=201)
 def create_form_endpoint(payload: FormSavePayload, session: Session = Depends(get_session)) -> dict[str, Any]:
     try:

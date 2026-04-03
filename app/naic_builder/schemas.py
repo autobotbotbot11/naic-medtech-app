@@ -5,17 +5,6 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-def compact_optional_text(value: Any) -> str:
-    return str(value or "").strip()
-
-
-def normalize_form_save_payload_aliases(value: Any) -> Any:
-    if not isinstance(value, dict):
-        return value
-
-    return dict(value)
-
-
 class FormSavePayload(BaseModel):
     model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
@@ -27,7 +16,8 @@ class FormSavePayload(BaseModel):
     summary: str | None = None
     form_schema: dict[str, Any] = Field(default_factory=dict)
 
-    @model_validator(mode="before")
-    @classmethod
-    def move_schema_key(cls, value: Any) -> Any:
-        return normalize_form_save_payload_aliases(value)
+    @model_validator(mode="after")
+    def require_block_schema(self) -> "FormSavePayload":
+        if self.form_schema and "blocks" not in self.form_schema:
+            raise ValueError("form_schema must use the block-based builder shape.")
+        return self

@@ -578,14 +578,13 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     if version is None:
         raise ValueError(f"Form '{definition.slug}' has no versions.")
 
-    schema = json.loads(version.schema_json)
     if compact_text(version.block_schema_json):
         try:
             block_schema = json.loads(version.block_schema_json)
         except json.JSONDecodeError:
-            block_schema = legacy_schema_to_block_schema(schema)
+            block_schema = legacy_schema_to_block_schema(json.loads(version.schema_json))
     else:
-        block_schema = legacy_schema_to_block_schema(schema)
+        block_schema = legacy_schema_to_block_schema(json.loads(version.schema_json))
 
     location = serialize_form_location(definition)
     return {
@@ -599,7 +598,6 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         "current_version_number": version.version_number,
         "summary": version.summary,
         "updated_at": definition.updated_at.astimezone(timezone.utc).isoformat(),
-        "schema": schema,
         "block_schema": block_schema,
     }
 
@@ -848,7 +846,7 @@ def upsert_form_node_location(
     return form_node
 
 
-def new_definition_compat_shell(
+def create_form_definition_record(
     *,
     slug: str,
     name: str,
@@ -861,7 +859,7 @@ def new_definition_compat_shell(
     )
 
 
-def sync_definition_legacy_location_fields(
+def sync_definition_parent_node_key(
     session: Session,
     definition: FormDefinition,
     *,
@@ -878,8 +876,6 @@ def sync_definition_legacy_location_fields(
         parent_container = session.scalar(select(LibraryNode).where(LibraryNode.id == node.parent_id))
 
     derived_parent_key = parent_container.node_key if parent_container is not None and parent_container.kind == "container" else None
-    derived_form_order = int(node.node_order or 1)
-
     changed = False
     if compact_text(definition.library_parent_node_key) != compact_text(derived_parent_key):
         definition.library_parent_node_key = derived_parent_key
@@ -1029,7 +1025,7 @@ def move_form(
         parent_node_key=target_parent.node_key if target_parent is not None else None,
         node_order=desired_order,
     )
-    sync_definition_legacy_location_fields(session, definition, form_node=form_node)
+    sync_definition_parent_node_key(session, definition, form_node=form_node)
 
     session.commit()
     ensure_library_tree(session)
@@ -1226,7 +1222,7 @@ def ensure_library_tree(session: Session) -> None:
             if current_state != original_state:
                 changed = True
 
-        if sync_definition_legacy_location_fields(session, definition, form_node=form_node):
+        if sync_definition_parent_node_key(session, definition, form_node=form_node):
             changed = True
 
     if changed:
@@ -1307,7 +1303,7 @@ def ensure_reference_seed(session: Session) -> None:
                     form_order=form_order,
                 )
 
-                definition = new_definition_compat_shell(
+                definition = create_form_definition_record(
                     slug=slug,
                     name=name,
                     parent_node_key=parent_node_key,
@@ -1320,7 +1316,7 @@ def ensure_reference_seed(session: Session) -> None:
                     parent_node_key=parent_node_key,
                     node_order=form_order,
                 )
-                sync_definition_legacy_location_fields(session, definition)
+                sync_definition_parent_node_key(session, definition)
 
                 version = FormVersion(
                     form_id=definition.id,
@@ -1408,7 +1404,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
-    definition = new_definition_compat_shell(
+    definition = create_form_definition_record(
         slug=slug,
         name=name,
         parent_node_key=location_meta["resolved_parent_key"],
@@ -1421,7 +1417,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         parent_node_key=location_meta["resolved_parent_key"],
         node_order=location_meta["resolved_form_order"],
     )
-    sync_definition_legacy_location_fields(session, definition)
+    sync_definition_parent_node_key(session, definition)
 
     version = FormVersion(
         form_id=definition.id,
@@ -1473,7 +1469,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         parent_node_key=location_meta["resolved_parent_key"],
         node_order=location_meta["resolved_form_order"],
     )
-    sync_definition_legacy_location_fields(session, definition)
+    sync_definition_parent_node_key(session, definition)
 
     version = FormVersion(
         form_id=definition.id,
