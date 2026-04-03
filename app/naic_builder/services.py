@@ -908,13 +908,30 @@ def sync_definition_legacy_location_fields(
 
 
 def legacy_definition_location_hint(definition: FormDefinition) -> dict[str, Any]:
-    group_name = compact_text(definition.group_name) or definition.name or "Untitled Form"
-    group_kind = compact_text(definition.group_kind) or "category"
+    explicit_group_name = compact_text(definition.group_name)
+    explicit_group_kind = compact_text(definition.group_kind)
+    has_legacy_location_signal = any(
+        [
+            explicit_group_name,
+            explicit_group_kind,
+            definition.group_order is not None,
+            definition.form_order is not None,
+        ]
+    )
+    legacy_is_standalone = (
+        explicit_group_kind == "standalone_form"
+        or (not explicit_group_kind and not explicit_group_name and not has_legacy_location_signal)
+    )
+    if explicit_group_kind and explicit_group_kind != "standalone_form":
+        legacy_is_standalone = False
+    elif explicit_group_name:
+        legacy_is_standalone = False
+
     return {
-        "legacy_parent_name": group_name,
+        "legacy_parent_name": explicit_group_name or definition.name or "Untitled Form",
         "legacy_parent_order": int(definition.group_order or 999),
         "legacy_form_order": int(definition.form_order or 1),
-        "legacy_is_standalone": group_kind == "standalone_form",
+        "legacy_is_standalone": legacy_is_standalone,
     }
 
 
