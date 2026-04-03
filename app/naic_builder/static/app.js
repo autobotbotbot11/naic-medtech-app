@@ -576,35 +576,13 @@ function getFieldOptions(field) {
   return ensureOptionShape(field);
 }
 
-function viewNode(node) {
-  if (!isStoredBlockNode(node)) {
-    return node;
-  }
-
-  if (blockKind(node) === "section") {
-    return blockSectionToLegacy(node);
-  }
-
-  if (blockKind(node) === "field" || blockKind(node) === "field_group") {
-    return blockFieldToLegacy(node);
-  }
-
-  return {
-    id: String(node?.id || "").trim(),
-    kind: blockKind(node),
-    name: String(node?.name || "").trim(),
-    props: deepClone(getNodeProps(node)),
-    children: [],
-  };
-}
-
 function topLevelBlocks() {
   return normalizeArray(state.draft?.block_schema?.blocks);
 }
 
 function topLevelSectionEntries() {
   return topLevelBlocks()
-    .map((node, index) => ({ node, path: ["block_schema", "blocks", index], view: viewNode(node) }))
+    .map((node, index) => ({ node, path: ["block_schema", "blocks", index] }))
     .filter((entry) => entry.node?.kind === "section");
 }
 
@@ -623,7 +601,6 @@ function topLevelBlockEntries() {
   return topLevelBlocks().map((node, index) => ({
     node,
     path: ["block_schema", "blocks", index],
-    view: viewNode(node),
   }));
 }
 
@@ -656,7 +633,6 @@ function currentLayoutEntries() {
   return getNodeChildren(rootNode).map((node, index) => ({
     node,
     path: [...rootPath, "children", index],
-    view: viewNode(node),
   }));
 }
 
@@ -801,10 +777,11 @@ function topLevelPreviewSegments() {
   topLevelBlockEntries().forEach((entry, index) => {
     if (entry.node?.kind === "section") {
       flushLooseFields();
+      const sectionName = compactText(entry.node?.name);
       segments.push({
-        id: previewSectionId(entry.view.name || "Section", index),
-        label: entry.view.name || "Section",
-        title: entry.view.name || "Untitled Section",
+        id: previewSectionId(sectionName || "Section", index),
+        label: sectionName || "Section",
+        title: sectionName || "Untitled Section",
         fields: getNodeChildren(entry.node),
       });
       return;
@@ -2285,7 +2262,7 @@ function renderOptionManageFooter(path, index) {
   }
 
 function renderContentOrganizerItem(entry, active) {
-  const title = entry.view.name || "Untitled item";
+  const title = compactText(entry.node?.name) || "Untitled item";
   const secondaryLabel = organizerSecondaryLabel(entry.node, title);
 
   return `
@@ -2304,7 +2281,7 @@ function renderContentOrganizerItem(entry, active) {
 }
 
 function renderOutlineContentItem(entry, active) {
-  const title = entry.view.name || "Untitled item";
+  const title = compactText(entry.node?.name) || "Untitled item";
   const secondaryLabel = organizerSecondaryLabel(entry.node, title);
 
   return `
@@ -2357,9 +2334,9 @@ function renderContentCard() {
         <div class="section-focus-stage">
           ${selectedEntry
             ? (selectedEntry.node?.kind === "section"
-              ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+              ? renderSectionCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
-                ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+                ? renderFieldCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
             : '<div class="empty-state">Choose an item.</div>'}
         </div>
@@ -2394,7 +2371,7 @@ function resolveFocusedTopLevelBlockEntry(entries) {
 }
 
 function renderLayoutOrganizerItem(entry, active) {
-  const title = entry.view.name || "Untitled item";
+  const title = compactText(entry.node?.name) || "Untitled item";
   const secondaryLabel = organizerSecondaryLabel(entry.node, title);
   return `
     <div class="section-organizer-item ${active ? "active" : ""}">
@@ -2548,9 +2525,9 @@ function renderLayoutCard(options = {}) {
         <div class="section-focus-stage">
           ${selectedEntry
             ? (selectedEntry.node?.kind === "section"
-              ? renderSectionCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+              ? renderSectionCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
-                ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+                ? renderFieldCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
             : '<div class="empty-state">Choose an item.</div>'}
         </div>
@@ -2633,20 +2610,19 @@ function renderSectionCard(section, path, options = {}) {
 
 function renderFieldCollection(fields, collectionPath, options = {}) {
     const entries = normalizeArray(fields).map((field, index) => {
-      if (field?.path && field?.view) {
+      if (field?.path && field?.node) {
         return field;
       }
       return {
         node: field,
         path: [...collectionPath, index],
-        view: viewNode(field),
       };
     });
     const showUtility = options.showUtility ?? state.ui.advancedMode;
-    const hiddenUtilityCount = showUtility ? 0 : entries.filter((entry) => isUtilityBlockNode(entry.node || entry.view)).length;
+    const hiddenUtilityCount = showUtility ? 0 : entries.filter((entry) => isUtilityBlockNode(entry.node)).length;
     const visibleEntries = showUtility
       ? entries
-      : entries.filter((entry) => !isUtilityBlockNode(entry.node || entry.view));
+      : entries.filter((entry) => !isUtilityBlockNode(entry.node));
     if (!visibleEntries.length) {
       if (hiddenUtilityCount) {
         return '<div class="empty-state">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>';
@@ -2658,13 +2634,13 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
     const selectedEntry = visibleEntries[selectedIndex] || null;
     return `
       <div class="field-organizer" data-collection-path="${encodePath(collectionPath)}">
-        ${visibleEntries.map((entry, index) => renderFieldOrganizerItem(entry.node || entry.view, entry.path, index, index === selectedIndex)).join("")}
+        ${visibleEntries.map((entry, index) => renderFieldOrganizerItem(entry.node, entry.path, index, index === selectedIndex)).join("")}
       </div>
       <div class="field-focus-stage">
         ${selectedEntry
           ? (isUtilityBlockNode(selectedEntry.node)
             ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
-            : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
+            : renderFieldCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
           : '<div class="empty-state">Choose an item.</div>'}
       </div>
       ${hiddenUtilityCount ? '<div class="collapsed-copy">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>' : ""}
@@ -2675,7 +2651,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       ${visibleEntries.map((entry) => (
         isUtilityBlockNode(entry.node)
           ? renderUtilityBlockCard(entry.node, entry.path)
-          : renderFieldCard(entry.view, entry.path)
+          : renderFieldCard(entry.node, entry.path)
       )).join("")}
     </div>
     ${hiddenUtilityCount ? '<div class="collapsed-copy">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>' : ""}
