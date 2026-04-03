@@ -887,7 +887,7 @@ def sync_definition_legacy_location_fields(
     return changed
 
 
-def legacy_definition_form_order_hint(definition: FormDefinition) -> int:
+def definition_schema_order_hint(definition: FormDefinition) -> int:
     version = current_version(definition)
     if version is not None:
         try:
@@ -896,13 +896,6 @@ def legacy_definition_form_order_hint(definition: FormDefinition) -> int:
             schema = {}
         return int(schema.get("order") or 1)
     return 1
-
-
-def legacy_definition_location_hint(definition: FormDefinition) -> dict[str, Any]:
-    return {
-        "legacy_form_order": legacy_definition_form_order_hint(definition),
-        "legacy_is_standalone": True,
-    }
 
 
 def container_is_inside(session: Session, candidate: LibraryNode | None, ancestor_id: int) -> bool:
@@ -1132,8 +1125,6 @@ def resolve_form_location_metadata(
 
         return {
             "resolved_parent_key": target_parent.node_key,
-            "resolved_parent_name": target_parent.name,
-            "resolved_parent_order": int(target_parent.node_order or 999),
             "resolved_form_order": resolved_form_order,
         }
 
@@ -1148,8 +1139,6 @@ def resolve_form_location_metadata(
 
     return {
         "resolved_parent_key": None,
-        "resolved_parent_name": None,
-        "resolved_parent_order": 999,
         "resolved_form_order": resolved_form_order,
     }
 
@@ -1177,14 +1166,14 @@ def ensure_library_tree(session: Session) -> None:
     for definition in definitions:
         node_key = form_node_key(definition.slug)
         form_node = nodes_by_key.get(node_key)
-        legacy_hint = legacy_definition_location_hint(definition)
+        fallback_form_order = definition_schema_order_hint(definition)
         parent_id = None
         parent_node_key: str | None = None
         explicit_parent_key = compact_text(definition.library_parent_node_key)
         desired_form_order = (
-            int(form_node.node_order or legacy_hint["legacy_form_order"])
+            int(form_node.node_order or fallback_form_order)
             if form_node is not None
-            else int(legacy_hint["legacy_form_order"])
+            else int(fallback_form_order)
         )
 
         if explicit_parent_key:
