@@ -318,7 +318,23 @@ function ensureOptionShape(field) {
     return [];
   }
   const props = getNodeProps(field);
-  props.options = normalizeArray(props.options);
+  props.options = normalizeArray(props.options).map((option, index) => {
+    if (option && typeof option === "object") {
+      const normalized = { ...option };
+      const normalizedName = compactText(normalized.name || normalized.label);
+      normalized.name = normalizedName;
+      delete normalized.label;
+      normalized.key = compactText(normalized.key) || slugify(normalizedName || `option_${index + 1}`) || `option_${index + 1}`;
+      normalized.order = parsePositiveInt(normalized.order, index + 1);
+      return normalized;
+    }
+    const normalizedName = compactText(option);
+    return {
+      name: normalizedName,
+      key: slugify(normalizedName || `option_${index + 1}`) || `option_${index + 1}`,
+      order: index + 1,
+    };
+  });
   return props.options;
 }
 
@@ -2604,10 +2620,7 @@ function renderFieldCard(field, path, options = {}) {
   }
 
 function renderOptionsEditor(field, path) {
-    const options = getFieldOptions(field).map((option) => ({
-      name: String(option?.label || option?.name || "").trim(),
-      ...option,
-    }));
+    const options = getFieldOptions(field);
     const selectedIndex = resolveFocusedOptionIndex(path, options);
     const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
     const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled option";
@@ -2838,7 +2851,7 @@ function renderPreviewField(field) {
       <span>${escapeHtml(field.name || "Untitled Field")}</span>
       ${getFieldControl(field) === "select" ? `
         <select disabled>
-          ${getFieldOptions(field).map((option) => `<option>${escapeHtml(option.label || option.name || "Option")}</option>`).join("")}
+          ${getFieldOptions(field).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
         </select>
       ` : `<input type="${previewInputType(field)}" placeholder="${escapeHtml(previewPlaceholder(field))}" disabled>`}
       ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
@@ -3055,7 +3068,7 @@ function insertCurrentLayoutBlock(kind) {
 function addOption(path) {
   const field = getNodeByPath(path);
   const options = ensureOptionShape(field);
-  options.push({ label: `Option ${options.length + 1}`, key: `option_${options.length + 1}`, order: options.length + 1 });
+  options.push({ name: `Option ${options.length + 1}`, key: `option_${options.length + 1}`, order: options.length + 1 });
   state.ui.activeOptionToken = optionToken(path, options.length - 1);
   touch({ full: true, source: "blocks" });
 }
@@ -3068,9 +3081,9 @@ function duplicateOption(path, index) {
     return;
   }
   const duplicate = deepClone(source);
-  const baseName = String(duplicate.label || duplicate.name || "").trim() || "Untitled choice";
-  duplicate.label = `${baseName} Copy`;
-  duplicate.key = slugify(duplicate.label);
+  const baseName = String(duplicate.name || "").trim() || "Untitled option";
+  duplicate.name = `${baseName} Copy`;
+  duplicate.key = slugify(duplicate.name);
   options.splice(index + 1, 0, duplicate);
   state.ui.activeOptionToken = optionToken(path, index + 1);
   touch({ full: true, source: "blocks" });
@@ -3096,7 +3109,7 @@ async function confirmDeleteOption(path, index) {
     return;
   }
 
-  const optionName = String(option.label || option.name || "").trim() || "this option";
+  const optionName = String(option.name || "").trim() || "this option";
   const decision = await openDecisionDialog({
     eyebrow: "Remove option",
     title: `Remove ${optionName}?`,
@@ -3267,7 +3280,7 @@ function handleOptionInput(event) {
   if (!options[index]) {
     return;
   }
-  options[index].label = event.target.value;
+  options[index].name = event.target.value;
   options[index].key = slugify(event.target.value);
   touch({ source: "blocks" });
 }

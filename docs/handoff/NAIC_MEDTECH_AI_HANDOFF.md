@@ -221,6 +221,7 @@ What is implemented:
 - live read and startup cleanup are more explicit too: `serialize_form()` and startup backfill now go through dedicated storage-document loaders, and the startup pass is named around full form-version storage cleanup instead of only `block_schema` backfill
 - old `legacy_form_*` block meta is thinner still: startup cleanup now drops those keys without reading them as fallback inputs, and the frontend draft meta sync strips `legacy_form_id` too
 - live frontend node helpers are thinner too: core builder helpers now treat blocks as the only active node shape, instead of falling back to old `fields/sections`-style field objects in the live UI path
+- live option data is more consistent too: the builder now uses option `name` as the active key end to end, and old `label` values are only normalized away during helper cleanup
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
