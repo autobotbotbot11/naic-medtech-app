@@ -98,7 +98,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the active save API is more tree-first too: the current builder now posts `location_name`, while the backend still accepts legacy `group_name` callers through compatibility mapping
 - active read compatibility is more tree-first too: legacy `group_*` metadata is now derived from the real library tree during serialization and grouped listings, instead of trusting the raw stored legacy columns
 - the visible builder setup flow is more tree-first too: the `Location` input now binds to `location_name` instead of the old `group_name`, while the draft still keeps compatibility metadata synchronized behind the scenes
-- the active builder draft is more tree-first too: `location_*` is now the primary location state in the editor, and `group_name` is synchronized through one helper as compatibility shadow metadata instead of being edited directly all over the UI code
+- the active builder draft is more tree-first too: `location_*` is now the only active location state in the editor, and the old `group_name` survives only as a backward-compatible query alias for older deep links
 - the save payload schema is leaner too: `group_kind`, `group_order`, and `form_order` are no longer part of `FormSavePayload`, and old callers can still send them as ignored compatibility extras
 - dead grouped-library backend helpers are gone too: the codebase no longer keeps `list_grouped_forms` / `split_library_groups` around even though the live app is already tree-first
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
