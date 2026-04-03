@@ -23,12 +23,12 @@ const state = {
 const sortableInstances = [];
 
 const FIELD_TYPES = [
-  { id: "text", label: "Short answer", control: "input", dataType: "text" },
+  { id: "text", label: "Text", control: "input", dataType: "text" },
   { id: "number", label: "Number", control: "input", dataType: "number" },
-  { id: "choice", label: "Dropdown choices", control: "select", dataType: "enum" },
+  { id: "choice", label: "Choices", control: "select", dataType: "enum" },
   { id: "date", label: "Date", control: "input", dataType: "date" },
   { id: "time", label: "Time", control: "input", dataType: "time" },
-  { id: "datetime", label: "Date and time", control: "input", dataType: "datetime" },
+  { id: "datetime", label: "Date & time", control: "input", dataType: "datetime" },
 ];
 
 const initialFormSlug = document.body?.dataset?.initialFormSlug || "";
@@ -2622,7 +2622,7 @@ function summarizeField(field) {
   if (fieldType === "choice") {
     return "Dropdown";
   }
-  return FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Short answer";
+  return FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Text";
 }
 
 function renderFieldOrganizerItem(field, path, index, active) {
@@ -2709,7 +2709,7 @@ function renderFieldCard(field, path, options = {}) {
             </label>
             ${isGroup ? "" : `
               <label>
-                <span>Type</span>
+                <span>Input</span>
                 <select data-action="field-type" data-path="${encodePath(path)}">
                   ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
                 </select>
