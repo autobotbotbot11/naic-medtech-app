@@ -275,9 +275,6 @@ def legacy_schema_to_block_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
         "legacy_form_key": compact_text(raw_schema.get("key")),
         "legacy_order": int(raw_schema.get("order") or 1),
     }
-    common_field_set_id = compact_text(raw_schema.get("common_field_set_id"))
-    if common_field_set_id:
-        meta["common_field_set_id"] = common_field_set_id
 
     notes = normalize_notes(raw_schema.get("notes"))
     if notes:
@@ -440,9 +437,6 @@ def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
         "fields": fields,
         "sections": sections,
     }
-    common_field_set_id = compact_text(meta.get("common_field_set_id"))
-    if common_field_set_id:
-        legacy["common_field_set_id"] = common_field_set_id
 
     notes = normalize_notes(meta.get("notes"))
     if notes:
@@ -478,11 +472,7 @@ def normalize_block_schema_storage(
     block_schema["blocks"] = normalize_items(block_schema.get("blocks"))
 
     meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
-    common_field_set_id = compact_text(normalized_schema.get("common_field_set_id"))
-    if common_field_set_id:
-        meta["common_field_set_id"] = common_field_set_id
-    else:
-        meta.pop("common_field_set_id", None)
+    meta.pop("common_field_set_id", None)
     meta["legacy_form_id"] = compact_text(normalized_schema.get("id"))
     meta["legacy_form_key"] = compact_text(normalized_schema.get("key"))
     meta["legacy_order"] = int(normalized_schema.get("order") or 1)
@@ -535,9 +525,6 @@ def normalize_form_schema(
             if isinstance(section, dict)
         ],
     }
-    common_field_set_id = compact_text(raw_schema.get("common_field_set_id"))
-    if common_field_set_id:
-        normalized["common_field_set_id"] = common_field_set_id
 
     notes = normalize_notes(raw_schema.get("notes"))
     if notes:

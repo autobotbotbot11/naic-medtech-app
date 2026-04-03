@@ -11,17 +11,19 @@ if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
 from naic_builder.config import DB_PATH
-from naic_builder.database import Base, SessionLocal, engine
-from naic_builder.services import ensure_reference_seed
+from naic_builder.database import SessionLocal, ensure_runtime_schema
+from naic_builder.services import ensure_block_schema_storage, ensure_library_tree, ensure_reference_seed
 
 
 def main() -> None:
     if DB_PATH.exists():
         DB_PATH.unlink()
 
-    Base.metadata.create_all(bind=engine)
+    ensure_runtime_schema()
     with SessionLocal() as session:
         ensure_reference_seed(session)
+        ensure_block_schema_storage(session)
+        ensure_library_tree(session)
 
     print(f"Reset runtime DB at: {DB_PATH}")
 
