@@ -129,7 +129,6 @@ function normalizeSchemaShape(schema = {}) {
     name: String(schema?.name || "").trim(),
     key: String(schema?.key || "").trim(),
     order: parsePositiveInt(schema?.order, 1),
-    common_field_set_id: String(schema?.common_field_set_id || "").trim() || "default_lab_request",
     notes: normalizeArray(schema?.notes),
     fields: normalizeArray(schema?.fields),
     sections: normalizeArray(schema?.sections),
@@ -229,7 +228,6 @@ function legacySectionToBlock(section) {
 function legacySchemaToBlockSchema(schema) {
   const normalized = normalizeSchemaShape(schema);
   const meta = {
-    common_field_set_id: normalized.common_field_set_id,
     legacy_form_key: normalized.key || slugify(normalized.name || "untitled_form"),
     legacy_order: normalized.order,
   };
@@ -366,7 +364,6 @@ function blockSchemaToLegacySchema(blockSchema, fallback = {}) {
     name: String(fallback?.name || "").trim(),
     key: String(meta.legacy_form_key || fallback?.schema?.key || slugify(fallback?.name || "untitled_form")).trim(),
     order: parsePositiveInt(meta.legacy_order, fallback?.schema?.order || 1),
-    common_field_set_id: String(meta.common_field_set_id || fallback?.schema?.common_field_set_id || "default_lab_request").trim() || "default_lab_request",
     notes: normalizeArray(meta.notes),
     fields,
     sections,
@@ -396,7 +393,6 @@ function ensureDraftSchemas(draft, options = {}) {
   draft.schema.name = String(draft.name || draft.schema.name || "").trim();
   draft.schema.key = String(draft.schema.key || slugify(draft.schema.name || draft.name || "untitled_form")).trim();
   draft.schema.order = parsePositiveInt(draft.schema.order, 1);
-  draft.schema.common_field_set_id = String(draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
   draft.block_schema = existingBlockSchema || legacySchemaToBlockSchema(draft.schema);
   syncRootMetaToBlockSchema(draft);
   return draft;
@@ -435,7 +431,6 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
   }
 
   const schema = normalizeSchemaShape(draft.schema || {});
-  meta.common_field_set_id = String(schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
   meta.legacy_form_key = String(schema.key || slugify(draft.name || "untitled_form")).trim() || "untitled_form";
   meta.legacy_order = parsePositiveInt(schema.order, 1);
 
@@ -468,7 +463,6 @@ function syncDraftCompatibilitySchemas(source = "blocks") {
   state.draft.schema.name = String(state.draft.name || state.draft.schema.name || "").trim();
   state.draft.schema.key = String(state.draft.schema.key || slugify(state.draft.schema.name || state.draft.name || "untitled_form")).trim();
   state.draft.schema.order = parsePositiveInt(state.draft.schema.order, 1);
-  state.draft.schema.common_field_set_id = String(state.draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
 }
 
 function isBlockNode(node) {
@@ -846,7 +840,7 @@ function editableLocationValue(draft = state.draft) {
   return isTopLevelDraftLocation(draft) ? "" : compactText(draft.group_name);
 }
 
-function availableGroupNames() {
+function availableLocationNames() {
   const names = new Set();
   availableLocationOptions().forEach((option) => {
     const label = compactText(option.path_label);
@@ -861,13 +855,13 @@ function availableGroupNames() {
   return [...names].filter(Boolean).sort((a, b) => a.localeCompare(b));
 }
 
-function renderGroupNameSuggestions() {
-  const names = availableGroupNames();
+function renderLocationSuggestions() {
+  const names = availableLocationNames();
   if (!names.length) {
     return "";
   }
   return `
-    <datalist id="groupNameSuggestions">
+    <datalist id="locationSuggestions">
       ${names.map((name) => `<option value="${escapeHtml(name)}"></option>`).join("")}
     </datalist>
   `;
@@ -1081,11 +1075,11 @@ function renderShellSummary() {
   }
 
   const formName = state.draft.name || "Untitled Form";
-  const groupName = displayLocationName(state.draft);
+  const locationName = displayLocationName(state.draft);
   const version = currentVersionLabel();
 
   currentFormNameEl.textContent = formName;
-  currentFormMetaEl.textContent = `${groupName} | ${version}`;
+  currentFormMetaEl.textContent = `${locationName} | ${version}`;
   stageTitleEl.textContent = formName;
   stageDescriptionEl.textContent = state.ui.previewOpen
     ? "Edit one area at a time."
@@ -1320,11 +1314,6 @@ function setBoundValue(target, bind, rawValue) {
       syncRootMetaToBlockSchema();
       return;
     }
-    if (schemaBind === "common_field_set_id") {
-      state.draft.schema.common_field_set_id = rawValue;
-      syncRootMetaToBlockSchema();
-      return;
-    }
     if (schemaBind === "notes") {
       state.draft.schema.notes = normalizeArray(rawValue);
       syncRootMetaToBlockSchema();
@@ -1494,7 +1483,7 @@ function freshBlockId(kind, key) {
 
 function makeBlankForm(config = {}) {
   const formName = String(config.name || "").trim() || "Untitled Form";
-  const groupName = String(config.groupName || "").trim() || "Unassigned";
+  const groupName = String(config.groupName || "").trim();
 
   const draft = {
     slug: null,
@@ -1508,12 +1497,14 @@ function makeBlankForm(config = {}) {
       name: formName,
       key: slugify(formName),
       order: 1,
-      common_field_set_id: "default_lab_request",
       notes: [],
       fields: [],
       sections: [],
     },
   };
+  if (!draft.library_parent_node_key && !draft.library_new_container_name && isTopLevelLocationName(draft.group_name)) {
+    draft.group_name = formName;
+  }
   return ensureDraftSchemas(draft, { preferBlocks: true });
 }
 
@@ -1698,6 +1689,7 @@ function duplicateCurrentForm(overrides = {}) {
     return;
   }
   const copy = deepClone(state.draft);
+  const previousName = compactText(copy.name);
   copy.slug = null;
   copy.current_version_number = 0;
   copy.summary = "";
@@ -1705,6 +1697,13 @@ function duplicateCurrentForm(overrides = {}) {
   copy.group_name = String(overrides.groupName || "").trim() || copy.group_name;
   copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
   copy.library_new_container_name = String(overrides.libraryNewContainerName || "").trim() || copy.library_new_container_name || null;
+  if (
+    !copy.library_parent_node_key
+    && !copy.library_new_container_name
+    && (isTopLevelLocationName(copy.group_name) || compactText(copy.group_name) === previousName)
+  ) {
+    copy.group_name = copy.name;
+  }
   copy.schema.name = copy.name;
   copy.schema.key = slugify(copy.name);
   copy.schema.order = parsePositiveInt(copy.schema.order, 1);
@@ -1981,8 +1980,8 @@ function renderFormSetupCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const setupOpen = focusMode ? true : state.ui.setupOpen;
   const formName = state.draft.name || "Untitled Form";
-  const groupName = displayLocationName(state.draft);
-  const groupInputValue = editableLocationValue(state.draft);
+  const locationName = displayLocationName(state.draft);
+  const locationInputValue = editableLocationValue(state.draft);
   const currentVersion = currentVersionLabel();
   return `
     <section class="editor-card">
@@ -2005,7 +2004,7 @@ function renderFormSetupCard(options = {}) {
         <div class="editor-spotlight">
           <div>
             <strong>${escapeHtml(formName)}</strong>
-            <span>${escapeHtml(groupName)}</span>
+            <span>${escapeHtml(locationName)}</span>
           </div>
           <div class="editor-spotlight-meta">
             <span class="chip">${escapeHtml(currentVersion)}</span>
@@ -2018,10 +2017,10 @@ function renderFormSetupCard(options = {}) {
           </label>
           <label>
             <span>Location</span>
-            <input list="groupNameSuggestions" data-bind="group_name" value="${escapeHtml(groupInputValue)}" placeholder="Top level or choose a folder">
+            <input list="locationSuggestions" data-bind="group_name" value="${escapeHtml(locationInputValue)}" placeholder="Top level or choose a folder">
           </label>
         </div>
-        ${renderGroupNameSuggestions()}
+        ${renderLocationSuggestions()}
         ${state.ui.advancedMode ? `
           <details class="advanced">
             <summary>Advanced</summary>

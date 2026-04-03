@@ -180,6 +180,9 @@ What is implemented:
 - the frontend draft logic is less legacy too: new and duplicated drafts no longer depend on old grouping/order fields just to keep the current builder working
 - library-tree sync is stronger too: `FormDefinition` location metadata is now backfilled from real library nodes, so page flows rely less on old `group_name/group_kind` fallbacks
 - top-level drafts are more stable too: renaming a top-level form now keeps the fallback location state in sync, so the builder no longer shows a stale old location name
+- the builder no longer tracks `common_field_set_id` in the active frontend draft path, so the visible editing flow is less tied to the old shared-metadata model
+- top-level new and copied drafts are cleaner too: they no longer start from the old `Unassigned` sentinel or keep a stale previous form name as fake location state
+- the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use `location` language instead of old `group` wording where the UI already treats folders as locations
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
 - builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`
