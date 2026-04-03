@@ -1957,7 +1957,7 @@ function renderFormSetupCard(options = {}) {
           <p class="eyebrow">Basics</p>
           <div class="card-title-row">
             <h3 class="card-title">Basics</h3>
-            ${renderHelpPopover("Basics help", "Name the form and choose which folder it belongs to. Leave advanced defaults tucked away unless you really need them.")}
+            ${renderHelpPopover("Basics help", "Name the form and choose its folder. Leave advanced details tucked away unless you need them.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -1993,17 +1993,17 @@ function renderFormSetupCard(options = {}) {
             <summary>Advanced</summary>
             <div class="advanced-grid">
               <label>
-                <span>Default record details</span>
+                <span>Default details</span>
                 <select data-bind="schema.common_field_set_id">
                   ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
                 </select>
               </label>
               <label>
-                <span>Internal form key</span>
+                <span>Key</span>
                 <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
               </label>
               <label style="grid-column: 1 / -1;">
-                <span>Builder notes</span>
+                <span>Notes</span>
                 <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
               </label>
             </div>
@@ -2034,7 +2034,7 @@ function renderSaveCard(options = {}) {
           <p class="eyebrow">Save</p>
           <div class="card-title-row">
             <h3 class="card-title">Save</h3>
-            ${renderHelpPopover("Save help", "Notes are optional. Add one only if it helps you remember this version.")}
+            ${renderHelpPopover("Save help", "Notes are optional. Add one only if it helps.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -2060,7 +2060,7 @@ function renderSaveCard(options = {}) {
         </div>
       ` : `
         <div class="collapsed-copy">
-          <strong>${note ? "Latest note" : "Note is optional"}</strong>
+          <strong>${note ? "Saved note" : "Note is optional"}</strong>
           ${note ? escapeHtml(note) : "You can save without adding one."}
         </div>
       `}
@@ -2199,8 +2199,8 @@ function renderContentCard() {
   const hiddenBlockCount = Math.max(0, topLevelBlockEntries().length - entries.length);
   const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
   const helpCopy = state.ui.advancedMode
-    ? "This is the main editing flow for the form. Advanced-only layout items still follow the same root order."
-    : "This is the main editing flow for the form. Add sections, fields, or groups here without thinking about internal schema buckets.";
+    ? "This is the main editing flow. Advanced items still follow this same order."
+    : "This is the main editing flow. Add sections, fields, or groups here without worrying about the underlying structure.";
   const addItems = [
     { action: "add-content-section", label: "Section" },
     { action: "add-content-field", label: "Field" },
@@ -2238,10 +2238,10 @@ function renderContentCard() {
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
                 ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
-            : '<div class="empty-state">Pick an item to keep editing.</div>'}
+            : '<div class="empty-state">Pick an item.</div>'}
         </div>
-      ` : '<div class="empty-state">No content yet. Add a section, field, or group when you are ready.</div>'}
-      ${!state.ui.advancedMode && hiddenBlockCount ? '<div class="collapsed-copy">Advanced blocks stay hidden here until you turn on Advanced.</div>' : ""}
+      ` : '<div class="empty-state">No content yet. Add what you need when you are ready.</div>'}
+      ${!state.ui.advancedMode && hiddenBlockCount ? '<div class="collapsed-copy">Some advanced items stay hidden until you turn on Advanced.</div>' : ""}
     </section>
   `;
 }
@@ -2326,10 +2326,10 @@ function renderUtilityBlockCard(node, path) {
       </div>
       <p class="field-focus-copy">${escapeHtml(
         isNote
-          ? "Shows a note in the preview."
+          ? "Appears in the preview."
           : isTable
-            ? "Shows a sample table in the preview."
-            : "Adds a visual break in the preview."
+            ? "Shows a sample table."
+            : "Adds a visual break."
       )}</p>
 
       <div class="inline-grid field-basics-grid compact">
@@ -2342,16 +2342,16 @@ function renderUtilityBlockCard(node, path) {
       ${isNote ? `
         <label class="stacked-input">
           <span>Text</span>
-          <textarea data-path="${encodePath(path)}" data-bind="content" rows="5" placeholder="Write the note that should appear in the preview.">${escapeHtml(content)}</textarea>
+          <textarea data-path="${encodePath(path)}" data-bind="content" rows="5" placeholder="Write the note shown in the preview.">${escapeHtml(content)}</textarea>
         </label>
       ` : isTable ? `
         <label class="stacked-input">
           <span>Columns</span>
-          <textarea data-path="${encodePath(path)}" data-bind="columns" data-format="lines" rows="4" placeholder="One column label per line">${escapeHtml(columns.join("\n"))}</textarea>
+          <textarea data-path="${encodePath(path)}" data-bind="columns" data-format="lines" rows="4" placeholder="One column name per line">${escapeHtml(columns.join("\n"))}</textarea>
         </label>
         <div class="inline-grid field-basics-grid compact">
           <label>
-            <span>Preview rows</span>
+            <span>Rows</span>
             <input type="number" min="1" max="6" data-path="${encodePath(path)}" data-bind="sample_rows" value="${escapeHtml(sampleRows)}">
           </label>
         </div>
@@ -2367,7 +2367,7 @@ function renderUtilityBlockCard(node, path) {
           <summary>Advanced</summary>
           <div class="advanced-grid">
             <label>
-              <span>Internal key</span>
+              <span>Key</span>
               <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(node) || "")}">
             </label>
             <label style="grid-column: 1 / -1;">
@@ -2392,8 +2392,8 @@ function renderLayoutCard(options = {}) {
   const collectionPath = currentLayoutCollectionPath();
   const nested = Boolean(rootNode);
   const layoutCopy = nested
-    ? `Editing the real content order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
-    : "This is the real top-level content order of the form. Use it when you need more control without changing the simpler default flow.";
+    ? `Arrange the items inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
+    : "Arrange the form's main content order here when you need more control.";
   const addItems = [
     { action: "add-layout-field", label: "Field" },
     { action: "add-layout-group", label: "Group" },
@@ -2429,7 +2429,7 @@ function renderLayoutCard(options = {}) {
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
                 ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
-            : '<div class="empty-state">Pick an item to keep editing.</div>'}
+            : '<div class="empty-state">Pick an item.</div>'}
         </div>
       ` : '<div class="empty-state">No content yet. Add one when you are ready.</div>'}
     </section>
@@ -2489,7 +2489,7 @@ function renderSectionCard(section, path, options = {}) {
               <summary>Advanced</summary>
               <div class="advanced-grid">
               <label>
-                <span>Internal key</span>
+                <span>Key</span>
                 <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(sectionNode) || "")}">
               </label>
               <label style="grid-column: 1 / -1;">
@@ -2542,7 +2542,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
           ? (isUtilityBlockNode(selectedEntry.node)
             ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
             : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
-          : '<div class="empty-state">Pick an item to keep editing.</div>'}
+          : '<div class="empty-state">Pick an item.</div>'}
       </div>
       ${hiddenUtilityCount ? '<div class="collapsed-copy">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>' : ""}
     `;
@@ -2733,7 +2733,7 @@ function renderFieldCard(field, path, options = {}) {
               <summary>Advanced</summary>
               <div class="advanced-grid">
               <label>
-                <span>Internal key</span>
+                <span>Key</span>
                 <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(fieldNode || field) || "")}">
               </label>
               ${isGroup ? "" : `
@@ -2842,7 +2842,7 @@ function renderPreview() {
                 <span class="live-dot"></span>
                 Live
               </span>
-              <span class="preview-sync-copy">Preview only</span>
+              <span class="preview-sync-copy">Sample</span>
             </div>
             <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
             <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>

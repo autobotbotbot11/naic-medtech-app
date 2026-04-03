@@ -33,10 +33,10 @@
           </summary>
           <div class="tree-node-body">
             <div class="tree-folder-actions">
-              <a class="ghost-button" href="/forms/new?parent={{ node.id }}">New form here</a>
-              <a class="ghost-button" href="/folders/new?parent={{ node.id }}">New folder here</a>
+              <a class="ghost-button" href="/forms/new?parent={{ node.id }}">New form</a>
+              <a class="ghost-button" href="/folders/new?parent={{ node.id }}">New folder</a>
               <a class="ghost-button" href="/folders/move?node={{ node.id }}">Move</a>
-              <a class="ghost-button" href="/folders/edit?node={{ node.id }}">Edit folder</a>
+              <a class="ghost-button" href="/folders/edit?node={{ node.id }}">Manage folder</a>
             </div>
             <div class="tree-children">
               {{ render_nodes(node.children, current_path, level + 1) }}
@@ -75,7 +75,7 @@
       <div class="brand-copy">
         <p class="eyebrow">Forms</p>
         <h1>{{ app_title }}</h1>
-        <p class="panel-copy">Choose a form to edit, copy, or start new.</p>
+        <p class="panel-copy">Choose a form, copy one, or start new.</p>
       </div>
       <div class="topbar-actions">
         <label class="search-wrap">
@@ -105,7 +105,7 @@
         </nav>
         <div class="sidebar-note">
           <p class="eyebrow">Tip</p>
-          <p class="panel-copy">Folders can stay nested as the library grows. Search works across the full path.</p>
+          <p class="panel-copy">Folders can stay nested. Search checks the full path.</p>
         </div>
       </aside>
 

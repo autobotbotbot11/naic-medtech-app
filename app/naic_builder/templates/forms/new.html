@@ -81,7 +81,7 @@
 
         <div id="existingGroupWrap" class="field-stack">
           <label class="field-stack">
-            <span>Choose a folder</span>
+            <span>Folder</span>
             <select id="existingGroupSelect">
               {% for container in container_options %}
               <option
@@ -103,7 +103,7 @@
             <input id="newGroupName" type="text" placeholder="Example: Rapid Tests">
           </label>
           <label class="field-stack">
-            <span>Place new folder inside</span>
+            <span>Inside</span>
             <select id="newGroupParentSelect">
               <option value="" {% if not default_new_folder_parent_key %}selected{% endif %}>Top level</option>
               {% for container in container_options %}
@@ -115,10 +115,10 @@
               {% endfor %}
             </select>
           </label>
-          <p class="panel-copy">New folders start at the end of the list for now. You can organize them later.</p>
+          <p class="panel-copy">New folders start at the end for now. You can move them later.</p>
         </div>
         <p id="rootGroupHint" class="panel-copy{% if default_group_source_mode != 'root' %} hidden{% endif %}" {% if default_group_source_mode != 'root' %}hidden{% endif %}>
-          This form will stay at the top level instead of living inside a folder.
+          This form will stay at the top level.
         </p>
       </section>
 
@@ -140,7 +140,7 @@
           <label class="start-card">
             <input type="radio" name="start_mode" value="duplicate" {% if source_form %}checked{% endif %}>
             <span class="start-card-eyebrow">Fastest</span>
-            <strong>Duplicate existing form</strong>
+            <strong>Copy existing form</strong>
             <span>Copy a similar form so you only adjust the parts that changed.</span>
           </label>
 
@@ -180,7 +180,7 @@
           </div>
           <div>
             <dt>Starting point</dt>
-            <dd id="summaryStart">{% if source_form %}Duplicate existing form{% else %}Start empty{% endif %}</dd>
+            <dd id="summaryStart">{% if source_form %}Copy existing form{% else %}Start empty{% endif %}</dd>
           </div>
         </dl>
 

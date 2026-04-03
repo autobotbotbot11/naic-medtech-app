@@ -43,7 +43,7 @@ function selectedNewGroupParentOption() {
 
 function selectedDuplicateLabel() {
   const option = duplicateSourceSelectEl?.selectedOptions?.[0];
-  return String(option?.dataset.pathLabel || option?.textContent || "").trim() || "Duplicate existing form";
+  return String(option?.dataset.pathLabel || option?.textContent || "").trim() || "existing form";
 }
 
 function syncGroupMode() {
@@ -92,7 +92,7 @@ function updateSummary() {
 
   let startLabel = "Start empty";
   if (startMode === "duplicate") {
-    startLabel = `Duplicate ${selectedDuplicateLabel()}`;
+    startLabel = `Copy ${selectedDuplicateLabel()}`;
   }
 
   if (summaryNameEl) {
