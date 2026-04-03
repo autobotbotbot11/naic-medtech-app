@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import re
-from collections import OrderedDict
 from datetime import timezone
 from typing import Any
 
@@ -641,75 +640,6 @@ def get_form_or_none(session: Session, slug: str) -> FormDefinition | None:
             selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
         )
     )
-
-
-def list_grouped_forms(session: Session) -> list[dict[str, Any]]:
-    definitions = session.scalars(
-        select(FormDefinition)
-        .options(
-            selectinload(FormDefinition.versions),
-            selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
-        )
-    ).all()
-
-    decorated: list[tuple[dict[str, Any], FormDefinition]] = []
-    for definition in definitions:
-        decorated.append((serialize_legacy_group_metadata(definition), definition))
-
-    decorated.sort(
-        key=lambda item: (
-            int(item[0]["group_order"]),
-            int(item[0]["form_order"]),
-            compact_text(item[1].name).lower(),
-        )
-    )
-
-    grouped: OrderedDict[tuple[str, str, int], dict[str, Any]] = OrderedDict()
-    for legacy_group, definition in decorated:
-        key = (legacy_group["group_name"], legacy_group["group_kind"], legacy_group["group_order"])
-        group = grouped.setdefault(
-            key,
-            {
-                "name": legacy_group["group_name"],
-                "kind": legacy_group["group_kind"],
-                "order": legacy_group["group_order"],
-                "forms": [],
-            },
-        )
-        version = current_version(definition)
-        group["forms"].append(
-            {
-                "slug": definition.slug,
-                "name": definition.name,
-                "form_order": legacy_group["form_order"],
-                "current_version_number": version.version_number if version else 0,
-                "updated_at": definition.updated_at.astimezone(timezone.utc).isoformat(),
-            }
-        )
-
-    return list(grouped.values())
-
-
-def split_library_groups(session: Session) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    grouped_forms = list_grouped_forms(session)
-    reference = load_reference_schema()
-    reference_group_names = {
-        compact_text(group.get("name")).lower()
-        for group in reference.get("groups", [])
-        if compact_text(group.get("name"))
-    }
-
-    official_groups: list[dict[str, Any]] = []
-    extra_groups: list[dict[str, Any]] = []
-
-    for group in grouped_forms:
-        token = compact_text(group.get("name")).lower()
-        if token in reference_group_names:
-            official_groups.append(group)
-        else:
-            extra_groups.append(group)
-
-    return official_groups, extra_groups
 
 
 def list_container_choices(session: Session) -> list[dict[str, Any]]:
