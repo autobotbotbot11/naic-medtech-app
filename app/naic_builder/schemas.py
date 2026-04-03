@@ -13,10 +13,7 @@ def normalize_form_save_payload_aliases(value: Any) -> Any:
     if not isinstance(value, dict):
         return value
 
-    normalized = dict(value)
-    if "form_schema" not in normalized and "schema" in normalized:
-        normalized["form_schema"] = normalized.pop("schema")
-    return normalized
+    return dict(value)
 
 
 class FormSavePayload(BaseModel):

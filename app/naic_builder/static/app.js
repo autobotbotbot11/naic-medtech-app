@@ -3423,7 +3423,7 @@ async function saveDraft() {
     library_parent_node_key: state.draft.library_parent_node_key || null,
     library_new_container_name: state.draft.library_new_container_name || null,
     summary: state.draft.summary || "",
-    schema: state.draft.block_schema,
+    form_schema: state.draft.block_schema,
   };
 
   const saved = state.selectedFormSlug
