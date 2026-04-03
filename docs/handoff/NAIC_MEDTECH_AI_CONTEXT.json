@@ -156,6 +156,8 @@
       "internal preview and traversal helpers are more aligned too: shared item-path, item-summary, preview-item, and item-count helpers now read like mixed-content block code instead of field-era helper code",
       "mixed-content organizer chrome is more aligned too: the live builder now uses item-* organizer, list, and focus CSS and markup naming instead of field-* naming for shared section, group, and utility content flows",
       "shared item-card chrome is more aligned too: the live builder now uses item-* card, head, meta, summary, title, focus, basics, and input CSS and markup naming instead of field-* naming for shared mixed-content cards",
+      "preview segment plumbing is more aligned too: the live preview now groups shared root content under item segment naming instead of carrying fields as the internal mixed-content segment shape",
+      "live choice seeding is cleaner too: when an input switches to Choices, the first seeded option now uses the active name shape directly instead of minting the old label key",
       "form create, update, and move flows now use a shared tree-first form-node sync helper, so the real LibraryNode state is updated directly before legacy mirrors are backfilled",
       "resolve_form_location_metadata is more tree-first too: it now feeds create/update with resolved_parent_* and resolved_form_order values instead of returning group_* as the primary active shape",
       "legacy group_* mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths",

@@ -509,11 +509,11 @@ function currentVersionLabel() {
 
 function topLevelPreviewSegments() {
   const segments = [];
-  let looseFields = [];
+  let looseItems = [];
   let looseGroupCount = 0;
 
-  const flushLooseFields = () => {
-    if (!looseFields.length) {
+  const flushLooseItems = () => {
+    if (!looseItems.length) {
       return;
     }
     const localIndex = ++looseGroupCount;
@@ -531,27 +531,27 @@ function topLevelPreviewSegments() {
       id: `preview_section_${baseId}`,
       label: baseLabel,
       title: baseLabel,
-      fields: looseFields,
+      items: looseItems,
     });
-    looseFields = [];
+    looseItems = [];
   };
 
   topLevelBlockEntries().forEach((entry, index) => {
     if (entry.node?.kind === "section") {
-      flushLooseFields();
+      flushLooseItems();
       const sectionName = compactText(entry.node?.name);
       segments.push({
         id: previewSectionId(sectionName || "Section", index),
         label: sectionName || "Section",
         title: sectionName || "Untitled Section",
-        fields: getNodeChildren(entry.node),
+        items: getNodeChildren(entry.node),
       });
       return;
     }
-    looseFields.push(entry.node);
+    looseItems.push(entry.node);
   });
 
-  flushLooseFields();
+  flushLooseItems();
   return segments;
 }
 
@@ -1386,7 +1386,7 @@ function applyFieldType(field, typeId) {
   if (selected.id === "choice") {
     const options = ensureOptionShape(field);
     if (!options.length) {
-      options.push({ label: "Option 1", key: "option_1", order: 1 });
+      options.push({ name: "Option 1", key: "option_1", order: 1 });
     }
   }
 }
@@ -2705,7 +2705,7 @@ function renderPreview() {
           `).join("")}
         </div>
         <div class="preview-paper">
-          ${previewSegments.map((segment) => renderPreviewSection(segment.title, segment.fields, segment.id)).join("")}
+          ${previewSegments.map((segment) => renderPreviewSection(segment.title, segment.items, segment.id)).join("")}
         </div>
       </div>
     </section>
@@ -2717,9 +2717,9 @@ function previewSectionId(title, index) {
   return `preview_section_${slugify(title)}_${index}`;
 }
 
-function renderPreviewSection(title, fields, previewId) {
-  const normalizedFields = normalizeArray(fields);
-  if (!normalizedFields.length) {
+function renderPreviewSection(title, items, previewId) {
+  const normalizedItems = normalizeArray(items);
+  if (!normalizedItems.length) {
     return "";
   }
 
@@ -2729,7 +2729,7 @@ function renderPreviewSection(title, fields, previewId) {
         <h4>${escapeHtml(title)}</h4>
       </div>
       <div class="preview-grid">
-        ${normalizedFields.map(renderPreviewItem).join("")}
+        ${normalizedItems.map(renderPreviewItem).join("")}
       </div>
     </section>
   `;
