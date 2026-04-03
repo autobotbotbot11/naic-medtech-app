@@ -875,7 +875,6 @@ function syncDraftLocationShadow(draft = state.draft) {
     draft.location_path_label = [parentPath, folderName].filter(Boolean).join(" / ") || folderName || "Top level";
     draft.location_node_key = null;
     draft.location_kind = folderName ? "folder" : "top_level";
-    delete draft.group_name;
     return;
   }
 
@@ -884,7 +883,6 @@ function syncDraftLocationShadow(draft = state.draft) {
     draft.location_path_label = compactText(matchedOption.path_label) || explicitPath || draft.location_name;
     draft.location_node_key = compactText(matchedOption.node_key) || null;
     draft.location_kind = "folder";
-    delete draft.group_name;
     return;
   }
 
@@ -894,7 +892,6 @@ function syncDraftLocationShadow(draft = state.draft) {
     draft.location_path_label = "Top level";
     draft.location_node_key = null;
     draft.location_kind = "top_level";
-    delete draft.group_name;
     return;
   }
 
@@ -902,7 +899,6 @@ function syncDraftLocationShadow(draft = state.draft) {
   draft.location_path_label = compactText(freeform);
   draft.location_node_key = null;
   draft.location_kind = "folder";
-  delete draft.group_name;
 }
 
 function availableLocationNames() {
@@ -1694,7 +1690,7 @@ async function bootstrap() {
   renderFormList();
   const draftConfig = {
     name: String(initialQuery.get("draft_name") || "").trim(),
-    locationName: String(initialQuery.get("location_name") || initialQuery.get("group_name") || "").trim(),
+    locationName: String(initialQuery.get("location_name") || "").trim(),
     libraryParentNodeKey: String(initialQuery.get("library_parent_node_key") || "").trim(),
     libraryNewContainerName: String(initialQuery.get("library_new_container_name") || "").trim(),
   };

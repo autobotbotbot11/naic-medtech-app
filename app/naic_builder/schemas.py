@@ -16,13 +16,6 @@ def normalize_form_save_payload_aliases(value: Any) -> Any:
     normalized = dict(value)
     if "form_schema" not in normalized and "schema" in normalized:
         normalized["form_schema"] = normalized.pop("schema")
-
-    location_name = compact_optional_text(normalized.get("location_name"))
-    legacy_group_name = compact_optional_text(normalized.get("group_name"))
-    if legacy_group_name and not location_name:
-        normalized["location_name"] = legacy_group_name
-
-    normalized.pop("group_name", None)
     return normalized
 
 
