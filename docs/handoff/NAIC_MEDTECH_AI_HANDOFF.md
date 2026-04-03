@@ -212,7 +212,7 @@ What is implemented:
 - the live save contract is stricter too: `FormSavePayload` now expects the block-based `form_schema` shape in active API usage, so old `fields/sections` save payloads are no longer part of the live builder contract
 - the live form-read contract is thinner too: `/api/forms/{slug}` now returns only `block_schema` for the active form shape, and the builder derives any temporary legacy projection locally
 - backend naming is more honest too: the no-op save alias validator is gone, and the remaining form-definition helpers in `services.py` now read like tree-first helpers instead of grouped-era compatibility names
-- the active create/update path is thinner too: block-based save payloads now normalize directly through a block-first helper instead of routing the live request path through `coerce_legacy_schema()`
+- the active create/update path is thinner too: block-based save payloads now normalize directly through a block-first storage helper instead of passing through older schema-bridge wrappers
 - the active create/update entry path is thinner too: it no longer materializes a full legacy schema just to derive slug/name before saving; live saves now read those directly from `payload` and block metadata
 - active block metadata is cleaner too: new writes now use `form_id`, `form_key`, and `form_order` in `block_schema.meta`, while old `legacy_form_*` keys are only read/backfilled for stored compatibility
 - active block source metadata is more honest too: live builder-created block schemas now store `source_kind = builder_blocks_v1`, while true legacy conversions still keep the compatibility marker

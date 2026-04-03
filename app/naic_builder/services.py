@@ -272,7 +272,7 @@ def legacy_section_to_block(section: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def legacy_schema_to_block_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
+def build_block_schema_from_legacy_storage(raw_schema: dict[str, Any]) -> dict[str, Any]:
     meta: dict[str, Any] = {
         "form_id": compact_text(raw_schema.get("id")),
         "form_key": compact_text(raw_schema.get("key")),
@@ -413,7 +413,7 @@ def block_section_to_legacy_section(block: dict[str, Any], form_id: str, order: 
     return normalize_section(raw_section, form_id, order, used_keys)
 
 
-def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
+def build_legacy_storage_schema_from_blocks(raw_schema: dict[str, Any]) -> dict[str, Any]:
     blocks = normalize_items(raw_schema.get("blocks"))
     meta = raw_schema.get("meta") if isinstance(raw_schema.get("meta"), dict) else {}
     form_id = compact_text(meta.get("form_id")) or "form.compat"
@@ -461,7 +461,7 @@ def normalize_block_schema_storage(
         block_schema = json.loads(json.dumps(raw_schema))
         source_kind = ACTIVE_BLOCK_SCHEMA_SOURCE
     else:
-        block_schema = legacy_schema_to_block_schema(normalized_schema)
+        block_schema = build_block_schema_from_legacy_storage(normalized_schema)
         source_kind = LEGACY_BLOCK_SCHEMA_SOURCE
 
     block_schema["schema_version"] = int(block_schema.get("schema_version") or 1)
@@ -493,15 +493,15 @@ def normalize_block_schema_storage(
     return block_schema
 
 
-def normalize_builder_block_payload(
+def build_form_version_storage_payload(
     raw_block_schema: dict[str, Any],
     *,
     slug: str,
     name: str,
     form_order: int,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    legacy_schema = block_schema_to_legacy_schema(raw_block_schema)
-    normalized_schema = normalize_form_schema(
+    legacy_schema = build_legacy_storage_schema_from_blocks(raw_block_schema)
+    normalized_schema = normalize_legacy_storage_schema(
         legacy_schema,
         slug=slug,
         name=name,
@@ -525,7 +525,7 @@ def stable_form_schema_id(slug: str) -> str:
     return f"form.{slugify(slug or 'compat')}"
 
 
-def normalize_form_schema(
+def normalize_legacy_storage_schema(
     raw_schema: dict[str, Any],
     *,
     slug: str,
@@ -610,9 +610,9 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         try:
             block_schema = json.loads(version.block_schema_json)
         except json.JSONDecodeError:
-            block_schema = legacy_schema_to_block_schema(json.loads(version.schema_json))
+            block_schema = build_block_schema_from_legacy_storage(json.loads(version.schema_json))
     else:
-        block_schema = legacy_schema_to_block_schema(json.loads(version.schema_json))
+        block_schema = build_block_schema_from_legacy_storage(json.loads(version.schema_json))
 
     location = serialize_form_location(definition)
     return {
@@ -1324,7 +1324,7 @@ def ensure_reference_seed(session: Session) -> None:
                 slug = compact_text(form.get("key")) or slugify(form.get("name"))
                 name = compact_text(form.get("name")) or "Untitled Form"
                 form_order = int(form.get("order") or 1)
-                normalized_schema = normalize_form_schema(
+                normalized_schema = normalize_legacy_storage_schema(
                     form,
                     slug=slug,
                     name=name,
@@ -1351,7 +1351,7 @@ def ensure_reference_seed(session: Session) -> None:
                     version_number=1,
                     summary="Seeded from current reference schema.",
                     schema_json=json.dumps(normalized_schema, ensure_ascii=False),
-                    block_schema_json=json.dumps(legacy_schema_to_block_schema(normalized_schema), ensure_ascii=False),
+                    block_schema_json=json.dumps(build_block_schema_from_legacy_storage(normalized_schema), ensure_ascii=False),
                     source="seed",
                     is_current=True,
                 )
@@ -1387,7 +1387,7 @@ def ensure_block_schema_storage(session: Session) -> None:
         if compact_text(version.block_schema_json):
             block_schema = json.loads(version.block_schema_json)
         else:
-            block_schema = legacy_schema_to_block_schema(schema)
+            block_schema = build_block_schema_from_legacy_storage(schema)
             block_changed = True
 
         meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
@@ -1441,7 +1441,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         library_parent_node_key=payload.library_parent_node_key,
         library_new_container_name=payload.library_new_container_name,
     )
-    normalized_schema, stored_block_schema = normalize_builder_block_payload(
+    normalized_schema, stored_block_schema = build_form_version_storage_payload(
         raw_block_schema,
         slug=slug,
         name=name,
@@ -1494,7 +1494,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         library_new_container_name=payload.library_new_container_name,
         existing_definition=definition,
     )
-    normalized_schema, stored_block_schema = normalize_builder_block_payload(
+    normalized_schema, stored_block_schema = build_form_version_storage_payload(
         raw_block_schema,
         slug=definition.slug,
         name=name,
