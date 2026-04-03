@@ -365,7 +365,7 @@ function blockSchemaToLegacySchema(blockSchema, fallback = {}) {
   return {
     name: String(fallback?.name || "").trim(),
     key: String(meta.legacy_form_key || fallback?.schema?.key || slugify(fallback?.name || "untitled_form")).trim(),
-    order: parsePositiveInt(meta.legacy_order, fallback?.form_order || fallback?.schema?.order || 1),
+    order: parsePositiveInt(meta.legacy_order, fallback?.schema?.order || 1),
     common_field_set_id: String(meta.common_field_set_id || fallback?.schema?.common_field_set_id || "default_lab_request").trim() || "default_lab_request",
     notes: normalizeArray(meta.notes),
     fields,
@@ -395,7 +395,7 @@ function ensureDraftSchemas(draft, options = {}) {
   draft.schema = normalizeSchemaShape(draft.schema || {});
   draft.schema.name = String(draft.name || draft.schema.name || "").trim();
   draft.schema.key = String(draft.schema.key || slugify(draft.schema.name || draft.name || "untitled_form")).trim();
-  draft.schema.order = parsePositiveInt(draft.form_order, draft.schema.order || 1);
+  draft.schema.order = parsePositiveInt(draft.schema.order, 1);
   draft.schema.common_field_set_id = String(draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
   draft.block_schema = existingBlockSchema || legacySchemaToBlockSchema(draft.schema);
   syncRootMetaToBlockSchema(draft);
@@ -437,7 +437,7 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
   const schema = normalizeSchemaShape(draft.schema || {});
   meta.common_field_set_id = String(schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
   meta.legacy_form_key = String(schema.key || slugify(draft.name || "untitled_form")).trim() || "untitled_form";
-  meta.legacy_order = parsePositiveInt(draft.form_order, schema.order || 1);
+  meta.legacy_order = parsePositiveInt(schema.order, 1);
 
   const notes = normalizeArray(schema.notes);
   if (notes.length) {
@@ -467,7 +467,7 @@ function syncDraftCompatibilitySchemas(source = "blocks") {
   state.draft.schema = normalizeSchemaShape(blockSchemaToLegacySchema(state.draft.block_schema, state.draft));
   state.draft.schema.name = String(state.draft.name || state.draft.schema.name || "").trim();
   state.draft.schema.key = String(state.draft.schema.key || slugify(state.draft.schema.name || state.draft.name || "untitled_form")).trim();
-  state.draft.schema.order = parsePositiveInt(state.draft.form_order, state.draft.schema.order || 1);
+  state.draft.schema.order = parsePositiveInt(state.draft.schema.order, 1);
   state.draft.schema.common_field_set_id = String(state.draft.schema.common_field_set_id || "default_lab_request").trim() || "default_lab_request";
 }
 
@@ -1495,17 +1495,11 @@ function freshBlockId(kind, key) {
 function makeBlankForm(config = {}) {
   const formName = String(config.name || "").trim() || "Untitled Form";
   const groupName = String(config.groupName || "").trim() || "Unassigned";
-  const groupKind = String(config.groupKind || "").trim() || "category";
-  const groupOrder = parsePositiveInt(config.groupOrder, 999);
-  const formOrder = parsePositiveInt(config.formOrder, 1);
 
   const draft = {
     slug: null,
     name: formName,
     group_name: groupName,
-    group_kind: groupKind,
-    group_order: groupOrder,
-    form_order: formOrder,
     library_parent_node_key: String(config.libraryParentNodeKey || "").trim() || null,
     library_new_container_name: String(config.libraryNewContainerName || "").trim() || null,
     current_version_number: 0,
@@ -1513,7 +1507,7 @@ function makeBlankForm(config = {}) {
     schema: {
       name: formName,
       key: slugify(formName),
-      order: formOrder,
+      order: 1,
       common_field_set_id: "default_lab_request",
       notes: [],
       fields: [],
@@ -1709,14 +1703,11 @@ function duplicateCurrentForm(overrides = {}) {
   copy.summary = "";
   copy.name = String(overrides.name || "").trim() || makeCopyName(copy.name);
   copy.group_name = String(overrides.groupName || "").trim() || copy.group_name;
-  copy.group_kind = String(overrides.groupKind || "").trim() || copy.group_kind;
-  copy.group_order = parsePositiveInt(overrides.groupOrder, parsePositiveInt(copy.group_order, 999));
-  copy.form_order = parsePositiveInt(overrides.formOrder, parsePositiveInt(copy.form_order, 1));
   copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
   copy.library_new_container_name = String(overrides.libraryNewContainerName || "").trim() || copy.library_new_container_name || null;
   copy.schema.name = copy.name;
   copy.schema.key = slugify(copy.name);
-  copy.schema.order = copy.form_order;
+  copy.schema.order = parsePositiveInt(copy.schema.order, 1);
   state.selectedFormSlug = null;
   state.loadedForm = null;
   state.draft = ensureDraftSchemas(copy, { preferBlocks: true });
