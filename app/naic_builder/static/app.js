@@ -2175,7 +2175,6 @@ function renderContentOrganizerItem(entry, active) {
           <strong>${escapeHtml(title)}</strong>
           ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
         </span>
-        ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
       </button>
     </div>
   `;
@@ -2191,7 +2190,6 @@ function renderOutlineContentItem(entry, active) {
         <strong>${escapeHtml(title)}</strong>
         ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
       </span>
-      ${active ? '<span class="outline-state">Editing</span>' : ""}
     </button>
   `;
 }
@@ -2285,7 +2283,6 @@ function renderLayoutOrganizerItem(entry, active) {
           <strong>${escapeHtml(title)}</strong>
           ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
         </span>
-        ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
       </button>
     </div>
   `;
@@ -2643,7 +2640,6 @@ function renderFieldOrganizerItem(field, path, index, active) {
             <strong>${escapeHtml(title)}</strong>
             ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
           </span>
-          ${active ? '<span class="field-organizer-state">Editing</span>' : ""}
         </button>
       </div>
     `;
@@ -2796,7 +2792,6 @@ function renderOptionsEditor(field, path) {
                 <span class="option-organizer-copy">
                   <strong>${escapeHtml(option.name || "Untitled option")}</strong>
                 </span>
-                ${index === selectedIndex ? '<span class="option-organizer-state">Editing</span>' : ""}
               </button>
             </div>
           `).join("")}
