@@ -1269,7 +1269,6 @@ def ensure_reference_seed(session: Session) -> None:
                     group_kind=group_kind,
                     group_order=group_order,
                     form_order=form_order,
-                    common_field_set_id=normalized_schema.get("common_field_set_id"),
                 )
                 session.add(definition)
                 session.flush()
@@ -1339,7 +1338,6 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         group_order=location_meta["group_order"],
         form_order=location_meta["form_order"],
         library_parent_node_key=location_meta["resolved_parent_key"],
-        common_field_set_id=normalized_schema.get("common_field_set_id"),
     )
     session.add(definition)
     session.flush()
@@ -1394,7 +1392,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     definition.group_order = location_meta["group_order"]
     definition.form_order = location_meta["form_order"]
     definition.library_parent_node_key = location_meta["resolved_parent_key"]
-    definition.common_field_set_id = normalized_schema.get("common_field_set_id")
+    definition.common_field_set_id = None
 
     version = FormVersion(
         form_id=definition.id,
