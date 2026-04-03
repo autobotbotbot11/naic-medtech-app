@@ -714,12 +714,38 @@ function pathStartsWith(path, prefix) {
   return prefix.every((segment, index) => path[index] === segment);
 }
 
-function groupedForms() {
-  return state.bootstrap?.groups || [];
-}
-
 function pluralize(count, singular, plural = `${singular}s`) {
   return `${count} ${count === 1 ? singular : plural}`;
+}
+
+function quickSwitchForms() {
+  const direct = normalizeArray(state.bootstrap?.form_choices).filter((form) => compactText(form?.slug));
+  if (direct.length) {
+    return direct;
+  }
+  return normalizeArray(state.bootstrap?.groups).flatMap((group) =>
+    normalizeArray(group?.forms).map((form) => ({
+      ...form,
+      location_label: compactText(group?.name) || "Top level",
+      path_label: compactText(group?.name)
+        ? `${compactText(group.name)} / ${compactText(form?.name) || "Untitled Form"}`
+        : (compactText(form?.name) || "Untitled Form"),
+    }))
+  );
+}
+
+function quickSwitchLocationLabel(form) {
+  const direct = compactText(form?.location_label);
+  if (direct) {
+    return direct;
+  }
+  const pathLabel = compactText(form?.path_label);
+  const name = compactText(form?.name);
+  if (!pathLabel || pathLabel === name) {
+    return "Top level";
+  }
+  const suffix = ` / ${name}`;
+  return pathLabel.endsWith(suffix) ? pathLabel.slice(0, -suffix.length) : pathLabel;
 }
 
 function currentVersionLabel() {
@@ -1801,45 +1827,34 @@ function renderFormList() {
   const query = formSearchEl.value.trim().toLowerCase();
   formListEl.innerHTML = "";
 
-  for (const group of groupedForms()) {
-    const matching = group.forms.filter((form) => {
-      if (!query) {
-        return true;
-      }
-      return `${group.name} ${form.name}`.toLowerCase().includes(query);
-    });
-
-    if (!matching.length) {
-      continue;
+  const matching = quickSwitchForms().filter((form) => {
+    if (!query) {
+      return true;
     }
+    const haystack = [
+      compactText(form?.name),
+      compactText(form?.path_label),
+      compactText(form?.location_label),
+    ].join(" ").toLowerCase();
+    return haystack.includes(query);
+  });
 
-    const block = document.createElement("section");
-    block.className = "group-block";
-    block.innerHTML = `
-      <div class="group-title">
-        <span>${escapeHtml(group.name)}</span>
-        <span class="group-count">${pluralize(matching.length, "form")}</span>
-      </div>
+  matching.forEach((form) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "form-link";
+    button.dataset.action = "load-form";
+    button.dataset.slug = form.slug;
+    if (form.slug === state.selectedFormSlug) {
+      button.classList.add("active");
+    }
+    const versionLabel = `v${Number(form.current_version_number || 1)}`;
+    button.innerHTML = `
+      <strong>${escapeHtml(form.name || "Untitled Form")}</strong>
+      <span class="meta">${escapeHtml(quickSwitchLocationLabel(form))} | ${escapeHtml(versionLabel)}</span>
     `;
-
-    matching.forEach((form) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "form-link";
-      button.dataset.action = "load-form";
-      button.dataset.slug = form.slug;
-      if (form.slug === state.selectedFormSlug) {
-        button.classList.add("active");
-      }
-      button.innerHTML = `
-        <strong>${escapeHtml(form.name)}</strong>
-        <span class="meta">Version ${form.current_version_number}</span>
-      `;
-      block.appendChild(button);
-    });
-
-    formListEl.appendChild(block);
-  }
+    formListEl.appendChild(button);
+  });
 
   if (!formListEl.children.length) {
     formListEl.innerHTML = '<div class="empty-state">No forms match that search yet.</div>';

@@ -688,9 +688,11 @@ def list_form_choices(session: Session) -> list[dict[str, Any]]:
                 {
                     "slug": compact_text(form.get("slug")),
                     "name": form_name,
+                    "location_label": " / ".join(path) or "Top level",
                     "path_label": " / ".join(current_path),
                     "depth": len(path),
                     "order": int(node.get("order") or 1),
+                    "current_version_number": int(form.get("current_version_number") or 1),
                 }
             )
 
