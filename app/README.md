@@ -52,7 +52,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules
 - the left outline now follows that same root content model too, showing real top-level content items instead of a section-only shortcut list
 - in `Advanced` mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into `Layout` just to place them
-- the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact field organizers plus one focused field editor
+- the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact item organizers plus one focused item editor
 - nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end
 - selected groups can now add nested groups in the normal flow too, so grouped content is less locked to a field-only structure
 - selected groups now use the same compact child organizer plus one focused child editor pattern as selected sections, instead of spilling every child card open at once
@@ -125,6 +125,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - active builder selection state is more aligned too: the shared item selection path and item focus/toggle actions now use `item` naming instead of `field` naming in the live JS flow
 - internal preview and traversal helpers are more aligned too: shared item-path, item-summary, preview-item, and item-count helpers now read like mixed-content block code instead of field-era helper code
 - mixed-content organizer chrome is more aligned too: the live builder now uses `item-*` organizer/list/focus CSS and markup naming instead of `field-*` naming for shared section/group/utility content flows
+- shared item-card chrome is more aligned too: the live builder now uses `item-*` card/head/meta/summary/title/focus/basics/input CSS and markup naming instead of `field-*` naming for shared mixed-content cards
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths

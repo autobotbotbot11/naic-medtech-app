@@ -466,7 +466,7 @@ button:disabled {
 .drawer-head,
 .card-head,
 .section-head,
-.field-head,
+.item-head,
 .preview-head,
 .preview-panel-head {
   display: flex;
@@ -476,7 +476,7 @@ button:disabled {
 }
 
 .search-wrap,
-.field-stack label,
+.item-stack label,
 .setup-grid label,
 .advanced-grid label,
 .preview-field,
@@ -486,7 +486,7 @@ button:disabled {
 }
 
 .search-wrap span,
-.field-stack label span,
+.item-stack label span,
 .setup-grid label span,
 .advanced-grid label span,
 .option-row label span,
@@ -840,7 +840,7 @@ button.subtle[aria-pressed="true"] {
 
 .editor-card,
 .section-card,
-.field-card,
+.item-card,
 .preview-card {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -928,7 +928,7 @@ button.subtle[aria-pressed="true"] {
   flex-wrap: wrap;
 }
 
-.field-stack {
+.item-stack {
   display: grid;
   gap: 12px;
 }
@@ -1146,13 +1146,13 @@ button.subtle[aria-pressed="true"] {
 }
 
 .section-title-input,
-.field-title-input {
+.item-title-input {
   font-size: 16px;
   font-weight: 700;
 }
 
 .section-subcopy,
-.field-summary,
+.item-summary,
 .preview-hint,
 .collapsed-copy {
   color: var(--muted);
@@ -1168,7 +1168,7 @@ button.subtle[aria-pressed="true"] {
     align-items: center;
 }
 
-.field-display-title {
+.item-display-title {
   margin: 3px 0 0;
   font-size: 15px;
 }
@@ -1302,29 +1302,29 @@ button.subtle[aria-pressed="true"] {
     padding-top: 10px;
 }
 
-.field-card {
+.item-card {
     padding: 12px;
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(245, 249, 247, 0.92));
 }
 
-.field-card.is-focused {
+.item-card.is-focused {
     max-width: 760px;
     padding: 14px;
 }
 
 .section-card.is-dragging,
-.field-card.is-dragging {
+.item-card.is-dragging {
   opacity: 0.58;
 }
 
 .section-card.sortable-ghost,
-.field-card.sortable-ghost {
+.item-card.sortable-ghost {
   opacity: 0.34;
   border-style: dashed;
   border-color: rgba(30, 93, 82, 0.34);
 }
 
-.field-card.is-open {
+.item-card.is-open {
   border-color: rgba(30, 93, 82, 0.24);
   box-shadow: 0 10px 24px rgba(30, 93, 82, 0.08);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.99), rgba(238, 247, 244, 0.98));
@@ -1340,30 +1340,30 @@ button.subtle[aria-pressed="true"] {
   color: var(--text);
 }
 
-.field-card.group-card {
+.item-card.group-card {
   border-style: dashed;
   border-color: rgba(201, 106, 41, 0.26);
   background: linear-gradient(180deg, rgba(255, 250, 244, 0.99), rgba(255, 244, 232, 0.92));
 }
 
-.field-card.utility-card {
+.item-card.utility-card {
   border-style: dashed;
   border-color: rgba(111, 130, 124, 0.22);
   background: linear-gradient(180deg, rgba(251, 253, 252, 0.99), rgba(243, 248, 246, 0.96));
 }
 
-.field-meta {
+.item-meta {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
     align-items: center;
 }
 
-.field-head-focused {
+.item-head-focused {
     align-items: center;
 }
 
-.field-summary {
+.item-summary {
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
@@ -1373,7 +1373,7 @@ button.subtle[aria-pressed="true"] {
     gap: 6px;
 }
 
-.field-focus-copy {
+.item-focus-copy {
   margin: -2px 0 2px;
   color: var(--muted);
   font-size: 12px;
@@ -1391,11 +1391,11 @@ button.subtle[aria-pressed="true"] {
     resize: vertical;
 }
 
-.field-basics-grid.compact {
+.item-basics-grid.compact {
     align-items: end;
 }
 
-.field-basics-grid.single {
+.item-basics-grid.single {
   grid-template-columns: minmax(0, 1fr);
 }
 
@@ -1411,14 +1411,14 @@ button.subtle[aria-pressed="true"] {
 }
 
 .section-card .row-actions > .ghost.mini,
-.field-card .row-actions > .ghost.mini {
+.item-card .row-actions > .ghost.mini {
   min-width: 50px;
 }
 
 .section-card:not(.is-open) .drag-handle,
 .section-card:not(.is-open) .action-details summary,
-.field-card:not(.is-open) .drag-handle,
-.field-card:not(.is-open) .action-details summary {
+.item-card:not(.is-open) .drag-handle,
+.item-card:not(.is-open) .action-details summary {
   opacity: 0.3;
 }
 
@@ -1428,12 +1428,12 @@ button.subtle[aria-pressed="true"] {
 .section-card:focus-within .action-details summary,
 .section-card.is-open .drag-handle,
 .section-card.is-open .action-details summary,
-.field-card:hover .drag-handle,
-.field-card:hover .action-details summary,
-.field-card:focus-within .drag-handle,
-.field-card:focus-within .action-details summary,
-.field-card.is-open .drag-handle,
-.field-card.is-open .action-details summary {
+.item-card:hover .drag-handle,
+.item-card:hover .action-details summary,
+.item-card:focus-within .drag-handle,
+.item-card:focus-within .action-details summary,
+.item-card.is-open .drag-handle,
+.item-card.is-open .action-details summary {
   opacity: 1;
   border-color: rgba(68, 54, 40, 0.14);
   background: rgba(255, 255, 255, 0.92);
@@ -1820,7 +1820,7 @@ details.advanced summary {
   .stage-head,
   .card-head,
   .section-head,
-  .field-head,
+  .item-head,
   .drawer-head,
   .preview-panel-head {
     flex-direction: column;

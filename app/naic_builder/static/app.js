@@ -2170,13 +2170,13 @@ function renderUtilityBlockCard(node, path) {
   const sampleRows = getTableSampleRows(node);
 
   return `
-    <article class="field-card utility-card is-open is-focused" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
-      <div class="field-head field-head-focused">
+    <article class="item-card utility-card is-open is-focused" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
+      <div class="item-head item-head-focused">
         <div>
-          <h4 class="field-display-title">${escapeHtml(node.name || title)}</h4>
+          <h4 class="item-display-title">${escapeHtml(node.name || title)}</h4>
         </div>
       </div>
-      <p class="field-focus-copy">${escapeHtml(
+      <p class="item-focus-copy">${escapeHtml(
         isNote
           ? "Appears in the preview."
           : isTable
@@ -2184,10 +2184,10 @@ function renderUtilityBlockCard(node, path) {
             : "Adds a visual break."
       )}</p>
 
-      <div class="inline-grid field-basics-grid compact">
+      <div class="inline-grid item-basics-grid compact">
         <label>
           <span>Name</span>
-          <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(node.name || "")}" placeholder="${escapeHtml(namePlaceholder)}">
+          <input class="item-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(node.name || "")}" placeholder="${escapeHtml(namePlaceholder)}">
         </label>
       </div>
 
@@ -2201,7 +2201,7 @@ function renderUtilityBlockCard(node, path) {
           <span>Columns</span>
           <textarea data-path="${encodePath(path)}" data-bind="columns" data-format="lines" rows="4" placeholder="One column name per line">${escapeHtml(columns.join("\n"))}</textarea>
         </label>
-        <div class="inline-grid field-basics-grid compact">
+        <div class="inline-grid item-basics-grid compact">
           <label>
             <span>Rows</span>
             <input type="number" min="1" max="6" data-path="${encodePath(path)}" data-bind="sample_rows" value="${escapeHtml(sampleRows)}">
@@ -2525,15 +2525,15 @@ function renderItemCard(item, path, options = {}) {
       : [];
   
     return `
-      <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
-        <div class="field-head ${focusedCard ? "field-head-focused" : ""}">
+      <article class="item-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
+        <div class="item-head ${focusedCard ? "item-head-focused" : ""}">
           <div>
             ${!focusedCard ? `
-            <div class="field-meta">
-              <span class="field-summary">${escapeHtml(summary)}</span>
+            <div class="item-meta">
+              <span class="item-summary">${escapeHtml(summary)}</span>
             </div>
             ` : ""}
-            <h4 class="field-display-title">${escapeHtml(item.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
+            <h4 class="item-display-title">${escapeHtml(item.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
           ${showHeaderActions ? `
           <div class="row-actions">
@@ -2549,17 +2549,17 @@ function renderItemCard(item, path, options = {}) {
         </div>
   
         ${open ? `
-          ${focusedCard && focusCopy ? `<p class="field-focus-copy">${escapeHtml(focusCopy)}</p>` : ""}
+          ${focusedCard && focusCopy ? `<p class="item-focus-copy">${escapeHtml(focusCopy)}</p>` : ""}
 
-          <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""} ${isGroup ? "single" : ""}">
+          <div class="inline-grid item-basics-grid ${focusedCard ? "compact" : ""} ${isGroup ? "single" : ""}">
             <label>
               <span>Name</span>
-              <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(item.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
+              <input class="item-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(item.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
             ${isGroup ? "" : `
               <label>
                 <span>Input</span>
-                <select data-action="field-type" data-path="${encodePath(path)}">
+                <select data-action="item-input-type" data-path="${encodePath(path)}">
                   ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
                 </select>
               </label>
@@ -2619,7 +2619,7 @@ function renderOptionsEditor(field, path) {
     const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
     const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled option";
     return `
-      <section class="field-stack">
+      <section class="item-stack">
         <div class="card-head">
           <div>
             <div class="card-title-row">
@@ -3445,7 +3445,7 @@ async function handleEditorClick(event) {
 }
 
 function handleEditorChange(event) {
-  if (event.target.dataset.action === "field-type") {
+  if (event.target.dataset.action === "item-input-type") {
     const field = getNodeByPath(decodePath(event.target.dataset.path));
     applyFieldType(field, event.target.value);
     state.ui.activeOptionToken = event.target.value === "choice"

@@ -227,6 +227,7 @@ What is implemented:
 - active builder selection state is more aligned too: the shared item selection path and item focus/toggle actions now use `item` naming instead of `field` naming in the live JS flow
 - internal preview and traversal helpers are more aligned too: shared item-path, item-summary, preview-item, and item-count helpers now read like mixed-content block code instead of field-era helper code
 - mixed-content organizer chrome is more aligned too: the live builder now uses `item-*` organizer/list/focus CSS and markup naming instead of `field-*` naming for shared section/group/utility content flows
+- shared item-card chrome is more aligned too: the live builder now uses `item-*` card/head/meta/summary/title/focus/basics/input CSS and markup naming instead of `field-*` naming for shared mixed-content cards
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
@@ -249,7 +250,7 @@ What is implemented:
 - builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`
 - selected sections still use a compact section organizer plus one focused section editor
-- inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
+- inside selected sections and groups, the builder now uses compact item organizers plus one focused item editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
 - `Form details` and `Save` now use a calmer narrow centered treatment instead of wide full-width surfaces
 - `Form details` now offers folder suggestions from the existing library to reduce typing friction
@@ -300,7 +301,7 @@ What is already true in the current builder:
 - sections are collapsible
 - only one section stays open at a time for calmer editing
 - the sections view now keeps a compact organizer list at the top and a single focused section editor below it
-- the `Free fields` and selected-section editors now keep a compact field organizer list and one focused field editor at a time
+- the `Free fields` and selected-section editors now keep a compact item organizer list and one focused item editor at a time
 - dropdown `Choices` editors now keep a compact choice organizer list and one focused choice editor at a time
 - `Form details` and `Save` now render as narrower, calmer guided sheets inside the focused editor
 - the top shell now uses a lighter first-glance hierarchy, with less stacked copy before the main workspace
