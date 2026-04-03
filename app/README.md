@@ -56,7 +56,9 @@ The app now starts from a builder-first FastAPI scaffold.
 - selected groups can now add nested groups in the normal flow too, so grouped content is less locked to a field-only structure
 - selected groups now use the same compact child organizer plus one focused child editor pattern as selected sections, instead of spilling every child card open at once
 - the old separate root `Ungrouped fields` and `Sections` panes are no longer active workspace paths; the builder now uses one real root `Content` path instead of keeping both models alive
+- the old root section-only focus path has now been removed from the active builder flow, so the workspace no longer keeps that extra root shortcut model alive behind the scenes
 - advanced `Layout` add actions now insert relative to the current selected block when possible, so the true ordered-block surface no longer blindly appends new blocks
+- advanced and fallback wording is calmer now too: the builder now prefers `content` and `item` language over more technical `block` wording in the visible UI
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details

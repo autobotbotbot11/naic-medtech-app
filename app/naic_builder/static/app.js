@@ -1827,18 +1827,6 @@ function setFocusPane(pane) {
   renderAll();
 }
 
-function focusSectionAtIndex(index) {
-  const sections = topLevelSectionEntries();
-  if (!sections[index]) {
-    return;
-  }
-
-  state.ui.focusPane = "content";
-  state.ui.openSectionPaths = [pathKey(sections[index].path)];
-  state.ui.activeFieldPath = null;
-  renderAll();
-}
-
 function focusLayoutBlock(path) {
   const node = getNodeByPath(path);
   if (!node) {
@@ -2169,8 +2157,8 @@ function renderContentCard() {
   const hiddenBlockCount = Math.max(0, topLevelBlockEntries().length - entries.length);
   const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
   const helpCopy = state.ui.advancedMode
-    ? "This is the main editing flow for the form. Advanced-only layout blocks still follow the same root order."
-    : "This is the main editing flow for the form. Add sections or top-level fields here without thinking about internal schema buckets.";
+    ? "This is the main editing flow for the form. Advanced-only layout items still follow the same root order."
+    : "This is the main editing flow for the form. Add sections, fields, or groups here without thinking about internal schema buckets.";
 
   return `
     <section class="editor-card">
@@ -2201,9 +2189,9 @@ function renderContentCard() {
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
                 ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
-            : '<div class="empty-state">Pick a block to keep editing.</div>'}
+            : '<div class="empty-state">Pick an item to keep editing.</div>'}
         </div>
-      ` : '<div class="empty-state">No content yet. Add a section or field when you are ready.</div>'}
+      ` : '<div class="empty-state">No content yet. Add a section, field, or group when you are ready.</div>'}
       ${!state.ui.advancedMode && hiddenBlockCount ? '<div class="collapsed-copy">Advanced blocks stay hidden here until you turn on Advanced.</div>' : ""}
     </section>
   `;
@@ -2373,8 +2361,8 @@ function renderLayoutCard(options = {}) {
   const collectionPath = currentLayoutCollectionPath();
   const nested = Boolean(rootNode);
   const layoutCopy = nested
-    ? `Editing the real block order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
-    : "This is the real top-level block order of the form. Use it when you need more control without changing the simpler default flow.";
+    ? `Editing the real content order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
+    : "This is the real top-level content order of the form. Use it when you need more control without changing the simpler default flow.";
 
   return `
     <section class="editor-card">
@@ -2407,29 +2395,13 @@ function renderLayoutCard(options = {}) {
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
                 ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
-            : '<div class="empty-state">Pick a block to keep editing.</div>'}
+            : '<div class="empty-state">Pick an item to keep editing.</div>'}
         </div>
-      ` : '<div class="empty-state">No blocks yet. Add one when you are ready.</div>'}
+      ` : '<div class="empty-state">No content yet. Add one when you are ready.</div>'}
     </section>
   `;
 }
 
-function renderSectionOrganizerItem(section, index, active) {
-    return `
-      <div class="section-organizer-item ${active ? "active" : ""}">
-        <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
-          <span class="drag-dots" aria-hidden="true"></span>
-        </button>
-        <button class="section-organizer-select" type="button" data-action="focus-section" data-index="${index}">
-          <span class="section-organizer-copy">
-            <strong>${escapeHtml(section.name || `Section ${index + 1}`)}</strong>
-          </span>
-          ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
-        </button>
-      </div>
-    `;
-  }
-  
 function renderSectionCard(section, path, options = {}) {
     const focusedCard = Boolean(options.focusedCard);
     const open = Boolean(options.forceOpen) || isSectionOpen(path);
@@ -2484,15 +2456,15 @@ function renderSectionCard(section, path, options = {}) {
               <summary>Advanced</summary>
               <div class="advanced-grid">
               <label>
-                <span>Internal section key</span>
+                <span>Internal key</span>
                 <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(sectionNode) || "")}">
               </label>
               <label style="grid-column: 1 / -1;">
-                <span>Section notes</span>
+                <span>Notes</span>
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(sectionNode).join("\n"))}</textarea>
               </label>
               <div class="advanced-actions" style="grid-column: 1 / -1;">
-                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open child layout</button>
+                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open layout</button>
               </div>
               </div>
             </details>
@@ -2747,7 +2719,7 @@ function renderFieldCard(field, path, options = {}) {
               </label>
               ${isGroup ? `
                 <div class="advanced-actions" style="grid-column: 1 / -1;">
-                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open child layout</button>
+                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open layout</button>
                 </div>
               ` : ""}
               </div>
@@ -3506,10 +3478,6 @@ async function handleEditorClick(event) {
     renderAll();
     return;
   }
-  if (action === "focus-section") {
-    focusSectionAtIndex(Number(actionTarget.dataset.index));
-    return;
-  }
   if (action === "focus-content-block" && path) {
     state.ui.focusPane = "content";
     setLayoutSelection(path);
@@ -3609,11 +3577,6 @@ function handleOutlineClick(event) {
   const action = actionTarget.dataset.action;
   if (action === "focus-pane") {
     setFocusPane(actionTarget.dataset.pane || defaultFocusPane());
-    return;
-  }
-
-  if (action === "focus-section") {
-    focusSectionAtIndex(Number(actionTarget.dataset.index));
     return;
   }
 

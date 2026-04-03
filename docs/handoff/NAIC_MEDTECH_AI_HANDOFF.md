@@ -135,7 +135,9 @@ What is implemented:
 - selected groups can now add nested groups in the normal flow too, so grouped content is less locked to a field-only structure
 - selected groups now use the same compact child organizer plus one focused child editor pattern as selected sections, instead of spilling every child card open at once
 - the old separate root `Ungrouped fields` and `Sections` panes are no longer active workspace paths; the builder now uses one real root `Content` path instead of keeping both models alive
+- the old root section-only focus path has now been removed from the active builder flow, so the workspace no longer keeps that extra root shortcut model alive behind the scenes
 - advanced `Layout` add actions now insert relative to the current selected block when possible, so the true ordered-block surface no longer blindly appends new blocks
+- advanced and fallback wording is calmer now too: the builder now prefers `content` and `item` language over more technical `block` wording in the visible UI
 - selected sections still use a compact section organizer plus one focused section editor
 - inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
