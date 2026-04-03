@@ -279,49 +279,47 @@ function getNodeProps(node) {
 
 function getNodeChildren(node) {
   if (!isStoredBlockNode(node)) {
-    return normalizeArray(node?.fields);
+    return [];
   }
   node.children = normalizeArray(node.children);
   return node.children;
 }
 
 function getNodeKey(node) {
-  return isStoredBlockNode(node) ? String(getNodeProps(node).key || "").trim() : String(node?.key || "").trim();
+  return isStoredBlockNode(node) ? String(getNodeProps(node).key || "").trim() : "";
 }
 
 function getNodeNotes(node) {
-  return isStoredBlockNode(node) ? normalizeArray(getNodeProps(node).notes) : normalizeArray(node?.notes);
+  return isStoredBlockNode(node) ? normalizeArray(getNodeProps(node).notes) : [];
 }
 
 function getFieldControl(field) {
   return isBlockNode(field)
     ? String(getNodeProps(field).control || "input").trim() || "input"
-    : String(field?.control || "input").trim() || "input";
+    : "input";
 }
 
 function getFieldDataType(field) {
   return isBlockNode(field)
     ? String(getNodeProps(field).data_type || getNodeProps(field).field_type || "text").trim() || "text"
-    : String(field?.data_type || "text").trim() || "text";
+    : "text";
 }
 
 function getFieldUnitHint(field) {
-  return isBlockNode(field) ? String(getNodeProps(field).unit_hint || "").trim() : String(field?.unit_hint || "").trim();
+  return isBlockNode(field) ? String(getNodeProps(field).unit_hint || "").trim() : "";
 }
 
 function getFieldNormalValue(field) {
-  return isBlockNode(field) ? String(getNodeProps(field).normal_value || "").trim() : String(field?.normal_value || "").trim();
+  return isBlockNode(field) ? String(getNodeProps(field).normal_value || "").trim() : "";
 }
 
 function ensureOptionShape(field) {
-  if (isBlockNode(field)) {
-    const props = getNodeProps(field);
-    props.options = normalizeArray(props.options);
-    return props.options;
+  if (!isBlockNode(field)) {
+    return [];
   }
-
-  field.options = normalizeArray(field.options);
-  return field.options;
+  const props = getNodeProps(field);
+  props.options = normalizeArray(props.options);
+  return props.options;
 }
 
 function getFieldOptions(field) {
@@ -1366,15 +1364,13 @@ function inferFieldType(field) {
 
 function applyFieldType(field, typeId) {
   const selected = FIELD_TYPES.find((item) => item.id === typeId) || FIELD_TYPES[0];
-  if (isBlockNode(field)) {
-    const props = getNodeProps(field);
-    props.field_type = selected.id === "choice" ? "select" : selected.dataType;
-    props.control = selected.control;
-    props.data_type = selected.dataType;
-  } else {
-    field.control = selected.control;
-    field.data_type = selected.dataType;
+  if (!isBlockNode(field)) {
+    return;
   }
+  const props = getNodeProps(field);
+  props.field_type = selected.id === "choice" ? "select" : selected.dataType;
+  props.control = selected.control;
+  props.data_type = selected.dataType;
   if (selected.id === "choice") {
     const options = ensureOptionShape(field);
     if (!options.length) {
@@ -1384,22 +1380,14 @@ function applyFieldType(field, typeId) {
 }
 
 function syncNodeKeys(node) {
-  if (!node || typeof node !== "object") {
+  if (!isStoredBlockNode(node)) {
     return;
   }
-  if (isStoredBlockNode(node)) {
-    const props = getNodeProps(node);
-    if (node.name && !props.key) {
-      props.key = slugify(node.name);
-    }
-    getNodeChildren(node).forEach(syncNodeKeys);
-    return;
+  const props = getNodeProps(node);
+  if (node.name && !props.key) {
+    props.key = slugify(node.name);
   }
-  if ("name" in node && !node.key) {
-    node.key = slugify(node.name);
-  }
-  normalizeArray(node.fields).forEach(syncNodeKeys);
-  normalizeArray(node.sections).forEach(syncNodeKeys);
+  getNodeChildren(node).forEach(syncNodeKeys);
 }
 
 function syncDraftKeys() {
