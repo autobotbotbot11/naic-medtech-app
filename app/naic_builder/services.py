@@ -930,18 +930,7 @@ def move_form(
         form_node.parent_id = target_parent_id
         form_node.node_order = next_node_order(session, target_parent_id, exclude_node_id=form_node.id)
 
-    if target_parent is not None:
-        definition.library_parent_node_key = target_parent.node_key
-        definition.group_name = target_parent.name
-        definition.group_kind = "category"
-        definition.group_order = target_parent.node_order
-        definition.form_order = form_node.node_order
-    else:
-        definition.library_parent_node_key = None
-        definition.group_name = definition.name
-        definition.group_kind = "standalone_form"
-        definition.group_order = 999
-        definition.form_order = form_node.node_order
+    definition.library_parent_node_key = target_parent.node_key if target_parent is not None else None
 
     if form_node.archived:
         form_node.archived = False
@@ -1086,10 +1075,13 @@ def ensure_library_tree(session: Session) -> None:
     changed = False
 
     for definition in definitions:
+        node_key = form_node_key(definition.slug)
+        form_node = nodes_by_key.get(node_key)
         group_name = compact_text(definition.group_name) or "Unassigned"
         group_kind = compact_text(definition.group_kind) or "category"
         parent_id = None
         explicit_parent_key = compact_text(definition.library_parent_node_key)
+        desired_form_order = int(form_node.node_order or definition.form_order or 1) if form_node is not None else int(definition.form_order or 1)
 
         if explicit_parent_key:
             explicit_parent = nodes_by_key.get(explicit_parent_key)
@@ -1098,8 +1090,10 @@ def ensure_library_tree(session: Session) -> None:
                     explicit_parent.archived = False
                     changed = True
                 parent_id = explicit_parent.id
+        elif form_node is not None:
+            parent_id = form_node.parent_id
 
-        if parent_id is None and group_kind != "standalone_form":
+        if parent_id is None and form_node is None and group_kind != "standalone_form":
             container_key = container_node_key(group_name)
             container = nodes_by_key.get(container_key)
             if container is None:
@@ -1129,15 +1123,13 @@ def ensure_library_tree(session: Session) -> None:
                     changed = True
             parent_id = container.id
 
-        node_key = form_node_key(definition.slug)
-        form_node = nodes_by_key.get(node_key)
         if form_node is None:
             form_node = LibraryNode(
                 node_key=node_key,
                 kind="form",
                 name=definition.name,
                 parent_id=parent_id,
-                node_order=int(definition.form_order or 1),
+                node_order=desired_form_order,
                 archived=False,
                 form_definition_id=definition.id,
             )
@@ -1155,8 +1147,8 @@ def ensure_library_tree(session: Session) -> None:
         if form_node.parent_id != parent_id:
             form_node.parent_id = parent_id
             changed = True
-        if form_node.node_order != int(definition.form_order or 1):
-            form_node.node_order = int(definition.form_order or 1)
+        if form_node.node_order != desired_form_order:
+            form_node.node_order = desired_form_order
             changed = True
         if form_node.archived:
             form_node.archived = False
