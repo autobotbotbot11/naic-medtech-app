@@ -5,8 +5,29 @@ from typing import Any
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+def compact_optional_text(value: Any) -> str:
+    return str(value or "").strip()
+
+
+def normalize_form_save_payload_aliases(value: Any) -> Any:
+    if not isinstance(value, dict):
+        return value
+
+    normalized = dict(value)
+    if "form_schema" not in normalized and "schema" in normalized:
+        normalized["form_schema"] = normalized.pop("schema")
+
+    location_name = compact_optional_text(normalized.get("location_name"))
+    legacy_group_name = compact_optional_text(normalized.get("group_name"))
+    if legacy_group_name and not location_name:
+        normalized["location_name"] = legacy_group_name
+
+    normalized.pop("group_name", None)
+    return normalized
+
+
 class FormSavePayload(BaseModel):
-    model_config = ConfigDict(populate_by_name=True)
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     slug: str | None = None
     name: str = ""
@@ -19,16 +40,4 @@ class FormSavePayload(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def move_schema_key(cls, value: Any) -> Any:
-        if not isinstance(value, dict):
-            return value
-
-        normalized = dict(value)
-        if "form_schema" not in normalized and "schema" in normalized:
-            normalized["form_schema"] = normalized.pop("schema")
-
-        location_name = str(normalized.get("location_name") or "").strip()
-        group_name = str(normalized.get("group_name") or "").strip()
-        if group_name and "location_name" not in normalized:
-            normalized["location_name"] = group_name
-
-        return normalized
+        return normalize_form_save_payload_aliases(value)

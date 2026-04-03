@@ -125,6 +125,7 @@
       "the reset script now follows that same runtime migration path too, so a fresh sample DB no longer regresses back to the old NOT NULL grouped-column shape",
       "the last-resort tree rebuild fallback is safer too: if a definition loses its node, parent key, and all usable legacy location hints, it now rebuilds as a top-level form instead of inventing a self-named folder from missing legacy data",
       "stored version metadata is cleaner too: startup and reset backfill now strip stale common_field_set_id from old schema_json and block_schema_json, and they normalize old location-bound legacy form ids into stable form.<slug> values",
+      "the save payload alias path is thinner too: group_name is now just a tolerated legacy input alias that gets normalized into location_name and removed before validation, instead of lingering as part of the active request shape",
       "form create, update, and move flows now use a shared tree-first form-node sync helper, so the real LibraryNode state is updated directly before legacy mirrors are backfilled",
       "resolve_form_location_metadata is more tree-first too: it now feeds create/update with resolved_parent_* and resolved_form_order values instead of returning group_* as the primary active shape",
       "legacy group_* mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths",
