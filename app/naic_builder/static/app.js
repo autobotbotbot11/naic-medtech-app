@@ -733,17 +733,15 @@ function currentDraftFieldCount() {
 function topLevelPreviewSegments() {
   const segments = [];
   let looseFields = [];
-  let looseHasLayoutBlocks = false;
-  let freeFieldGroupCount = 0;
-  let layoutGroupCount = 0;
+  let looseGroupCount = 0;
 
   const flushLooseFields = () => {
     if (!looseFields.length) {
       return;
     }
-    const baseLabel = looseHasLayoutBlocks ? "Layout" : "Top fields";
-    const baseId = looseHasLayoutBlocks ? "layout" : "top_fields";
-    const localIndex = looseHasLayoutBlocks ? ++layoutGroupCount : ++freeFieldGroupCount;
+    const baseLabel = "Top content";
+    const baseId = "top_content";
+    const localIndex = ++looseGroupCount;
     segments.push({
       id: localIndex === 1 ? `preview_section_${baseId}` : `preview_section_${baseId}_${localIndex}`,
       label: localIndex === 1 ? baseLabel : `${baseLabel} ${localIndex}`,
@@ -751,7 +749,6 @@ function topLevelPreviewSegments() {
       fields: looseFields,
     });
     looseFields = [];
-    looseHasLayoutBlocks = false;
   };
 
   topLevelBlockEntries().forEach((entry, index) => {
@@ -764,13 +761,6 @@ function topLevelPreviewSegments() {
         fields: getNodeChildren(entry.node),
       });
       return;
-    }
-
-    if (entry.node?.kind === "note" || entry.node?.kind === "divider") {
-      looseHasLayoutBlocks = true;
-    }
-    if (entry.node?.kind === "table") {
-      looseHasLayoutBlocks = true;
     }
     looseFields.push(entry.node);
   });
@@ -2082,6 +2072,28 @@ function renderNodeActionMenu(path) {
     `;
   }
 
+function renderAddMenu(items, label = "Add") {
+    const entries = normalizeArray(items).filter((item) => item?.action && item?.label);
+    if (!entries.length) {
+      return "";
+    }
+    return `
+      <details class="action-details add-details">
+        <summary aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${escapeHtml(label)}</summary>
+        <div class="action-menu">
+          ${entries.map((item) => `
+            <button
+              class="ghost mini"
+              type="button"
+              data-action="${escapeHtml(item.action)}"
+              ${item.path ? `data-path="${encodePath(item.path)}"` : ""}
+            >${escapeHtml(item.label)}</button>
+          `).join("")}
+        </div>
+      </details>
+    `;
+  }
+
 function renderManageFooter(path) {
     return `
       <details class="manage-details">
@@ -2159,6 +2171,18 @@ function renderContentCard() {
   const helpCopy = state.ui.advancedMode
     ? "This is the main editing flow for the form. Advanced-only layout items still follow the same root order."
     : "This is the main editing flow for the form. Add sections, fields, or groups here without thinking about internal schema buckets.";
+  const addItems = [
+    { action: "add-content-section", label: "Section" },
+    { action: "add-content-field", label: "Field" },
+    { action: "add-content-group", label: "Group" },
+    ...(state.ui.advancedMode
+      ? [
+          { action: "add-content-note", label: "Note" },
+          { action: "add-content-table", label: "Table" },
+          { action: "add-content-divider", label: "Divider" },
+        ]
+      : []),
+  ];
 
   return `
     <section class="editor-card">
@@ -2170,12 +2194,7 @@ function renderContentCard() {
           </div>
         </div>
         <div class="top-actions">
-          <button class="secondary mini" type="button" data-action="add-content-section">Add section</button>
-          <button class="ghost mini" type="button" data-action="add-content-field">Add field</button>
-          <button class="ghost mini" type="button" data-action="add-content-group">Add group</button>
-          ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-content-note">Add note</button>` : ""}
-          ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-content-divider">Add divider</button>` : ""}
-          ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-content-table">Add table</button>` : ""}
+          ${renderAddMenu(addItems)}
         </div>
       </div>
       ${entries.length ? `
@@ -2363,6 +2382,14 @@ function renderLayoutCard(options = {}) {
   const layoutCopy = nested
     ? `Editing the real content order inside ${rootName || (rootKind === "field_group" ? "this group" : "this section")}.`
     : "This is the real top-level content order of the form. Use it when you need more control without changing the simpler default flow.";
+  const addItems = [
+    { action: "add-layout-field", label: "Field" },
+    { action: "add-layout-group", label: "Group" },
+    ...(!nested ? [{ action: "add-layout-section", label: "Section" }] : []),
+    { action: "add-layout-table", label: "Table" },
+    { action: "add-layout-note", label: "Note" },
+    { action: "add-layout-divider", label: "Divider" },
+  ];
 
   return `
     <section class="editor-card">
@@ -2376,12 +2403,7 @@ function renderLayoutCard(options = {}) {
         </div>
         <div class="top-actions">
           ${nested ? `<button class="ghost mini" type="button" data-action="layout-up">Back</button>` : ""}
-          <button class="secondary mini" type="button" data-action="add-layout-field">Add field</button>
-          <button class="ghost mini" type="button" data-action="add-layout-group">Add group</button>
-          ${nested ? "" : `<button class="ghost mini" type="button" data-action="add-layout-section">Add section</button>`}
-          <button class="ghost mini" type="button" data-action="add-layout-table">Add table</button>
-          <button class="ghost mini" type="button" data-action="add-layout-note">Add note</button>
-          <button class="ghost mini" type="button" data-action="add-layout-divider">Add divider</button>
+          ${renderAddMenu(addItems)}
         </div>
       </div>
       ${entries.length ? `
@@ -2407,6 +2429,17 @@ function renderSectionCard(section, path, options = {}) {
     const open = Boolean(options.forceOpen) || isSectionOpen(path);
     const showHeaderActions = !focusedCard || !options.hideToggle;
     const sectionNode = getNodeByPath(path);
+    const addItems = [
+      { action: "add-field", label: "Field", path: [...path, "children"] },
+      { action: "add-group", label: "Group", path: [...path, "children"] },
+      ...(state.ui.advancedMode
+        ? [
+            { action: "add-note", label: "Note", path: [...path, "children"] },
+            { action: "add-table", label: "Table", path: [...path, "children"] },
+            { action: "add-divider", label: "Divider", path: [...path, "children"] },
+          ]
+        : []),
+    ];
     return `
       <article class="section-card ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
         <div class="section-head ${focusedCard ? "section-head-focused" : ""}">
@@ -2441,11 +2474,7 @@ function renderSectionCard(section, path, options = {}) {
               <input class="section-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(section.name || "")}" placeholder="Example: Chemical Findings">
             </label>
             <div class="section-quick-actions">
-              <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add field</button>
-              <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "children"])}">Add group</button>
-              ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
-              ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
-              ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-table" data-path="${encodePath([...path, "children"])}">Add table</button>` : ""}
+              ${renderAddMenu(addItems)}
           </div>
         </div>
 
@@ -2628,6 +2657,19 @@ function renderFieldCard(field, path, options = {}) {
       compactUnit ? `Unit: ${compactUnit}` : "",
       compactNormal ? `Normal: ${compactNormal}` : "",
     ].filter(Boolean);
+    const addItems = isGroup
+      ? [
+          { action: "add-field", label: "Field", path: [...path, "children"] },
+          { action: "add-group", label: "Group", path: [...path, "children"] },
+          ...(state.ui.advancedMode
+            ? [
+                { action: "add-note", label: "Note", path: [...path, "children"] },
+                { action: "add-table", label: "Table", path: [...path, "children"] },
+                { action: "add-divider", label: "Divider", path: [...path, "children"] },
+              ]
+            : []),
+        ]
+      : [];
   
     return `
       <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
@@ -2685,11 +2727,7 @@ function renderFieldCard(field, path, options = {}) {
             ${renderFieldCollection(getNodeChildren(fieldNode), [...path, "children"], focusedCard ? { focused: true } : {})}
           </div>
           <div class="section-actions">
-            <button class="secondary mini" type="button" data-action="add-field" data-path="${encodePath([...path, "children"])}">Add field</button>
-            <button class="ghost mini" type="button" data-action="add-group" data-path="${encodePath([...path, "children"])}">Add group</button>
-            ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-note" data-path="${encodePath([...path, "children"])}">Add note</button>` : ""}
-            ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-divider" data-path="${encodePath([...path, "children"])}">Add divider</button>` : ""}
-            ${state.ui.advancedMode ? `<button class="ghost mini" type="button" data-action="add-table" data-path="${encodePath([...path, "children"])}">Add table</button>` : ""}
+            ${renderAddMenu(addItems)}
           </div>
         ` : ""}
 
