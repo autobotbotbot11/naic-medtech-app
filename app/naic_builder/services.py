@@ -1027,46 +1027,34 @@ def delete_container(session: Session, node_key: str) -> None:
     session.commit()
 
 
-def next_root_form_order(session: Session) -> int:
-    tree = list_library_tree(session)
-    return max((int(node.get("order") or 0) for node in tree if not node.get("archived")), default=0) + 1
-
-
 def resolve_form_location_metadata(
     session: Session,
     *,
     form_name: str,
-    group_name: str,
-    group_kind: str | None,
-    group_order: int | None,
-    form_order: int | None,
+    location_name: str,
     library_parent_node_key: str | None,
     library_new_container_name: str | None,
     existing_definition: FormDefinition | None = None,
 ) -> dict[str, Any]:
     resolved_parent_key = compact_text(library_parent_node_key) or None
     pending_container_name = compact_text(library_new_container_name) or None
-    legacy_group_name = compact_text(group_name)
-    legacy_group_kind = compact_text(group_kind)
+    explicit_location_name = compact_text(location_name)
+    compact_form_name = compact_text(form_name)
 
     if pending_container_name:
         resolved_parent_key = ensure_container_node(session, pending_container_name, resolved_parent_key).node_key
     elif (
         not resolved_parent_key
-        and legacy_group_kind != "standalone_form"
-        and legacy_group_name
-        and legacy_group_name != compact_text(form_name)
+        and explicit_location_name
+        and explicit_location_name not in {"Top level", "Unassigned", compact_form_name}
     ):
-        resolved_parent_key = ensure_container_node(session, legacy_group_name, None).node_key
+        resolved_parent_key = ensure_container_node(session, explicit_location_name, None).node_key
 
     target_parent = resolve_target_container(session, resolved_parent_key)
     existing_node = existing_definition.library_node if existing_definition is not None else None
-    explicit_form_order = int(form_order) if form_order is not None else None
 
     if target_parent is not None:
-        if explicit_form_order is not None:
-            resolved_form_order = explicit_form_order
-        elif existing_node is not None and existing_node.parent_id == target_parent.id:
+        if existing_node is not None and existing_node.parent_id == target_parent.id:
             resolved_form_order = int(existing_node.node_order or 1)
         else:
             resolved_form_order = next_node_order(
@@ -1083,9 +1071,7 @@ def resolve_form_location_metadata(
             "form_order": resolved_form_order,
         }
 
-    if explicit_form_order is not None:
-        resolved_form_order = explicit_form_order
-    elif existing_node is not None and existing_node.parent_id is None:
+    if existing_node is not None and existing_node.parent_id is None:
         resolved_form_order = int(existing_node.node_order or 1)
     else:
         resolved_form_order = next_node_order(
@@ -1096,9 +1082,9 @@ def resolve_form_location_metadata(
 
     return {
         "resolved_parent_key": None,
-        "group_name": compact_text(form_name) or legacy_group_name or "Untitled Form",
+        "group_name": compact_form_name or "Untitled Form",
         "group_kind": "standalone_form",
-        "group_order": int(group_order or 999),
+        "group_order": 999,
         "form_order": resolved_form_order,
     }
 
@@ -1356,10 +1342,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     location_meta = resolve_form_location_metadata(
         session,
         form_name=name,
-        group_name=payload.group_name,
-        group_kind=payload.group_kind,
-        group_order=payload.group_order,
-        form_order=payload.form_order,
+        location_name=payload.group_name,
         library_parent_node_key=payload.library_parent_node_key,
         library_new_container_name=payload.library_new_container_name,
     )
@@ -1411,10 +1394,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     location_meta = resolve_form_location_metadata(
         session,
         form_name=name,
-        group_name=payload.group_name,
-        group_kind=payload.group_kind or definition.group_kind,
-        group_order=payload.group_order if payload.group_order is not None else definition.group_order,
-        form_order=payload.form_order,
+        location_name=payload.group_name,
         library_parent_node_key=payload.library_parent_node_key,
         library_new_container_name=payload.library_new_container_name,
         existing_definition=definition,

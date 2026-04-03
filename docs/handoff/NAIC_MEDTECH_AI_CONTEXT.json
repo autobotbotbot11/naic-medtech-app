@@ -111,6 +111,8 @@
       "the builder no longer tracks common_field_set_id in the active frontend draft path, so the visible editing flow is less tied to the old shared-metadata model",
       "top-level new and copied drafts are cleaner too: they no longer start from the old Unassigned sentinel or keep a stale previous form name as fake location state",
       "the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use location language instead of old group wording where the UI already treats folders as locations",
+      "the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old group_kind/group_order/form_order inputs",
+      "the /forms/new flow reads more consistently now too: its template and browser-side logic use location wording for the visible create flow, and the handoff into /builder now uses location_name with backward-compatible support for old group_name links",
       "the visible advanced pane now reads Arrange instead of Layout, so the UI feels more like arranging content than editing a technical layer",
       "builder action wording is quieter too: Duplicate now reads Copy, More is shorter and calmer than the old More options, and destructive actions now prefer Remove language for a less tool-like feel",
       "toggle and preview wording are calmer too: setup, save, and section cards now use Show and Hide instead of Open and Done, and preview helper copy now says Choose or Show instead of Open",

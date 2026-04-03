@@ -1483,12 +1483,12 @@ function freshBlockId(kind, key) {
 
 function makeBlankForm(config = {}) {
   const formName = String(config.name || "").trim() || "Untitled Form";
-  const groupName = String(config.groupName || "").trim();
+  const locationName = String(config.locationName || config.groupName || "").trim();
 
   const draft = {
     slug: null,
     name: formName,
-    group_name: groupName,
+    group_name: locationName,
     library_parent_node_key: String(config.libraryParentNodeKey || "").trim() || null,
     library_new_container_name: String(config.libraryNewContainerName || "").trim() || null,
     current_version_number: 0,
@@ -1628,7 +1628,7 @@ async function bootstrap() {
   renderFormList();
   const draftConfig = {
     name: String(initialQuery.get("draft_name") || "").trim(),
-    groupName: String(initialQuery.get("group_name") || "").trim(),
+    locationName: String(initialQuery.get("location_name") || initialQuery.get("group_name") || "").trim(),
     libraryParentNodeKey: String(initialQuery.get("library_parent_node_key") || "").trim(),
     libraryNewContainerName: String(initialQuery.get("library_new_container_name") || "").trim(),
   };
@@ -1694,7 +1694,7 @@ function duplicateCurrentForm(overrides = {}) {
   copy.current_version_number = 0;
   copy.summary = "";
   copy.name = String(overrides.name || "").trim() || makeCopyName(copy.name);
-  copy.group_name = String(overrides.groupName || "").trim() || copy.group_name;
+  copy.group_name = String(overrides.locationName || overrides.groupName || "").trim() || copy.group_name;
   copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
   copy.library_new_container_name = String(overrides.libraryNewContainerName || "").trim() || copy.library_new_container_name || null;
   if (
@@ -2039,7 +2039,7 @@ function renderFormSetupCard(options = {}) {
       ` : `
         <div class="collapsed-copy">
           <strong>${escapeHtml(formName)}</strong>
-          ${escapeHtml(groupName)}
+          ${escapeHtml(locationName)}
         </div>
       `}
     </section>

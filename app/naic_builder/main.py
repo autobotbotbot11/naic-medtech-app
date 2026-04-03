@@ -336,15 +336,15 @@ def start_new_form_page(
 
     explicit_parent_node_key = parent.strip()
     default_parent_node_key = ""
-    default_group_source_mode = "existing" if container_options else "root"
+    default_location_mode = "existing" if container_options else "root"
     if source_form and source_form.library_parent_node_key:
         default_parent_node_key = source_form.library_parent_node_key
-        default_group_source_mode = "existing"
+        default_location_mode = "existing"
     elif source_form:
-        default_group_source_mode = "root"
+        default_location_mode = "root"
     elif container_options:
         default_parent_node_key = container_options[0]["node_key"]
-        default_group_source_mode = "existing"
+        default_location_mode = "existing"
 
     if explicit_parent_node_key:
         matching_parent = next(
@@ -353,14 +353,14 @@ def start_new_form_page(
         )
         if matching_parent is not None:
             default_parent_node_key = matching_parent["node_key"]
-            default_group_source_mode = "new" if create_folder else "existing"
+            default_location_mode = "new" if create_folder else "existing"
 
     selected_container = next(
         (option for option in container_options if option["node_key"] == default_parent_node_key),
         None,
     )
-    default_group_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
-    default_new_folder_parent_key = default_parent_node_key if default_group_source_mode in {"existing", "new"} else ""
+    default_location_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
+    default_new_folder_parent_key = default_parent_node_key if default_location_mode in {"existing", "new"} else ""
 
     return templates.TemplateResponse(
         request=request,
@@ -370,8 +370,8 @@ def start_new_form_page(
             "container_options": container_options,
             "duplicate_options": duplicate_options,
             "default_parent_node_key": default_parent_node_key,
-            "default_group_source_mode": default_group_source_mode,
-            "default_group_name": default_group_name,
+            "default_location_mode": default_location_mode,
+            "default_location_name": default_location_name,
             "default_new_folder_parent_key": default_new_folder_parent_key,
             "source_form": source_form,
         },

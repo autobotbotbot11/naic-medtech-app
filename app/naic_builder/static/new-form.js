@@ -1,21 +1,21 @@
 const startFormEl = document.getElementById("startForm");
 const formNameEl = document.getElementById("formName");
-const existingGroupWrapEl = document.getElementById("existingGroupWrap");
-const newGroupWrapEl = document.getElementById("newGroupWrap");
-const existingGroupSelectEl = document.getElementById("existingGroupSelect");
-const newGroupNameEl = document.getElementById("newGroupName");
-const newGroupParentSelectEl = document.getElementById("newGroupParentSelect");
-const rootGroupHintEl = document.getElementById("rootGroupHint");
+const existingLocationWrapEl = document.getElementById("existingLocationWrap");
+const newLocationWrapEl = document.getElementById("newLocationWrap");
+const existingLocationSelectEl = document.getElementById("existingLocationSelect");
+const newLocationNameEl = document.getElementById("newLocationName");
+const newLocationParentSelectEl = document.getElementById("newLocationParentSelect");
+const rootLocationHintEl = document.getElementById("rootLocationHint");
 const duplicateSourceWrapEl = document.getElementById("duplicateSourceWrap");
 const duplicateSourceSelectEl = document.getElementById("duplicateSourceSelect");
 const modeInputEl = document.getElementById("modeInput");
 const slugInputEl = document.getElementById("slugInput");
 const draftNameInputEl = document.getElementById("draftNameInput");
-const groupNameInputEl = document.getElementById("groupNameInput");
+const locationNameInputEl = document.getElementById("locationNameInput");
 const parentNodeKeyInputEl = document.getElementById("parentNodeKeyInput");
 const newContainerNameInputEl = document.getElementById("newContainerNameInput");
 const summaryNameEl = document.getElementById("summaryName");
-const summaryGroupEl = document.getElementById("summaryGroup");
+const summaryLocationEl = document.getElementById("summaryLocation");
 const summaryStartEl = document.getElementById("summaryStart");
 
 function visibleChoice(name) {
@@ -30,12 +30,12 @@ function copyName(value) {
   return base.endsWith(" Copy") ? `${base} 2` : `${base} Copy`;
 }
 
-function selectedGroupOption() {
-  return existingGroupSelectEl?.selectedOptions?.[0] || null;
+function selectedLocationOption() {
+  return existingLocationSelectEl?.selectedOptions?.[0] || null;
 }
 
-function selectedNewGroupParentOption() {
-  return newGroupParentSelectEl?.selectedOptions?.[0] || null;
+function selectedNewLocationParentOption() {
+  return newLocationParentSelectEl?.selectedOptions?.[0] || null;
 }
 
 function selectedDuplicateLabel() {
@@ -43,21 +43,21 @@ function selectedDuplicateLabel() {
   return String(option?.dataset.pathLabel || option?.textContent || "").trim() || "existing form";
 }
 
-function syncGroupMode() {
-  const mode = visibleChoice("group_source_mode") || "existing";
-  const useExistingGroup = mode === "existing";
-  const useNewGroup = mode === "new";
+function syncLocationMode() {
+  const mode = visibleChoice("location_mode") || "existing";
+  const useExistingLocation = mode === "existing";
+  const useNewLocation = mode === "new";
   const useRoot = mode === "root";
 
-  existingGroupWrapEl?.classList.toggle("hidden", !useExistingGroup);
-  existingGroupWrapEl && (existingGroupWrapEl.hidden = !useExistingGroup);
-  newGroupWrapEl?.classList.toggle("hidden", !useNewGroup);
-  newGroupWrapEl && (newGroupWrapEl.hidden = !useNewGroup);
-  rootGroupHintEl?.classList.toggle("hidden", !useRoot);
-  rootGroupHintEl && (rootGroupHintEl.hidden = !useRoot);
+  existingLocationWrapEl?.classList.toggle("hidden", !useExistingLocation);
+  existingLocationWrapEl && (existingLocationWrapEl.hidden = !useExistingLocation);
+  newLocationWrapEl?.classList.toggle("hidden", !useNewLocation);
+  newLocationWrapEl && (newLocationWrapEl.hidden = !useNewLocation);
+  rootLocationHintEl?.classList.toggle("hidden", !useRoot);
+  rootLocationHintEl && (rootLocationHintEl.hidden = !useRoot);
 
-  if (newGroupNameEl) {
-    newGroupNameEl.required = useNewGroup;
+  if (newLocationNameEl) {
+    newLocationNameEl.required = useNewLocation;
   }
 }
 
@@ -75,16 +75,16 @@ function syncStartMode() {
 
 function updateSummary() {
   const formName = String(formNameEl?.value || "").trim();
-  const groupMode = visibleChoice("group_source_mode") || "existing";
+  const locationMode = visibleChoice("location_mode") || "existing";
   const startMode = visibleChoice("start_mode") || "blank";
 
-  let groupName = "Top level";
-  if (groupMode === "new") {
-    const parentPath = String(selectedNewGroupParentOption()?.dataset.pathLabel || "").trim();
-    const newFolderName = String(newGroupNameEl?.value || "").trim();
-    groupName = [parentPath, newFolderName].filter(Boolean).join(" / ");
-  } else if (groupMode === "existing") {
-    groupName = String(selectedGroupOption()?.dataset.pathLabel || selectedGroupOption()?.textContent || "").trim();
+  let locationName = "Top level";
+  if (locationMode === "new") {
+    const parentPath = String(selectedNewLocationParentOption()?.dataset.pathLabel || "").trim();
+    const newFolderName = String(newLocationNameEl?.value || "").trim();
+    locationName = [parentPath, newFolderName].filter(Boolean).join(" / ");
+  } else if (locationMode === "existing") {
+    locationName = String(selectedLocationOption()?.dataset.pathLabel || selectedLocationOption()?.textContent || "").trim();
   }
 
   let startLabel = "Start empty";
@@ -95,8 +95,8 @@ function updateSummary() {
   if (summaryNameEl) {
     summaryNameEl.textContent = formName || "Choose a name";
   }
-  if (summaryGroupEl) {
-    summaryGroupEl.textContent = groupName || "Choose a folder";
+  if (summaryLocationEl) {
+    summaryLocationEl.textContent = locationName || "Choose a folder";
   }
   if (summaryStartEl) {
     summaryStartEl.textContent = startLabel;
@@ -104,24 +104,24 @@ function updateSummary() {
 }
 
 function syncHiddenInputs() {
-  const groupMode = visibleChoice("group_source_mode") || "existing";
+  const locationMode = visibleChoice("location_mode") || "existing";
   const startMode = visibleChoice("start_mode") || "blank";
-  const selectedOption = selectedGroupOption();
-  const selectedNewParentOption = selectedNewGroupParentOption();
+  const selectedOption = selectedLocationOption();
+  const selectedNewParentOption = selectedNewLocationParentOption();
   const draftName = String(formNameEl?.value || "").trim();
 
-  const usingNewGroup = groupMode === "new";
-  const usingRoot = groupMode === "root";
-  const parentNodeKey = usingNewGroup
+  const usingNewLocation = locationMode === "new";
+  const usingRoot = locationMode === "root";
+  const parentNodeKey = usingNewLocation
     ? String(selectedNewParentOption?.value || "").trim()
     : usingRoot
       ? ""
       : String(selectedOption?.value || "").trim();
-  const groupName = usingRoot
+  const locationName = usingRoot
     ? (draftName || "Untitled Form")
-    : usingNewGroup
-    ? String(newGroupNameEl?.value || "").trim()
-    : String(selectedOption?.dataset.groupName || "").trim();
+    : usingNewLocation
+    ? String(newLocationNameEl?.value || "").trim()
+    : String(selectedOption?.dataset.locationName || "").trim();
 
   if (modeInputEl) {
     modeInputEl.value = startMode === "duplicate" ? "duplicate" : "new";
@@ -132,14 +132,14 @@ function syncHiddenInputs() {
   if (draftNameInputEl) {
     draftNameInputEl.value = String(formNameEl?.value || "").trim();
   }
-  if (groupNameInputEl) {
-    groupNameInputEl.value = groupName;
+  if (locationNameInputEl) {
+    locationNameInputEl.value = locationName;
   }
   if (parentNodeKeyInputEl) {
     parentNodeKeyInputEl.value = parentNodeKey;
   }
   if (newContainerNameInputEl) {
-    newContainerNameInputEl.value = usingNewGroup ? String(newGroupNameEl?.value || "").trim() : "";
+    newContainerNameInputEl.value = usingNewLocation ? String(newLocationNameEl?.value || "").trim() : "";
   }
 }
 
@@ -160,13 +160,13 @@ function handleSourceSelectionAutofill() {
 }
 
 function refreshScreen() {
-  syncGroupMode();
+  syncLocationMode();
   syncStartMode();
   syncHiddenInputs();
   updateSummary();
 }
 
-document.querySelectorAll('input[name="group_source_mode"], input[name="start_mode"]').forEach((input) => {
+document.querySelectorAll('input[name="location_mode"], input[name="start_mode"]').forEach((input) => {
   input.addEventListener("change", () => {
     if (visibleChoice("start_mode") === "duplicate") {
       handleSourceSelectionAutofill();
@@ -175,9 +175,9 @@ document.querySelectorAll('input[name="group_source_mode"], input[name="start_mo
   });
 });
 
-existingGroupSelectEl?.addEventListener("change", refreshScreen);
-newGroupNameEl?.addEventListener("input", refreshScreen);
-newGroupParentSelectEl?.addEventListener("change", refreshScreen);
+existingLocationSelectEl?.addEventListener("change", refreshScreen);
+newLocationNameEl?.addEventListener("input", refreshScreen);
+newLocationParentSelectEl?.addEventListener("change", refreshScreen);
 duplicateSourceSelectEl?.addEventListener("change", () => {
   handleSourceSelectionAutofill();
   refreshScreen();
@@ -202,18 +202,18 @@ startFormEl?.addEventListener("submit", (event) => {
 
   formNameEl?.setCustomValidity("");
 
-  if (visibleChoice("group_source_mode") === "new" && !String(newGroupNameEl?.value || "").trim()) {
+  if (visibleChoice("location_mode") === "new" && !String(newLocationNameEl?.value || "").trim()) {
     event.preventDefault();
-    newGroupNameEl?.focus();
-    newGroupNameEl?.setCustomValidity("Name the new folder before you continue.");
-    newGroupNameEl?.reportValidity();
+    newLocationNameEl?.focus();
+    newLocationNameEl?.setCustomValidity("Name the new folder before you continue.");
+    newLocationNameEl?.reportValidity();
     return;
   }
 
-  newGroupNameEl?.setCustomValidity("");
+  newLocationNameEl?.setCustomValidity("");
 
   startFormEl
-    .querySelectorAll('input[name="group_source_mode"], input[name="start_mode"]')
+    .querySelectorAll('input[name="location_mode"], input[name="start_mode"]')
     .forEach((input) => {
       input.disabled = true;
     });
