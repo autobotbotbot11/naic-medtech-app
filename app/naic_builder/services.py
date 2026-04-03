@@ -865,16 +865,11 @@ def new_definition_compat_shell(
     *,
     slug: str,
     name: str,
-    form_order: int,
     parent_node_key: str | None = None,
 ) -> FormDefinition:
     return FormDefinition(
         slug=slug,
         name=name,
-        group_name=name,
-        group_kind="standalone_form",
-        group_order=999,
-        form_order=form_order,
         library_parent_node_key=parent_node_key,
         common_field_set_id=None,
     )
@@ -1361,7 +1356,6 @@ def ensure_reference_seed(session: Session) -> None:
                 definition = new_definition_compat_shell(
                     slug=slug,
                     name=name,
-                    form_order=form_order,
                     parent_node_key=parent_node_key,
                 )
                 session.add(definition)
@@ -1433,7 +1427,6 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     definition = new_definition_compat_shell(
         slug=slug,
         name=name,
-        form_order=location_meta["resolved_form_order"],
         parent_node_key=location_meta["resolved_parent_key"],
     )
     session.add(definition)

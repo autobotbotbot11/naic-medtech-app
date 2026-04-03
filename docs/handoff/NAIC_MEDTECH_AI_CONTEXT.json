@@ -120,6 +120,8 @@
       "ensure_library_tree is more tree-first too: it no longer orchestrates sync work in old group_order and form_order order, it prefers real node parent/order first, and it now uses the shared form-node and container helpers for rebuilds instead of manually recreating grouped-first state",
       "direct model-layer placeholder writes are more isolated too: create and seed flows now build FormDefinition rows through one small compatibility-shell helper instead of open-coding group_* values in multiple places",
       "stale FormDefinition.common_field_set_id values no longer survive active tree sync either: the same compatibility-sync path now clears that old mirror field back to None",
+      "the FormDefinition model contract is less legacy too: old group_name, group_kind, group_order, and form_order columns are now nullable compatibility shadows instead of required first-class fields",
+      "runtime schema migration now upgrades older SQLite DBs to that nullable shape too, so existing local DBs no longer force placeholder writes just to satisfy the old grouped model",
       "form create, update, and move flows now use a shared tree-first form-node sync helper, so the real LibraryNode state is updated directly before legacy mirrors are backfilled",
       "resolve_form_location_metadata is more tree-first too: it now feeds create/update with resolved_parent_* and resolved_form_order values instead of returning group_* as the primary active shape",
       "legacy group_* mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths",
