@@ -22,7 +22,7 @@
 
 const sortableInstances = [];
 
-const FIELD_TYPES = [
+const INPUT_TYPES = [
   { id: "text", label: "Text", control: "input", dataType: "text" },
   { id: "number", label: "Number", control: "input", dataType: "number" },
   { id: "choice", label: "Choices", control: "select", dataType: "enum" },
@@ -293,23 +293,23 @@ function getNodeNotes(node) {
   return isStoredBlockNode(node) ? normalizeArray(getNodeProps(node).notes) : [];
 }
 
-function getFieldControl(field) {
+function getInputControl(field) {
   return isBlockNode(field)
     ? String(getNodeProps(field).control || "input").trim() || "input"
     : "input";
 }
 
-function getFieldDataType(field) {
+function getInputDataType(field) {
   return isBlockNode(field)
     ? String(getNodeProps(field).data_type || getNodeProps(field).field_type || "text").trim() || "text"
     : "text";
 }
 
-function getFieldUnitHint(field) {
+function getInputUnitHint(field) {
   return isBlockNode(field) ? String(getNodeProps(field).unit_hint || "").trim() : "";
 }
 
-function getFieldNormalValue(field) {
+function getInputNormalValue(field) {
   return isBlockNode(field) ? String(getNodeProps(field).normal_value || "").trim() : "";
 }
 
@@ -338,7 +338,7 @@ function ensureOptionShape(field) {
   return props.options;
 }
 
-function getFieldOptions(field) {
+function getInputOptions(field) {
   return ensureOptionShape(field);
 }
 
@@ -998,7 +998,7 @@ function syncEditorPanels() {
   if (state.ui.activeOptionToken) {
     const parsed = parseOptionToken(state.ui.activeOptionToken);
     const field = parsed ? getNodeByPath(parsed.path) : null;
-    const options = getFieldOptions(field);
+    const options = getInputOptions(field);
     if (!parsed || !options[parsed.index]) {
       state.ui.activeOptionToken = null;
     }
@@ -1369,16 +1369,16 @@ function cloneNode(node) {
   return copy;
 }
 
-function inferFieldType(field) {
-  if (getFieldControl(field) === "select" || getFieldDataType(field) === "enum") {
+function inferInputType(field) {
+  if (getInputControl(field) === "select" || getInputDataType(field) === "enum") {
     return "choice";
   }
-  const match = FIELD_TYPES.find((item) => item.dataType === getFieldDataType(field) && item.control === getFieldControl(field));
+  const match = INPUT_TYPES.find((item) => item.dataType === getInputDataType(field) && item.control === getInputControl(field));
   return match?.id || "text";
 }
 
-function applyFieldType(field, typeId) {
-  const selected = FIELD_TYPES.find((item) => item.id === typeId) || FIELD_TYPES[0];
+function applyInputType(field, typeId) {
+  const selected = INPUT_TYPES.find((item) => item.id === typeId) || INPUT_TYPES[0];
   if (!isBlockNode(field)) {
     return;
   }
@@ -1984,8 +1984,8 @@ function itemOrganizerSecondaryLabel(item, title) {
       const summary = summarizeItem(item);
       return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
     }
-    const fieldType = inferFieldType(item);
-    if (!["choice", "date", "time", "datetime"].includes(fieldType)) {
+    const inputType = inferInputType(item);
+    if (!["choice", "date", "time", "datetime"].includes(inputType)) {
       return "";
     }
     const summary = summarizeItem(item);
@@ -2471,11 +2471,11 @@ function summarizeItem(item) {
   if (item.kind === "field_group") {
     return "Group";
   }
-  const fieldType = inferFieldType(item);
-  if (fieldType === "choice") {
+  const inputType = inferInputType(item);
+  if (inputType === "choice") {
     return "Dropdown";
   }
-  return FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Text";
+  return INPUT_TYPES.find((item) => item.id === inputType)?.label || "Text";
 }
 
 function renderItemOrganizerItem(item, path, index, active) {
@@ -2502,11 +2502,11 @@ function renderItemCard(item, path, options = {}) {
     const isGroup = item.kind === "field_group";
     const open = Boolean(options.forceOpen) || isItemOpen(path);
     const summary = summarizeItem(item);
-    const fieldType = inferFieldType(item);
+    const inputType = inferInputType(item);
     const focusedCard = Boolean(options.focusedCard);
     const showHeaderActions = !focusedCard || !options.hideToggle;
-    const compactNormal = compactText(getFieldNormalValue(item));
-    const compactUnit = compactText(getFieldUnitHint(item));
+    const compactNormal = compactText(getInputNormalValue(item));
+    const compactUnit = compactText(getInputUnitHint(item));
     const focusCopy = isGroup
       ? "Nested content"
       : [
@@ -2563,7 +2563,7 @@ function renderItemCard(item, path, options = {}) {
               <label>
                 <span>Input</span>
                 <select data-action="item-input-type" data-path="${encodePath(path)}">
-                  ${FIELD_TYPES.map((item) => `<option value="${item.id}"${item.id === fieldType ? " selected" : ""}>${item.label}</option>`).join("")}
+                  ${INPUT_TYPES.map((item) => `<option value="${item.id}"${item.id === inputType ? " selected" : ""}>${item.label}</option>`).join("")}
                 </select>
               </label>
             `}
@@ -2578,7 +2578,7 @@ function renderItemCard(item, path, options = {}) {
           </div>
         ` : ""}
 
-        ${!isGroup && inferFieldType(item) === "choice" ? renderOptionsEditor(item, path) : ""}
+        ${!isGroup && inferInputType(item) === "choice" ? renderOptionsEditor(item, path) : ""}
 
           ${state.ui.advancedMode ? `
             <details class="advanced">
@@ -2591,11 +2591,11 @@ function renderItemCard(item, path, options = {}) {
               ${isGroup ? "" : `
                 <label>
                   <span>Normal</span>
-                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getFieldNormalValue(item) || "")}" placeholder="Example: 4.5 - 11.0">
+                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getInputNormalValue(item) || "")}" placeholder="Example: 4.5 - 11.0">
                 </label>
                 <label>
                   <span>Unit</span>
-                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getFieldUnitHint(item) || "")}" placeholder="Example: mg/dL">
+                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getInputUnitHint(item) || "")}" placeholder="Example: mg/dL">
                 </label>
               `}
               <label style="grid-column: 1 / -1;">
@@ -2617,7 +2617,7 @@ function renderItemCard(item, path, options = {}) {
   }
 
 function renderOptionsEditor(field, path) {
-    const options = getFieldOptions(field);
+    const options = getInputOptions(field);
     const selectedIndex = resolveFocusedOptionIndex(path, options);
     const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
     const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled option";
@@ -2743,28 +2743,28 @@ function previewRichText(value) {
 }
 
 function previewInputType(field) {
-  const fieldType = inferFieldType(field);
-  if (fieldType === "number") {
+  const inputType = inferInputType(field);
+  if (inputType === "number") {
     return "number";
   }
-  if (fieldType === "date") {
+  if (inputType === "date") {
     return "date";
   }
-  if (fieldType === "time") {
+  if (inputType === "time") {
     return "time";
   }
-  if (fieldType === "datetime") {
+  if (inputType === "datetime") {
     return "datetime-local";
   }
   return "text";
 }
 
 function previewPlaceholder(field) {
-  const unitHint = getFieldUnitHint(field);
+  const unitHint = getInputUnitHint(field);
   if (unitHint) {
     return unitHint;
   }
-  if (inferFieldType(field) === "number") {
+  if (inferInputType(field) === "number") {
     return "Enter value";
   }
   return "Sample input";
@@ -2840,15 +2840,15 @@ function renderPreviewItem(item) {
   }
 
   const hints = [];
-  if (getFieldUnitHint(item)) hints.push(getFieldUnitHint(item));
-  if (getFieldNormalValue(item)) hints.push(`normal ${getFieldNormalValue(item)}`);
+  if (getInputUnitHint(item)) hints.push(getInputUnitHint(item));
+  if (getInputNormalValue(item)) hints.push(`normal ${getInputNormalValue(item)}`);
 
   return `
     <label class="preview-field">
       <span>${escapeHtml(item.name || "Untitled Field")}</span>
-      ${getFieldControl(item) === "select" ? `
+      ${getInputControl(item) === "select" ? `
         <select disabled>
-          ${getFieldOptions(item).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
+          ${getInputOptions(item).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
         </select>
       ` : `<input type="${previewInputType(item)}" placeholder="${escapeHtml(previewPlaceholder(item))}" disabled>`}
       ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
@@ -3450,7 +3450,7 @@ async function handleEditorClick(event) {
 function handleEditorChange(event) {
   if (event.target.dataset.action === "item-input-type") {
     const field = getNodeByPath(decodePath(event.target.dataset.path));
-    applyFieldType(field, event.target.value);
+    applyInputType(field, event.target.value);
     state.ui.activeOptionToken = event.target.value === "choice"
       ? optionToken(decodePath(event.target.dataset.path), 0)
       : null;

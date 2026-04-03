@@ -129,6 +129,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - preview segment plumbing is more aligned too: the live preview now groups shared root content under `item` segment naming instead of carrying `fields` as the internal mixed-content segment shape
 - live choice seeding is cleaner too: when an input switches to `Choices`, the first seeded option now uses the active `name` shape directly instead of minting the old `label` key
 - blank item factories are more honest too: field and group creation now use separate helpers, and shared insertion helpers no longer pretend every mixed content add path is field-only
+- input-type internals are more aligned too: the live builder now uses `input`-oriented helper naming for control/data/unit/normal/options/type logic instead of keeping those paths under broader `field` helper names
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
