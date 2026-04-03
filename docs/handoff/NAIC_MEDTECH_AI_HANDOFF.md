@@ -213,6 +213,7 @@ What is implemented:
 - the live form-read contract is thinner too: `/api/forms/{slug}` now returns only `block_schema` for the active form shape, and the builder derives any temporary legacy projection locally
 - backend naming is more honest too: the no-op save alias validator is gone, and the remaining form-definition helpers in `services.py` now read like tree-first helpers instead of grouped-era compatibility names
 - the active create/update path is thinner too: block-based save payloads now normalize directly through a block-first helper instead of routing the live request path through `coerce_legacy_schema()`
+- the active create/update entry path is thinner too: it no longer materializes a full legacy schema just to derive slug/name before saving; live saves now read those directly from `payload` and block metadata
 - active block metadata is cleaner too: new writes now use `form_id`, `form_key`, and `form_order` in `block_schema.meta`, while old `legacy_form_*` keys are only read/backfilled for stored compatibility
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
@@ -228,6 +229,7 @@ What is implemented:
 - the active builder draft is more tree-first too: `location_*` is now the only active location state in the editor
 - the active builder setup internals are thinner too: `Key` and `Notes` now bind straight to `block_schema.meta`, and the live draft no longer keeps a duplicated `draft.schema` object just to drive those fields
 - the active organizer/render path is thinner too: content organizers, focused cards, and preview section labels now read directly from block nodes instead of carrying a synthetic legacy `.view` projection through the live builder UI
+- the live frontend draft contract is thinner too: the builder no longer accepts a `form_schema` fallback when hydrating local drafts, and now expects `block_schema` directly in the active UI path
 - the save payload schema is leaner too: `group_kind`, `group_order`, and `form_order` are no longer part of `FormSavePayload`, and old callers can still send them as ignored compatibility extras
 - dead grouped-library backend helpers are gone too: the codebase no longer keeps `list_grouped_forms` / `split_library_groups` around even though the live app is already tree-first
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer

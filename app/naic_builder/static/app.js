@@ -173,14 +173,9 @@ function ensureDraftBlockState(draft) {
   const existingBlockSchema = draft.block_schema && typeof draft.block_schema === "object"
     ? deepClone(draft.block_schema)
     : null;
-  const fallbackBlockSchema = draft.form_schema && typeof draft.form_schema === "object" && Array.isArray(draft.form_schema.blocks)
-    ? deepClone(draft.form_schema)
-    : null;
 
   if (existingBlockSchema) {
     draft.block_schema = existingBlockSchema;
-  } else if (fallbackBlockSchema) {
-    draft.block_schema = fallbackBlockSchema;
   } else {
     draft.block_schema = {
       schema_version: 1,

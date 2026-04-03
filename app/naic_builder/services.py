@@ -517,6 +517,13 @@ def normalize_builder_block_payload(
     return normalized_schema, stored_block_schema
 
 
+def block_payload_form_key(raw_block_schema: dict[str, Any]) -> str:
+    if not isinstance(raw_block_schema, dict):
+        return ""
+    meta = raw_block_schema.get("meta") if isinstance(raw_block_schema.get("meta"), dict) else {}
+    return compact_text(meta.get("form_key") or meta.get("legacy_form_key"))
+
+
 def stable_form_schema_id(slug: str) -> str:
     return f"form.{slugify(slug or 'compat')}"
 
@@ -1425,12 +1432,11 @@ def ensure_block_schema_storage(session: Session) -> None:
 
 def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     raw_block_schema = payload.form_schema if isinstance(payload.form_schema, dict) else {}
-    raw_schema = block_schema_to_legacy_schema(raw_block_schema)
     slug = next_available_slug(
         session,
-        payload.slug or raw_schema.get("key") or payload.name or "untitled_form",
+        payload.slug or block_payload_form_key(raw_block_schema) or payload.name or "untitled_form",
     )
-    name = compact_text(payload.name or raw_schema.get("name")) or "Untitled Form"
+    name = compact_text(payload.name) or "Untitled Form"
     location_meta = resolve_form_location_metadata(
         session,
         form_name=name,
@@ -1482,8 +1488,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         raise KeyError(slug)
 
     raw_block_schema = payload.form_schema if isinstance(payload.form_schema, dict) else {}
-    raw_schema = block_schema_to_legacy_schema(raw_block_schema)
-    name = compact_text(payload.name or raw_schema.get("name")) or definition.name
+    name = compact_text(payload.name) or definition.name
     location_meta = resolve_form_location_metadata(
         session,
         form_name=name,
