@@ -87,6 +87,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - item editors are calmer too: fields, options, and utility items now use `Name` instead of the more technical `Label`
 - the builder `Location` field is now tree-aware too: it suggests real folder paths from the persisted container tree and resolves the correct parent container when one is selected
 - the builder quick-switch drawer is tree-aware now too: it searches and lists forms by real folder path instead of the old one-level grouped drawer
+- the builder bootstrap path is tree-first now too: quick-switch data comes from `form_choices`, not the old grouped builder payload
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
 - duplicate and delete for selected sections and fields now live in a quieter footer `More` area instead of staying in the header

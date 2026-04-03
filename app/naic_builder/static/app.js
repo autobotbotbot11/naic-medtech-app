@@ -714,24 +714,8 @@ function pathStartsWith(path, prefix) {
   return prefix.every((segment, index) => path[index] === segment);
 }
 
-function pluralize(count, singular, plural = `${singular}s`) {
-  return `${count} ${count === 1 ? singular : plural}`;
-}
-
 function quickSwitchForms() {
-  const direct = normalizeArray(state.bootstrap?.form_choices).filter((form) => compactText(form?.slug));
-  if (direct.length) {
-    return direct;
-  }
-  return normalizeArray(state.bootstrap?.groups).flatMap((group) =>
-    normalizeArray(group?.forms).map((form) => ({
-      ...form,
-      location_label: compactText(group?.name) || "Top level",
-      path_label: compactText(group?.name)
-        ? `${compactText(group.name)} / ${compactText(form?.name) || "Untitled Form"}`
-        : (compactText(form?.name) || "Untitled Form"),
-    }))
-  );
+  return normalizeArray(state.bootstrap?.form_choices).filter((form) => compactText(form?.slug));
 }
 
 function quickSwitchLocationLabel(form) {
