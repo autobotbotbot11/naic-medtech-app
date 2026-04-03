@@ -1,4 +1,4 @@
-const state = {
+﻿const state = {
   bootstrap: null,
   selectedFormSlug: null,
   loadedForm: null,
@@ -14,7 +14,7 @@ const state = {
     setupOpen: true,
     saveOpen: false,
     openSectionPaths: [],
-    activeFieldPath: null,
+    activeItemPath: null,
     activeOptionToken: null,
     activePreviewSectionId: null,
   },
@@ -421,9 +421,9 @@ function setLayoutSelection(path) {
 
   if (blockKind(node) === "section") {
     state.ui.openSectionPaths = [pathKey(path)];
-    state.ui.activeFieldPath = null;
+    state.ui.activeItemPath = null;
   } else {
-    state.ui.activeFieldPath = pathKey(path);
+    state.ui.activeItemPath = pathKey(path);
   }
   state.ui.activeOptionToken = null;
 }
@@ -954,7 +954,7 @@ function resetEditorPanels() {
   state.ui.saveOpen = !state.selectedFormSlug;
   state.ui.layoutRootPath = null;
   state.ui.openSectionPaths = sections.length ? [pathKey(sections[0].path)] : [];
-  state.ui.activeFieldPath = null;
+  state.ui.activeItemPath = null;
   state.ui.activeOptionToken = null;
   state.ui.focusPane = defaultFocusPane();
 }
@@ -988,14 +988,14 @@ function syncEditorPanels() {
     state.ui.openSectionPaths = [pathKey(sections[0].path)];
   }
 
-  const validFieldPaths = new Set(collectFieldPathKeys(state.draft?.block_schema, ["block_schema"]));
+  const validItemPaths = new Set(collectFieldPathKeys(state.draft?.block_schema, ["block_schema"]));
   const validLayoutPaths = new Set(
     topLevelBlockEntries()
       .filter((entry) => blockKind(entry.node) !== "section")
       .map((entry) => pathKey(entry.path)),
   );
-  if (state.ui.activeFieldPath && !validFieldPaths.has(state.ui.activeFieldPath) && !validLayoutPaths.has(state.ui.activeFieldPath)) {
-    state.ui.activeFieldPath = null;
+  if (state.ui.activeItemPath && !validItemPaths.has(state.ui.activeItemPath) && !validLayoutPaths.has(state.ui.activeItemPath)) {
+    state.ui.activeItemPath = null;
     state.ui.activeOptionToken = null;
   }
 
@@ -1019,13 +1019,13 @@ function toggleSection(path) {
   const token = pathKey(path);
   if (isSectionOpen(path)) {
     state.ui.openSectionPaths = state.ui.openSectionPaths.filter((item) => item !== token);
-    if (state.ui.activeFieldPath && pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
-      state.ui.activeFieldPath = null;
+    if (state.ui.activeItemPath && pathStartsWith(parsePathKey(state.ui.activeItemPath), path)) {
+      state.ui.activeItemPath = null;
     }
   } else {
     state.ui.openSectionPaths = [token];
-    if (state.ui.activeFieldPath && !pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
-      state.ui.activeFieldPath = null;
+    if (state.ui.activeItemPath && !pathStartsWith(parsePathKey(state.ui.activeItemPath), path)) {
+      state.ui.activeItemPath = null;
     }
   }
   renderEditor();
@@ -1041,13 +1041,13 @@ function toggleSaveStep() {
   renderEditor();
 }
 
-function isFieldOpen(path) {
-  if (!state.ui.activeFieldPath) {
+function isItemOpen(path) {
+  if (!state.ui.activeItemPath) {
     return false;
   }
 
   const token = pathKey(path);
-  if (state.ui.activeFieldPath === token) {
+  if (state.ui.activeItemPath === token) {
     return true;
   }
 
@@ -1056,22 +1056,22 @@ function isFieldOpen(path) {
     return false;
   }
 
-  return pathStartsWith(parsePathKey(state.ui.activeFieldPath), path);
+  return pathStartsWith(parsePathKey(state.ui.activeItemPath), path);
 }
 
-function toggleField(path) {
+function toggleItem(path) {
   const token = pathKey(path);
-  if (state.ui.activeFieldPath) {
-    const activePath = parsePathKey(state.ui.activeFieldPath);
-    if (state.ui.activeFieldPath === token || pathStartsWith(activePath, path)) {
-      state.ui.activeFieldPath = null;
+  if (state.ui.activeItemPath) {
+    const activePath = parsePathKey(state.ui.activeItemPath);
+    if (state.ui.activeItemPath === token || pathStartsWith(activePath, path)) {
+      state.ui.activeItemPath = null;
       state.ui.activeOptionToken = null;
       renderEditor();
       return;
     }
   }
 
-  state.ui.activeFieldPath = token;
+  state.ui.activeItemPath = token;
   state.ui.activeOptionToken = null;
   renderEditor();
 }
@@ -1110,8 +1110,8 @@ function remapUiStateAfterMove(parentPath, fromIndex, toIndex) {
     normalizeArray(state.ui.openSectionPaths).map((serialized) => pathKey(remapPathAfterMove(parsePathKey(serialized), parentPath, fromIndex, toIndex)))
   )];
 
-  if (state.ui.activeFieldPath) {
-    state.ui.activeFieldPath = pathKey(remapPathAfterMove(parsePathKey(state.ui.activeFieldPath), parentPath, fromIndex, toIndex));
+  if (state.ui.activeItemPath) {
+    state.ui.activeItemPath = pathKey(remapPathAfterMove(parsePathKey(state.ui.activeItemPath), parentPath, fromIndex, toIndex));
   }
 }
 
@@ -1706,7 +1706,7 @@ function openChildLayout(path) {
 
   state.ui.focusPane = "layout";
   state.ui.layoutRootPath = pathKey(path);
-  state.ui.activeFieldPath = null;
+  state.ui.activeItemPath = null;
   state.ui.activeOptionToken = null;
   if (blockKind(node) === "section") {
     state.ui.openSectionPaths = [pathKey(path)];
@@ -2107,11 +2107,11 @@ function resolveFocusedTopLevelBlockEntry(entries) {
     return null;
   }
 
-  const activeFieldPath = state.ui.activeFieldPath ? parsePathKey(state.ui.activeFieldPath) : null;
-  if (activeFieldPath) {
-    const matchingFieldEntry = entries.find((entry) => pathStartsWith(activeFieldPath, entry.path));
-    if (matchingFieldEntry) {
-      return matchingFieldEntry;
+  const activeItemPath = state.ui.activeItemPath ? parsePathKey(state.ui.activeItemPath) : null;
+  if (activeItemPath) {
+    const matchingItemEntry = entries.find((entry) => pathStartsWith(activeItemPath, entry.path));
+    if (matchingItemEntry) {
+      return matchingItemEntry;
     }
   }
 
@@ -2418,11 +2418,11 @@ function resolveFocusedItemIndex(collectionPath, items) {
     return 0;
   }
 
-  if (!state.ui.activeFieldPath) {
+  if (!state.ui.activeItemPath) {
     return 0;
   }
 
-  const activePath = parsePathKey(state.ui.activeFieldPath);
+  const activePath = parsePathKey(state.ui.activeItemPath);
   const matchIndex = items.findIndex((entry, index) => {
     const entryPath = entry?.path || [...collectionPath, index];
     return pathStartsWith(activePath, entryPath);
@@ -2489,7 +2489,7 @@ function renderItemOrganizerItem(item, path, index, active) {
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
           <span class="drag-dots" aria-hidden="true"></span>
         </button>
-        <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
+        <button class="field-organizer-select" type="button" data-action="focus-item" data-path="${encodePath(path)}">
           <span class="field-organizer-copy">
             <strong>${escapeHtml(title)}</strong>
             ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
@@ -2501,7 +2501,7 @@ function renderItemOrganizerItem(item, path, index, active) {
 
 function renderItemCard(item, path, options = {}) {
     const isGroup = item.kind === "field_group";
-    const open = Boolean(options.forceOpen) || isFieldOpen(path);
+    const open = Boolean(options.forceOpen) || isItemOpen(path);
     const summary = summarizeField(item);
     const fieldType = inferFieldType(item);
     const focusedCard = Boolean(options.focusedCard);
@@ -2546,7 +2546,7 @@ function renderItemCard(item, path, options = {}) {
               <span class="drag-dots" aria-hidden="true"></span>
             </button>
             `}
-            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Hide" : "Edit"}</button>`}
+            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-item" data-path="${encodePath(path)}">${open ? "Hide" : "Edit"}</button>`}
             ${renderNodeActionMenu(path)}
           </div>
           ` : ""}
@@ -2904,15 +2904,15 @@ function duplicateAtPath(path) {
   if (String(duplicatedNode?.kind || "").trim() === "section") {
     state.ui.openSectionPaths = [pathKey(duplicatedPath)];
     state.ui.focusPane = "content";
-    state.ui.activeFieldPath = null;
+    state.ui.activeItemPath = null;
   } else {
-    state.ui.activeFieldPath = pathKey(duplicatedPath);
+    state.ui.activeItemPath = pathKey(duplicatedPath);
     if (!pathStartsWith(duplicatedPath, ["block_schema", "blocks"])) {
       state.ui.focusPane = "content";
     }
   }
   if (path.includes("children")) {
-    state.ui.activeFieldPath = pathKey([...path.slice(0, -1), index + 1]);
+    state.ui.activeItemPath = pathKey([...path.slice(0, -1), index + 1]);
   }
   touch({ full: true, source: "blocks" });
 }
@@ -2922,8 +2922,8 @@ function deleteAtPath(path) {
   if (!Array.isArray(collection)) {
     return;
   }
-  if (state.ui.activeFieldPath && pathStartsWith(parsePathKey(state.ui.activeFieldPath), path)) {
-    state.ui.activeFieldPath = null;
+  if (state.ui.activeItemPath && pathStartsWith(parsePathKey(state.ui.activeItemPath), path)) {
+    state.ui.activeItemPath = null;
   }
   if (String(getNodeByPath(path)?.kind || "").trim() === "section" && isSectionOpen(path)) {
     state.ui.openSectionPaths = [];
@@ -2938,7 +2938,7 @@ function addFieldAt(path, kind) {
     return;
   }
   const insertAt = insertChildNodeAtSelection(path, makeBlankField(kind));
-  state.ui.activeFieldPath = pathKey([...path, insertAt]);
+  state.ui.activeItemPath = pathKey([...path, insertAt]);
   touch({ full: true, source: "blocks" });
 }
 
@@ -2955,7 +2955,7 @@ function addUtilityAt(path, kind) {
         ? makeBlankTable()
         : makeBlankNote()
   );
-  state.ui.activeFieldPath = pathKey([...path, insertAt]);
+  state.ui.activeItemPath = pathKey([...path, insertAt]);
   state.ui.activeOptionToken = null;
   touch({ full: true, source: "blocks" });
 }
@@ -2966,7 +2966,7 @@ function insertChildNodeAtSelection(collectionPath, node) {
     return -1;
   }
 
-  const activePath = state.ui.activeFieldPath ? parsePathKey(state.ui.activeFieldPath) : null;
+  const activePath = state.ui.activeItemPath ? parsePathKey(state.ui.activeItemPath) : null;
   if (activePath && pathStartsWith(activePath, collectionPath)) {
     const nextSegment = activePath[collectionPath.length];
     if (Number.isInteger(nextSegment)) {
@@ -2983,7 +2983,7 @@ function insertChildNodeAtSelection(collectionPath, node) {
 function addSection() {
   topLevelBlocks().push(makeBlankSection());
   state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", topLevelBlocks().length - 1])];
-  state.ui.activeFieldPath = null;
+  state.ui.activeItemPath = null;
   state.ui.focusPane = "content";
   touch({ full: true, source: "blocks" });
 }
@@ -2999,9 +2999,9 @@ function insertTopLevelContentBlock(kind) {
     blocks.splice(insertAt, 0, nextNode);
     if (kind === "section") {
       state.ui.openSectionPaths = [pathKey(["block_schema", "blocks", insertAt])];
-      state.ui.activeFieldPath = null;
+      state.ui.activeItemPath = null;
     } else {
-      state.ui.activeFieldPath = pathKey(["block_schema", "blocks", insertAt]);
+      state.ui.activeItemPath = pathKey(["block_schema", "blocks", insertAt]);
       state.ui.activeOptionToken = null;
     }
     state.ui.focusPane = "content";
@@ -3016,7 +3016,7 @@ function insertTopLevelContentBlock(kind) {
 
   if (kind === "field" || kind === "field_group") {
     const actualIndex = insertTopLevelField(kind);
-    state.ui.activeFieldPath = pathKey(["block_schema", "blocks", actualIndex]);
+    state.ui.activeItemPath = pathKey(["block_schema", "blocks", actualIndex]);
     state.ui.activeOptionToken = null;
     state.ui.focusPane = "content";
     touch({ full: true, source: "blocks" });
@@ -3024,7 +3024,7 @@ function insertTopLevelContentBlock(kind) {
   }
 
   blocks.push(nextNode);
-  state.ui.activeFieldPath = pathKey(["block_schema", "blocks", blocks.length - 1]);
+  state.ui.activeItemPath = pathKey(["block_schema", "blocks", blocks.length - 1]);
   state.ui.activeOptionToken = null;
   state.ui.focusPane = "content";
   touch({ full: true, source: "blocks" });
@@ -3055,9 +3055,9 @@ function insertCurrentLayoutBlock(kind) {
 
   if (kind === "section") {
     state.ui.openSectionPaths = [pathKey([...collectionPath, insertAt])];
-    state.ui.activeFieldPath = null;
+    state.ui.activeItemPath = null;
   } else {
-    state.ui.activeFieldPath = pathKey([...collectionPath, insertAt]);
+    state.ui.activeItemPath = pathKey([...collectionPath, insertAt]);
   }
 
   touch({ full: true, source: "blocks" });
@@ -3377,8 +3377,8 @@ async function handleEditorClick(event) {
     renderAll();
     return;
   }
-  if (action === "focus-field" && path) {
-    state.ui.activeFieldPath = pathKey(path);
+  if (action === "focus-item" && path) {
+    state.ui.activeItemPath = pathKey(path);
     state.ui.activeOptionToken = null;
     renderAll();
     return;
@@ -3396,8 +3396,8 @@ async function handleEditorClick(event) {
     toggleSection(path);
     return;
   }
-  if (action === "toggle-field" && path) {
-    toggleField(path);
+  if (action === "toggle-item" && path) {
+    toggleItem(path);
     return;
   }
   if (action === "add-field" && path) {
@@ -3709,3 +3709,4 @@ void bootstrap().catch((error) => {
   console.error(error);
   setStatus(`Unable to load builder: ${error.message}`, true);
 });
+
