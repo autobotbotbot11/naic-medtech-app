@@ -1008,7 +1008,7 @@ function togglePreview() {
 function renderShellSummary() {
   if (!state.draft) {
     currentFormNameEl.textContent = "Start with a form";
-    currentFormMetaEl.textContent = "Open one from the library or create a new one.";
+    currentFormMetaEl.textContent = "Choose one from the library or start new.";
     stageTitleEl.textContent = "Choose a form";
     stageDescriptionEl.textContent = "Edit one area at a time.";
     renderPreviewCallout();
@@ -1024,7 +1024,7 @@ function renderShellSummary() {
   stageTitleEl.textContent = formName;
   stageDescriptionEl.textContent = state.ui.previewOpen
     ? "Edit one area at a time."
-    : "Edit one area at a time. Open preview anytime.";
+    : "Edit one area at a time. Show preview anytime.";
   renderPreviewCallout();
 }
 
@@ -1035,7 +1035,7 @@ function renderPreviewCallout() {
 
   if (!state.draft) {
     previewCalloutTitleEl.textContent = "Live preview";
-    previewCalloutMetaEl.textContent = "Open a form to see it here.";
+    previewCalloutMetaEl.textContent = "Choose a form to see it here.";
     openPreviewBtnEl.disabled = true;
     return;
   }
@@ -1048,7 +1048,7 @@ function renderPreviewCallout() {
     return;
   }
 
-  previewCalloutMetaEl.textContent = "Open it for a quick check.";
+  previewCalloutMetaEl.textContent = "Show it for a quick check.";
 }
 
 function resetEditorPanels() {
@@ -1962,7 +1962,7 @@ function renderFormSetupCard(options = {}) {
         </div>
         ${focusMode ? "" : `
         <div class="top-actions">
-          <button class="ghost mini" type="button" data-action="toggle-setup">${setupOpen ? "Done" : "Open"}</button>
+          <button class="ghost mini" type="button" data-action="toggle-setup">${setupOpen ? "Hide" : "Show"}</button>
         </div>
         `}
       </div>
@@ -2039,7 +2039,7 @@ function renderSaveCard(options = {}) {
         </div>
         ${focusMode ? "" : `
         <div class="top-actions">
-          <button class="ghost mini" type="button" data-action="toggle-save-step">${saveOpen ? "Done" : "Open"}</button>
+          <button class="ghost mini" type="button" data-action="toggle-save-step">${saveOpen ? "Hide" : "Show"}</button>
         </div>
         `}
       </div>
@@ -2465,7 +2465,7 @@ function renderSectionCard(section, path, options = {}) {
               <span class="drag-dots" aria-hidden="true"></span>
             </button>
             `}
-            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Done" : "Open"}</button>`}
+            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-section" data-path="${encodePath(path)}">${open ? "Hide" : "Show"}</button>`}
             ${renderNodeActionMenu(path)}
           </div>
           ` : ""}
@@ -2693,7 +2693,7 @@ function renderFieldCard(field, path, options = {}) {
               <span class="drag-dots" aria-hidden="true"></span>
             </button>
             `}
-            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Done" : "Edit"}</button>`}
+            ${options.hideToggle ? "" : `<button class="ghost mini" type="button" data-action="toggle-field" data-path="${encodePath(path)}">${open ? "Hide" : "Edit"}</button>`}
             ${renderNodeActionMenu(path)}
           </div>
           ` : ""}
