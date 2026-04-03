@@ -191,13 +191,6 @@ def render_move_form_page(
     current_choice = next((option for option in form_choices if option["slug"] == definition.slug), None)
     container_options = list_move_target_choices(session)
     resolved_parent_key = definition.library_parent_node_key or ""
-    if not resolved_parent_key and definition.group_kind != "standalone_form":
-        matching_parent = next(
-            (option for option in container_options if option["name"] == definition.group_name),
-            None,
-        )
-        if matching_parent is not None:
-            resolved_parent_key = matching_parent["node_key"]
 
     return templates.TemplateResponse(
         request=request,
@@ -347,14 +340,8 @@ def start_new_form_page(
     if source_form and source_form.library_parent_node_key:
         default_parent_node_key = source_form.library_parent_node_key
         default_group_source_mode = "existing"
-    elif source_form and source_form.group_kind == "standalone_form":
+    elif source_form:
         default_group_source_mode = "root"
-    elif source_form and source_form.group_kind != "standalone_form":
-        for option in container_options:
-            if option["name"] == source_form.group_name:
-                default_parent_node_key = option["node_key"]
-                default_group_source_mode = "existing"
-                break
     elif container_options:
         default_parent_node_key = container_options[0]["node_key"]
         default_group_source_mode = "existing"

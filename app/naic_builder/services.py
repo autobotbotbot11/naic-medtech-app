@@ -1203,6 +1203,32 @@ def ensure_library_tree(session: Session) -> None:
             form_node.form_definition_id = definition.id
             changed = True
 
+        parent_container = nodes_by_key.get(explicit_parent_key) if explicit_parent_key else None
+        if form_node.parent_id is not None:
+            parent_container = session.scalar(select(LibraryNode).where(LibraryNode.id == form_node.parent_id))
+
+        derived_parent_key = parent_container.node_key if parent_container is not None and parent_container.kind == "container" else None
+        derived_group_name = parent_container.name if parent_container is not None and parent_container.kind == "container" else definition.name
+        derived_group_kind = "category" if parent_container is not None and parent_container.kind == "container" else "standalone_form"
+        derived_group_order = int(parent_container.node_order or 999) if parent_container is not None and parent_container.kind == "container" else 999
+        derived_form_order = int(form_node.node_order or 1)
+
+        if compact_text(definition.library_parent_node_key) != compact_text(derived_parent_key):
+            definition.library_parent_node_key = derived_parent_key
+            changed = True
+        if compact_text(definition.group_name) != compact_text(derived_group_name):
+            definition.group_name = derived_group_name
+            changed = True
+        if compact_text(definition.group_kind) != derived_group_kind:
+            definition.group_kind = derived_group_kind
+            changed = True
+        if int(definition.group_order or 999) != derived_group_order:
+            definition.group_order = derived_group_order
+            changed = True
+        if int(definition.form_order or 1) != derived_form_order:
+            definition.form_order = derived_form_order
+            changed = True
+
     if changed:
         session.commit()
 
