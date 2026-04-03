@@ -503,16 +503,19 @@ def normalize_block_schema_storage(
     return block_schema
 
 
+def stable_form_schema_id(slug: str) -> str:
+    return f"form.{slugify(slug or 'compat')}"
+
+
 def normalize_form_schema(
     raw_schema: dict[str, Any],
     *,
     slug: str,
     name: str,
     form_order: int,
-    group_name: str,
 ) -> dict[str, Any]:
     raw_schema = coerce_legacy_schema(raw_schema)
-    form_id = f"{slugify(group_name)}.{slug}"
+    form_id = stable_form_schema_id(slug)
     field_used: set[str] = set()
     section_used: set[str] = set()
 
@@ -1331,7 +1334,6 @@ def ensure_reference_seed(session: Session) -> None:
                     slug=slug,
                     name=name,
                     form_order=form_order,
-                    group_name=parent_container.name if parent_container is not None else name,
                 )
 
                 definition = FormDefinition(
@@ -1406,7 +1408,6 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         slug=slug,
         name=name,
         form_order=location_meta["resolved_form_order"],
-        group_name=location_meta["resolved_parent_name"] or name,
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
@@ -1465,7 +1466,6 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         slug=definition.slug,
         name=name,
         form_order=location_meta["resolved_form_order"],
-        group_name=location_meta["resolved_parent_name"] or name,
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
