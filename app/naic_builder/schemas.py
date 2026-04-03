@@ -10,10 +10,10 @@ class FormSavePayload(BaseModel):
 
     slug: str | None = None
     name: str = ""
-    group_name: str
-    group_kind: Literal["category", "standalone_form"] = "category"
-    group_order: int = 999
-    form_order: int = 1
+    group_name: str = ""
+    group_kind: Literal["category", "standalone_form"] | None = None
+    group_order: int | None = None
+    form_order: int | None = None
     library_parent_node_key: str | None = None
     library_new_container_name: str | None = None
     summary: str | None = None

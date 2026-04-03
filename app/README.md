@@ -89,6 +89,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the builder quick-switch drawer is tree-aware now too: it searches and lists forms by real folder path instead of the old one-level grouped drawer
 - the builder bootstrap path is tree-first now too: quick-switch data comes from `form_choices`, not the old grouped builder payload
 - the builder bootstrap payload no longer sends old shared-metadata options either, since that control is no longer part of the visible builder flow
+- the current builder save path is less legacy too: it no longer posts old grouping/order fields, and the backend now derives folder/order metadata from the real tree when possible
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
 - duplicate and delete for selected sections and fields now live in a quieter footer `More` area instead of staying in the header
