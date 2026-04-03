@@ -1644,9 +1644,6 @@ async function bootstrap() {
   const draftConfig = {
     name: String(initialQuery.get("draft_name") || "").trim(),
     groupName: String(initialQuery.get("group_name") || "").trim(),
-    groupKind: String(initialQuery.get("group_kind") || "").trim() || "category",
-    groupOrder: parsePositiveInt(initialQuery.get("group_order"), 999),
-    formOrder: parsePositiveInt(initialQuery.get("form_order"), 1),
     libraryParentNodeKey: String(initialQuery.get("library_parent_node_key") || "").trim(),
     libraryNewContainerName: String(initialQuery.get("library_new_container_name") || "").trim(),
   };

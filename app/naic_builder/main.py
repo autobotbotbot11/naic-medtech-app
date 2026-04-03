@@ -26,7 +26,6 @@ from .services import (
     list_form_choices,
     list_library_tree,
     list_move_target_choices,
-    next_root_form_order,
     move_container,
     move_form,
     rename_container,
@@ -334,7 +333,6 @@ def start_new_form_page(
 ) -> HTMLResponse:
     container_options = list_container_choices(session)
     duplicate_options = list_form_choices(session)
-    root_form_order = next_root_form_order(session)
 
     source_form = None
     source_slug = source.strip()
@@ -375,8 +373,6 @@ def start_new_form_page(
         None,
     )
     default_group_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
-    default_group_order = selected_container["order"] if selected_container else 999
-    default_form_order = selected_container["next_form_order"] if selected_container else root_form_order
     default_new_folder_parent_key = default_parent_node_key if default_group_source_mode in {"existing", "new"} else ""
 
     return templates.TemplateResponse(
@@ -389,10 +385,7 @@ def start_new_form_page(
             "default_parent_node_key": default_parent_node_key,
             "default_group_source_mode": default_group_source_mode,
             "default_group_name": default_group_name,
-            "default_group_order": default_group_order,
-            "default_form_order": default_form_order,
             "default_new_folder_parent_key": default_new_folder_parent_key,
-            "root_form_order": root_form_order,
             "source_form": source_form,
         },
     )

@@ -12,9 +12,6 @@ const modeInputEl = document.getElementById("modeInput");
 const slugInputEl = document.getElementById("slugInput");
 const draftNameInputEl = document.getElementById("draftNameInput");
 const groupNameInputEl = document.getElementById("groupNameInput");
-const groupKindInputEl = document.getElementById("groupKindInput");
-const groupOrderInputEl = document.getElementById("groupOrderInput");
-const formOrderInputEl = document.getElementById("formOrderInput");
 const parentNodeKeyInputEl = document.getElementById("parentNodeKeyInput");
 const newContainerNameInputEl = document.getElementById("newContainerNameInput");
 const summaryNameEl = document.getElementById("summaryName");
@@ -125,16 +122,6 @@ function syncHiddenInputs() {
     : usingNewGroup
     ? String(newGroupNameEl?.value || "").trim()
     : String(selectedOption?.dataset.groupName || "").trim();
-  const groupOrder = usingNewGroup
-    ? 999
-    : usingRoot
-      ? 999
-      : Number(selectedOption?.dataset.groupOrder || 999);
-  const formOrder = usingNewGroup
-    ? 1
-    : usingRoot
-      ? Number(startFormEl?.dataset.rootFormOrder || 1)
-      : Number(selectedOption?.dataset.formOrder || 1);
 
   if (modeInputEl) {
     modeInputEl.value = startMode === "duplicate" ? "duplicate" : "new";
@@ -147,15 +134,6 @@ function syncHiddenInputs() {
   }
   if (groupNameInputEl) {
     groupNameInputEl.value = groupName;
-  }
-  if (groupKindInputEl) {
-    groupKindInputEl.value = usingRoot ? "standalone_form" : "category";
-  }
-  if (groupOrderInputEl) {
-    groupOrderInputEl.value = Number.isFinite(groupOrder) ? String(groupOrder) : "999";
-  }
-  if (formOrderInputEl) {
-    formOrderInputEl.value = Number.isFinite(formOrder) ? String(formOrder) : "1";
   }
   if (parentNodeKeyInputEl) {
     parentNodeKeyInputEl.value = parentNodeKey;

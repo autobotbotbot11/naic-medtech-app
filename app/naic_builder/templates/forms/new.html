@@ -26,15 +26,11 @@
       action="/builder"
       method="get"
       novalidate
-      data-root-form-order="{{ root_form_order }}"
     >
       <input id="modeInput" type="hidden" name="mode" value="{% if source_form %}duplicate{% else %}new{% endif %}">
       <input id="slugInput" type="hidden" name="slug" value="{{ source_form.slug if source_form else '' }}">
       <input id="draftNameInput" type="hidden" name="draft_name" value="">
       <input id="groupNameInput" type="hidden" name="group_name" value="{{ default_group_name }}">
-      <input id="groupKindInput" type="hidden" name="group_kind" value="category">
-      <input id="groupOrderInput" type="hidden" name="group_order" value="{{ default_group_order }}">
-      <input id="formOrderInput" type="hidden" name="form_order" value="{{ default_form_order }}">
       <input id="parentNodeKeyInput" type="hidden" name="library_parent_node_key" value="{{ default_parent_node_key }}">
       <input id="newContainerNameInput" type="hidden" name="library_new_container_name" value="">
 
@@ -87,8 +83,6 @@
               <option
                 value="{{ container.node_key }}"
                 data-group-name="{{ container.name }}"
-                data-group-order="{{ container.order }}"
-                data-form-order="{{ container.next_form_order }}"
                 data-path-label="{{ container.path_label }}"
                 {% if container.node_key == default_parent_node_key %}selected{% endif %}
               >{{ container.path_label }}</option>
