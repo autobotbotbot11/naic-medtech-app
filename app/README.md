@@ -77,6 +77,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the guided `/forms/new` flow is less legacy too: it no longer carries old grouping/order hidden fields into the builder, only the tree/location data the current flow actually needs
 - the frontend draft logic is less legacy too: new and duplicated drafts no longer depend on old grouping/order fields just to keep the current builder working
 - library-tree sync is stronger too: `FormDefinition` location metadata is now backfilled from real library nodes, so page flows rely less on old `group_name/group_kind` fallbacks
+- top-level drafts are more stable too: renaming a top-level form now keeps the fallback location state in sync, so the builder no longer shows a stale old location name
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
 - builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`

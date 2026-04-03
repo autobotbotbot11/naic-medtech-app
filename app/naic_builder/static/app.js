@@ -3416,6 +3416,13 @@ function handleRootInput(event) {
       if (!state.draft.schema.key || state.draft.schema.key === slugify(previousName)) {
         state.draft.schema.key = slugify(rawValue);
       }
+      if (
+        !state.draft.library_parent_node_key
+        && !state.draft.library_new_container_name
+        && isTopLevelLocationName(state.draft.group_name || previousName)
+      ) {
+        state.draft.group_name = state.draft.name || "Untitled Form";
+      }
     } else if (bind === "group_name") {
       if (state.draft.library_new_container_name) {
         state.draft.library_new_container_name = compactText(rawValue) || null;
