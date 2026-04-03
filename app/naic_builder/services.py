@@ -1392,15 +1392,45 @@ def ensure_reference_seed(session: Session) -> None:
 
 
 def ensure_block_schema_storage(session: Session) -> None:
-    versions = session.scalars(select(FormVersion)).all()
+    versions = session.scalars(select(FormVersion).options(selectinload(FormVersion.form))).all()
     changed = False
 
     for version in versions:
-        if compact_text(version.block_schema_json):
-            continue
         schema = json.loads(version.schema_json)
-        version.block_schema_json = json.dumps(legacy_schema_to_block_schema(schema), ensure_ascii=False)
-        changed = True
+        schema_changed = False
+
+        if "common_field_set_id" in schema:
+            schema.pop("common_field_set_id", None)
+            schema_changed = True
+
+        definition_slug = version.form.slug if version.form is not None else compact_text(schema.get("key"))
+        stable_schema_id = stable_form_schema_id(definition_slug)
+        if compact_text(schema.get("id")) != stable_schema_id:
+            schema["id"] = stable_schema_id
+            schema_changed = True
+
+        block_changed = False
+        if compact_text(version.block_schema_json):
+            block_schema = json.loads(version.block_schema_json)
+        else:
+            block_schema = legacy_schema_to_block_schema(schema)
+            block_changed = True
+
+        meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+        if "common_field_set_id" in meta:
+            meta.pop("common_field_set_id", None)
+            block_changed = True
+        if compact_text(meta.get("legacy_form_id")) != stable_schema_id:
+            meta["legacy_form_id"] = stable_schema_id
+            block_changed = True
+        block_schema["meta"] = meta
+
+        if schema_changed:
+            version.schema_json = json.dumps(schema, ensure_ascii=False)
+            changed = True
+        if block_changed:
+            version.block_schema_json = json.dumps(block_schema, ensure_ascii=False)
+            changed = True
 
     if changed:
         session.commit()
