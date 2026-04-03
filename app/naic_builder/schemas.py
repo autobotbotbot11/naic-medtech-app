@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Literal
+from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -12,9 +12,6 @@ class FormSavePayload(BaseModel):
     name: str = ""
     location_name: str | None = None
     group_name: str = ""
-    group_kind: Literal["category", "standalone_form"] | None = None
-    group_order: int | None = None
-    form_order: int | None = None
     library_parent_node_key: str | None = None
     library_new_container_name: str | None = None
     summary: str | None = None
