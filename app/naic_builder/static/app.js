@@ -3488,7 +3488,7 @@ function handleRootInput(event) {
         state.draft.schema.key = slugify(rawValue);
       }
       syncDraftLocationShadow(state.draft);
-    } else if (bind === "location_name" || bind === "group_name") {
+    } else if (bind === "location_name") {
       if (state.draft.library_new_container_name) {
         state.draft.library_new_container_name = compactText(rawValue) || null;
         state.draft.location_name = compactText(rawValue);

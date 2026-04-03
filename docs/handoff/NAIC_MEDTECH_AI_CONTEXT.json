@@ -112,6 +112,7 @@
       "serialized form responses no longer expose common_field_set_id either, so the active API shape is less tied to the old shared-metadata model",
       "serialized form responses no longer expose group_name, group_kind, group_order, or form_order; the live API now exposes only tree-first location_* metadata, while the builder recreates any needed compatibility shadow state locally",
       "the visible builder location helpers now read from location_* directly too; group_name remains only as internal shadow metadata inside the sync helper instead of a primary display source",
+      "the active save contract is leaner too: FormSavePayload no longer declares group_name, and legacy callers are mapped into location_name during validation instead of staying as a first-class field",
       "top-level new and copied drafts are cleaner too: they no longer start from the old Unassigned sentinel or keep a stale previous form name as fake location state",
       "the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use location language instead of old group wording where the UI already treats folders as locations",
       "the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old group_kind/group_order/form_order inputs",

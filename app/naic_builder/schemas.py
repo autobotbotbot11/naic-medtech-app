@@ -11,7 +11,6 @@ class FormSavePayload(BaseModel):
     slug: str | None = None
     name: str = ""
     location_name: str | None = None
-    group_name: str = ""
     library_parent_node_key: str | None = None
     library_new_container_name: str | None = None
     summary: str | None = None
@@ -29,9 +28,7 @@ class FormSavePayload(BaseModel):
 
         location_name = str(normalized.get("location_name") or "").strip()
         group_name = str(normalized.get("group_name") or "").strip()
-        if location_name and not group_name:
-            normalized["group_name"] = location_name
-        elif group_name and "location_name" not in normalized:
+        if group_name and "location_name" not in normalized:
             normalized["location_name"] = group_name
 
         return normalized
