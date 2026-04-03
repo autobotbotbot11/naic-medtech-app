@@ -26,8 +26,11 @@ from .services import (
     list_form_choices,
     list_grouped_forms,
     list_library_tree,
+    list_move_target_choices,
     next_root_form_order,
     load_reference_schema,
+    move_container,
+    move_form,
     rename_container,
     serialize_form,
     update_form,
@@ -139,6 +142,82 @@ def render_edit_folder_page(
     )
 
 
+def render_move_folder_page(
+    request: Request,
+    session: Session,
+    *,
+    node_key: str,
+    selected_parent_key: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    container = get_container_or_none(session, node_key)
+    if container is None:
+        raise HTTPException(status_code=404, detail="Folder not found.")
+
+    current_choices = list_container_choices(session)
+    current_choice = next((option for option in current_choices if option["node_key"] == container.node_key), None)
+    selected_key = selected_parent_key.strip()
+    if not selected_key and container.parent is not None:
+        selected_key = container.parent.node_key
+
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/move_folder.html",
+        context={
+            "app_title": APP_TITLE,
+            "folder_node_key": container.node_key,
+            "folder_name": container.name,
+            "folder_path_label": current_choice["path_label"] if current_choice else container.name,
+            "selected_parent_key": selected_key,
+            "container_options": list_move_target_choices(session, exclude_node_key=container.node_key),
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_move_form_page(
+    request: Request,
+    session: Session,
+    *,
+    slug: str,
+    selected_parent_key: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    definition = get_form_or_none(session, slug)
+    if definition is None:
+        raise HTTPException(status_code=404, detail="Form not found.")
+
+    form_choices = list_form_choices(session)
+    current_choice = next((option for option in form_choices if option["slug"] == definition.slug), None)
+    container_options = list_move_target_choices(session)
+    resolved_parent_key = definition.library_parent_node_key or ""
+    if not resolved_parent_key and definition.group_kind != "standalone_form":
+        matching_parent = next(
+            (option for option in container_options if option["name"] == definition.group_name),
+            None,
+        )
+        if matching_parent is not None:
+            resolved_parent_key = matching_parent["node_key"]
+
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/move_form.html",
+        context={
+            "app_title": APP_TITLE,
+            "form_slug": definition.slug,
+            "form_name": definition.name,
+            "form_path_label": current_choice["path_label"] if current_choice else definition.name,
+            "selected_parent_key": selected_parent_key.strip() or resolved_parent_key,
+            "container_options": container_options,
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
 @app.get("/folders/new", response_class=HTMLResponse)
 def start_new_folder_page(
     request: Request,
@@ -209,6 +288,41 @@ async def update_folder_page(
         )
 
     node_anchor = updated.node_key.replace(":", "-")
+    return RedirectResponse(url=f"/forms#node-{node_anchor}", status_code=303)
+
+
+@app.get("/folders/move", response_class=HTMLResponse)
+def move_folder_page(
+    request: Request,
+    node: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_move_folder_page(request, session, node_key=node)
+
+
+@app.post("/folders/move")
+async def update_folder_location_page(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    node_key = (form_data.get("node_key") or [""])[0]
+    parent_node_key = (form_data.get("parent_node_key") or [""])[0]
+
+    try:
+        moved = move_container(session, node_key, parent_node_key or None)
+    except ValueError as exc:
+        return render_move_folder_page(
+            request,
+            session,
+            node_key=node_key,
+            selected_parent_key=parent_node_key,
+            error_message=str(exc),
+            status_code=422,
+        )
+
+    node_anchor = moved.node_key.replace(":", "-")
     return RedirectResponse(url=f"/forms#node-{node_anchor}", status_code=303)
 
 
@@ -316,6 +430,41 @@ def form_builder_page(
     if definition is None:
         raise HTTPException(status_code=404, detail="Form not found.")
     return render_builder_page(request, initial_form_slug=definition.slug)
+
+
+@app.get("/forms/move", response_class=HTMLResponse)
+def move_form_page(
+    request: Request,
+    slug: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_move_form_page(request, session, slug=slug)
+
+
+@app.post("/forms/move")
+async def update_form_location_page(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    slug = (form_data.get("slug") or [""])[0]
+    parent_node_key = (form_data.get("parent_node_key") or [""])[0]
+
+    try:
+        moved = move_form(session, slug, parent_node_key or None)
+    except ValueError as exc:
+        return render_move_form_page(
+            request,
+            session,
+            slug=slug,
+            selected_parent_key=parent_node_key,
+            error_message=str(exc),
+            status_code=422,
+        )
+
+    node_anchor = f"node-form-{moved.slug}"
+    return RedirectResponse(url=f"/forms#{node_anchor}", status_code=303)
 
 
 @app.get("/api/health")

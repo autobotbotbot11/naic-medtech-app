@@ -799,6 +799,185 @@ def get_container_or_none(session: Session, node_key: str) -> LibraryNode | None
     return node
 
 
+def next_node_order(session: Session, parent_id: int | None, *, exclude_node_id: int | None = None) -> int:
+    query = (
+        select(LibraryNode).where(LibraryNode.parent_id == parent_id)
+        if parent_id is not None
+        else select(LibraryNode).where(LibraryNode.parent_id.is_(None))
+    )
+    siblings = session.scalars(query).all()
+    return max(
+        (
+            node.node_order
+            for node in siblings
+            if exclude_node_id is None or node.id != exclude_node_id
+        ),
+        default=0,
+    ) + 1
+
+
+def resolve_target_container(session: Session, parent_node_key: str | None) -> LibraryNode | None:
+    target_key = compact_text(parent_node_key)
+    if not target_key:
+        return None
+    target = get_container_or_none(session, target_key)
+    if target is None:
+        raise ValueError("Folder not found.")
+    if target.archived:
+        target.archived = False
+    return target
+
+
+def container_is_inside(session: Session, candidate: LibraryNode | None, ancestor_id: int) -> bool:
+    current = candidate
+    while current is not None:
+        if current.id == ancestor_id:
+            return True
+        if current.parent_id is None:
+            return False
+        current = session.scalar(select(LibraryNode).where(LibraryNode.id == current.parent_id))
+    return False
+
+
+def descendant_container_keys(session: Session, node_key: str) -> set[str]:
+    container = get_container_or_none(session, node_key)
+    if container is None:
+        return set()
+
+    nodes = session.scalars(
+        select(LibraryNode).where(LibraryNode.kind == "container")
+    ).all()
+    children_by_parent: dict[int | None, list[LibraryNode]] = {}
+    for node in nodes:
+        children_by_parent.setdefault(node.parent_id, []).append(node)
+
+    descendants: set[str] = set()
+
+    def walk(parent_id: int) -> None:
+        for child in children_by_parent.get(parent_id, []):
+            descendants.add(child.node_key)
+            walk(child.id)
+
+    walk(container.id)
+    return descendants
+
+
+def list_move_target_choices(
+    session: Session,
+    *,
+    exclude_node_key: str | None = None,
+) -> list[dict[str, Any]]:
+    excluded = {compact_text(exclude_node_key)} if compact_text(exclude_node_key) else set()
+    if exclude_node_key:
+        excluded.update(descendant_container_keys(session, exclude_node_key))
+    return [
+        option
+        for option in list_container_choices(session)
+        if option["node_key"] not in excluded
+    ]
+
+
+def move_container(
+    session: Session,
+    node_key: str,
+    parent_node_key: str | None,
+) -> LibraryNode:
+    ensure_library_tree(session)
+    container = get_container_or_none(session, node_key)
+    if container is None:
+        raise ValueError("Folder not found.")
+
+    target_parent = resolve_target_container(session, parent_node_key)
+    target_parent_id = target_parent.id if target_parent is not None else None
+
+    if target_parent is not None:
+        if target_parent.id == container.id:
+            raise ValueError("A folder cannot be moved inside itself.")
+        if container_is_inside(session, target_parent, container.id):
+            raise ValueError("A folder cannot be moved inside one of its own child folders.")
+
+    duplicate_query = select(LibraryNode).where(
+        LibraryNode.kind == "container",
+        LibraryNode.name == container.name,
+        LibraryNode.id != container.id,
+    )
+    if target_parent_id is None:
+        duplicate_query = duplicate_query.where(LibraryNode.parent_id.is_(None))
+    else:
+        duplicate_query = duplicate_query.where(LibraryNode.parent_id == target_parent_id)
+
+    duplicate = session.scalar(duplicate_query.limit(1))
+    if duplicate is not None:
+        raise ValueError("A folder with this name already exists there.")
+
+    if container.parent_id != target_parent_id:
+        container.parent_id = target_parent_id
+        container.node_order = next_node_order(session, target_parent_id, exclude_node_id=container.id)
+
+    if container.archived:
+        container.archived = False
+
+    session.commit()
+    ensure_library_tree(session)
+    session.expire_all()
+    moved = get_container_or_none(session, node_key)
+    if moved is None:
+        raise ValueError("Folder not found.")
+    return moved
+
+
+def move_form(
+    session: Session,
+    slug: str,
+    parent_node_key: str | None,
+) -> FormDefinition:
+    ensure_library_tree(session)
+    definition = session.scalar(
+        select(FormDefinition)
+        .where(FormDefinition.slug == slug)
+        .options(selectinload(FormDefinition.versions), selectinload(FormDefinition.library_node))
+    )
+    if definition is None:
+        raise ValueError("Form not found.")
+
+    target_parent = resolve_target_container(session, parent_node_key)
+    target_parent_id = target_parent.id if target_parent is not None else None
+    form_node = definition.library_node or session.scalar(
+        select(LibraryNode).where(LibraryNode.form_definition_id == definition.id)
+    )
+    if form_node is None:
+        raise ValueError("Form node not found.")
+
+    if form_node.parent_id != target_parent_id:
+        form_node.parent_id = target_parent_id
+        form_node.node_order = next_node_order(session, target_parent_id, exclude_node_id=form_node.id)
+
+    if target_parent is not None:
+        definition.library_parent_node_key = target_parent.node_key
+        definition.group_name = target_parent.name
+        definition.group_kind = "category"
+        definition.group_order = target_parent.node_order
+        definition.form_order = form_node.node_order
+    else:
+        definition.library_parent_node_key = None
+        definition.group_name = definition.name
+        definition.group_kind = "standalone_form"
+        definition.group_order = 999
+        definition.form_order = form_node.node_order
+
+    if form_node.archived:
+        form_node.archived = False
+    form_node.name = definition.name
+
+    session.commit()
+    ensure_library_tree(session)
+    session.expire_all()
+    moved = get_form_or_none(session, slug)
+    if moved is None:
+        raise ValueError("Form not found.")
+    return moved
+
+
 def rename_container(
     session: Session,
     node_key: str,

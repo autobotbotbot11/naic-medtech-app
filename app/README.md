@@ -41,6 +41,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/forms/new` can now create a brand-new folder inside an existing folder, and the first save will resolve that pending nested folder into the real library tree
 - `/folders/new` now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them
 - `/folders/edit` now gives folders a real management path too: they can be renamed, and they can be deleted once empty
+- `/folders/move` and `/forms/move` now give the tree real move flows too, so folders and forms can change parent location without falling back to the old one-level grouped model
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it
@@ -98,6 +99,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - library search now works against the full folder path text instead of only one-level group labels
 - folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
 - folder cards in `/forms` can now also launch `Edit folder`, so the visible tree flow is no longer create-only
+- folder cards in `/forms` can now also launch `Move`, and form cards can now launch `Move` too, so the visible library flow is no longer limited to browse/create/edit
 - the library top bar now also has a direct `New folder` path for root-level folder creation
 - the current long-term builder direction is documented in:
   - `../docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
@@ -120,6 +122,12 @@ pip install -r app/requirements.txt
 
 ```powershell
 uvicorn naic_builder.main:app --reload --app-dir app
+```
+
+If Windows blocks the default port with `WinError 10013`, use an explicit safe local port instead:
+
+```powershell
+uvicorn naic_builder.main:app --reload --app-dir app --host 127.0.0.1 --port 8114
 ```
 
 4. Open:

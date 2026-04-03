@@ -45,6 +45,7 @@
       "library search now works against full folder path text instead of only one-level group names",
       "folder cards in /forms can now launch folder-scoped creation directly via new form here and new folder here",
       "folder cards in /forms can now also launch edit folder, so the visible tree flow is no longer create-only",
+      "folder cards in /forms can now also launch move, and form cards can now launch move too, so the visible tree flow now supports relocation as well as browse, create, and edit",
       "the library top bar now also has a direct new folder path for root-level folder creation",
       "new form, duplicate, and open builder flows are wired from the library"
     ],
@@ -57,6 +58,7 @@
       "/forms/new can now also create a brand-new folder inside an existing folder, and the first save path resolves that pending nested folder into the real library tree",
       "/folders/new now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them",
       "/folders/edit now gives folders a real management path too: they can be renamed, and they can be deleted once empty",
+      "/folders/move and /forms/move now exist as calm single-purpose move screens, so folders and forms can change parent location inside the real tree without dropping back to the old one-level group model",
       "preset support has been deliberately removed from the active product path so the builder can stay focused on the core flow",
       "builder bootstrap no longer includes preset data",
       "advanced layout no longer exposes insert preset or save preset actions",

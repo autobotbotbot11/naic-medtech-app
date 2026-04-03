@@ -105,6 +105,7 @@ What is implemented:
 - library search now works against the full folder path text instead of only one-level group labels
 - folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
 - folder cards in `/forms` can now also launch `Edit folder`, so the visible tree flow is no longer create-only
+- folder cards in `/forms` can now also launch `Move`, and form cards can now launch `Move` too, so the visible tree flow now supports real relocation as well as browse/create/edit
 - the library top bar now also has a direct `New folder` path for root-level folder creation
 - `/forms/new` now renders a dedicated guided `Start New Form` screen
 - `New Form`, `Open Builder`, and `Duplicate` are all routed from the new library screen
@@ -122,6 +123,7 @@ What is implemented:
 - `/forms/new` can now also create a brand-new folder inside an existing folder, and the first save path resolves that pending nested folder into the real library tree
 - `/folders/new` now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them
 - `/folders/edit` now gives folders a real management path too: they can be renamed, and they can be deleted once empty
+- `/folders/move` and `/forms/move` now exist as calm single-purpose move screens, so folders and forms can change parent location inside the real tree without dropping back to the old one-level group model
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - the current builder workspace now has a real left outline plus one focused editing context at a time
 - the default workspace now lands on a single `Content` pane driven by real root block order, instead of splitting the main flow into separate `Ungrouped fields` and `Sections` panes
