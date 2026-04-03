@@ -556,6 +556,15 @@ def build_block_storage_payload(
     return block_schema
 
 
+def build_block_storage_document_from_legacy_storage(
+    legacy_storage_schema: dict[str, Any],
+) -> dict[str, Any]:
+    return build_block_storage_payload(
+        legacy_storage_schema,
+        legacy_storage_schema=legacy_storage_schema,
+    )
+
+
 def build_form_version_storage_documents(
     raw_block_schema: dict[str, Any],
     *,
@@ -683,7 +692,7 @@ def load_block_storage_document(
         except json.JSONDecodeError:
             pass
     fallback_legacy_storage = legacy_storage_schema if isinstance(legacy_storage_schema, dict) else load_legacy_storage_document(version)
-    return build_block_schema_from_legacy_storage(fallback_legacy_storage), True
+    return build_block_storage_document_from_legacy_storage(fallback_legacy_storage), True
 
 
 def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:
@@ -1022,10 +1031,7 @@ def sync_definition_parent_node_key(
 def definition_schema_order_hint(definition: FormDefinition) -> int:
     version = current_version(definition)
     if version is not None:
-        try:
-            schema = json.loads(version.schema_json or "{}")
-        except (TypeError, ValueError, json.JSONDecodeError):
-            schema = {}
+        schema = load_legacy_storage_document(version)
         return int(schema.get("order") or 1)
     return 1
 
@@ -1438,6 +1444,9 @@ def ensure_reference_seed(session: Session) -> None:
                     name=name,
                     form_order=form_order,
                 )
+                block_storage_schema = build_block_storage_document_from_legacy_storage(
+                    legacy_storage_schema,
+                )
 
                 definition = create_form_definition_record(
                     slug=slug,
@@ -1459,7 +1468,7 @@ def ensure_reference_seed(session: Session) -> None:
                     version_number=1,
                     summary="Seeded from current reference schema.",
                     legacy_storage_schema=legacy_storage_schema,
-                    block_storage_schema=build_block_schema_from_legacy_storage(legacy_storage_schema),
+                    block_storage_schema=block_storage_schema,
                     source="seed",
                     is_current=True,
                 )

@@ -164,6 +164,7 @@
       "stored block cleanup is leaner too: startup and save cleanup now strips stale field_type and old option label residue from active block-schema storage",
       "legacy-to-block option conversion is cleaner too: when older storage is bridged into block schema, options now come out with the active name shape directly instead of minting old label keys first",
       "form-version storage assembly is cleaner too: raw live block payloads are normalized before the legacy storage bridge runs, so the live save path no longer depends on fallback reads of stale option label keys",
+      "seed and missing-block fallback storage are cleaner too: both now rebuild block storage through one explicit legacy-storage to block-storage bridge helper instead of open-coding direct legacy block conversion paths",
       "form create, update, and move flows now use a shared tree-first form-node sync helper, so the real LibraryNode state is updated directly before legacy mirrors are backfilled",
       "resolve_form_location_metadata is more tree-first too: it now feeds create/update with resolved_parent_* and resolved_form_order values instead of returning group_* as the primary active shape",
       "legacy group_* mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths",
