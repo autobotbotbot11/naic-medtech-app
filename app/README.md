@@ -81,7 +81,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - the folder field suggests existing library folders while editing form details
 - the top shell now uses a lighter status bar and a more compact workspace header
 - the live preview is now read-only and includes sticky quick-jump section navigation
-- the left outline and library wording now use calmer non-technical labels like `Basics`, `Content`, `Folder`, and `Edit`
+- the left outline and library wording now use calmer non-technical labels like `Basics`, `Content`, `Location`, and `Edit`
+- the builder basics flow is clearer too: it now says `Name` and `Location`, and top-level forms read as `Top level` instead of the old `Unassigned`
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
 - duplicate and delete for selected sections and fields now live in a quieter footer `More` area instead of staying in the header

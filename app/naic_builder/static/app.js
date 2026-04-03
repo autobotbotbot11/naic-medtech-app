@@ -783,6 +783,19 @@ function currentCommonFieldSetName() {
   return match?.name || "Default Lab Request Metadata";
 }
 
+function isTopLevelLocationName(name) {
+  const value = String(name || "").trim();
+  return !value || value === "Unassigned" || value === "Top level";
+}
+
+function displayLocationName(name) {
+  return isTopLevelLocationName(name) ? "Top level" : String(name || "").trim();
+}
+
+function editableLocationValue(name) {
+  return isTopLevelLocationName(name) ? "" : String(name || "").trim();
+}
+
 function availableGroupNames() {
   const names = new Set();
   groupedForms().forEach((group) => {
@@ -1016,7 +1029,7 @@ function renderShellSummary() {
   }
 
   const formName = state.draft.name || "Untitled Form";
-  const groupName = state.draft.group_name || "Unassigned";
+  const groupName = displayLocationName(state.draft.group_name);
   const version = currentVersionLabel();
 
   currentFormNameEl.textContent = formName;
@@ -1947,7 +1960,8 @@ function renderFormSetupCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const setupOpen = focusMode ? true : state.ui.setupOpen;
   const formName = state.draft.name || "Untitled Form";
-  const groupName = state.draft.group_name || "Unassigned";
+  const groupName = displayLocationName(state.draft.group_name);
+  const groupInputValue = editableLocationValue(state.draft.group_name);
   const sharedFieldSetName = currentCommonFieldSetName();
   const currentVersion = currentVersionLabel();
   return `
@@ -1957,7 +1971,7 @@ function renderFormSetupCard(options = {}) {
           <p class="eyebrow">Basics</p>
           <div class="card-title-row">
             <h3 class="card-title">Basics</h3>
-            ${renderHelpPopover("Basics help", "Name the form and choose its folder. Leave advanced details tucked away unless you need them.")}
+            ${renderHelpPopover("Basics help", "Name the form and choose its location. Leave record defaults tucked away unless you need them.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -1979,12 +1993,12 @@ function renderFormSetupCard(options = {}) {
         </div>
         <div class="setup-grid">
           <label>
-            <span>Form title</span>
+            <span>Name</span>
             <input data-bind="name" value="${escapeHtml(formName)}" placeholder="Example: Urinalysis">
           </label>
           <label>
-            <span>Folder</span>
-            <input list="groupNameSuggestions" data-bind="group_name" value="${escapeHtml(groupName)}" placeholder="Type or choose a folder">
+            <span>Location</span>
+            <input list="groupNameSuggestions" data-bind="group_name" value="${escapeHtml(groupInputValue)}" placeholder="Top level or choose a folder">
           </label>
         </div>
         ${renderGroupNameSuggestions()}
@@ -2845,7 +2859,7 @@ function renderPreview() {
               <span class="preview-sync-copy">Sample</span>
             </div>
             <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-            <p class="panel-copy">${escapeHtml(state.draft.group_name || "Unassigned")} | ${escapeHtml(currentVersionLabel())}</p>
+            <p class="panel-copy">${escapeHtml(displayLocationName(state.draft.group_name))} | ${escapeHtml(currentVersionLabel())}</p>
           </div>
         </div>
         <div class="preview-index">
