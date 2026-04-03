@@ -191,6 +191,7 @@ What is implemented:
 - the preview now respects root block order instead of always forcing one single ungrouped-fields area before every section
 - the left outline and library wording are now less technical, using calmer labels like `Basics`, `Content`, `Location`, and `Edit`
 - the builder basics flow is clearer too: it now says `Name` and `Location`, and top-level forms read as `Top level` instead of the old `Unassigned`
+- item editors are calmer too: fields, options, and utility items now use `Name` instead of the more technical `Label`
 - the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
 - the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
 - the focused section editor is now lighter too: reorder stays in the organizer above, while the selected section uses a compact summary strip and a simpler section basics row

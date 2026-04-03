@@ -120,6 +120,7 @@
       "selected sections can now add note and divider blocks in advanced mode, while the default section editor hides those utility blocks behind a quiet hint",
       "the left outline and library wording now use calmer non-technical labels like basics, content, location, and edit",
       "the builder basics flow is clearer too: it now says Name and Location, and top-level forms read as Top level instead of the old Unassigned",
+      "item editors are calmer too: fields, options, and utility items now use Name instead of the more technical Label",
       "the committed sample runtime DB has been reset to clean schema-seeded state and can be reset again with tools/scripts/reset_builder_runtime_db.py",
       "the focused field editor is now lighter, with drag left in the organizer and a more compact basics and choices treatment",
       "the focused section editor is now lighter too, with drag left in the organizer and a more compact section basics treatment",

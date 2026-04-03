@@ -2348,7 +2348,7 @@ function renderUtilityBlockCard(node, path) {
 
       <div class="inline-grid field-basics-grid compact">
         <label>
-          <span>Label</span>
+          <span>Name</span>
           <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(node.name || "")}" placeholder="${escapeHtml(namePlaceholder)}">
         </label>
       </div>
@@ -2718,7 +2718,7 @@ function renderFieldCard(field, path, options = {}) {
 
           <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""} ${isGroup ? "single" : ""}">
             <label>
-              <span>${isGroup ? "Name" : "Label"}</span>
+              <span>Name</span>
               <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
             ${isGroup ? "" : `
@@ -2819,8 +2819,8 @@ function renderOptionsEditor(field, path) {
                   </div>
                 </div>
                 <label class="option-focus-input">
-                  <span>Label</span>
-                  <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Option name">
+                  <span>Name</span>
+                  <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Example: Positive">
                 </label>
                 ${renderOptionManageFooter(path, selectedIndex)}
               </div>
