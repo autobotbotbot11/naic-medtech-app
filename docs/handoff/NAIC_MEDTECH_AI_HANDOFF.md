@@ -71,6 +71,28 @@ Important:
 - `BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md` is the current screen-by-screen build plan
 - `BUILDER_V2_PLAN.md` remains the active short-term UX simplification plan for the current prototype
 
+## Alignment Lock
+This section is meant to keep the next AI aligned without re-opening solved debates.
+
+Current locked direction:
+- the engine should stay flexible and future-proof
+- the visible UX should stay calm and simple for non-technical users
+- keep the `container | form` tree direction
+- keep the ordered-block direction under the hood
+- do not reintroduce presets into the active user flow right now
+- do not add new product surfaces unless they clearly reduce complexity or complete the current core goal
+
+Current honest status:
+- the main goal is **not finished yet**
+- the app is much closer than before
+- the right next work is still cleanup and completion of the core builder flow, not feature sprawl
+
+What the next AI should optimize for:
+- make the current builder feel more like arranging content and less like managing schema
+- keep simplifying wording, actions, and deeper editor surfaces
+- avoid undoing the calmness passes just to expose more power
+- preserve the current block-backed migration path instead of restarting from a new architecture idea
+
 ## Current Implementation Checkpoint
 The first real screen from the newer builder direction now exists.
 
@@ -151,7 +173,8 @@ What is implemented:
 - organizer rows and the left outline are quieter too: named sections and groups no longer repeat redundant `Section` or `Group` subtitles, while field and utility cues still appear when they actually help with scanning
 - field organizers are quieter too: plain text and number fields no longer repeat type subtitles, while higher-signal cues like `Dropdown`, `Date`, `Time`, and utility kinds stay visible for faster scanning
 - active organizer rows are quieter too: the old `Editing` pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips
-- advanced labels and helper copy are calmer too: shorter labels like `Key`, `Notes`, `Default details`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
+- advanced labels and helper copy are calmer too: shorter labels like `Key`, `Notes`, `Record defaults`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
+- the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
 - selected sections still use a compact section organizer plus one focused section editor
 - inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once

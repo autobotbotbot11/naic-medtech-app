@@ -7,6 +7,16 @@
   "active_builder_ux_doc": "docs/handoff/BUILDER_UX_FLOW_SPEC.md",
   "active_builder_wireframe_doc": "docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md",
   "active_builder_direction_doc": "docs/handoff/BUILDER_V2_PLAN.md",
+  "main_goal_status": "not_done",
+  "alignment_lock": [
+    "keep the engine flexible and future-proof",
+    "keep the visible UX calm and simple for non-technical users",
+    "keep the container and form tree direction",
+    "keep the ordered block direction under the hood",
+    "do not reintroduce presets into the active product path right now",
+    "do not add new product surfaces unless they clearly reduce complexity or complete the current core goal",
+    "continue simplifying the current builder instead of restarting the architecture debate"
+  ],
   "current_implementation_checkpoint": {
     "entry_route": "/forms",
     "root_redirects_to_library": true,
@@ -91,7 +101,8 @@
       "organizer rows and the left outline are quieter too: named sections and groups no longer repeat redundant Section or Group subtitles, while field and utility cues still appear when they actually help with scanning",
       "field organizers are quieter too: plain text and number fields no longer repeat type subtitles, while higher-signal cues like Dropdown, Date, Time, and utility kinds stay visible for faster scanning",
       "active organizer rows are quieter too: the old Editing pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips",
-      "advanced labels and helper copy are calmer too: shorter labels like Key, Notes, Default details, and simpler content/help text now keep the builder and library screens less technical without changing behavior",
+      "advanced labels and helper copy are calmer too: shorter labels like Key, Notes, Record defaults, and simpler content/help text now keep the builder and library screens less technical without changing behavior",
+      "the visible advanced pane now reads Arrange instead of Layout, so the UI feels more like arranging content than editing a technical layer",
       "selected sections still use a compact section organizer plus one focused section editor",
       "selected sections and groups use compact field organizers plus one focused field editor",
       "dropdown fields now use compact choice organizers plus one focused choice editor",

@@ -1894,7 +1894,7 @@ function renderOutline() {
         </button>
         ${state.ui.advancedMode ? `
         <button class="outline-item ${focusPane === "layout" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="layout">
-          <span>Layout</span>
+          <span>Arrange</span>
         </button>
         ` : ""}
       ${contentEntries.length ? `
@@ -1918,7 +1918,7 @@ function renderEditor() {
   destroySortables();
 
   if (!state.draft) {
-    formEditorEl.innerHTML = '<div class="empty-state">Open a form to start editing.</div>';
+    formEditorEl.innerHTML = '<div class="empty-state">Choose a form to start editing.</div>';
     return;
   }
 
@@ -1993,7 +1993,7 @@ function renderFormSetupCard(options = {}) {
             <summary>Advanced</summary>
             <div class="advanced-grid">
               <label>
-                <span>Default details</span>
+                <span>Record defaults</span>
                 <select data-bind="schema.common_field_set_id">
                   ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
                 </select>
@@ -2238,7 +2238,7 @@ function renderContentCard() {
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
                 ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
-            : '<div class="empty-state">Pick an item.</div>'}
+            : '<div class="empty-state">Choose an item.</div>'}
         </div>
       ` : '<div class="empty-state">No content yet. Add what you need when you are ready.</div>'}
       ${!state.ui.advancedMode && hiddenBlockCount ? '<div class="collapsed-copy">Some advanced items stay hidden until you turn on Advanced.</div>' : ""}
@@ -2408,8 +2408,8 @@ function renderLayoutCard(options = {}) {
       <div class="card-head">
         <div>
           <div class="card-title-row">
-            <h3 class="card-title">Layout</h3>
-            ${renderHelpPopover("Layout help", layoutCopy)}
+            <h3 class="card-title">Arrange</h3>
+            ${renderHelpPopover("Arrange help", layoutCopy)}
           </div>
           ${nested ? `<div class="collapsed-copy">Inside ${escapeHtml(rootName || (rootKind === "field_group" ? "this group" : "this section"))}</div>` : ""}
         </div>
@@ -2429,9 +2429,9 @@ function renderLayoutCard(options = {}) {
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
                 ? renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
-            : '<div class="empty-state">Pick an item.</div>'}
+            : '<div class="empty-state">Choose an item.</div>'}
         </div>
-      ` : '<div class="empty-state">No content yet. Add one when you are ready.</div>'}
+      ` : '<div class="empty-state">No content yet. Add something when you are ready.</div>'}
     </section>
   `;
 }
@@ -2497,7 +2497,7 @@ function renderSectionCard(section, path, options = {}) {
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(sectionNode).join("\n"))}</textarea>
               </label>
               <div class="advanced-actions" style="grid-column: 1 / -1;">
-                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Layout</button>
+                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Arrange</button>
               </div>
               </div>
             </details>
@@ -2526,9 +2526,9 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       : entries.filter((entry) => !isUtilityBlockNode(entry.node || entry.view));
     if (!visibleEntries.length) {
       if (hiddenUtilityCount) {
-        return '<div class="empty-state">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>';
+        return '<div class="empty-state">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>';
       }
-      return '<div class="empty-state">No content here yet. Add one when you are ready.</div>';
+      return '<div class="empty-state">No content here yet. Add something when you are ready.</div>';
     }
   if (options.focused) {
     const selectedIndex = resolveFocusedFieldIndex(collectionPath, visibleEntries);
@@ -2542,9 +2542,9 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
           ? (isUtilityBlockNode(selectedEntry.node)
             ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
             : renderFieldCard(selectedEntry.view, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
-          : '<div class="empty-state">Pick an item.</div>'}
+          : '<div class="empty-state">Choose an item.</div>'}
       </div>
-      ${hiddenUtilityCount ? '<div class="collapsed-copy">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>' : ""}
+      ${hiddenUtilityCount ? '<div class="collapsed-copy">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>' : ""}
     `;
   }
   return `
@@ -2555,7 +2555,7 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
           : renderFieldCard(entry.view, entry.path)
       )).join("")}
     </div>
-    ${hiddenUtilityCount ? '<div class="collapsed-copy">Advanced blocks are hidden here. Turn on Advanced to edit them.</div>' : ""}
+    ${hiddenUtilityCount ? '<div class="collapsed-copy">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>' : ""}
   `;
 }
 
@@ -2752,7 +2752,7 @@ function renderFieldCard(field, path, options = {}) {
               </label>
               ${isGroup ? `
                 <div class="advanced-actions" style="grid-column: 1 / -1;">
-                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Layout</button>
+                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Arrange</button>
                 </div>
               ` : ""}
               </div>
@@ -3257,13 +3257,13 @@ async function confirmDeleteOption(path, index) {
     return;
   }
 
-  const optionName = String(option.label || option.name || "").trim() || "this choice";
+  const optionName = String(option.label || option.name || "").trim() || "this option";
   const decision = await openDecisionDialog({
-    eyebrow: "Delete choice",
+    eyebrow: "Delete option",
     title: `Delete ${optionName}?`,
-    message: "This choice will be removed from the dropdown.",
-    cancelLabel: "Keep choice",
-    confirmLabel: "Delete choice",
+    message: "This option will be removed from the dropdown.",
+    cancelLabel: "Keep option",
+    confirmLabel: "Delete option",
     destructive: true,
   });
 
