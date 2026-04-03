@@ -1480,6 +1480,10 @@ button.subtle[aria-pressed="true"] {
     align-items: end;
 }
 
+.field-basics-grid.single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .row-actions > .ghost,
 .row-actions > .secondary,
 .row-actions > .action-details,

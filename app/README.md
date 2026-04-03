@@ -61,6 +61,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - advanced and fallback wording is calmer now too: the builder now prefers `content` and `item` language over more technical `block` wording in the visible UI
 - the live preview now also uses calmer root labels like `Top content` instead of the older `Top fields` or `Layout` wording for mixed root content
 - repeated add-button clusters are now collapsed into a quieter `Add` menu in `Content`, `Layout`, sections, and groups, so deeper editing feels less like managing buckets and more like inserting content pieces
+- focused group cards are lighter too: the dead disabled `Type = Group` row is gone, and the focused spotlight now uses quieter summary copy like `Nested content` instead of repeating mechanical metadata
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details

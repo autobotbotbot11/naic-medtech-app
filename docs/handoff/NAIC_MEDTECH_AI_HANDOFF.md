@@ -140,6 +140,7 @@ What is implemented:
 - advanced and fallback wording is calmer now too: the builder now prefers `content` and `item` language over more technical `block` wording in the visible UI
 - the live preview now also uses calmer root labels like `Top content` instead of the older `Top fields` or `Layout` wording for mixed root content
 - repeated add-button clusters are now collapsed into a quieter `Add` menu in `Content`, `Layout`, sections, and groups, so deeper editing feels less like managing buckets and more like inserting content pieces
+- focused group cards are lighter too: the dead disabled `Type = Group` row is gone, and the focused spotlight now uses quieter summary copy like `Nested content` instead of repeating mechanical metadata
 - selected sections still use a compact section organizer plus one focused section editor
 - inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once

@@ -2652,11 +2652,13 @@ function renderFieldCard(field, path, options = {}) {
     const showHeaderActions = !focusedCard || !options.hideToggle;
     const compactNormal = compactText(getFieldNormalValue(fieldNode || field));
     const compactUnit = compactText(getFieldUnitHint(fieldNode || field));
-    const metaBits = [
-      summary,
-      compactUnit ? `Unit: ${compactUnit}` : "",
-      compactNormal ? `Normal: ${compactNormal}` : "",
-    ].filter(Boolean);
+    const spotlightMeta = isGroup
+      ? "Nested content"
+      : [
+          compactUnit ? `Unit ${compactUnit}` : "",
+          compactNormal ? `Normal ${compactNormal}` : "",
+          !compactUnit && !compactNormal ? summary : "",
+        ].filter(Boolean).join(" | ");
     const addItems = isGroup
       ? [
           { action: "add-field", label: "Field", path: [...path, "children"] },
@@ -2698,21 +2700,16 @@ function renderFieldCard(field, path, options = {}) {
           ${focusedCard ? `
             <div class="field-spotlight">
               <strong>${escapeHtml(isGroup ? "Group" : "Field")}</strong>
-              <span>${escapeHtml(metaBits.join(" | "))}</span>
+              <span>${escapeHtml(spotlightMeta)}</span>
             </div>
           ` : ""}
 
-          <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""}">
+          <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""} ${isGroup ? "single" : ""}">
             <label>
               <span>${isGroup ? "Name" : "Label"}</span>
               <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
-            ${isGroup ? `
-              <label>
-                <span>Type</span>
-                <input value="Group" disabled>
-              </label>
-            ` : `
+            ${isGroup ? "" : `
               <label>
                 <span>Type</span>
                 <select data-action="field-type" data-path="${encodePath(path)}">
