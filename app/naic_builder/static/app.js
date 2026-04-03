@@ -428,7 +428,7 @@ function setLayoutSelection(path) {
   state.ui.activeOptionToken = null;
 }
 
-function collectFieldPathKeysFromNode(node, basePath) {
+function collectItemPathKeysFromNode(node, basePath) {
   const keys = [];
   const kind = String(node?.kind || "").trim();
 
@@ -437,7 +437,7 @@ function collectFieldPathKeysFromNode(node, basePath) {
   }
 
   getNodeChildren(node).forEach((child, index) => {
-    keys.push(...collectFieldPathKeysFromNode(child, [...basePath, "children", index]));
+    keys.push(...collectItemPathKeysFromNode(child, [...basePath, "children", index]));
   });
 
   return keys;
@@ -505,10 +505,6 @@ function quickSwitchLocationLabel(form) {
 
 function currentVersionLabel() {
   return state.draft?.current_version_number ? `Version ${state.draft.current_version_number}` : "New draft";
-}
-
-function currentDraftFieldCount() {
-  return state.draft ? countFields({ blocks: topLevelBlocks() }) : 0;
 }
 
 function topLevelPreviewSegments() {
@@ -959,13 +955,13 @@ function resetEditorPanels() {
   state.ui.focusPane = defaultFocusPane();
 }
 
-function collectFieldPathKeys(container, basePath = []) {
+function collectItemPathKeys(container, basePath = []) {
   const paths = [];
   normalizeArray(container?.blocks).forEach((block, index) => {
-    paths.push(...collectFieldPathKeysFromNode(block, [...basePath, "blocks", index]));
+    paths.push(...collectItemPathKeysFromNode(block, [...basePath, "blocks", index]));
   });
   getNodeChildren(container).forEach((child, index) => {
-    paths.push(...collectFieldPathKeysFromNode(child, [...basePath, "children", index]));
+    paths.push(...collectItemPathKeysFromNode(child, [...basePath, "children", index]));
   });
   return paths;
 }
@@ -988,7 +984,7 @@ function syncEditorPanels() {
     state.ui.openSectionPaths = [pathKey(sections[0].path)];
   }
 
-  const validItemPaths = new Set(collectFieldPathKeys(state.draft?.block_schema, ["block_schema"]));
+  const validItemPaths = new Set(collectItemPathKeys(state.draft?.block_schema, ["block_schema"]));
   const validLayoutPaths = new Set(
     topLevelBlockEntries()
       .filter((entry) => blockKind(entry.node) !== "section")
@@ -1973,23 +1969,23 @@ function organizerSecondaryLabel(node, title) {
         ? "Divider"
         : kind === "table"
           ? "Table"
-          : summarizeField(node);
+          : summarizeItem(node);
     return label && normalizedTitle !== label.toLowerCase() ? label : "";
   }
 
-function fieldOrganizerSecondaryLabel(field, title) {
-    if (field.kind === "field_group") {
-      return compactText(field.name || "") ? "" : "Group";
+function itemOrganizerSecondaryLabel(item, title) {
+    if (item.kind === "field_group") {
+      return compactText(item.name || "") ? "" : "Group";
     }
-    if (isUtilityBlockNode(field)) {
-      const summary = summarizeField(field);
+    if (isUtilityBlockNode(item)) {
+      const summary = summarizeItem(item);
       return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
     }
-    const fieldType = inferFieldType(field);
+    const fieldType = inferFieldType(item);
     if (!["choice", "date", "time", "datetime"].includes(fieldType)) {
       return "";
     }
-    const summary = summarizeField(field);
+    const summary = summarizeItem(item);
     return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
   }
 
@@ -2459,20 +2455,20 @@ function resolveFocusedOptionIndex(path, options) {
   return 0;
 }
 
-function summarizeField(field) {
-  if (field.kind === "note") {
+function summarizeItem(item) {
+  if (item.kind === "note") {
     return "Note";
   }
-  if (field.kind === "divider") {
+  if (item.kind === "divider") {
     return "Divider";
   }
-  if (field.kind === "table") {
+  if (item.kind === "table") {
     return "Table";
   }
-  if (field.kind === "field_group") {
+  if (item.kind === "field_group") {
     return "Group";
   }
-  const fieldType = inferFieldType(field);
+  const fieldType = inferFieldType(item);
   if (fieldType === "choice") {
     return "Dropdown";
   }
@@ -2482,8 +2478,8 @@ function summarizeField(field) {
 function renderItemOrganizerItem(item, path, index, active) {
     const isGroup = item.kind === "field_group";
     const isUtility = isUtilityBlockNode(item);
-    const title = item.name || (isUtility ? summarizeField(item) : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
-    const secondaryLabel = fieldOrganizerSecondaryLabel(item, title);
+    const title = item.name || (isUtility ? summarizeItem(item) : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
+    const secondaryLabel = itemOrganizerSecondaryLabel(item, title);
     return `
       <div class="field-organizer-item ${active ? "active" : ""}">
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -2502,7 +2498,7 @@ function renderItemOrganizerItem(item, path, index, active) {
 function renderItemCard(item, path, options = {}) {
     const isGroup = item.kind === "field_group";
     const open = Boolean(options.forceOpen) || isItemOpen(path);
-    const summary = summarizeField(item);
+    const summary = summarizeItem(item);
     const fieldType = inferFieldType(item);
     const focusedCard = Boolean(options.focusedCard);
     const showHeaderActions = !focusedCard || !options.hideToggle;
@@ -2733,7 +2729,7 @@ function renderPreviewSection(title, fields, previewId) {
         <h4>${escapeHtml(title)}</h4>
       </div>
       <div class="preview-grid">
-        ${normalizedFields.map(renderPreviewField).join("")}
+        ${normalizedFields.map(renderPreviewItem).join("")}
       </div>
     </section>
   `;
@@ -2771,10 +2767,10 @@ function previewPlaceholder(field) {
   return "Sample input";
 }
 
-function renderPreviewField(field) {
-  if (field.kind === "note") {
-    const title = String(field.name || "").trim();
-    const content = utilityBlockContent(field);
+function renderPreviewItem(item) {
+  if (item.kind === "note") {
+    const title = String(item.name || "").trim();
+    const content = utilityBlockContent(item);
     const showTitle = title && title.toLowerCase() !== "note";
     return `
       <div class="preview-note">
@@ -2784,9 +2780,9 @@ function renderPreviewField(field) {
     `;
   }
 
-  if (field.kind === "divider") {
-    const label = String(field.name || "").trim();
-    const caption = utilityBlockContent(field);
+  if (item.kind === "divider") {
+    const label = String(item.name || "").trim();
+    const caption = utilityBlockContent(item);
     const showLabel = label && label.toLowerCase() !== "divider";
     return `
       <div class="preview-divider">
@@ -2801,23 +2797,23 @@ function renderPreviewField(field) {
     `;
   }
 
-  if (field.kind === "field_group") {
+  if (item.kind === "field_group") {
     return `
       <div class="preview-group">
         <div class="preview-group-head">
-          <div class="preview-group-title">${escapeHtml(field.name || "Group")}</div>
+          <div class="preview-group-title">${escapeHtml(item.name || "Group")}</div>
         </div>
         <div class="preview-grid">
-          ${getNodeChildren(field).map((child) => renderPreviewField(child)).join("")}
+          ${getNodeChildren(item).map((child) => renderPreviewItem(child)).join("")}
         </div>
       </div>
     `;
   }
 
-  if (field.kind === "table") {
-    const title = String(field.name || "").trim();
-    const columns = getTableColumns(field);
-    const sampleRows = getTableSampleRows(field);
+  if (item.kind === "table") {
+    const title = String(item.name || "").trim();
+    const columns = getTableColumns(item);
+    const sampleRows = getTableSampleRows(item);
     const showTitle = title && title.toLowerCase() !== "table";
     return `
       <div class="preview-table">
@@ -2841,30 +2837,30 @@ function renderPreviewField(field) {
   }
 
   const hints = [];
-  if (getFieldUnitHint(field)) hints.push(getFieldUnitHint(field));
-  if (getFieldNormalValue(field)) hints.push(`normal ${getFieldNormalValue(field)}`);
+  if (getFieldUnitHint(item)) hints.push(getFieldUnitHint(item));
+  if (getFieldNormalValue(item)) hints.push(`normal ${getFieldNormalValue(item)}`);
 
   return `
     <label class="preview-field">
-      <span>${escapeHtml(field.name || "Untitled Field")}</span>
-      ${getFieldControl(field) === "select" ? `
+      <span>${escapeHtml(item.name || "Untitled Field")}</span>
+      ${getFieldControl(item) === "select" ? `
         <select disabled>
-          ${getFieldOptions(field).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
+          ${getFieldOptions(item).map((option) => `<option>${escapeHtml(option.name || "Option")}</option>`).join("")}
         </select>
-      ` : `<input type="${previewInputType(field)}" placeholder="${escapeHtml(previewPlaceholder(field))}" disabled>`}
+      ` : `<input type="${previewInputType(item)}" placeholder="${escapeHtml(previewPlaceholder(item))}" disabled>`}
       ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
     </label>
   `;
 }
 
-function countFields(container) {
+function countItems(container) {
   let count = 0;
   normalizeArray(container?.blocks).forEach((block) => {
-    count += countFields(block);
+    count += countItems(block);
   });
-  getNodeChildren(container).forEach((field) => {
-    if (String(field?.kind || "").trim() === "field_group" || String(field?.kind || "").trim() === "section") {
-      count += countFields(field);
+  getNodeChildren(container).forEach((item) => {
+    if (String(item?.kind || "").trim() === "field_group" || String(item?.kind || "").trim() === "section") {
+      count += countItems(item);
     } else {
       count += 1;
     }

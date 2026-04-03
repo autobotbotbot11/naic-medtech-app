@@ -123,6 +123,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - focused section and field cards are thinner too: they now render directly from the passed live block node instead of re-looking up the same path and carrying fallback source juggling
 - mixed-content render helpers are more aligned too: the live builder now uses `item`-oriented helper naming for shared section/group/field render paths instead of pretending those helpers are field-only
 - active builder selection state is more aligned too: the shared item selection path and item focus/toggle actions now use `item` naming instead of `field` naming in the live JS flow
+- internal preview and traversal helpers are more aligned too: shared item-path, item-summary, preview-item, and item-count helpers now read like mixed-content block code instead of field-era helper code
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
