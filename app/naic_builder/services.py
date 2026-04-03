@@ -878,47 +878,30 @@ def sync_definition_legacy_location_fields(
         parent_container = session.scalar(select(LibraryNode).where(LibraryNode.id == node.parent_id))
 
     derived_parent_key = parent_container.node_key if parent_container is not None and parent_container.kind == "container" else None
-    derived_group_name = parent_container.name if parent_container is not None and parent_container.kind == "container" else None
-    derived_group_order = int(parent_container.node_order or 999) if parent_container is not None and parent_container.kind == "container" else None
     derived_form_order = int(node.node_order or 1)
 
     changed = False
     if compact_text(definition.library_parent_node_key) != compact_text(derived_parent_key):
         definition.library_parent_node_key = derived_parent_key
         changed = True
-    if compact_text(definition.group_name) != compact_text(derived_group_name):
-        definition.group_name = derived_group_name
-        changed = True
-    if definition.group_order != derived_group_order:
-        definition.group_order = derived_group_order
-        changed = True
-    if int(definition.form_order or 1) != derived_form_order:
-        definition.form_order = derived_form_order
-        changed = True
     return changed
 
 
-def legacy_definition_location_hint(definition: FormDefinition) -> dict[str, Any]:
-    explicit_group_name = compact_text(definition.group_name)
-    legacy_parent_order = int(definition.group_order or 999)
-    explicit_definition_name = compact_text(definition.name)
-    has_self_named_root_shadow = (
-        bool(explicit_group_name)
-        and bool(explicit_definition_name)
-        and explicit_group_name.casefold() == explicit_definition_name.casefold()
-        and not compact_text(definition.library_parent_node_key)
-        and legacy_parent_order == 999
-    )
-    if has_self_named_root_shadow:
-        explicit_group_name = None
-    has_explicit_group_location = bool(explicit_group_name)
-    legacy_is_standalone = not has_explicit_group_location
+def legacy_definition_form_order_hint(definition: FormDefinition) -> int:
+    version = current_version(definition)
+    if version is not None:
+        try:
+            schema = json.loads(version.schema_json or "{}")
+        except (TypeError, ValueError, json.JSONDecodeError):
+            schema = {}
+        return int(schema.get("order") or 1)
+    return 1
 
+
+def legacy_definition_location_hint(definition: FormDefinition) -> dict[str, Any]:
     return {
-        "legacy_parent_name": explicit_group_name or definition.name or "Untitled Form",
-        "legacy_parent_order": legacy_parent_order,
-        "legacy_form_order": int(definition.form_order or 1),
-        "legacy_is_standalone": legacy_is_standalone,
+        "legacy_form_order": legacy_definition_form_order_hint(definition),
+        "legacy_is_standalone": True,
     }
 
 
@@ -1218,15 +1201,6 @@ def ensure_library_tree(session: Session) -> None:
                 parent = session.scalar(select(LibraryNode).where(LibraryNode.id == form_node.parent_id))
                 if parent is not None and parent.kind == "container":
                     parent_node_key = parent.node_key
-
-        if parent_id is None and form_node is None and not legacy_hint["legacy_is_standalone"]:
-            container = ensure_container_node(session, legacy_hint["legacy_parent_name"])
-            if container.node_order != legacy_hint["legacy_parent_order"]:
-                container.node_order = legacy_hint["legacy_parent_order"]
-            nodes_by_key[container.node_key] = container
-            changed = True
-            parent_id = container.id
-            parent_node_key = container.node_key
 
         if form_node is None:
             form_node = upsert_form_node_location(

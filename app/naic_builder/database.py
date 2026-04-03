@@ -28,9 +28,6 @@ def migrate_form_definitions_tree_first_shape(connection) -> None:
                 id INTEGER NOT NULL PRIMARY KEY,
                 slug VARCHAR(120) NOT NULL,
                 name VARCHAR(255) NOT NULL,
-                group_name VARCHAR(255),
-                group_order INTEGER,
-                form_order INTEGER,
                 library_parent_node_key TEXT,
                 created_at DATETIME NOT NULL,
                 updated_at DATETIME NOT NULL
@@ -43,9 +40,6 @@ def migrate_form_definitions_tree_first_shape(connection) -> None:
                 id,
                 slug,
                 name,
-                group_name,
-                group_order,
-                form_order,
                 library_parent_node_key,
                 created_at,
                 updated_at
@@ -54,9 +48,6 @@ def migrate_form_definitions_tree_first_shape(connection) -> None:
                 id,
                 slug,
                 name,
-                group_name,
-                group_order,
-                form_order,
                 library_parent_node_key,
                 created_at,
                 updated_at
@@ -89,14 +80,9 @@ def ensure_runtime_schema() -> None:
             str(row[1]): row
             for row in connection.exec_driver_sql("PRAGMA table_info(form_definitions)").all()
         }
-        legacy_nullable_targets = ("group_name", "group_order", "form_order")
         needs_tree_first_rebuild = any(
             column in form_definition_info
-            for column in ("group_kind", "common_field_set_id")
-        ) or any(
-            int(form_definition_info[column][3] or 0) == 1
-            for column in legacy_nullable_targets
-            if column in form_definition_info
+            for column in ("group_name", "group_kind", "common_field_set_id", "group_order", "form_order")
         )
         if needs_tree_first_rebuild:
             migrate_form_definitions_tree_first_shape(connection)
