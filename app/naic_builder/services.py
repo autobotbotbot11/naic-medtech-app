@@ -806,6 +806,48 @@ def resolve_target_container(session: Session, parent_node_key: str | None) -> L
     return target
 
 
+def upsert_form_node_location(
+    session: Session,
+    definition: FormDefinition,
+    *,
+    parent_node_key: str | None,
+    node_order: int | None = None,
+) -> LibraryNode:
+    target_parent = resolve_target_container(session, parent_node_key)
+    target_parent_id = target_parent.id if target_parent is not None else None
+    desired_order = int(node_order or 1)
+    node_key = form_node_key(definition.slug)
+
+    form_node = definition.library_node or session.scalar(
+        select(LibraryNode).where(LibraryNode.form_definition_id == definition.id)
+    )
+    if form_node is None:
+        form_node = session.scalar(select(LibraryNode).where(LibraryNode.node_key == node_key))
+
+    if form_node is None:
+        form_node = LibraryNode(
+            node_key=node_key,
+            kind="form",
+            name=definition.name,
+            parent_id=target_parent_id,
+            node_order=desired_order,
+            archived=False,
+            form_definition_id=definition.id,
+        )
+        session.add(form_node)
+        session.flush()
+    else:
+        form_node.kind = "form"
+        form_node.name = definition.name
+        form_node.parent_id = target_parent_id
+        form_node.node_order = desired_order
+        form_node.archived = False
+        form_node.form_definition_id = definition.id
+
+    definition.library_parent_node_key = target_parent.node_key if target_parent is not None else None
+    return form_node
+
+
 def container_is_inside(session: Session, candidate: LibraryNode | None, ancestor_id: int) -> bool:
     current = candidate
     while current is not None:
@@ -926,15 +968,17 @@ def move_form(
     if form_node is None:
         raise ValueError("Form node not found.")
 
-    if form_node.parent_id != target_parent_id:
-        form_node.parent_id = target_parent_id
-        form_node.node_order = next_node_order(session, target_parent_id, exclude_node_id=form_node.id)
-
-    definition.library_parent_node_key = target_parent.node_key if target_parent is not None else None
-
-    if form_node.archived:
-        form_node.archived = False
-    form_node.name = definition.name
+    desired_order = (
+        int(form_node.node_order or 1)
+        if form_node.parent_id == target_parent_id
+        else next_node_order(session, target_parent_id, exclude_node_id=form_node.id)
+    )
+    upsert_form_node_location(
+        session,
+        definition,
+        parent_node_key=target_parent.node_key if target_parent is not None else None,
+        node_order=desired_order,
+    )
 
     session.commit()
     ensure_library_tree(session)
@@ -1325,14 +1369,20 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     definition = FormDefinition(
         slug=slug,
         name=name,
-        group_name=location_meta["group_name"],
-        group_kind=location_meta["group_kind"],
-        group_order=location_meta["group_order"],
+        group_name=name,
+        group_kind="standalone_form",
+        group_order=999,
         form_order=location_meta["form_order"],
         library_parent_node_key=location_meta["resolved_parent_key"],
     )
     session.add(definition)
     session.flush()
+    upsert_form_node_location(
+        session,
+        definition,
+        parent_node_key=location_meta["resolved_parent_key"],
+        node_order=location_meta["form_order"],
+    )
 
     version = FormVersion(
         form_id=definition.id,
@@ -1379,11 +1429,12 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         version.is_current = False
 
     definition.name = name
-    definition.group_name = location_meta["group_name"]
-    definition.group_kind = location_meta["group_kind"]
-    definition.group_order = location_meta["group_order"]
-    definition.form_order = location_meta["form_order"]
-    definition.library_parent_node_key = location_meta["resolved_parent_key"]
+    upsert_form_node_location(
+        session,
+        definition,
+        parent_node_key=location_meta["resolved_parent_key"],
+        node_order=location_meta["form_order"],
+    )
     definition.common_field_set_id = None
 
     version = FormVersion(
