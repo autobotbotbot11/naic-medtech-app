@@ -2074,7 +2074,7 @@ function renderNodeActionMenu(path) {
         <summary aria-label="More" title="More">...</summary>
         <div class="action-menu">
           <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Copy</button>
-          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Remove</button>
         </div>
       </details>
     `;
@@ -2143,7 +2143,7 @@ function renderManageFooter(path) {
         <summary>More</summary>
         <div class="manage-actions">
           <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Copy</button>
-          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
+          <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Remove</button>
         </div>
       </details>
     `;
@@ -2155,7 +2155,7 @@ function renderOptionManageFooter(path, index) {
         <summary>More</summary>
         <div class="manage-actions">
           <button class="ghost mini" type="button" data-action="duplicate-option" data-path="${encodePath(path)}" data-index="${index}">Copy</button>
-          <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${index}">Delete</button>
+          <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${index}">Remove</button>
         </div>
       </details>
     `;
@@ -3259,11 +3259,11 @@ async function confirmDeleteOption(path, index) {
 
   const optionName = String(option.label || option.name || "").trim() || "this option";
   const decision = await openDecisionDialog({
-    eyebrow: "Delete option",
-    title: `Delete ${optionName}?`,
+    eyebrow: "Remove option",
+    title: `Remove ${optionName}?`,
     message: "This option will be removed from the dropdown.",
     cancelLabel: "Keep option",
-    confirmLabel: "Delete option",
+    confirmLabel: "Remove option",
     destructive: true,
   });
 

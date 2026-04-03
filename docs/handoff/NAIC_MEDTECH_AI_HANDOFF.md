@@ -175,7 +175,7 @@ What is implemented:
 - active organizer rows are quieter too: the old `Editing` pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips
 - advanced labels and helper copy are calmer too: shorter labels like `Key`, `Notes`, `Record defaults`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
-- builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and delete dialogs now prefer `Remove item` language for a less tool-like feel
+- builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`
 - selected sections still use a compact section organizer plus one focused section editor
 - inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
