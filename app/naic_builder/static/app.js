@@ -227,6 +227,7 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
   }
 
   draft.block_schema.source_kind = ACTIVE_BLOCK_SCHEMA_SOURCE;
+  delete meta.legacy_form_id;
   meta.form_key = compactText(meta.form_key) || slugify(draft.name || "untitled_form") || "untitled_form";
   meta.form_order = parsePositiveInt(meta.form_order, 1);
   delete meta.legacy_form_key;

@@ -117,6 +117,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the live backend block-meta path is thinner too: active create/update conversion no longer reads `legacy_form_*` keys, and those old keys are now only part of startup cleanup/backfill logic
 - version storage assembly is more honest too: create/update/seed now go through explicit storage builders and one `FormVersion` storage-record helper, so `schema_json` reads more clearly as compatibility storage instead of a parallel live model
 - live read and startup cleanup are more explicit too: `serialize_form()` and startup backfill now go through dedicated storage-document loaders, and the startup pass is named around full form-version storage cleanup instead of only `block_schema` backfill
+- old `legacy_form_*` block meta is thinner still: startup cleanup now drops those keys without reading them as fallback inputs, and the frontend draft meta sync strips `legacy_form_id` too
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths

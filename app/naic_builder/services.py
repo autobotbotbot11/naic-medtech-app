@@ -1435,21 +1435,21 @@ def ensure_form_version_storage_documents(session: Session) -> None:
         if "common_field_set_id" in meta:
             meta.pop("common_field_set_id", None)
             block_changed = True
-        if compact_text(meta.get("form_id") or meta.get("legacy_form_id")) != stable_schema_id:
+        if compact_text(meta.get("form_id")) != stable_schema_id:
             meta["form_id"] = stable_schema_id
             block_changed = True
         if compact_text(meta.get("legacy_form_id")):
             meta.pop("legacy_form_id", None)
             block_changed = True
         stable_form_key = compact_text(legacy_storage_schema.get("key"))
-        if compact_text(meta.get("form_key") or meta.get("legacy_form_key")) != stable_form_key:
+        if compact_text(meta.get("form_key")) != stable_form_key:
             meta["form_key"] = stable_form_key
             block_changed = True
         if compact_text(meta.get("legacy_form_key")):
             meta.pop("legacy_form_key", None)
             block_changed = True
         stable_form_order = int(legacy_storage_schema.get("order") or 1)
-        if int(meta.get("form_order") or meta.get("legacy_order") or 1) != stable_form_order:
+        if int(meta.get("form_order") or 1) != stable_form_order:
             meta["form_order"] = stable_form_order
             block_changed = True
         if compact_text(meta.get("legacy_order")):
