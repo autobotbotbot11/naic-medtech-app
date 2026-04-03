@@ -10,6 +10,7 @@ class FormSavePayload(BaseModel):
 
     slug: str | None = None
     name: str = ""
+    location_name: str | None = None
     group_name: str = ""
     group_kind: Literal["category", "standalone_form"] | None = None
     group_order: int | None = None
@@ -22,8 +23,18 @@ class FormSavePayload(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def move_schema_key(cls, value: Any) -> Any:
-        if isinstance(value, dict) and "form_schema" not in value and "schema" in value:
-            normalized = dict(value)
+        if not isinstance(value, dict):
+            return value
+
+        normalized = dict(value)
+        if "form_schema" not in normalized and "schema" in normalized:
             normalized["form_schema"] = normalized.pop("schema")
-            return normalized
-        return value
+
+        location_name = str(normalized.get("location_name") or "").strip()
+        group_name = str(normalized.get("group_name") or "").strip()
+        if location_name and not group_name:
+            normalized["group_name"] = location_name
+        elif group_name and "location_name" not in normalized:
+            normalized["location_name"] = group_name
+
+        return normalized

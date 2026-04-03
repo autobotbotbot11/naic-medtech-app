@@ -1377,7 +1377,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     location_meta = resolve_form_location_metadata(
         session,
         form_name=name,
-        location_name=payload.group_name,
+        location_name=compact_text(payload.location_name) or payload.group_name,
         library_parent_node_key=payload.library_parent_node_key,
         library_new_container_name=payload.library_new_container_name,
     )
@@ -1429,7 +1429,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     location_meta = resolve_form_location_metadata(
         session,
         form_name=name,
-        location_name=payload.group_name,
+        location_name=compact_text(payload.location_name) or payload.group_name,
         library_parent_node_key=payload.library_parent_node_key,
         library_new_container_name=payload.library_new_container_name,
         existing_definition=definition,

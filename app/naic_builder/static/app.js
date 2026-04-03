@@ -3379,7 +3379,7 @@ async function saveDraft() {
   const payload = {
     slug: state.selectedFormSlug,
     name: state.draft.name,
-    group_name: state.draft.group_name,
+    location_name: displayLocationName(state.draft),
     library_parent_node_key: state.draft.library_parent_node_key || null,
     library_new_container_name: state.draft.library_new_container_name || null,
     summary: state.draft.summary || "",

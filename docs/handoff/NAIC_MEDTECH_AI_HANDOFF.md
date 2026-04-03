@@ -186,6 +186,7 @@ What is implemented:
 - the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old `group_kind/group_order/form_order` inputs
 - the `/forms/new` flow reads more consistently now too: its template and browser-side logic use `location` wording for the visible create flow, and the handoff into `/builder` now uses `location_name` with backward-compatible support for old `group_name` links
 - serialized form payloads are more tree-first too: `serialize_form()` now returns `location_name`, `location_path_label`, `location_node_key`, and `location_kind`, and the builder display/helpers prefer those aliases while keeping legacy `group_name` compatibility for save/update
+- the active save API is more tree-first too: the current builder now posts `location_name`, while the backend still accepts legacy `group_name` callers through compatibility mapping
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
 - builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`
