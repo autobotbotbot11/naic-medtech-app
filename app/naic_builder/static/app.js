@@ -30,6 +30,7 @@ const FIELD_TYPES = [
   { id: "time", label: "Time", control: "input", dataType: "time" },
   { id: "datetime", label: "Date & time", control: "input", dataType: "datetime" },
 ];
+const ACTIVE_BLOCK_SCHEMA_SOURCE = "builder_blocks_v1";
 
 const initialFormSlug = document.body?.dataset?.initialFormSlug || "";
 const initialBuilderMode = document.body?.dataset?.initialBuilderMode || "";
@@ -179,7 +180,7 @@ function ensureDraftBlockState(draft) {
   } else {
     draft.block_schema = {
       schema_version: 1,
-      source_kind: "compat_legacy_fields_sections",
+      source_kind: ACTIVE_BLOCK_SCHEMA_SOURCE,
       meta: {},
       blocks: [],
     };
@@ -201,7 +202,7 @@ function ensureBlockSchemaMeta(draft) {
   if (!draft.block_schema || typeof draft.block_schema !== "object") {
     draft.block_schema = {
       schema_version: 1,
-      source_kind: "compat_legacy_fields_sections",
+      source_kind: ACTIVE_BLOCK_SCHEMA_SOURCE,
       meta: {},
       blocks: [],
     };
@@ -225,6 +226,7 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
     return;
   }
 
+  draft.block_schema.source_kind = ACTIVE_BLOCK_SCHEMA_SOURCE;
   meta.form_key = compactText(meta.form_key) || slugify(draft.name || "untitled_form") || "untitled_form";
   meta.form_order = parsePositiveInt(meta.form_order, 1);
   delete meta.legacy_form_key;
@@ -1317,7 +1319,7 @@ function makeBlankForm(config = {}) {
     summary: "",
     block_schema: {
       schema_version: 1,
-      source_kind: "compat_legacy_fields_sections",
+      source_kind: ACTIVE_BLOCK_SCHEMA_SOURCE,
       meta: {
         form_key: slugify(formName),
         form_order: 1,

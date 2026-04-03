@@ -14,6 +14,9 @@ from .database import Base, engine
 from .models import FormDefinition, FormVersion, LibraryNode
 from .schemas import FormSavePayload
 
+ACTIVE_BLOCK_SCHEMA_SOURCE = "builder_blocks_v1"
+LEGACY_BLOCK_SCHEMA_SOURCE = "compat_legacy_fields_sections"
+
 
 def load_reference_schema() -> dict[str, Any]:
     return json.loads(REFERENCE_SCHEMA_PATH.read_text(encoding="utf-8"))
@@ -299,7 +302,7 @@ def legacy_schema_to_block_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "schema_version": 1,
-        "source_kind": "compat_legacy_fields_sections",
+        "source_kind": LEGACY_BLOCK_SCHEMA_SOURCE,
         "meta": meta,
         "blocks": blocks,
     }
@@ -464,11 +467,13 @@ def normalize_block_schema_storage(
 ) -> dict[str, Any]:
     if isinstance(raw_schema, dict) and "blocks" in raw_schema and "fields" not in raw_schema and "sections" not in raw_schema:
         block_schema = json.loads(json.dumps(raw_schema))
+        source_kind = ACTIVE_BLOCK_SCHEMA_SOURCE
     else:
         block_schema = legacy_schema_to_block_schema(normalized_schema)
+        source_kind = LEGACY_BLOCK_SCHEMA_SOURCE
 
     block_schema["schema_version"] = int(block_schema.get("schema_version") or 1)
-    block_schema["source_kind"] = compact_text(block_schema.get("source_kind")) or "compat_legacy_fields_sections"
+    block_schema["source_kind"] = source_kind
     block_schema["blocks"] = normalize_items(block_schema.get("blocks"))
 
     meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
