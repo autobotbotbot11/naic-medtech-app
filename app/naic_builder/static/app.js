@@ -443,9 +443,9 @@ function collectItemPathKeysFromNode(node, basePath) {
   return keys;
 }
 
-function insertTopLevelField(kind) {
+function insertTopLevelItem(kind) {
   const blocks = topLevelBlocks();
-  const nextNode = makeBlankField(kind);
+  const nextNode = makeBlankBlock(kind);
   const firstSectionIndex = blocks.findIndex((block) => String(block?.kind || "").trim() === "section");
 
   if (firstSectionIndex === -1) {
@@ -1182,21 +1182,21 @@ function setBoundValue(target, bind, rawValue) {
   cursor[key] = rawValue;
 }
 
-function makeBlankField(kind = "field") {
-  if (kind === "field_group") {
-    return {
-      id: `blk_${slugify(`group_${Date.now()}`)}`,
-      kind: "field_group",
-      name: "New Field Group",
-      props: {
-        key: "new_field_group",
-        order: 1,
-        notes: [],
-      },
-      children: [],
-    };
-  }
+function makeBlankGroup() {
+  return {
+    id: `blk_${slugify(`group_${Date.now()}`)}`,
+    kind: "field_group",
+    name: "New Field Group",
+    props: {
+      key: "new_field_group",
+      order: 1,
+      notes: [],
+    },
+    children: [],
+  };
+}
 
+function makeBlankField() {
   return {
     id: `blk_${slugify(`field_${Date.now()}`)}`,
     kind: "field",
@@ -1289,7 +1289,10 @@ function makeBlankBlock(kind) {
   if (kind === "table") {
     return makeBlankTable();
   }
-  return makeBlankField(kind);
+  if (kind === "field_group") {
+    return makeBlankGroup();
+  }
+  return makeBlankField();
 }
 
 function navigateWithIntent(url) {
@@ -2928,12 +2931,12 @@ function deleteAtPath(path) {
   touch({ full: true, source: "blocks" });
 }
 
-function addFieldAt(path, kind) {
+function addItemAt(path, kind) {
   const collection = getNodeByPath(path);
   if (!Array.isArray(collection)) {
     return;
   }
-  const insertAt = insertChildNodeAtSelection(path, makeBlankField(kind));
+  const insertAt = insertChildNodeAtSelection(path, makeBlankBlock(kind));
   state.ui.activeItemPath = pathKey([...path, insertAt]);
   touch({ full: true, source: "blocks" });
 }
@@ -3011,7 +3014,7 @@ function insertTopLevelContentBlock(kind) {
   }
 
   if (kind === "field" || kind === "field_group") {
-    const actualIndex = insertTopLevelField(kind);
+    const actualIndex = insertTopLevelItem(kind);
     state.ui.activeItemPath = pathKey(["block_schema", "blocks", actualIndex]);
     state.ui.activeOptionToken = null;
     state.ui.focusPane = "content";
@@ -3397,11 +3400,11 @@ async function handleEditorClick(event) {
     return;
   }
   if (action === "add-field" && path) {
-    addFieldAt(path, "field");
+    addItemAt(path, "field");
     return;
   }
   if (action === "add-group" && path) {
-    addFieldAt(path, "field_group");
+    addItemAt(path, "field_group");
     return;
   }
   if (action === "add-note" && path) {
