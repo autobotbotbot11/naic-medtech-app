@@ -27,7 +27,6 @@ from .services import (
     list_library_tree,
     list_move_target_choices,
     next_root_form_order,
-    load_reference_schema,
     move_container,
     move_form,
     rename_container,
@@ -473,13 +472,11 @@ def health() -> dict[str, str]:
 
 @app.get("/api/builder/bootstrap")
 def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]:
-    reference = load_reference_schema()
     form_choices = list_form_choices(session)
     container_options = list_container_choices(session)
     selected_slug = form_choices[0]["slug"] if form_choices else None
     return {
         "app_title": APP_TITLE,
-        "common_field_sets": reference.get("common_field_sets", []),
         "container_options": container_options,
         "form_choices": form_choices,
         "selected_form_slug": selected_slug,

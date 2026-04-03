@@ -196,6 +196,7 @@ What is implemented:
 - the builder `Location` field is now tree-aware too: it suggests real folder paths from the persisted container tree and resolves the correct parent container when one is selected
 - the builder quick-switch drawer is tree-aware now too: it searches and lists forms by real folder path instead of the old one-level grouped drawer
 - the builder bootstrap path is tree-first now too: quick-switch data comes from `form_choices`, not the old grouped builder payload
+- the builder bootstrap payload no longer sends old shared-metadata options either, since that control is no longer part of the visible builder flow
 - the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
 - the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
 - the focused section editor is now lighter too: reorder stays in the organizer above, while the selected section uses a compact summary strip and a simpler section basics row
