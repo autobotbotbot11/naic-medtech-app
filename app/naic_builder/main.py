@@ -476,10 +476,12 @@ def health() -> dict[str, str]:
 def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]:
     reference = load_reference_schema()
     groups = list_grouped_forms(session)
+    container_options = list_container_choices(session)
     selected_slug = groups[0]["forms"][0]["slug"] if groups and groups[0]["forms"] else None
     return {
         "app_title": APP_TITLE,
         "common_field_sets": reference.get("common_field_sets", []),
+        "container_options": container_options,
         "groups": groups,
         "selected_form_slug": selected_slug,
     }

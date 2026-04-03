@@ -122,6 +122,7 @@
       "the left outline and library wording now use calmer non-technical labels like basics, content, location, and edit",
       "the builder basics flow is clearer too: it now says Name and Location, and top-level forms read as Top level instead of the old Unassigned",
       "item editors are calmer too: fields, options, and utility items now use Name instead of the more technical Label",
+      "the builder Location field is now tree-aware too: it suggests real folder paths from the persisted container tree and resolves the correct parent container when one is selected",
       "the committed sample runtime DB has been reset to clean schema-seeded state and can be reset again with tools/scripts/reset_builder_runtime_db.py",
       "the focused field editor is now lighter, with drag left in the organizer and a more compact basics and choices treatment",
       "the focused section editor is now lighter too, with drag left in the organizer and a more compact section basics treatment",

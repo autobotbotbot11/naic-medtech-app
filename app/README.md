@@ -85,6 +85,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the left outline and library wording now use calmer non-technical labels like `Basics`, `Content`, `Location`, and `Edit`
 - the builder basics flow is clearer too: it now says `Name` and `Location`, and top-level forms read as `Top level` instead of the old `Unassigned`
 - item editors are calmer too: fields, options, and utility items now use `Name` instead of the more technical `Label`
+- the builder `Location` field is now tree-aware too: it suggests real folder paths from the persisted container tree and resolves the correct parent container when one is selected
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
 - duplicate and delete for selected sections and fields now live in a quieter footer `More` area instead of staying in the header

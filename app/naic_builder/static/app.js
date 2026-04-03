@@ -782,23 +782,71 @@ function isTopLevelLocationName(name) {
   return !value || value === "Unassigned" || value === "Top level";
 }
 
-function displayLocationName(name) {
-  return isTopLevelLocationName(name) ? "Top level" : String(name || "").trim();
+function availableLocationOptions() {
+  return normalizeArray(state.bootstrap?.container_options);
 }
 
-function editableLocationValue(name) {
-  return isTopLevelLocationName(name) ? "" : String(name || "").trim();
+function findLocationOptionByNodeKey(nodeKey) {
+  const key = compactText(nodeKey);
+  if (!key) {
+    return null;
+  }
+  return availableLocationOptions().find((option) => compactText(option.node_key) === key) || null;
+}
+
+function findLocationOptionByPathLabel(pathLabel) {
+  const label = compactText(pathLabel);
+  if (!label) {
+    return null;
+  }
+  return availableLocationOptions().find((option) => compactText(option.path_label) === label) || null;
+}
+
+function isTopLevelDraftLocation(draft = state.draft) {
+  if (!draft) {
+    return true;
+  }
+  if (compactText(draft.library_parent_node_key)) {
+    return false;
+  }
+  const locationName = compactText(draft.group_name);
+  const formName = compactText(draft.name);
+  return !locationName || locationName === "Unassigned" || locationName === "Top level" || locationName === formName;
+}
+
+function displayLocationName(draft = state.draft) {
+  if (!draft) {
+    return "Top level";
+  }
+  const matchedOption = findLocationOptionByNodeKey(draft.library_parent_node_key);
+  if (matchedOption?.path_label) {
+    return matchedOption.path_label;
+  }
+  return isTopLevelDraftLocation(draft) ? "Top level" : compactText(draft.group_name) || "Top level";
+}
+
+function editableLocationValue(draft = state.draft) {
+  if (!draft) {
+    return "";
+  }
+  const matchedOption = findLocationOptionByNodeKey(draft.library_parent_node_key);
+  if (matchedOption?.path_label) {
+    return matchedOption.path_label;
+  }
+  return isTopLevelDraftLocation(draft) ? "" : compactText(draft.group_name);
 }
 
 function availableGroupNames() {
   const names = new Set();
-  groupedForms().forEach((group) => {
-    if (group?.name) {
-      names.add(String(group.name).trim());
+  availableLocationOptions().forEach((option) => {
+    const label = compactText(option.path_label);
+    if (label) {
+      names.add(label);
     }
   });
-  if (state.draft?.group_name) {
-    names.add(String(state.draft.group_name).trim());
+  const currentLocation = displayLocationName(state.draft);
+  if (currentLocation && currentLocation !== "Top level") {
+    names.add(currentLocation);
   }
   return [...names].filter(Boolean).sort((a, b) => a.localeCompare(b));
 }
@@ -1023,7 +1071,7 @@ function renderShellSummary() {
   }
 
   const formName = state.draft.name || "Untitled Form";
-  const groupName = displayLocationName(state.draft.group_name);
+  const groupName = displayLocationName(state.draft);
   const version = currentVersionLabel();
 
   currentFormNameEl.textContent = formName;
@@ -1946,8 +1994,8 @@ function renderFormSetupCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const setupOpen = focusMode ? true : state.ui.setupOpen;
   const formName = state.draft.name || "Untitled Form";
-  const groupName = displayLocationName(state.draft.group_name);
-  const groupInputValue = editableLocationValue(state.draft.group_name);
+  const groupName = displayLocationName(state.draft);
+  const groupInputValue = editableLocationValue(state.draft);
   const currentVersion = currentVersionLabel();
   return `
     <section class="editor-card">
@@ -2838,7 +2886,7 @@ function renderPreview() {
               <span class="preview-sync-copy">Sample</span>
             </div>
             <h3 class="preview-title">${escapeHtml(state.draft.name || "Untitled Form")}</h3>
-            <p class="panel-copy">${escapeHtml(displayLocationName(state.draft.group_name))} | ${escapeHtml(currentVersionLabel())}</p>
+            <p class="panel-copy">${escapeHtml(displayLocationName(state.draft))} | ${escapeHtml(currentVersionLabel())}</p>
           </div>
         </div>
         <div class="preview-index">
@@ -3388,7 +3436,17 @@ function handleRootInput(event) {
       if (state.draft.library_new_container_name) {
         state.draft.library_new_container_name = compactText(rawValue) || null;
       } else {
-        state.draft.library_parent_node_key = null;
+        const matchedLocation = findLocationOptionByPathLabel(rawValue);
+        if (matchedLocation) {
+          state.draft.group_name = matchedLocation.name;
+          state.draft.library_parent_node_key = matchedLocation.node_key;
+        } else if (isTopLevelLocationName(rawValue)) {
+          state.draft.group_name = state.draft.name || "Untitled Form";
+          state.draft.library_parent_node_key = null;
+        } else {
+          state.draft.group_name = compactText(rawValue);
+          state.draft.library_parent_node_key = null;
+        }
       }
     }
   }
