@@ -2102,6 +2102,33 @@ function renderAddMenu(items, label = "Add") {
     `;
   }
 
+function organizerSecondaryLabel(node, title) {
+    const kind = blockKind(node);
+    const normalizedTitle = compactText(title).toLowerCase();
+    if (kind === "section") {
+      return compactText(node?.name || "") ? "" : "Section";
+    }
+    if (kind === "field_group") {
+      return compactText(node?.name || "") ? "" : "Group";
+    }
+    const label = kind === "note"
+      ? "Note"
+      : kind === "divider"
+        ? "Divider"
+        : kind === "table"
+          ? "Table"
+          : summarizeField(node);
+    return label && normalizedTitle !== label.toLowerCase() ? label : "";
+  }
+
+function fieldOrganizerSecondaryLabel(field, title) {
+    if (field.kind === "field_group") {
+      return compactText(field.name || "") ? "" : "Group";
+    }
+    const summary = summarizeField(field);
+    return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
+  }
+
 function renderManageFooter(path) {
     return `
       <details class="manage-details">
@@ -2127,12 +2154,8 @@ function renderOptionManageFooter(path, index) {
   }
 
 function renderContentOrganizerItem(entry, active) {
-  const kind = blockKind(entry.node);
-  const typeLabel = kind === "section"
-    ? "Section"
-    : kind === "field_group"
-      ? "Group"
-      : summarizeField(entry.node);
+  const title = entry.view.name || "Untitled item";
+  const secondaryLabel = organizerSecondaryLabel(entry.node, title);
 
   return `
     <div class="section-organizer-item ${active ? "active" : ""}">
@@ -2141,10 +2164,8 @@ function renderContentOrganizerItem(entry, active) {
       </button>
       <button class="section-organizer-select" type="button" data-action="focus-content-block" data-path="${encodePath(entry.path)}">
         <span class="section-organizer-copy">
-          <strong>${escapeHtml(entry.view.name || "Untitled item")}</strong>
-          ${typeLabel && compactText(entry.view.name || "").toLowerCase() !== typeLabel.toLowerCase()
-            ? `<span>${escapeHtml(typeLabel)}</span>`
-            : ""}
+          <strong>${escapeHtml(title)}</strong>
+          ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
         </span>
         ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
       </button>
@@ -2153,19 +2174,14 @@ function renderContentOrganizerItem(entry, active) {
 }
 
 function renderOutlineContentItem(entry, active) {
-  const kind = blockKind(entry.node);
-  const typeLabel = kind === "section"
-    ? "Section"
-    : kind === "field_group"
-      ? "Group"
-      : summarizeField(entry.node);
   const title = entry.view.name || "Untitled item";
+  const secondaryLabel = organizerSecondaryLabel(entry.node, title);
 
   return `
     <button class="outline-subitem ${active ? "active" : ""}" type="button" data-action="focus-content-block" data-path="${encodePath(entry.path)}">
       <span class="outline-copy">
         <strong>${escapeHtml(title)}</strong>
-        ${typeLabel && compactText(title).toLowerCase() !== typeLabel.toLowerCase() ? `<span>${escapeHtml(typeLabel)}</span>` : ""}
+        ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
       </span>
       ${active ? '<span class="outline-state">Editing</span>' : ""}
     </button>
@@ -2249,16 +2265,8 @@ function resolveFocusedTopLevelBlockEntry(entries) {
 }
 
 function renderLayoutOrganizerItem(entry, active) {
-  const kind = blockKind(entry.node);
-  const typeLabel = kind === "section"
-    ? "Section"
-    : kind === "field_group"
-      ? "Group"
-      : kind === "note"
-        ? "Note"
-        : kind === "divider"
-          ? "Divider"
-          : summarizeField(entry.node);
+  const title = entry.view.name || "Untitled item";
+  const secondaryLabel = organizerSecondaryLabel(entry.node, title);
   return `
     <div class="section-organizer-item ${active ? "active" : ""}">
       <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -2266,10 +2274,8 @@ function renderLayoutOrganizerItem(entry, active) {
       </button>
       <button class="section-organizer-select" type="button" data-action="focus-layout-block" data-path="${encodePath(entry.path)}">
         <span class="section-organizer-copy">
-          <strong>${escapeHtml(entry.view.name || "Untitled item")}</strong>
-          ${typeLabel && compactText(entry.view.name || "").toLowerCase() !== typeLabel.toLowerCase()
-            ? `<span>${escapeHtml(typeLabel)}</span>`
-            : ""}
+          <strong>${escapeHtml(title)}</strong>
+          ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
         </span>
         ${active ? '<span class="section-organizer-state">Editing</span>' : ""}
       </button>
@@ -2617,8 +2623,8 @@ function summarizeField(field) {
 function renderFieldOrganizerItem(field, path, index, active) {
     const isGroup = field.kind === "field_group";
     const isUtility = isUtilityBlockNode(field);
-    const summary = summarizeField(field);
-    const title = field.name || (isUtility ? summary : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
+    const title = field.name || (isUtility ? summarizeField(field) : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
+    const secondaryLabel = fieldOrganizerSecondaryLabel(field, title);
     return `
       <div class="field-organizer-item ${active ? "active" : ""}">
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -2627,7 +2633,7 @@ function renderFieldOrganizerItem(field, path, index, active) {
         <button class="field-organizer-select" type="button" data-action="focus-field" data-path="${encodePath(path)}">
           <span class="field-organizer-copy">
             <strong>${escapeHtml(title)}</strong>
-            ${compactText(title).toLowerCase() !== summary.toLowerCase() ? `<span>${escapeHtml(summary)}</span>` : ""}
+            ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
           </span>
           ${active ? '<span class="field-organizer-state">Editing</span>' : ""}
         </button>
