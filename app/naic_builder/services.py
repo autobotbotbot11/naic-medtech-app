@@ -416,7 +416,7 @@ def block_section_to_legacy_section(block: dict[str, Any], form_id: str, order: 
 def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
     blocks = normalize_items(raw_schema.get("blocks"))
     meta = raw_schema.get("meta") if isinstance(raw_schema.get("meta"), dict) else {}
-    form_id = compact_text(meta.get("form_id") or meta.get("legacy_form_id")) or "form.compat"
+    form_id = compact_text(meta.get("form_id")) or "form.compat"
     used_field_keys: set[str] = set()
     used_section_keys: set[str] = set()
 
@@ -450,14 +450,6 @@ def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
         legacy["source"] = source
 
     return legacy
-
-
-def coerce_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
-    if not isinstance(raw_schema, dict):
-        return {}
-    if "blocks" in raw_schema and "fields" not in raw_schema and "sections" not in raw_schema:
-        return block_schema_to_legacy_schema(raw_schema)
-    return raw_schema
 
 
 def normalize_block_schema_storage(
@@ -526,7 +518,7 @@ def block_payload_form_key(raw_block_schema: dict[str, Any]) -> str:
     if not isinstance(raw_block_schema, dict):
         return ""
     meta = raw_block_schema.get("meta") if isinstance(raw_block_schema.get("meta"), dict) else {}
-    return compact_text(meta.get("form_key") or meta.get("legacy_form_key"))
+    return compact_text(meta.get("form_key"))
 
 
 def stable_form_schema_id(slug: str) -> str:
@@ -540,7 +532,7 @@ def normalize_form_schema(
     name: str,
     form_order: int,
 ) -> dict[str, Any]:
-    raw_schema = coerce_legacy_schema(raw_schema)
+    raw_schema = raw_schema if isinstance(raw_schema, dict) else {}
     form_id = stable_form_schema_id(slug)
     field_used: set[str] = set()
     section_used: set[str] = set()
