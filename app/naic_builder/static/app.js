@@ -741,15 +741,15 @@ function topLevelPreviewSegments() {
     }
     const localIndex = ++looseGroupCount;
     const baseLabel = localIndex === 1
-      ? "Top content"
+      ? "Details"
       : localIndex === 2
-        ? "More content"
-        : `More content ${localIndex - 1}`;
+        ? "More details"
+        : `More details ${localIndex - 1}`;
     const baseId = localIndex === 1
-      ? "top_content"
+      ? "details"
       : localIndex === 2
-        ? "more_content"
-        : `more_content_${localIndex - 1}`;
+        ? "more_details"
+        : `more_details_${localIndex - 1}`;
     segments.push({
       id: `preview_section_${baseId}`,
       label: baseLabel,
@@ -2655,7 +2655,7 @@ function renderFieldCard(field, path, options = {}) {
     const showHeaderActions = !focusedCard || !options.hideToggle;
     const compactNormal = compactText(getFieldNormalValue(fieldNode || field));
     const compactUnit = compactText(getFieldUnitHint(fieldNode || field));
-    const spotlightMeta = isGroup
+    const focusCopy = isGroup
       ? "Nested content"
       : [
           compactUnit ? `Unit ${compactUnit}` : "",
@@ -2699,12 +2699,7 @@ function renderFieldCard(field, path, options = {}) {
         </div>
   
         ${open ? `
-          ${focusedCard ? `
-            <div class="field-spotlight">
-              <strong>${escapeHtml(isGroup ? "Group" : "Field")}</strong>
-              ${spotlightMeta ? `<span>${escapeHtml(spotlightMeta)}</span>` : ""}
-            </div>
-          ` : ""}
+          ${focusedCard && focusCopy ? `<p class="field-focus-copy">${escapeHtml(focusCopy)}</p>` : ""}
 
           <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""} ${isGroup ? "single" : ""}">
             <label>
@@ -2775,17 +2770,17 @@ function renderOptionsEditor(field, path) {
     }));
     const selectedIndex = resolveFocusedOptionIndex(path, options);
     const selectedOption = selectedIndex >= 0 ? options[selectedIndex] : null;
-    const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled choice";
+    const selectedOptionName = String(selectedOption?.name || "").trim() || "Untitled option";
     return `
       <section class="field-stack">
         <div class="card-head">
           <div>
             <div class="card-title-row">
-              <h4>Choices</h4>
+              <h4>Options</h4>
             </div>
           </div>
           <div class="option-actions">
-            <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add choice</button>
+            <button class="ghost mini" type="button" data-action="add-option" data-path="${encodePath(path)}">Add option</button>
           </div>
         </div>
       ${options.length ? `
@@ -2794,7 +2789,7 @@ function renderOptionsEditor(field, path) {
             <div class="option-organizer-item ${index === selectedIndex ? "active" : ""}">
               <button class="option-organizer-select" type="button" data-action="focus-option" data-path="${encodePath(path)}" data-index="${index}">
                 <span class="option-organizer-copy">
-                  <strong>${escapeHtml(option.name || "Untitled choice")}</strong>
+                  <strong>${escapeHtml(option.name || "Untitled option")}</strong>
                 </span>
                 ${index === selectedIndex ? '<span class="option-organizer-state">Editing</span>' : ""}
               </button>
@@ -2804,9 +2799,6 @@ function renderOptionsEditor(field, path) {
         <div class="option-focus-stage">
           ${selectedOption ? `
             <div class="option-focus-card">
-                <div class="option-spotlight">
-                  <strong>Choice</strong>
-                </div>
                 <div class="option-focus-head">
                   <div>
                     <h5>${escapeHtml(selectedOptionName)}</h5>
@@ -2818,9 +2810,9 @@ function renderOptionsEditor(field, path) {
                 </label>
                 ${renderOptionManageFooter(path, selectedIndex)}
               </div>
-          ` : '<div class="empty-state">Pick a choice to keep editing.</div>'}
+          ` : '<div class="empty-state">Pick an option to keep editing.</div>'}
         </div>
-      ` : '<div class="empty-state">No choices yet. Add one when you are ready.</div>'}
+      ` : '<div class="empty-state">No options yet. Add one when you are ready.</div>'}
     </section>
   `;
 }
