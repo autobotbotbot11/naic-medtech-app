@@ -2092,7 +2092,7 @@ function renderContentCard() {
             ? (selectedEntry.node?.kind === "section"
               ? renderSectionCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
-                ? renderFieldCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+                ? renderItemCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
             : '<div class="empty-state">Choose an item.</div>'}
         </div>
@@ -2283,7 +2283,7 @@ function renderLayoutCard(options = {}) {
             ? (selectedEntry.node?.kind === "section"
               ? renderSectionCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
               : (selectedEntry.node?.kind === "field" || selectedEntry.node?.kind === "field_group")
-                ? renderFieldCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
+                ? renderItemCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true })
                 : renderUtilityBlockCard(selectedEntry.node, selectedEntry.path))
             : '<div class="empty-state">Choose an item.</div>'}
         </div>
@@ -2337,7 +2337,7 @@ function renderSectionCard(section, path, options = {}) {
           </div>
         </div>
 
-        ${renderFieldCollection(getNodeChildren(section), [...path, "children"], { focused: true })}
+        ${renderItemCollection(getNodeChildren(section), [...path, "children"], { focused: true })}
 
           ${state.ui.advancedMode ? `
             <details class="advanced">
@@ -2363,13 +2363,13 @@ function renderSectionCard(section, path, options = {}) {
     `;
   }
 
-function renderFieldCollection(fields, collectionPath, options = {}) {
-    const entries = normalizeArray(fields).map((field, index) => {
-      if (field?.path && field?.node) {
-        return field;
+function renderItemCollection(items, collectionPath, options = {}) {
+    const entries = normalizeArray(items).map((item, index) => {
+      if (item?.path && item?.node) {
+        return item;
       }
       return {
-        node: field,
+        node: item,
         path: [...collectionPath, index],
       };
     });
@@ -2385,17 +2385,17 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       return '<div class="empty-state">No content here yet. Add something when you are ready.</div>';
     }
   if (options.focused) {
-    const selectedIndex = resolveFocusedFieldIndex(collectionPath, visibleEntries);
+    const selectedIndex = resolveFocusedItemIndex(collectionPath, visibleEntries);
     const selectedEntry = visibleEntries[selectedIndex] || null;
     return `
       <div class="field-organizer" data-collection-path="${encodePath(collectionPath)}">
-        ${visibleEntries.map((entry, index) => renderFieldOrganizerItem(entry.node, entry.path, index, index === selectedIndex)).join("")}
+        ${visibleEntries.map((entry, index) => renderItemOrganizerItem(entry.node, entry.path, index, index === selectedIndex)).join("")}
       </div>
       <div class="field-focus-stage">
         ${selectedEntry
           ? (isUtilityBlockNode(selectedEntry.node)
             ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
-            : renderFieldCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
+            : renderItemCard(selectedEntry.node, selectedEntry.path, { forceOpen: true, hideToggle: true, focusedCard: true }))
           : '<div class="empty-state">Choose an item.</div>'}
       </div>
       ${hiddenUtilityCount ? '<div class="collapsed-copy">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>' : ""}
@@ -2406,14 +2406,14 @@ function renderFieldCollection(fields, collectionPath, options = {}) {
       ${visibleEntries.map((entry) => (
         isUtilityBlockNode(entry.node)
           ? renderUtilityBlockCard(entry.node, entry.path)
-          : renderFieldCard(entry.node, entry.path)
+          : renderItemCard(entry.node, entry.path)
       )).join("")}
     </div>
     ${hiddenUtilityCount ? '<div class="collapsed-copy">Some advanced items stay hidden here. Turn on Advanced to edit them.</div>' : ""}
   `;
 }
 
-function resolveFocusedFieldIndex(collectionPath, items) {
+function resolveFocusedItemIndex(collectionPath, items) {
   if (!items.length) {
     return 0;
   }
@@ -2479,11 +2479,11 @@ function summarizeField(field) {
   return FIELD_TYPES.find((item) => item.id === fieldType)?.label || "Text";
 }
 
-function renderFieldOrganizerItem(field, path, index, active) {
-    const isGroup = field.kind === "field_group";
-    const isUtility = isUtilityBlockNode(field);
-    const title = field.name || (isUtility ? summarizeField(field) : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
-    const secondaryLabel = fieldOrganizerSecondaryLabel(field, title);
+function renderItemOrganizerItem(item, path, index, active) {
+    const isGroup = item.kind === "field_group";
+    const isUtility = isUtilityBlockNode(item);
+    const title = item.name || (isUtility ? summarizeField(item) : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
+    const secondaryLabel = fieldOrganizerSecondaryLabel(item, title);
     return `
       <div class="field-organizer-item ${active ? "active" : ""}">
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
@@ -2499,15 +2499,15 @@ function renderFieldOrganizerItem(field, path, index, active) {
     `;
   }
 
-function renderFieldCard(field, path, options = {}) {
-    const isGroup = field.kind === "field_group";
+function renderItemCard(item, path, options = {}) {
+    const isGroup = item.kind === "field_group";
     const open = Boolean(options.forceOpen) || isFieldOpen(path);
-    const summary = summarizeField(field);
-    const fieldType = inferFieldType(field);
+    const summary = summarizeField(item);
+    const fieldType = inferFieldType(item);
     const focusedCard = Boolean(options.focusedCard);
     const showHeaderActions = !focusedCard || !options.hideToggle;
-    const compactNormal = compactText(getFieldNormalValue(field));
-    const compactUnit = compactText(getFieldUnitHint(field));
+    const compactNormal = compactText(getFieldNormalValue(item));
+    const compactUnit = compactText(getFieldUnitHint(item));
     const focusCopy = isGroup
       ? "Nested content"
       : [
@@ -2537,7 +2537,7 @@ function renderFieldCard(field, path, options = {}) {
               <span class="field-summary">${escapeHtml(summary)}</span>
             </div>
             ` : ""}
-            <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
+            <h4 class="field-display-title">${escapeHtml(item.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
           ${showHeaderActions ? `
           <div class="row-actions">
@@ -2558,7 +2558,7 @@ function renderFieldCard(field, path, options = {}) {
           <div class="inline-grid field-basics-grid ${focusedCard ? "compact" : ""} ${isGroup ? "single" : ""}">
             <label>
               <span>Name</span>
-              <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(field.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
+              <input class="field-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(item.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
             ${isGroup ? "" : `
               <label>
@@ -2572,14 +2572,14 @@ function renderFieldCard(field, path, options = {}) {
 
         ${isGroup ? `
           <div class="nested-fields">
-            ${renderFieldCollection(getNodeChildren(field), [...path, "children"], focusedCard ? { focused: true } : {})}
+            ${renderItemCollection(getNodeChildren(item), [...path, "children"], focusedCard ? { focused: true } : {})}
           </div>
           <div class="section-actions">
             ${renderAddMenu(addItems)}
           </div>
         ` : ""}
 
-        ${!isGroup && inferFieldType(field) === "choice" ? renderOptionsEditor(field, path) : ""}
+        ${!isGroup && inferFieldType(item) === "choice" ? renderOptionsEditor(item, path) : ""}
 
           ${state.ui.advancedMode ? `
             <details class="advanced">
@@ -2587,21 +2587,21 @@ function renderFieldCard(field, path, options = {}) {
               <div class="advanced-grid">
               <label>
                 <span>Key</span>
-                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(field) || "")}">
+                <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(item) || "")}">
               </label>
               ${isGroup ? "" : `
                 <label>
                   <span>Normal</span>
-                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getFieldNormalValue(field) || "")}" placeholder="Example: 4.5 - 11.0">
+                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getFieldNormalValue(item) || "")}" placeholder="Example: 4.5 - 11.0">
                 </label>
                 <label>
                   <span>Unit</span>
-                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getFieldUnitHint(field) || "")}" placeholder="Example: mg/dL">
+                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getFieldUnitHint(item) || "")}" placeholder="Example: mg/dL">
                 </label>
               `}
               <label style="grid-column: 1 / -1;">
                 <span>Notes</span>
-                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(field).join("\n"))}</textarea>
+                <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(item).join("\n"))}</textarea>
               </label>
               ${isGroup ? `
                 <div class="advanced-actions" style="grid-column: 1 / -1;">
