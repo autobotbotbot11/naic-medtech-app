@@ -900,6 +900,17 @@ def sync_definition_legacy_location_fields(
     return changed
 
 
+def legacy_definition_location_hint(definition: FormDefinition) -> dict[str, Any]:
+    group_name = compact_text(definition.group_name) or definition.name or "Untitled Form"
+    group_kind = compact_text(definition.group_kind) or "category"
+    return {
+        "legacy_parent_name": group_name,
+        "legacy_parent_order": int(definition.group_order or 999),
+        "legacy_form_order": int(definition.form_order or 1),
+        "legacy_is_standalone": group_kind == "standalone_form",
+    }
+
+
 def container_is_inside(session: Session, candidate: LibraryNode | None, ancestor_id: int) -> bool:
     current = candidate
     while current is not None:
@@ -1162,7 +1173,7 @@ def ensure_library_tree(session: Session) -> None:
     definitions = session.scalars(
         select(FormDefinition)
         .options(selectinload(FormDefinition.versions), selectinload(FormDefinition.library_node))
-        .order_by(FormDefinition.group_order, FormDefinition.form_order, FormDefinition.name)
+        .order_by(FormDefinition.name, FormDefinition.id)
     ).all()
 
     nodes = session.scalars(select(LibraryNode)).all()
@@ -1172,11 +1183,15 @@ def ensure_library_tree(session: Session) -> None:
     for definition in definitions:
         node_key = form_node_key(definition.slug)
         form_node = nodes_by_key.get(node_key)
-        group_name = compact_text(definition.group_name) or "Unassigned"
-        group_kind = compact_text(definition.group_kind) or "category"
+        legacy_hint = legacy_definition_location_hint(definition)
         parent_id = None
+        parent_node_key: str | None = None
         explicit_parent_key = compact_text(definition.library_parent_node_key)
-        desired_form_order = int(form_node.node_order or definition.form_order or 1) if form_node is not None else int(definition.form_order or 1)
+        desired_form_order = (
+            int(form_node.node_order or legacy_hint["legacy_form_order"])
+            if form_node is not None
+            else int(legacy_hint["legacy_form_order"])
+        )
 
         if explicit_parent_key:
             explicit_parent = nodes_by_key.get(explicit_parent_key)
@@ -1185,72 +1200,57 @@ def ensure_library_tree(session: Session) -> None:
                     explicit_parent.archived = False
                     changed = True
                 parent_id = explicit_parent.id
+                parent_node_key = explicit_parent.node_key
         elif form_node is not None:
             parent_id = form_node.parent_id
+            if form_node.parent_id is not None:
+                parent = session.scalar(select(LibraryNode).where(LibraryNode.id == form_node.parent_id))
+                if parent is not None and parent.kind == "container":
+                    parent_node_key = parent.node_key
 
-        if parent_id is None and form_node is None and group_kind != "standalone_form":
-            container_key = container_node_key(group_name)
-            container = nodes_by_key.get(container_key)
-            if container is None:
-                container = LibraryNode(
-                    node_key=container_key,
-                    kind="container",
-                    name=group_name,
-                    node_order=int(definition.group_order or 999),
-                    archived=False,
-                )
-                session.add(container)
-                session.flush()
-                nodes_by_key[container_key] = container
-                changed = True
-            else:
-                if container.kind != "container":
-                    container.kind = "container"
-                    changed = True
-                if container.name != group_name:
-                    container.name = group_name
-                    changed = True
-                if container.node_order != int(definition.group_order or 999):
-                    container.node_order = int(definition.group_order or 999)
-                    changed = True
-                if container.archived:
-                    container.archived = False
-                    changed = True
+        if parent_id is None and form_node is None and not legacy_hint["legacy_is_standalone"]:
+            container = ensure_container_node(session, legacy_hint["legacy_parent_name"])
+            if container.node_order != legacy_hint["legacy_parent_order"]:
+                container.node_order = legacy_hint["legacy_parent_order"]
+            nodes_by_key[container.node_key] = container
+            changed = True
             parent_id = container.id
+            parent_node_key = container.node_key
 
         if form_node is None:
-            form_node = LibraryNode(
-                node_key=node_key,
-                kind="form",
-                name=definition.name,
-                parent_id=parent_id,
+            form_node = upsert_form_node_location(
+                session,
+                definition,
+                parent_node_key=parent_node_key,
                 node_order=desired_form_order,
-                archived=False,
-                form_definition_id=definition.id,
             )
-            session.add(form_node)
             nodes_by_key[node_key] = form_node
             changed = True
-            continue
-
-        if form_node.kind != "form":
-            form_node.kind = "form"
-            changed = True
-        if form_node.name != definition.name:
-            form_node.name = definition.name
-            changed = True
-        if form_node.parent_id != parent_id:
-            form_node.parent_id = parent_id
-            changed = True
-        if form_node.node_order != desired_form_order:
-            form_node.node_order = desired_form_order
-            changed = True
-        if form_node.archived:
-            form_node.archived = False
-            changed = True
-        if form_node.form_definition_id != definition.id:
-            form_node.form_definition_id = definition.id
-            changed = True
+        else:
+            original_state = (
+                form_node.kind,
+                form_node.name,
+                form_node.parent_id,
+                int(form_node.node_order or 1),
+                bool(form_node.archived),
+                form_node.form_definition_id,
+            )
+            upsert_form_node_location(
+                session,
+                definition,
+                parent_node_key=parent_node_key,
+                node_order=desired_form_order,
+            )
+            current_state = (
+                form_node.kind,
+                form_node.name,
+                form_node.parent_id,
+                int(form_node.node_order or 1),
+                bool(form_node.archived),
+                form_node.form_definition_id,
+            )
+            if current_state != original_state:
+                changed = True
 
         if sync_definition_legacy_location_fields(session, definition, form_node=form_node):
             changed = True
