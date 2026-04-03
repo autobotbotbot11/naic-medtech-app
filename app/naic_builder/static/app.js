@@ -2310,23 +2310,16 @@ function renderUtilityBlockCard(node, path) {
     <article class="field-card utility-card is-open is-focused" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
       <div class="field-head field-head-focused">
         <div>
-          <div class="field-meta">
-            <span class="field-summary">${escapeHtml(title)}</span>
-          </div>
           <h4 class="field-display-title">${escapeHtml(node.name || title)}</h4>
         </div>
       </div>
-
-      <div class="field-spotlight">
-        <strong>${escapeHtml(title)}</strong>
-        <span>${escapeHtml(
-          isNote
-            ? "Shows a read-only note in the preview."
-            : isTable
-              ? "Shows a read-only sample table in the preview."
-              : "Adds a visual break in the preview."
-        )}</span>
-      </div>
+      <p class="field-focus-copy">${escapeHtml(
+        isNote
+          ? "Shows a note in the preview."
+          : isTable
+            ? "Shows a sample table in the preview."
+            : "Adds a visual break in the preview."
+      )}</p>
 
       <div class="inline-grid field-basics-grid compact">
         <label>
@@ -2452,9 +2445,6 @@ function renderSectionCard(section, path, options = {}) {
       <article class="section-card ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
         <div class="section-head ${focusedCard ? "section-head-focused" : ""}">
           <div>
-            <div class="chip-row">
-              <span class="chip warm">Section</span>
-            </div>
             <h4 class="section-display-title">${escapeHtml(section.name || "Untitled Section")}</h4>
           </div>
           ${showHeaderActions ? `
@@ -2679,10 +2669,11 @@ function renderFieldCard(field, path, options = {}) {
       <article class="field-card ${isGroup ? "group-card" : ""} ${open ? "is-open" : ""} ${focusedCard ? "is-focused" : ""}" data-node-path="${encodePath(path)}" data-parent-path="${encodePath(path.slice(0, -1))}">
         <div class="field-head ${focusedCard ? "field-head-focused" : ""}">
           <div>
+            ${!focusedCard ? `
             <div class="field-meta">
-              ${isGroup ? '<span class="chip warm">Group</span>' : ""}
-              ${!isGroup && !focusedCard ? `<span class="field-summary">${escapeHtml(summary)}</span>` : ""}
+              <span class="field-summary">${escapeHtml(summary)}</span>
             </div>
+            ` : ""}
             <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
           ${showHeaderActions ? `
