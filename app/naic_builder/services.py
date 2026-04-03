@@ -574,6 +574,26 @@ def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:
     }
 
 
+def serialize_legacy_group_metadata(definition: FormDefinition) -> dict[str, Any]:
+    form_node = definition.library_node
+    parent_node = form_node.parent if form_node is not None else None
+
+    if parent_node is not None and parent_node.kind == "container":
+        return {
+            "group_name": compact_text(parent_node.name) or "Untitled Folder",
+            "group_kind": "category",
+            "group_order": int(parent_node.node_order or 999),
+            "form_order": int(form_node.node_order or 1) if form_node is not None else int(definition.form_order or 1),
+        }
+
+    return {
+        "group_name": compact_text(definition.name) or "Untitled Form",
+        "group_kind": "standalone_form",
+        "group_order": 999,
+        "form_order": int(form_node.node_order or 1) if form_node is not None else int(definition.form_order or 1),
+    }
+
+
 def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     version = current_version(definition)
     if version is None:
@@ -589,6 +609,7 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         block_schema = legacy_schema_to_block_schema(schema)
 
     location = serialize_form_location(definition)
+    legacy_group = serialize_legacy_group_metadata(definition)
 
     return {
         "slug": definition.slug,
@@ -597,10 +618,10 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         "location_path_label": location["location_path_label"],
         "location_node_key": location["location_node_key"],
         "location_kind": location["location_kind"],
-        "group_name": definition.group_name,
-        "group_kind": definition.group_kind,
-        "group_order": definition.group_order,
-        "form_order": definition.form_order,
+        "group_name": legacy_group["group_name"],
+        "group_kind": legacy_group["group_kind"],
+        "group_order": legacy_group["group_order"],
+        "form_order": legacy_group["form_order"],
         "library_parent_node_key": definition.library_parent_node_key,
         "common_field_set_id": definition.common_field_set_id,
         "current_version_number": version.version_number,
@@ -615,26 +636,43 @@ def get_form_or_none(session: Session, slug: str) -> FormDefinition | None:
     return session.scalar(
         select(FormDefinition)
         .where(FormDefinition.slug == slug)
-        .options(selectinload(FormDefinition.versions), selectinload(FormDefinition.library_node))
+        .options(
+            selectinload(FormDefinition.versions),
+            selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
+        )
     )
 
 
 def list_grouped_forms(session: Session) -> list[dict[str, Any]]:
     definitions = session.scalars(
         select(FormDefinition)
-        .options(selectinload(FormDefinition.versions))
-        .order_by(FormDefinition.group_order, FormDefinition.form_order, FormDefinition.name)
+        .options(
+            selectinload(FormDefinition.versions),
+            selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
+        )
     ).all()
 
-    grouped: OrderedDict[tuple[str, str, int], dict[str, Any]] = OrderedDict()
+    decorated: list[tuple[dict[str, Any], FormDefinition]] = []
     for definition in definitions:
-        key = (definition.group_name, definition.group_kind, definition.group_order)
+        decorated.append((serialize_legacy_group_metadata(definition), definition))
+
+    decorated.sort(
+        key=lambda item: (
+            int(item[0]["group_order"]),
+            int(item[0]["form_order"]),
+            compact_text(item[1].name).lower(),
+        )
+    )
+
+    grouped: OrderedDict[tuple[str, str, int], dict[str, Any]] = OrderedDict()
+    for legacy_group, definition in decorated:
+        key = (legacy_group["group_name"], legacy_group["group_kind"], legacy_group["group_order"])
         group = grouped.setdefault(
             key,
             {
-                "name": definition.group_name,
-                "kind": definition.group_kind,
-                "order": definition.group_order,
+                "name": legacy_group["group_name"],
+                "kind": legacy_group["group_kind"],
+                "order": legacy_group["group_order"],
                 "forms": [],
             },
         )
@@ -643,7 +681,7 @@ def list_grouped_forms(session: Session) -> list[dict[str, Any]]:
             {
                 "slug": definition.slug,
                 "name": definition.name,
-                "form_order": definition.form_order,
+                "form_order": legacy_group["form_order"],
                 "current_version_number": version.version_number if version else 0,
                 "updated_at": definition.updated_at.astimezone(timezone.utc).isoformat(),
             }

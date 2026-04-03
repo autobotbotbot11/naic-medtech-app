@@ -30,6 +30,7 @@ from .services import (
     move_form,
     rename_container,
     serialize_form,
+    serialize_form_location,
     update_form,
 )
 
@@ -359,7 +360,7 @@ def start_new_form_page(
         (option for option in container_options if option["node_key"] == default_parent_node_key),
         None,
     )
-    default_location_name = selected_container["name"] if selected_container else (source_form.group_name if source_form else "")
+    default_location_name = selected_container["name"] if selected_container else (serialize_form_location(source_form)["location_name"] if source_form else "")
     default_new_folder_parent_key = default_parent_node_key if default_location_mode in {"existing", "new"} else ""
 
     return templates.TemplateResponse(
