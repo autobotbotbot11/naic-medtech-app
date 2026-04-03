@@ -188,7 +188,7 @@ function ensureDraftBlockState(draft) {
 
   draft.name = compactText(draft.name) || "Untitled Form";
   syncRootMetaToBlockSchema(draft);
-  syncDraftLocationShadow(draft);
+  syncDraftLocationState(draft);
   delete draft.schema;
   delete draft.form_schema;
   return draft;
@@ -630,7 +630,7 @@ function editableLocationValue(draft = state.draft) {
   return isTopLevelDraftLocation(draft) ? "" : compactLocationName(draft);
 }
 
-function syncDraftLocationShadow(draft = state.draft) {
+function syncDraftLocationState(draft = state.draft) {
   if (!draft || typeof draft !== "object") {
     return;
   }
@@ -1338,7 +1338,7 @@ function makeBlankForm(config = {}) {
       blocks: [],
     },
   };
-  syncDraftLocationShadow(draft);
+  syncDraftLocationState(draft);
   return ensureDraftBlockState(draft);
 }
 
@@ -1530,7 +1530,7 @@ function duplicateCurrentForm(overrides = {}) {
     copy.location_name = "Top level";
     copy.location_path_label = "Top level";
   }
-  syncDraftLocationShadow(copy);
+  syncDraftLocationState(copy);
   setDraftFormKey(slugify(copy.name), copy);
   state.selectedFormSlug = null;
   state.loadedForm = null;
@@ -3234,7 +3234,7 @@ function handleRootInput(event) {
       if (!previousDraftKey || previousDraftKey === slugify(previousName)) {
         setDraftFormKey(slugify(rawValue), state.draft);
       }
-      syncDraftLocationShadow(state.draft);
+      syncDraftLocationState(state.draft);
     } else if (bind === "location_name") {
       if (state.draft.library_new_container_name) {
         state.draft.library_new_container_name = compactText(rawValue) || null;
@@ -3256,7 +3256,7 @@ function handleRootInput(event) {
           state.draft.location_path_label = compactText(rawValue);
         }
       }
-      syncDraftLocationShadow(state.draft);
+      syncDraftLocationState(state.draft);
     }
   }
 

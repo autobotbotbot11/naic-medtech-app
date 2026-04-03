@@ -80,8 +80,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - top-level drafts are more stable too: renaming a top-level form now keeps the fallback location state in sync, so the builder no longer shows a stale old location name
 - the builder no longer tracks `common_field_set_id` in the active frontend draft path, so the current UI no longer carries that hidden shared-metadata concept around while editing
 - serialized form responses no longer expose `common_field_set_id` either, so the active API shape is less tied to the old shared-metadata model
-- serialized form responses no longer expose `group_name`, `group_kind`, `group_order`, or `form_order`; the live API now exposes only tree-first `location_*` metadata, while the builder recreates any needed compatibility shadow state locally
-- the visible builder location helpers now read from `location_*` directly too; `group_name` remains only as internal shadow metadata inside the sync helper instead of a primary display source
+- serialized form responses no longer expose `group_name`, `group_kind`, `group_order`, or `form_order`; the live API now exposes only tree-first `location_*` metadata, and the builder reads that location state directly
+- the visible builder location helpers now read from `location_*` directly too; the sync helper now just keeps location labels and node keys consistent instead of maintaining old grouped-era shadow metadata
 - the active save contract is leaner too: `FormSavePayload` no longer declares `group_name`, and legacy callers are mapped into `location_name` during validation instead of staying as a first-class field
 - `FormDefinition.common_field_set_id` is no longer actively mirrored during seed/create flows, and update flows now clear that old mirror field instead of keeping it in sync with the schema
 - the active schema/block normalizers are less special too: new create/update/seed flows no longer inject a synthetic `common_field_set_id` into saved `schema_json` or `block_schema_json`, so the hidden shared-record concept is no longer minted into fresh versions by default
@@ -138,7 +138,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - serialized form payloads are more tree-first too: `serialize_form()` now returns `location_name`, `location_path_label`, `location_node_key`, and `location_kind`, and the builder display/helpers prefer those aliases while keeping legacy `group_name` compatibility for save/update
 - the active save API is more tree-first too: the current builder now posts `location_name`, while the backend still accepts legacy `group_name` callers through compatibility mapping
 - active read compatibility is more tree-first too: legacy `group_*` metadata is now derived from the real library tree during serialization and grouped listings, instead of trusting the raw stored legacy columns
-- the visible builder setup flow is more tree-first too: the `Location` input now binds to `location_name` instead of the old `group_name`, while the draft still keeps compatibility metadata synchronized behind the scenes
+- the visible builder setup flow is more tree-first too: the `Location` input now binds to `location_name` instead of the old `group_name`, while the draft keeps its real location state synchronized directly
 - the active builder draft is more tree-first too: `location_*` is now the only active location state in the editor
 - the active builder setup internals are thinner too: `Key` and `Notes` now bind straight to `block_schema.meta`, and the live draft no longer keeps a duplicated `draft.schema` object just to drive those fields
 - the active organizer/render path is thinner too: content organizers, focused cards, and preview section labels now read directly from block nodes instead of carrying a synthetic legacy `.view` projection through the live builder UI
