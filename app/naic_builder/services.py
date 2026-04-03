@@ -210,14 +210,14 @@ def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
     for option in normalize_items(field.get("options")):
         if not isinstance(option, dict):
             continue
-        label = compact_text(option.get("name"))
-        if not label:
+        name = compact_text(option.get("name"))
+        if not name:
             continue
         options.append(
             {
-                "id": compact_text(option.get("id")) or f"{field_id}.{slugify(label)}",
-                "key": compact_text(option.get("key")) or slugify(label),
-                "label": label,
+                "id": compact_text(option.get("id")) or f"{field_id}.{slugify(name)}",
+                "key": compact_text(option.get("key")) or slugify(name),
+                "name": name,
                 "order": int(option.get("order") or len(options) + 1),
             }
         )

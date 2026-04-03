@@ -132,6 +132,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - input-type internals are more aligned too: the live builder now uses `input`-oriented helper naming for control/data/unit/normal/options/type logic instead of keeping those paths under broader `field` helper names
 - active input props are leaner too: the live builder now relies on `control + data_type` instead of minting a duplicate `field_type` mirror in new drafts and edits
 - stored block cleanup is leaner too: startup/save cleanup now strips stale `field_type` and old option `label` residue from active block-schema storage
+- legacy-to-block option conversion is cleaner too: when older storage is bridged into block schema, options now come out with the active `name` shape directly instead of minting old `label` keys first
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
@@ -139,8 +140,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use `location` language instead of old `group` wording where the UI already treats folders as locations
 - the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old `group_kind/group_order/form_order` inputs
 - the `/forms/new` flow reads more consistently now too: its template and browser-side logic use `location` wording for the visible create flow, and the handoff into `/builder` now uses `location_name` only
-- serialized form payloads are more tree-first too: `serialize_form()` now returns `location_name`, `location_path_label`, `location_node_key`, and `location_kind`, and the builder display/helpers prefer those aliases while keeping legacy `group_name` compatibility for save/update
-- the active save API is more tree-first too: the current builder now posts `location_name`, while the backend still accepts legacy `group_name` callers through compatibility mapping
+- serialized form payloads are more tree-first too: `serialize_form()` now returns `location_name`, `location_path_label`, `location_node_key`, and `location_kind`, and the builder display/helpers use those aliases directly
+- the active save API is more tree-first too: the current builder now posts `location_name`, and the live save contract no longer treats `group_name` as an active alias
 - active read compatibility is more tree-first too: legacy `group_*` metadata is now derived from the real library tree during serialization and grouped listings, instead of trusting the raw stored legacy columns
 - the visible builder setup flow is more tree-first too: the `Location` input now binds to `location_name` instead of the old `group_name`, while the draft keeps its real location state synchronized directly
 - the active builder draft is more tree-first too: `location_*` is now the only active location state in the editor
