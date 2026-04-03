@@ -1695,11 +1695,11 @@ async function resetCurrentDraft() {
 
 async function confirmDeleteNode(path) {
   const decision = await openDecisionDialog({
-    eyebrow: "Delete item",
+    eyebrow: "Remove item",
     title: "Remove this item from the form?",
     message: "This only changes the current draft until you save.",
     cancelLabel: "Keep item",
-    confirmLabel: "Delete item",
+    confirmLabel: "Remove item",
     destructive: true,
   });
 
@@ -2071,9 +2071,9 @@ function renderSaveCard(options = {}) {
 function renderNodeActionMenu(path) {
     return `
       <details class="action-details">
-        <summary aria-label="More actions" title="More actions">...</summary>
+        <summary aria-label="More" title="More">...</summary>
         <div class="action-menu">
-          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Copy</button>
           <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
         </div>
       </details>
@@ -2140,9 +2140,9 @@ function fieldOrganizerSecondaryLabel(field, title) {
 function renderManageFooter(path) {
     return `
       <details class="manage-details">
-        <summary>More options</summary>
+        <summary>More</summary>
         <div class="manage-actions">
-          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Duplicate</button>
+          <button class="ghost mini" type="button" data-action="duplicate-node" data-path="${encodePath(path)}">Copy</button>
           <button class="ghost mini warn" type="button" data-action="delete-node" data-path="${encodePath(path)}">Delete</button>
         </div>
       </details>
@@ -2152,9 +2152,9 @@ function renderManageFooter(path) {
 function renderOptionManageFooter(path, index) {
     return `
       <details class="manage-details">
-        <summary>More options</summary>
+        <summary>More</summary>
         <div class="manage-actions">
-          <button class="ghost mini" type="button" data-action="duplicate-option" data-path="${encodePath(path)}" data-index="${index}">Duplicate</button>
+          <button class="ghost mini" type="button" data-action="duplicate-option" data-path="${encodePath(path)}" data-index="${index}">Copy</button>
           <button class="ghost mini warn" type="button" data-action="delete-option" data-path="${encodePath(path)}" data-index="${index}">Delete</button>
         </div>
       </details>

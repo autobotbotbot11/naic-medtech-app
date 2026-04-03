@@ -175,6 +175,7 @@ What is implemented:
 - active organizer rows are quieter too: the old `Editing` pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips
 - advanced labels and helper copy are calmer too: shorter labels like `Key`, `Notes`, `Record defaults`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
+- builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and delete dialogs now prefer `Remove item` language for a less tool-like feel
 - selected sections still use a compact section organizer plus one focused section editor
 - inside selected sections and groups, the builder now uses compact field organizers plus one focused field editor instead of showing every field card at once
 - dropdown fields now use a compact `Choices` organizer plus one focused choice editor instead of rendering every option input at once
@@ -190,7 +191,7 @@ What is implemented:
 - the committed sample runtime DB has been reset back to the clean schema-seeded state, and a maintenance script now exists at `tools/scripts/reset_builder_runtime_db.py`
 - the focused field editor is now lighter: reorder stays in the organizer above, while the selected field uses a compact basics row and a calmer choice editor
 - the focused section editor is now lighter too: reorder stays in the organizer above, while the selected section uses a compact summary strip and a simpler section basics row
-- duplicate and delete for selected sections and fields now live in a quieter footer `More options` area instead of staying in the header
+- duplicate and delete for selected sections and fields now live in a quieter footer `More` area instead of staying in the header
 - the `Sections` pane is now less mechanical: it shows a simple section count, removes organizer row numbers, and marks only the active row as `Editing`
 
 Important reading for the next implementation step:
@@ -374,7 +375,7 @@ Current builder implementation is still:
 - selected sections and fields keep destructive actions in a quieter footer `More options` area
 - the `Sections` pane is less mechanical: simple count, no organizer row numbers, only the active section shows `Editing`
 - the nested `Choices` organizer now follows the same calmer pattern: no choice row numbers, only the active choice shows `Editing`, and the selected choice uses a smaller spotlight card
-- selected choice actions now follow the same quiet pattern too: footer `More options`, `Duplicate`, and a calmer confirmed `Delete` dialog
+- selected choice actions now follow the same quiet pattern too: footer `More`, `Copy`, and a calmer confirmed `Delete` dialog
 - the left outline is lighter too: section subitems no longer show per-row counts, and only the active section shows `Editing`
 - the top shell is calmer now as well: the status strip is subtler, status messages are shorter, and the live-preview callout uses steadier less repetitive copy
 - the top-right app-bar actions are quieter now too: `New` and `Save` stay visible, while `Duplicate` lives inside a small overflow menu

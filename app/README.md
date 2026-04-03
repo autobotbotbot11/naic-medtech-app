@@ -73,6 +73,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - active organizer rows are quieter too: the old `Editing` pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips
 - advanced labels and helper copy are calmer too: shorter labels like `Key`, `Notes`, `Record defaults`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
+- builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and delete dialogs now prefer `Remove item` language for a less tool-like feel
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details
@@ -81,10 +82,10 @@ The app now starts from a builder-first FastAPI scaffold.
 - the left outline and library wording now use calmer non-technical labels like `Basics`, `Content`, `Folder`, and `Edit`
 - the selected field editor is now lighter: the organizer owns drag/reorder, while the focused editor uses a compact basics row and a smaller choice editor
 - the selected section editor is now lighter too: the organizer owns reorder, while the focused section uses a smaller summary strip and simpler section basics
-- duplicate and delete for selected sections and fields now live in a quieter footer `More options` area instead of staying in the header
+- duplicate and delete for selected sections and fields now live in a quieter footer `More` area instead of staying in the header
 - the `Sections` pane is now less mechanical: it shows a simple section count, removes organizer row numbers, and marks only the active row as `Editing`
 - the nested `Choices` organizer is now less mechanical too: it removes choice row numbers, marks only the active choice as `Editing`, and uses a calmer selected-choice spotlight
-- selected choice actions now use a quieter footer `More options` area too, with `Duplicate` and a calmer confirmed `Delete` flow
+- selected choice actions now use a quieter footer `More` area too, with `Copy` and a calmer confirmed `Delete` flow
 - the left outline is less manager-like now: section subitems no longer show per-row counts, and only the active section shows `Editing`
 - the top shell is calmer too: the status strip is more subtle, status messages are shorter, and the live-preview callout uses steadier less repetitive copy
 - the top-right app-bar actions are quieter now: `New` and `Save` stay visible, while `Duplicate` moved into a small overflow menu
