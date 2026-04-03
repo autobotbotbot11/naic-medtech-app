@@ -2384,10 +2384,10 @@ function renderItemCollection(items, collectionPath, options = {}) {
     const selectedIndex = resolveFocusedItemIndex(collectionPath, visibleEntries);
     const selectedEntry = visibleEntries[selectedIndex] || null;
     return `
-      <div class="field-organizer" data-collection-path="${encodePath(collectionPath)}">
+      <div class="item-organizer" data-collection-path="${encodePath(collectionPath)}">
         ${visibleEntries.map((entry, index) => renderItemOrganizerItem(entry.node, entry.path, index, index === selectedIndex)).join("")}
       </div>
-      <div class="field-focus-stage">
+      <div class="item-focus-stage">
         ${selectedEntry
           ? (isUtilityBlockNode(selectedEntry.node)
             ? renderUtilityBlockCard(selectedEntry.node, selectedEntry.path)
@@ -2398,7 +2398,7 @@ function renderItemCollection(items, collectionPath, options = {}) {
     `;
   }
   return `
-    <div class="field-list" data-collection-path="${encodePath(collectionPath)}">
+    <div class="item-list" data-collection-path="${encodePath(collectionPath)}">
       ${visibleEntries.map((entry) => (
         isUtilityBlockNode(entry.node)
           ? renderUtilityBlockCard(entry.node, entry.path)
@@ -2481,12 +2481,12 @@ function renderItemOrganizerItem(item, path, index, active) {
     const title = item.name || (isUtility ? summarizeItem(item) : isGroup ? `Group ${index + 1}` : `Field ${index + 1}`);
     const secondaryLabel = itemOrganizerSecondaryLabel(item, title);
     return `
-      <div class="field-organizer-item ${active ? "active" : ""}">
+      <div class="item-organizer-item ${active ? "active" : ""}">
         <button class="drag-handle" type="button" title="Drag to reorder" aria-label="Drag to reorder">
           <span class="drag-dots" aria-hidden="true"></span>
         </button>
-        <button class="field-organizer-select" type="button" data-action="focus-item" data-path="${encodePath(path)}">
-          <span class="field-organizer-copy">
+        <button class="item-organizer-select" type="button" data-action="focus-item" data-path="${encodePath(path)}">
+          <span class="item-organizer-copy">
             <strong>${escapeHtml(title)}</strong>
             ${secondaryLabel ? `<span>${escapeHtml(secondaryLabel)}</span>` : ""}
           </span>
@@ -2567,7 +2567,7 @@ function renderItemCard(item, path, options = {}) {
           </div>
 
         ${isGroup ? `
-          <div class="nested-fields">
+          <div class="nested-items">
             ${renderItemCollection(getNodeChildren(item), [...path, "children"], focusedCard ? { focused: true } : {})}
           </div>
           <div class="section-actions">

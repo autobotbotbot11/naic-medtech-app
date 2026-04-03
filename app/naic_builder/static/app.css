@@ -958,9 +958,9 @@ button.subtle[aria-pressed="true"] {
 
 .section-list,
 .section-organizer,
-.field-organizer,
-.field-list,
-.nested-fields,
+.item-organizer,
+.item-list,
+.nested-items,
 .option-organizer,
 .options-list {
   display: grid;
@@ -971,7 +971,7 @@ button.subtle[aria-pressed="true"] {
   padding: 2px 0 6px;
 }
 
-.field-organizer {
+.item-organizer {
   padding: 2px 0 6px;
 }
 
@@ -990,7 +990,7 @@ button.subtle[aria-pressed="true"] {
   background: rgba(255, 255, 255, 0.72);
 }
 
-.field-organizer-item {
+.item-organizer-item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 8px;
@@ -1017,7 +1017,7 @@ button.subtle[aria-pressed="true"] {
   box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
 }
 
-.field-organizer-item.active {
+.item-organizer-item.active {
   border-color: rgba(30, 93, 82, 0.18);
   background: var(--accent-soft);
   box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.08);
@@ -1042,7 +1042,7 @@ button.subtle[aria-pressed="true"] {
   padding: 4px 2px;
 }
 
-.field-organizer-select {
+.item-organizer-select {
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -1074,7 +1074,7 @@ button.subtle[aria-pressed="true"] {
   gap: 3px;
 }
 
-.field-organizer-copy {
+.item-organizer-copy {
   min-width: 0;
   display: grid;
   gap: 3px;
@@ -1090,7 +1090,7 @@ button.subtle[aria-pressed="true"] {
   font-size: 14px;
 }
 
-.field-organizer-copy strong {
+.item-organizer-copy strong {
   font-size: 14px;
 }
 
@@ -1103,7 +1103,7 @@ button.subtle[aria-pressed="true"] {
     font-size: 12px;
 }
 
-.field-organizer-copy span {
+.item-organizer-copy span {
     color: var(--muted);
     font-size: 12px;
 }
@@ -1118,7 +1118,7 @@ button.subtle[aria-pressed="true"] {
     align-content: start;
 }
 
-.field-focus-stage {
+.item-focus-stage {
     display: grid;
     gap: 10px;
     align-content: start;
@@ -1445,7 +1445,7 @@ button.subtle[aria-pressed="true"] {
   grid-template-columns: minmax(0, 1.45fr) minmax(180px, 0.8fr);
 }
 
-.nested-fields {
+.nested-items {
   padding-left: 14px;
   border-left: 2px solid rgba(201, 106, 41, 0.18);
 }
