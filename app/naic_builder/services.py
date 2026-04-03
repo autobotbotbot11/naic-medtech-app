@@ -1303,6 +1303,14 @@ def ensure_reference_seed(session: Session) -> None:
             group_name = compact_text(group.get("name"))
             group_kind = compact_text(group.get("kind")) or "category"
             group_order = int(group.get("order") or 999)
+            parent_container: LibraryNode | None = None
+            parent_node_key: str | None = None
+
+            if group_kind != "standalone_form":
+                parent_container = ensure_container_node(session, group_name)
+                if parent_container.node_order != group_order:
+                    parent_container.node_order = group_order
+                parent_node_key = parent_container.node_key
 
             for form in group.get("forms", []):
                 slug = compact_text(form.get("key")) or slugify(form.get("name"))
@@ -1313,19 +1321,27 @@ def ensure_reference_seed(session: Session) -> None:
                     slug=slug,
                     name=name,
                     form_order=form_order,
-                    group_name=group_name,
+                    group_name=parent_container.name if parent_container is not None else name,
                 )
 
                 definition = FormDefinition(
                     slug=slug,
                     name=name,
-                    group_name=group_name,
-                    group_kind=group_kind,
-                    group_order=group_order,
+                    group_name=name,
+                    group_kind="standalone_form",
+                    group_order=999,
                     form_order=form_order,
+                    library_parent_node_key=parent_node_key,
                 )
                 session.add(definition)
                 session.flush()
+                upsert_form_node_location(
+                    session,
+                    definition,
+                    parent_node_key=parent_node_key,
+                    node_order=form_order,
+                )
+                sync_definition_legacy_location_fields(session, definition)
 
                 version = FormVersion(
                     form_id=definition.id,

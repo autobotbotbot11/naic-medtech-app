@@ -84,6 +84,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the visible builder location helpers now read from `location_*` directly too; `group_name` remains only as internal shadow metadata inside the sync helper instead of a primary display source
 - the active save contract is leaner too: `FormSavePayload` no longer declares `group_name`, and legacy callers are mapped into `location_name` during validation instead of staying as a first-class field
 - `FormDefinition.common_field_set_id` is no longer actively mirrored during seed/create flows, and update flows now clear that old mirror field instead of keeping it in sync with the schema
+- the schema seed/reset path is more tree-first too: `ensure_reference_seed()` now creates real container and form nodes first, then backfills legacy location mirrors from those nodes instead of seeding forms through the old grouped-first path
 - `ensure_library_tree()` is more tree-first too: when a form node already exists, it now prefers the actual node parent/order over stale `group_*` mirrors, and `move_form()` now only updates the real tree plus `library_parent_node_key` instead of rewriting all legacy location fields directly
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
