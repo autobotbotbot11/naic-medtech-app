@@ -2471,11 +2471,6 @@ function renderSectionCard(section, path, options = {}) {
         </div>
   
         ${open ? `
-          ${focusedCard ? `
-            <div class="section-spotlight">
-              <strong>Section</strong>
-            </div>
-          ` : ""}
           <div class="section-builder-head ${focusedCard ? "compact" : ""}">
             <label class="section-title-wrap">
               <span>Name</span>
@@ -2501,7 +2496,7 @@ function renderSectionCard(section, path, options = {}) {
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(sectionNode).join("\n"))}</textarea>
               </label>
               <div class="advanced-actions" style="grid-column: 1 / -1;">
-                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open layout</button>
+                <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Layout</button>
               </div>
               </div>
             </details>
@@ -2761,7 +2756,7 @@ function renderFieldCard(field, path, options = {}) {
               </label>
               ${isGroup ? `
                 <div class="advanced-actions" style="grid-column: 1 / -1;">
-                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Open layout</button>
+                  <button class="ghost mini" type="button" data-action="open-child-layout" data-path="${encodePath(path)}">Layout</button>
                 </div>
               ` : ""}
               </div>

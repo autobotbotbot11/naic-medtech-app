@@ -1672,37 +1672,6 @@ details.advanced summary {
     justify-content: flex-end;
 }
 
-.section-spotlight {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-    flex-wrap: wrap;
-    padding: 8px 10px;
-    border: 1px solid rgba(201, 106, 41, 0.14);
-    border-radius: var(--radius-md);
-    background: rgba(255, 248, 240, 0.96);
-}
-
-.section-spotlight strong {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 22px;
-    padding: 0 9px;
-    border-radius: 999px;
-    background: rgba(201, 106, 41, 0.14);
-    color: var(--warm);
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-}
-
-.section-spotlight span {
-    color: var(--muted);
-    font-size: 12px;
-}
-
 .preview-title {
   font-size: 24px;
 }
