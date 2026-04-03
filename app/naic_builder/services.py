@@ -1074,10 +1074,9 @@ def resolve_form_location_metadata(
 
         return {
             "resolved_parent_key": target_parent.node_key,
-            "group_name": target_parent.name,
-            "group_kind": "category",
-            "group_order": int(target_parent.node_order or 999),
-            "form_order": resolved_form_order,
+            "resolved_parent_name": target_parent.name,
+            "resolved_parent_order": int(target_parent.node_order or 999),
+            "resolved_form_order": resolved_form_order,
         }
 
     if existing_node is not None and existing_node.parent_id is None:
@@ -1091,10 +1090,9 @@ def resolve_form_location_metadata(
 
     return {
         "resolved_parent_key": None,
-        "group_name": compact_form_name or "Untitled Form",
-        "group_kind": "standalone_form",
-        "group_order": 999,
-        "form_order": resolved_form_order,
+        "resolved_parent_name": None,
+        "resolved_parent_order": 999,
+        "resolved_form_order": resolved_form_order,
     }
 
 
@@ -1361,8 +1359,8 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         raw_schema,
         slug=slug,
         name=name,
-        form_order=location_meta["form_order"],
-        group_name=location_meta["group_name"],
+        form_order=location_meta["resolved_form_order"],
+        group_name=location_meta["resolved_parent_name"] or name,
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
@@ -1372,7 +1370,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         group_name=name,
         group_kind="standalone_form",
         group_order=999,
-        form_order=location_meta["form_order"],
+        form_order=location_meta["resolved_form_order"],
         library_parent_node_key=location_meta["resolved_parent_key"],
     )
     session.add(definition)
@@ -1381,7 +1379,7 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         session,
         definition,
         parent_node_key=location_meta["resolved_parent_key"],
-        node_order=location_meta["form_order"],
+        node_order=location_meta["resolved_form_order"],
     )
 
     version = FormVersion(
@@ -1419,8 +1417,8 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         raw_schema,
         slug=definition.slug,
         name=name,
-        form_order=location_meta["form_order"],
-        group_name=location_meta["group_name"],
+        form_order=location_meta["resolved_form_order"],
+        group_name=location_meta["resolved_parent_name"] or name,
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
@@ -1433,7 +1431,7 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         session,
         definition,
         parent_node_key=location_meta["resolved_parent_key"],
-        node_order=location_meta["form_order"],
+        node_order=location_meta["resolved_form_order"],
     )
     definition.common_field_set_id = None
 
