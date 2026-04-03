@@ -861,6 +861,25 @@ def upsert_form_node_location(
     return form_node
 
 
+def new_definition_compat_shell(
+    *,
+    slug: str,
+    name: str,
+    form_order: int,
+    parent_node_key: str | None = None,
+) -> FormDefinition:
+    return FormDefinition(
+        slug=slug,
+        name=name,
+        group_name=name,
+        group_kind="standalone_form",
+        group_order=999,
+        form_order=form_order,
+        library_parent_node_key=parent_node_key,
+        common_field_set_id=None,
+    )
+
+
 def sync_definition_legacy_location_fields(
     session: Session,
     definition: FormDefinition,
@@ -898,6 +917,9 @@ def sync_definition_legacy_location_fields(
         changed = True
     if int(definition.form_order or 1) != derived_form_order:
         definition.form_order = derived_form_order
+        changed = True
+    if definition.common_field_set_id is not None:
+        definition.common_field_set_id = None
         changed = True
 
     return changed
@@ -1336,14 +1358,11 @@ def ensure_reference_seed(session: Session) -> None:
                     form_order=form_order,
                 )
 
-                definition = FormDefinition(
+                definition = new_definition_compat_shell(
                     slug=slug,
                     name=name,
-                    group_name=name,
-                    group_kind="standalone_form",
-                    group_order=999,
                     form_order=form_order,
-                    library_parent_node_key=parent_node_key,
+                    parent_node_key=parent_node_key,
                 )
                 session.add(definition)
                 session.flush()
@@ -1411,14 +1430,11 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
     )
     stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
-    definition = FormDefinition(
+    definition = new_definition_compat_shell(
         slug=slug,
         name=name,
-        group_name=name,
-        group_kind="standalone_form",
-        group_order=999,
         form_order=location_meta["resolved_form_order"],
-        library_parent_node_key=location_meta["resolved_parent_key"],
+        parent_node_key=location_meta["resolved_parent_key"],
     )
     session.add(definition)
     session.flush()
