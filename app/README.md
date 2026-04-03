@@ -87,6 +87,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the active save API is more tree-first too: the current builder now posts `location_name`, while the backend still accepts legacy `group_name` callers through compatibility mapping
 - active read compatibility is more tree-first too: legacy `group_*` metadata is now derived from the real library tree during serialization and grouped listings, instead of trusting the raw stored legacy columns
 - the visible builder setup flow is more tree-first too: the `Location` input now binds to `location_name` instead of the old `group_name`, while the draft still keeps compatibility metadata synchronized behind the scenes
+- the active builder draft is more tree-first too: `location_*` is now the primary location state in the editor, and `group_name` is synchronized through one helper as compatibility shadow metadata instead of being edited directly all over the UI code
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
 - builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`

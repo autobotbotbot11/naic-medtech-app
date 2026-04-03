@@ -395,6 +395,7 @@ function ensureDraftSchemas(draft, options = {}) {
   draft.schema.order = parsePositiveInt(draft.schema.order, 1);
   draft.block_schema = existingBlockSchema || legacySchemaToBlockSchema(draft.schema);
   syncRootMetaToBlockSchema(draft);
+  syncDraftLocationShadow(draft);
   return draft;
 }
 
@@ -854,6 +855,54 @@ function editableLocationValue(draft = state.draft) {
     return matchedOption.path_label;
   }
   return isTopLevelDraftLocation(draft) ? "" : compactText(draft.group_name);
+}
+
+function syncDraftLocationShadow(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return;
+  }
+
+  const formName = compactText(draft.name) || "Untitled Form";
+  const explicitName = compactLocationName(draft);
+  const explicitPath = compactLocationPathLabel(draft);
+  const pendingFolderName = compactText(draft.library_new_container_name);
+  const matchedOption = findLocationOptionByNodeKey(draft.library_parent_node_key);
+
+  if (pendingFolderName) {
+    const parentPath = compactText(matchedOption?.path_label);
+    const folderName = explicitName || pendingFolderName;
+    draft.location_name = folderName || "Top level";
+    draft.location_path_label = [parentPath, folderName].filter(Boolean).join(" / ") || folderName || "Top level";
+    draft.location_node_key = null;
+    draft.location_kind = folderName ? "folder" : "top_level";
+    draft.group_name = folderName || formName;
+    return;
+  }
+
+  if (matchedOption) {
+    draft.location_name = compactText(matchedOption.name) || explicitName || "Top level";
+    draft.location_path_label = compactText(matchedOption.path_label) || explicitPath || draft.location_name;
+    draft.location_node_key = compactText(matchedOption.node_key) || null;
+    draft.location_kind = "folder";
+    draft.group_name = draft.location_name || formName;
+    return;
+  }
+
+  const freeform = explicitPath || explicitName;
+  if (!freeform || isTopLevelLocationName(freeform) || freeform === formName) {
+    draft.location_name = "Top level";
+    draft.location_path_label = "Top level";
+    draft.location_node_key = null;
+    draft.location_kind = "top_level";
+    draft.group_name = formName;
+    return;
+  }
+
+  draft.location_name = compactText(freeform);
+  draft.location_path_label = compactText(freeform);
+  draft.location_node_key = null;
+  draft.location_kind = "folder";
+  draft.group_name = compactText(freeform) || formName;
 }
 
 function availableLocationNames() {
@@ -1522,13 +1571,7 @@ function makeBlankForm(config = {}) {
       sections: [],
     },
   };
-  if (!draft.library_parent_node_key && !draft.library_new_container_name && isTopLevelLocationName(draft.group_name)) {
-    draft.group_name = formName;
-    draft.location_name = "Top level";
-    draft.location_path_label = "Top level";
-    draft.location_node_key = null;
-    draft.location_kind = "top_level";
-  }
+  syncDraftLocationShadow(draft);
   return ensureDraftSchemas(draft, { preferBlocks: true });
 }
 
@@ -1721,17 +1764,15 @@ function duplicateCurrentForm(overrides = {}) {
   copy.group_name = String(overrides.locationName || overrides.groupName || "").trim() || copy.group_name;
   copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
   copy.library_new_container_name = String(overrides.libraryNewContainerName || "").trim() || copy.library_new_container_name || null;
-  copy.location_name = copy.library_parent_node_key ? (compactText(copy.location_name) || compactText(copy.group_name)) : "Top level";
-  copy.location_path_label = copy.library_parent_node_key ? (compactText(copy.location_path_label) || compactText(copy.location_name) || compactText(copy.group_name)) : "Top level";
-  copy.location_node_key = copy.library_parent_node_key || null;
-  copy.location_kind = copy.library_parent_node_key ? "folder" : "top_level";
   if (
     !copy.library_parent_node_key
     && !copy.library_new_container_name
     && (isTopLevelLocationName(copy.group_name) || compactText(copy.group_name) === previousName)
   ) {
-    copy.group_name = copy.name;
+    copy.location_name = "Top level";
+    copy.location_path_label = "Top level";
   }
+  syncDraftLocationShadow(copy);
   copy.schema.name = copy.name;
   copy.schema.key = slugify(copy.name);
   copy.schema.order = parsePositiveInt(copy.schema.order, 1);
@@ -3443,50 +3484,29 @@ function handleRootInput(event) {
       if (!state.draft.schema.key || state.draft.schema.key === slugify(previousName)) {
         state.draft.schema.key = slugify(rawValue);
       }
-      if (
-        !state.draft.library_parent_node_key
-        && !state.draft.library_new_container_name
-        && isTopLevelLocationName(state.draft.group_name || previousName)
-      ) {
-        state.draft.group_name = state.draft.name || "Untitled Form";
-        state.draft.location_name = "Top level";
-        state.draft.location_path_label = "Top level";
-        state.draft.location_node_key = null;
-        state.draft.location_kind = "top_level";
-      }
+      syncDraftLocationShadow(state.draft);
     } else if (bind === "location_name" || bind === "group_name") {
       if (state.draft.library_new_container_name) {
         state.draft.library_new_container_name = compactText(rawValue) || null;
-        state.draft.location_name = compactText(rawValue) || "Top level";
-        state.draft.location_path_label = compactText(rawValue) || "Top level";
-        state.draft.location_node_key = state.draft.library_parent_node_key || null;
-        state.draft.location_kind = compactText(rawValue) ? "folder" : "top_level";
-        state.draft.group_name = compactText(rawValue) || state.draft.name || "Untitled Form";
+        state.draft.location_name = compactText(rawValue);
+        state.draft.location_path_label = compactText(rawValue);
       } else {
         const matchedLocation = findLocationOptionByPathLabel(rawValue);
         if (matchedLocation) {
-          state.draft.group_name = matchedLocation.name;
           state.draft.library_parent_node_key = matchedLocation.node_key;
           state.draft.location_name = matchedLocation.name;
           state.draft.location_path_label = matchedLocation.path_label;
-          state.draft.location_node_key = matchedLocation.node_key;
-          state.draft.location_kind = "folder";
         } else if (isTopLevelLocationName(rawValue)) {
-          state.draft.group_name = state.draft.name || "Untitled Form";
           state.draft.library_parent_node_key = null;
           state.draft.location_name = "Top level";
           state.draft.location_path_label = "Top level";
-          state.draft.location_node_key = null;
-          state.draft.location_kind = "top_level";
         } else {
-          state.draft.group_name = compactText(rawValue);
           state.draft.library_parent_node_key = null;
           state.draft.location_name = compactText(rawValue);
           state.draft.location_path_label = compactText(rawValue);
-          state.draft.location_node_key = null;
-          state.draft.location_kind = "folder";
         }
       }
+      syncDraftLocationShadow(state.draft);
     }
   }
 
