@@ -593,6 +593,34 @@ def current_version(definition: FormDefinition) -> FormVersion | None:
     return definition.versions[-1] if definition.versions else None
 
 
+def load_legacy_storage_document(version: FormVersion) -> dict[str, Any]:
+    raw_schema = compact_text(version.schema_json)
+    if not raw_schema:
+        return {}
+    try:
+        parsed = json.loads(raw_schema)
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def load_block_storage_document(
+    version: FormVersion,
+    *,
+    legacy_storage_schema: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], bool]:
+    raw_block_storage = compact_text(version.block_schema_json)
+    if raw_block_storage:
+        try:
+            parsed = json.loads(raw_block_storage)
+            if isinstance(parsed, dict):
+                return parsed, False
+        except json.JSONDecodeError:
+            pass
+    fallback_legacy_storage = legacy_storage_schema if isinstance(legacy_storage_schema, dict) else load_legacy_storage_document(version)
+    return build_block_schema_from_legacy_storage(fallback_legacy_storage), True
+
+
 def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:
     form_node = definition.library_node
     parent_node = form_node.parent if form_node is not None else None
@@ -627,13 +655,7 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     if version is None:
         raise ValueError(f"Form '{definition.slug}' has no versions.")
 
-    if compact_text(version.block_schema_json):
-        try:
-            block_schema = json.loads(version.block_schema_json)
-        except json.JSONDecodeError:
-            block_schema = build_block_schema_from_legacy_storage(json.loads(version.schema_json))
-    else:
-        block_schema = build_block_schema_from_legacy_storage(json.loads(version.schema_json))
+    block_schema, _ = load_block_storage_document(version)
 
     location = serialize_form_location(definition)
     return {
@@ -1386,30 +1408,28 @@ def ensure_reference_seed(session: Session) -> None:
             raise
 
 
-def ensure_block_schema_storage(session: Session) -> None:
+def ensure_form_version_storage_documents(session: Session) -> None:
     versions = session.scalars(select(FormVersion).options(selectinload(FormVersion.form))).all()
     changed = False
 
     for version in versions:
-        schema = json.loads(version.schema_json)
+        legacy_storage_schema = load_legacy_storage_document(version)
         schema_changed = False
 
-        if "common_field_set_id" in schema:
-            schema.pop("common_field_set_id", None)
+        if "common_field_set_id" in legacy_storage_schema:
+            legacy_storage_schema.pop("common_field_set_id", None)
             schema_changed = True
 
-        definition_slug = version.form.slug if version.form is not None else compact_text(schema.get("key"))
+        definition_slug = version.form.slug if version.form is not None else compact_text(legacy_storage_schema.get("key"))
         stable_schema_id = stable_form_schema_id(definition_slug)
-        if compact_text(schema.get("id")) != stable_schema_id:
-            schema["id"] = stable_schema_id
+        if compact_text(legacy_storage_schema.get("id")) != stable_schema_id:
+            legacy_storage_schema["id"] = stable_schema_id
             schema_changed = True
 
-        block_changed = False
-        if compact_text(version.block_schema_json):
-            block_schema = json.loads(version.block_schema_json)
-        else:
-            block_schema = build_block_schema_from_legacy_storage(schema)
-            block_changed = True
+        block_schema, block_changed = load_block_storage_document(
+            version,
+            legacy_storage_schema=legacy_storage_schema,
+        )
 
         meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
         if "common_field_set_id" in meta:
@@ -1421,14 +1441,14 @@ def ensure_block_schema_storage(session: Session) -> None:
         if compact_text(meta.get("legacy_form_id")):
             meta.pop("legacy_form_id", None)
             block_changed = True
-        stable_form_key = compact_text(schema.get("key"))
+        stable_form_key = compact_text(legacy_storage_schema.get("key"))
         if compact_text(meta.get("form_key") or meta.get("legacy_form_key")) != stable_form_key:
             meta["form_key"] = stable_form_key
             block_changed = True
         if compact_text(meta.get("legacy_form_key")):
             meta.pop("legacy_form_key", None)
             block_changed = True
-        stable_form_order = int(schema.get("order") or 1)
+        stable_form_order = int(legacy_storage_schema.get("order") or 1)
         if int(meta.get("form_order") or meta.get("legacy_order") or 1) != stable_form_order:
             meta["form_order"] = stable_form_order
             block_changed = True
@@ -1438,7 +1458,7 @@ def ensure_block_schema_storage(session: Session) -> None:
         block_schema["meta"] = meta
 
         if schema_changed:
-            version.schema_json = json.dumps(schema, ensure_ascii=False)
+            version.schema_json = json.dumps(legacy_storage_schema, ensure_ascii=False)
             changed = True
         if block_changed:
             version.block_schema_json = json.dumps(block_schema, ensure_ascii=False)

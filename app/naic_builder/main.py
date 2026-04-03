@@ -17,7 +17,7 @@ from .services import (
     create_container,
     delete_container,
     create_form,
-    ensure_block_schema_storage,
+    ensure_form_version_storage_documents,
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
@@ -40,7 +40,7 @@ async def lifespan(_: FastAPI):
     ensure_runtime_schema()
     with SessionLocal() as session:
         ensure_reference_seed(session)
-        ensure_block_schema_storage(session)
+        ensure_form_version_storage_documents(session)
         ensure_library_tree(session)
     yield
 
