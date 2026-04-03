@@ -2045,7 +2045,7 @@ function renderFormSetupCard(options = {}) {
           </label>
           <label>
             <span>Location</span>
-            <input list="locationSuggestions" data-bind="group_name" value="${escapeHtml(locationInputValue)}" placeholder="Top level or choose a folder">
+            <input list="locationSuggestions" data-bind="location_name" value="${escapeHtml(locationInputValue)}" placeholder="Top level or choose a folder">
           </label>
         </div>
         ${renderLocationSuggestions()}
@@ -3454,13 +3454,14 @@ function handleRootInput(event) {
         state.draft.location_node_key = null;
         state.draft.location_kind = "top_level";
       }
-    } else if (bind === "group_name") {
+    } else if (bind === "location_name" || bind === "group_name") {
       if (state.draft.library_new_container_name) {
         state.draft.library_new_container_name = compactText(rawValue) || null;
         state.draft.location_name = compactText(rawValue) || "Top level";
         state.draft.location_path_label = compactText(rawValue) || "Top level";
         state.draft.location_node_key = state.draft.library_parent_node_key || null;
         state.draft.location_kind = compactText(rawValue) ? "folder" : "top_level";
+        state.draft.group_name = compactText(rawValue) || state.draft.name || "Untitled Form";
       } else {
         const matchedLocation = findLocationOptionByPathLabel(rawValue);
         if (matchedLocation) {
