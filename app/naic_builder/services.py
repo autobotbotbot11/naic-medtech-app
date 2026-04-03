@@ -493,6 +493,27 @@ def normalize_block_schema_storage(
     return block_schema
 
 
+def normalize_builder_block_payload(
+    raw_block_schema: dict[str, Any],
+    *,
+    slug: str,
+    name: str,
+    form_order: int,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    legacy_schema = block_schema_to_legacy_schema(raw_block_schema)
+    normalized_schema = normalize_form_schema(
+        legacy_schema,
+        slug=slug,
+        name=name,
+        form_order=form_order,
+    )
+    stored_block_schema = normalize_block_schema_storage(
+        raw_block_schema,
+        normalized_schema=normalized_schema,
+    )
+    return normalized_schema, stored_block_schema
+
+
 def stable_form_schema_id(slug: str) -> str:
     return f"form.{slugify(slug or 'compat')}"
 
@@ -1383,7 +1404,8 @@ def ensure_block_schema_storage(session: Session) -> None:
 
 
 def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
-    raw_schema = coerce_legacy_schema(payload.form_schema)
+    raw_block_schema = payload.form_schema if isinstance(payload.form_schema, dict) else {}
+    raw_schema = block_schema_to_legacy_schema(raw_block_schema)
     slug = next_available_slug(
         session,
         payload.slug or raw_schema.get("key") or payload.name or "untitled_form",
@@ -1396,13 +1418,12 @@ def create_form(session: Session, payload: FormSavePayload) -> dict[str, Any]:
         library_parent_node_key=payload.library_parent_node_key,
         library_new_container_name=payload.library_new_container_name,
     )
-    normalized_schema = normalize_form_schema(
-        raw_schema,
+    normalized_schema, stored_block_schema = normalize_builder_block_payload(
+        raw_block_schema,
         slug=slug,
         name=name,
         form_order=location_meta["resolved_form_order"],
     )
-    stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
     definition = create_form_definition_record(
         slug=slug,
@@ -1440,7 +1461,8 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
     if definition is None:
         raise KeyError(slug)
 
-    raw_schema = coerce_legacy_schema(payload.form_schema)
+    raw_block_schema = payload.form_schema if isinstance(payload.form_schema, dict) else {}
+    raw_schema = block_schema_to_legacy_schema(raw_block_schema)
     name = compact_text(payload.name or raw_schema.get("name")) or definition.name
     location_meta = resolve_form_location_metadata(
         session,
@@ -1450,13 +1472,12 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         library_new_container_name=payload.library_new_container_name,
         existing_definition=definition,
     )
-    normalized_schema = normalize_form_schema(
-        raw_schema,
+    normalized_schema, stored_block_schema = normalize_builder_block_payload(
+        raw_block_schema,
         slug=definition.slug,
         name=name,
         form_order=location_meta["resolved_form_order"],
     )
-    stored_block_schema = normalize_block_schema_storage(payload.form_schema, normalized_schema=normalized_schema)
 
     next_version = (current_version(definition).version_number if current_version(definition) else 0) + 1
     for version in definition.versions:

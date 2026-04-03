@@ -140,6 +140,7 @@
       "the live save contract is stricter too: FormSavePayload now expects the block-based form_schema shape in active API usage, so old fields and sections save payloads are no longer part of the live builder contract",
       "the live form-read contract is thinner too: /api/forms/{slug} now returns only block_schema for the active form shape, and the builder derives any temporary legacy projection locally",
       "backend naming is more honest too: the no-op save alias validator is gone, and the remaining form-definition helpers in services.py now read like tree-first helpers instead of grouped-era compatibility names",
+      "the active create/update path is thinner too: block-based save payloads now normalize directly through a block-first helper instead of routing the live request path through coerce_legacy_schema()",
       "form create, update, and move flows now use a shared tree-first form-node sync helper, so the real LibraryNode state is updated directly before legacy mirrors are backfilled",
       "resolve_form_location_metadata is more tree-first too: it now feeds create/update with resolved_parent_* and resolved_form_order values instead of returning group_* as the primary active shape",
       "legacy group_* mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths",
