@@ -571,17 +571,22 @@ function topLevelPreviewSegments() {
   return segments;
 }
 
+function normalizeTopLevelLocationValue(value) {
+  const normalized = compactText(value);
+  return normalized === "Unassigned" ? "Top level" : normalized;
+}
+
 function isTopLevelLocationName(name) {
-  const value = String(name || "").trim();
-  return !value || value === "Unassigned" || value === "Top level";
+  const value = normalizeTopLevelLocationValue(name);
+  return !value || value === "Top level";
 }
 
 function compactLocationName(draft = state.draft) {
-  return compactText(draft?.location_name);
+  return normalizeTopLevelLocationValue(draft?.location_name);
 }
 
 function compactLocationPathLabel(draft = state.draft) {
-  return compactText(draft?.location_path_label);
+  return normalizeTopLevelLocationValue(draft?.location_path_label);
 }
 
 function availableLocationOptions() {
@@ -613,7 +618,7 @@ function isTopLevelDraftLocation(draft = state.draft) {
   }
   const locationName = compactLocationName(draft);
   const formName = compactText(draft.name);
-  return !locationName || locationName === "Unassigned" || locationName === "Top level" || locationName === formName;
+  return !locationName || locationName === "Top level" || locationName === formName;
 }
 
 function displayLocationName(draft = state.draft) {
