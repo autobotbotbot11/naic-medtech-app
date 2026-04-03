@@ -228,8 +228,8 @@ function legacySectionToBlock(section) {
 function legacySchemaToBlockSchema(schema) {
   const normalized = normalizeSchemaShape(schema);
   const meta = {
-    legacy_form_key: normalized.key || slugify(normalized.name || "untitled_form"),
-    legacy_order: normalized.order,
+    form_key: normalized.key || slugify(normalized.name || "untitled_form"),
+    form_order: normalized.order,
   };
 
   if (normalized.notes.length) {
@@ -362,8 +362,8 @@ function blockSchemaToLegacySchema(blockSchema, fallback = {}) {
 
   return {
     name: String(fallback?.name || "").trim(),
-    key: String(meta.legacy_form_key || fallback?.schema?.key || slugify(fallback?.name || "untitled_form")).trim(),
-    order: parsePositiveInt(meta.legacy_order, fallback?.schema?.order || 1),
+    key: String(meta.form_key || meta.legacy_form_key || fallback?.schema?.key || slugify(fallback?.name || "untitled_form")).trim(),
+    order: parsePositiveInt(meta.form_order, parsePositiveInt(meta.legacy_order, fallback?.schema?.order || 1)),
     notes: normalizeArray(meta.notes),
     fields,
     sections,
@@ -432,8 +432,10 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
   }
 
   const schema = normalizeSchemaShape(draft.schema || {});
-  meta.legacy_form_key = String(schema.key || slugify(draft.name || "untitled_form")).trim() || "untitled_form";
-  meta.legacy_order = parsePositiveInt(schema.order, 1);
+  meta.form_key = String(schema.key || slugify(draft.name || "untitled_form")).trim() || "untitled_form";
+  meta.form_order = parsePositiveInt(schema.order, 1);
+  delete meta.legacy_form_key;
+  delete meta.legacy_order;
 
   const notes = normalizeArray(schema.notes);
   if (notes.length) {

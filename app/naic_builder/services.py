@@ -271,9 +271,9 @@ def legacy_section_to_block(section: dict[str, Any]) -> dict[str, Any]:
 
 def legacy_schema_to_block_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
     meta: dict[str, Any] = {
-        "legacy_form_id": compact_text(raw_schema.get("id")),
-        "legacy_form_key": compact_text(raw_schema.get("key")),
-        "legacy_order": int(raw_schema.get("order") or 1),
+        "form_id": compact_text(raw_schema.get("id")),
+        "form_key": compact_text(raw_schema.get("key")),
+        "form_order": int(raw_schema.get("order") or 1),
     }
 
     notes = normalize_notes(raw_schema.get("notes"))
@@ -413,7 +413,7 @@ def block_section_to_legacy_section(block: dict[str, Any], form_id: str, order: 
 def block_schema_to_legacy_schema(raw_schema: dict[str, Any]) -> dict[str, Any]:
     blocks = normalize_items(raw_schema.get("blocks"))
     meta = raw_schema.get("meta") if isinstance(raw_schema.get("meta"), dict) else {}
-    form_id = compact_text(meta.get("legacy_form_id")) or "form.compat"
+    form_id = compact_text(meta.get("form_id") or meta.get("legacy_form_id")) or "form.compat"
     used_field_keys: set[str] = set()
     used_section_keys: set[str] = set()
 
@@ -473,9 +473,12 @@ def normalize_block_schema_storage(
 
     meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
     meta.pop("common_field_set_id", None)
-    meta["legacy_form_id"] = compact_text(normalized_schema.get("id"))
-    meta["legacy_form_key"] = compact_text(normalized_schema.get("key"))
-    meta["legacy_order"] = int(normalized_schema.get("order") or 1)
+    meta["form_id"] = compact_text(normalized_schema.get("id"))
+    meta["form_key"] = compact_text(normalized_schema.get("key"))
+    meta["form_order"] = int(normalized_schema.get("order") or 1)
+    meta.pop("legacy_form_id", None)
+    meta.pop("legacy_form_key", None)
+    meta.pop("legacy_order", None)
 
     notes = normalize_notes(normalized_schema.get("notes"))
     if notes:
@@ -1387,8 +1390,25 @@ def ensure_block_schema_storage(session: Session) -> None:
         if "common_field_set_id" in meta:
             meta.pop("common_field_set_id", None)
             block_changed = True
-        if compact_text(meta.get("legacy_form_id")) != stable_schema_id:
-            meta["legacy_form_id"] = stable_schema_id
+        if compact_text(meta.get("form_id") or meta.get("legacy_form_id")) != stable_schema_id:
+            meta["form_id"] = stable_schema_id
+            block_changed = True
+        if compact_text(meta.get("legacy_form_id")):
+            meta.pop("legacy_form_id", None)
+            block_changed = True
+        stable_form_key = compact_text(schema.get("key"))
+        if compact_text(meta.get("form_key") or meta.get("legacy_form_key")) != stable_form_key:
+            meta["form_key"] = stable_form_key
+            block_changed = True
+        if compact_text(meta.get("legacy_form_key")):
+            meta.pop("legacy_form_key", None)
+            block_changed = True
+        stable_form_order = int(schema.get("order") or 1)
+        if int(meta.get("form_order") or meta.get("legacy_order") or 1) != stable_form_order:
+            meta["form_order"] = stable_form_order
+            block_changed = True
+        if compact_text(meta.get("legacy_order")):
+            meta.pop("legacy_order", None)
             block_changed = True
         block_schema["meta"] = meta
 
