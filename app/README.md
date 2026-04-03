@@ -96,6 +96,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the last-resort tree rebuild fallback is safer too: if a definition loses its node, parent key, and all usable legacy location hints, it now rebuilds as a top-level form instead of inventing a self-named folder from missing legacy data
 - stored version metadata is cleaner too: startup/reset backfill now strips stale `common_field_set_id` from old `schema_json` and `block_schema_json`, and it normalizes old location-bound legacy form ids into stable `form.<slug>` values
 - the save payload alias path is thinner too: `group_name` is now just a tolerated legacy input alias that gets normalized into `location_name` and removed before validation, instead of lingering as part of the active request shape
+- top-level compatibility shadows are more honest too: when a form lives at the root, legacy `group_name`, `group_kind`, and `group_order` are now kept `NULL` instead of being filled with a fake self-named group
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
