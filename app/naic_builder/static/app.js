@@ -189,6 +189,7 @@ function ensureDraftBlockState(draft) {
   draft.name = compactText(draft.name) || "Untitled Form";
   syncRootMetaToBlockSchema(draft);
   syncDraftLocationState(draft);
+  normalizeArray(draft.block_schema.blocks).forEach(normalizeLiveBlockNode);
   delete draft.schema;
   delete draft.form_schema;
   return draft;
@@ -301,7 +302,7 @@ function getInputControl(field) {
 
 function getInputDataType(field) {
   return isBlockNode(field)
-    ? String(getNodeProps(field).data_type || getNodeProps(field).field_type || "text").trim() || "text"
+    ? String(getNodeProps(field).data_type || "text").trim() || "text"
     : "text";
 }
 
@@ -336,6 +337,21 @@ function ensureOptionShape(field) {
     };
   });
   return props.options;
+}
+
+function normalizeLiveBlockNode(node) {
+  if (!isStoredBlockNode(node)) {
+    return;
+  }
+
+  const props = getNodeProps(node);
+  delete props.field_type;
+
+  if (blockKind(node) === "field") {
+    ensureOptionShape(node);
+  }
+
+  getNodeChildren(node).forEach(normalizeLiveBlockNode);
 }
 
 function getInputOptions(field) {
@@ -1204,7 +1220,6 @@ function makeBlankField() {
     props: {
       key: "new_field",
       order: 1,
-      field_type: "text",
       control: "input",
       data_type: "text",
       unit_hint: "",
@@ -1383,7 +1398,7 @@ function applyInputType(field, typeId) {
     return;
   }
   const props = getNodeProps(field);
-  props.field_type = selected.id === "choice" ? "select" : selected.dataType;
+  delete props.field_type;
   props.control = selected.control;
   props.data_type = selected.dataType;
   if (selected.id === "choice") {

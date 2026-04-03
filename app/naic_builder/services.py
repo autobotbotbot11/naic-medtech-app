@@ -165,16 +165,6 @@ def normalize_section(section: dict[str, Any], form_id: str, order: int, used_ke
     return normalized
 
 
-def infer_block_field_type(field: dict[str, Any]) -> str:
-    control = compact_text(field.get("control")) or "input"
-    data_type = compact_text(field.get("data_type")) or "text"
-    if control == "select":
-        return "select"
-    if data_type == "date_or_datetime":
-        return "datetime"
-    return data_type or "text"
-
-
 def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
     field_id = compact_text(field.get("id")) or f"blk_{slugify(field.get('name') or 'field')}"
     kind = "field_group" if compact_text(field.get("kind")) == "field_group" else "field"
@@ -204,7 +194,6 @@ def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
             ],
         }
 
-    props["field_type"] = infer_block_field_type(field)
     props["control"] = compact_text(field.get("control")) or "input"
     props["data_type"] = compact_text(field.get("data_type")) or "text"
     props["required"] = bool(field.get("required") or False)
@@ -339,16 +328,14 @@ def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: in
         ]
         return normalize_field(raw_field, parent_id, order, used_keys)
 
-    field_type = compact_text(props.get("field_type")) or "text"
-    if field_type == "select":
+    control = compact_text(props.get("control")) or "input"
+    data_type = compact_text(props.get("data_type")) or "text"
+    if control == "select" or data_type == "enum":
         control = "select"
         data_type = "enum"
-    elif field_type in {"date", "time", "datetime", "number", "text", "textarea"}:
-        control = "input"
-        data_type = field_type
     else:
-        control = compact_text(props.get("control")) or "input"
-        data_type = compact_text(props.get("data_type")) or "text"
+        control = "input"
+        data_type = data_type or "text"
 
     raw_field["control"] = control
     raw_field["data_type"] = data_type
@@ -452,6 +439,81 @@ def build_legacy_storage_schema_from_blocks(raw_schema: dict[str, Any]) -> dict[
     return legacy
 
 
+def normalize_block_option_props(raw_options: Any) -> list[dict[str, Any]]:
+    normalized: list[dict[str, Any]] = []
+
+    for index, option in enumerate(normalize_items(raw_options), start=1):
+        if isinstance(option, dict):
+            normalized_option = dict(option)
+            name = compact_text(normalized_option.get("name") or normalized_option.get("label"))
+            if not name:
+                continue
+            normalized_option["name"] = name
+            normalized_option.pop("label", None)
+            normalized_option["key"] = compact_text(normalized_option.get("key")) or slugify(name) or f"option_{index}"
+            normalized_option["order"] = int(normalized_option.get("order") or index)
+            normalized.append(normalized_option)
+            continue
+
+        name = compact_text(option)
+        if not name:
+            continue
+        normalized.append(
+            {
+                "name": name,
+                "key": slugify(name) or f"option_{index}",
+                "order": index,
+            }
+        )
+
+    return normalized
+
+
+def normalize_active_block_storage_node(node: dict[str, Any]) -> bool:
+    if not isinstance(node, dict):
+        return False
+
+    changed = False
+    props = node.get("props") if isinstance(node.get("props"), dict) else None
+    if isinstance(props, dict):
+        if "field_type" in props:
+            props.pop("field_type", None)
+            changed = True
+
+        if "options" in props:
+            normalized_options = normalize_block_option_props(props.get("options"))
+            if normalized_options:
+                if normalized_options != props.get("options"):
+                    props["options"] = normalized_options
+                    changed = True
+            else:
+                props.pop("options", None)
+                changed = True
+
+    for child in normalize_items(node.get("children")):
+        if normalize_active_block_storage_node(child):
+            changed = True
+
+    return changed
+
+
+def normalize_active_block_storage_schema(block_schema: dict[str, Any]) -> bool:
+    if not isinstance(block_schema, dict):
+        return False
+
+    changed = False
+    blocks = normalize_items(block_schema.get("blocks"))
+    if block_schema.get("blocks") != blocks:
+        block_schema["blocks"] = blocks
+        changed = True
+
+    for block in blocks:
+        if normalize_active_block_storage_node(block):
+            changed = True
+
+    return changed
+
+
 def build_block_storage_payload(
     raw_schema: dict[str, Any],
     *,
@@ -467,6 +529,7 @@ def build_block_storage_payload(
     block_schema["schema_version"] = int(block_schema.get("schema_version") or 1)
     block_schema["source_kind"] = source_kind
     block_schema["blocks"] = normalize_items(block_schema.get("blocks"))
+    normalize_active_block_storage_schema(block_schema)
 
     meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
     meta.pop("common_field_set_id", None)
@@ -1454,6 +1517,9 @@ def ensure_form_version_storage_documents(session: Session) -> None:
             block_changed = True
         if compact_text(meta.get("legacy_order")):
             meta.pop("legacy_order", None)
+            block_changed = True
+
+        if normalize_active_block_storage_schema(block_schema):
             block_changed = True
         block_schema["meta"] = meta
 
