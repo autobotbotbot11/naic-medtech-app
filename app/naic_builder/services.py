@@ -545,6 +545,35 @@ def current_version(definition: FormDefinition) -> FormVersion | None:
     return definition.versions[-1] if definition.versions else None
 
 
+def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:
+    form_node = definition.library_node
+    parent_node = form_node.parent if form_node is not None else None
+
+    if parent_node is None:
+        return {
+            "location_name": "Top level",
+            "location_path_label": "Top level",
+            "location_node_key": None,
+            "location_kind": "top_level",
+        }
+
+    path: list[str] = []
+    cursor = parent_node
+    while cursor is not None:
+        path.append(compact_text(cursor.name) or "Untitled Folder")
+        cursor = cursor.parent
+    path.reverse()
+
+    location_name = path[-1] if path else compact_text(parent_node.name) or "Untitled Folder"
+    location_path_label = " / ".join(path) if path else location_name
+    return {
+        "location_name": location_name,
+        "location_path_label": location_path_label,
+        "location_node_key": compact_text(parent_node.node_key) or None,
+        "location_kind": "folder",
+    }
+
+
 def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     version = current_version(definition)
     if version is None:
@@ -559,9 +588,15 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     else:
         block_schema = legacy_schema_to_block_schema(schema)
 
+    location = serialize_form_location(definition)
+
     return {
         "slug": definition.slug,
         "name": definition.name,
+        "location_name": location["location_name"],
+        "location_path_label": location["location_path_label"],
+        "location_node_key": location["location_node_key"],
+        "location_kind": location["location_kind"],
         "group_name": definition.group_name,
         "group_kind": definition.group_kind,
         "group_order": definition.group_order,
@@ -580,7 +615,7 @@ def get_form_or_none(session: Session, slug: str) -> FormDefinition | None:
     return session.scalar(
         select(FormDefinition)
         .where(FormDefinition.slug == slug)
-        .options(selectinload(FormDefinition.versions))
+        .options(selectinload(FormDefinition.versions), selectinload(FormDefinition.library_node))
     )
 
 
