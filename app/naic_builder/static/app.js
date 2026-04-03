@@ -739,13 +739,21 @@ function topLevelPreviewSegments() {
     if (!looseFields.length) {
       return;
     }
-    const baseLabel = "Top content";
-    const baseId = "top_content";
     const localIndex = ++looseGroupCount;
+    const baseLabel = localIndex === 1
+      ? "Top content"
+      : localIndex === 2
+        ? "More content"
+        : `More content ${localIndex - 1}`;
+    const baseId = localIndex === 1
+      ? "top_content"
+      : localIndex === 2
+        ? "more_content"
+        : `more_content_${localIndex - 1}`;
     segments.push({
-      id: localIndex === 1 ? `preview_section_${baseId}` : `preview_section_${baseId}_${localIndex}`,
-      label: localIndex === 1 ? baseLabel : `${baseLabel} ${localIndex}`,
-      title: localIndex === 1 ? baseLabel : `${baseLabel} ${localIndex}`,
+      id: `preview_section_${baseId}`,
+      label: baseLabel,
+      title: baseLabel,
       fields: looseFields,
     });
     looseFields = [];
@@ -2657,7 +2665,6 @@ function renderFieldCard(field, path, options = {}) {
       : [
           compactUnit ? `Unit ${compactUnit}` : "",
           compactNormal ? `Normal ${compactNormal}` : "",
-          !compactUnit && !compactNormal ? summary : "",
         ].filter(Boolean).join(" | ");
     const addItems = isGroup
       ? [
@@ -2679,7 +2686,7 @@ function renderFieldCard(field, path, options = {}) {
           <div>
             <div class="field-meta">
               ${isGroup ? '<span class="chip warm">Group</span>' : ""}
-              ${!isGroup ? `<span class="field-summary">${escapeHtml(summary)}</span>` : ""}
+              ${!isGroup && !focusedCard ? `<span class="field-summary">${escapeHtml(summary)}</span>` : ""}
             </div>
             <h4 class="field-display-title">${escapeHtml(field.name || (isGroup ? "Untitled Group" : "Untitled Field"))}</h4>
           </div>
@@ -2700,7 +2707,7 @@ function renderFieldCard(field, path, options = {}) {
           ${focusedCard ? `
             <div class="field-spotlight">
               <strong>${escapeHtml(isGroup ? "Group" : "Field")}</strong>
-              <span>${escapeHtml(spotlightMeta)}</span>
+              ${spotlightMeta ? `<span>${escapeHtml(spotlightMeta)}</span>` : ""}
             </div>
           ` : ""}
 
@@ -2740,11 +2747,11 @@ function renderFieldCard(field, path, options = {}) {
               </label>
               ${isGroup ? "" : `
                 <label>
-                  <span>Normal value</span>
+                  <span>Normal</span>
                   <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getFieldNormalValue(fieldNode || field) || "")}" placeholder="Example: 4.5 - 11.0">
                 </label>
                 <label>
-                  <span>Unit hint</span>
+                  <span>Unit</span>
                   <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getFieldUnitHint(fieldNode || field) || "")}" placeholder="Example: mg/dL">
                 </label>
               `}
