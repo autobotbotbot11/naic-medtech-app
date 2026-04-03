@@ -777,12 +777,6 @@ function topLevelPreviewSegments() {
   return segments;
 }
 
-function currentCommonFieldSetName() {
-  const selectedId = state.draft?.schema?.common_field_set_id || "default_lab_request";
-  const match = normalizeArray(state.bootstrap?.common_field_sets).find((fieldSet) => fieldSet.id === selectedId);
-  return match?.name || "Default Lab Request Metadata";
-}
-
 function isTopLevelLocationName(name) {
   const value = String(name || "").trim();
   return !value || value === "Unassigned" || value === "Top level";
@@ -1804,14 +1798,6 @@ function renderFormList() {
   }
 }
 
-function renderCommonFieldSetOptions(selectedId) {
-  return normalizeArray(state.bootstrap?.common_field_sets)
-    .map((fieldSet) => `
-      <option value="${escapeHtml(fieldSet.id)}"${fieldSet.id === selectedId ? " selected" : ""}>${escapeHtml(fieldSet.name)}</option>
-    `)
-    .join("");
-}
-
 function defaultFocusPane() {
   if (!state.selectedFormSlug) {
     return "setup";
@@ -1962,7 +1948,6 @@ function renderFormSetupCard(options = {}) {
   const formName = state.draft.name || "Untitled Form";
   const groupName = displayLocationName(state.draft.group_name);
   const groupInputValue = editableLocationValue(state.draft.group_name);
-  const sharedFieldSetName = currentCommonFieldSetName();
   const currentVersion = currentVersionLabel();
   return `
     <section class="editor-card">
@@ -1971,7 +1956,7 @@ function renderFormSetupCard(options = {}) {
           <p class="eyebrow">Basics</p>
           <div class="card-title-row">
             <h3 class="card-title">Basics</h3>
-            ${renderHelpPopover("Basics help", "Name the form and choose its location. Leave record defaults tucked away unless you need them.")}
+            ${renderHelpPopover("Basics help", "Name the form and choose its location. Leave advanced details tucked away unless you need them.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -2007,12 +1992,6 @@ function renderFormSetupCard(options = {}) {
             <summary>Advanced</summary>
             <div class="advanced-grid">
               <label>
-                <span>Record defaults</span>
-                <select data-bind="schema.common_field_set_id">
-                  ${renderCommonFieldSetOptions(state.draft.schema.common_field_set_id || "default_lab_request")}
-                </select>
-              </label>
-              <label>
                 <span>Key</span>
                 <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
               </label>
@@ -2026,7 +2005,7 @@ function renderFormSetupCard(options = {}) {
       ` : `
         <div class="collapsed-copy">
           <strong>${escapeHtml(formName)}</strong>
-          ${escapeHtml(groupName)}${state.ui.advancedMode ? ` | ${escapeHtml(sharedFieldSetName)}` : ""}
+          ${escapeHtml(groupName)}
         </div>
       `}
     </section>
