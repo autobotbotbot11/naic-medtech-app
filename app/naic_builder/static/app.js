@@ -822,7 +822,7 @@ function isTopLevelDraftLocation(draft = state.draft) {
   if (compactText(draft.library_parent_node_key)) {
     return false;
   }
-  const locationName = compactLocationName(draft) || compactText(draft.group_name);
+  const locationName = compactLocationName(draft);
   const formName = compactText(draft.name);
   return !locationName || locationName === "Unassigned" || locationName === "Top level" || locationName === formName;
 }
@@ -839,7 +839,7 @@ function displayLocationName(draft = state.draft) {
   if (matchedOption?.path_label) {
     return matchedOption.path_label;
   }
-  return isTopLevelDraftLocation(draft) ? "Top level" : compactLocationName(draft) || compactText(draft.group_name) || "Top level";
+  return isTopLevelDraftLocation(draft) ? "Top level" : compactLocationName(draft) || "Top level";
 }
 
 function editableLocationValue(draft = state.draft) {
@@ -854,7 +854,7 @@ function editableLocationValue(draft = state.draft) {
   if (matchedOption?.path_label) {
     return matchedOption.path_label;
   }
-  return isTopLevelDraftLocation(draft) ? "" : compactText(draft.group_name);
+  return isTopLevelDraftLocation(draft) ? "" : compactLocationName(draft);
 }
 
 function syncDraftLocationShadow(draft = state.draft) {
@@ -1557,7 +1557,6 @@ function makeBlankForm(config = {}) {
     location_path_label: isTopLevelLocationName(locationName) ? "Top level" : locationName,
     location_node_key: String(config.libraryParentNodeKey || "").trim() || null,
     location_kind: isTopLevelLocationName(locationName) ? "top_level" : "folder",
-    group_name: locationName,
     library_parent_node_key: String(config.libraryParentNodeKey || "").trim() || null,
     library_new_container_name: String(config.libraryNewContainerName || "").trim() || null,
     current_version_number: 0,
@@ -1761,13 +1760,17 @@ function duplicateCurrentForm(overrides = {}) {
   copy.current_version_number = 0;
   copy.summary = "";
   copy.name = String(overrides.name || "").trim() || makeCopyName(copy.name);
-  copy.group_name = String(overrides.locationName || overrides.groupName || "").trim() || copy.group_name;
+  const nextLocationName = String(overrides.locationName || overrides.groupName || "").trim();
+  if (nextLocationName) {
+    copy.location_name = nextLocationName;
+    copy.location_path_label = nextLocationName;
+  }
   copy.library_parent_node_key = String(overrides.libraryParentNodeKey || "").trim() || copy.library_parent_node_key || null;
   copy.library_new_container_name = String(overrides.libraryNewContainerName || "").trim() || copy.library_new_container_name || null;
   if (
     !copy.library_parent_node_key
     && !copy.library_new_container_name
-    && (isTopLevelLocationName(copy.group_name) || compactText(copy.group_name) === previousName)
+    && (isTopLevelLocationName(copy.location_name) || compactText(copy.location_name) === previousName)
   ) {
     copy.location_name = "Top level";
     copy.location_path_label = "Top level";

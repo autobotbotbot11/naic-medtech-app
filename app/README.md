@@ -80,7 +80,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - top-level drafts are more stable too: renaming a top-level form now keeps the fallback location state in sync, so the builder no longer shows a stale old location name
 - the builder no longer tracks `common_field_set_id` in the active frontend draft path, so the current UI no longer carries that hidden shared-metadata concept around while editing
 - serialized form responses no longer expose `common_field_set_id` either, so the active API shape is less tied to the old shared-metadata model
-- serialized form responses no longer expose `group_kind`, `group_order`, or `form_order` either; only `group_name` remains as compatibility shadow metadata while the live flow stays tree-first
+- serialized form responses no longer expose `group_name`, `group_kind`, `group_order`, or `form_order`; the live API now exposes only tree-first `location_*` metadata, while the builder recreates any needed compatibility shadow state locally
+- the visible builder location helpers now read from `location_*` directly too; `group_name` remains only as internal shadow metadata inside the sync helper instead of a primary display source
 - top-level new and copied drafts are cleaner too: they no longer start from the old `Unassigned` sentinel or keep a stale previous form name as fake location state
 - the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use `location` language instead of old `group` wording where the UI already treats folders as locations
 - the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old `group_kind/group_order/form_order` inputs

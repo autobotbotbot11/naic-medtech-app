@@ -573,26 +573,6 @@ def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:
     }
 
 
-def serialize_legacy_group_metadata(definition: FormDefinition) -> dict[str, Any]:
-    form_node = definition.library_node
-    parent_node = form_node.parent if form_node is not None else None
-
-    if parent_node is not None and parent_node.kind == "container":
-        return {
-            "group_name": compact_text(parent_node.name) or "Untitled Folder",
-            "group_kind": "category",
-            "group_order": int(parent_node.node_order or 999),
-            "form_order": int(form_node.node_order or 1) if form_node is not None else int(definition.form_order or 1),
-        }
-
-    return {
-        "group_name": compact_text(definition.name) or "Untitled Form",
-        "group_kind": "standalone_form",
-        "group_order": 999,
-        "form_order": int(form_node.node_order or 1) if form_node is not None else int(definition.form_order or 1),
-    }
-
-
 def serialize_form(definition: FormDefinition) -> dict[str, Any]:
     version = current_version(definition)
     if version is None:
@@ -608,8 +588,6 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         block_schema = legacy_schema_to_block_schema(schema)
 
     location = serialize_form_location(definition)
-    legacy_group = serialize_legacy_group_metadata(definition)
-
     return {
         "slug": definition.slug,
         "name": definition.name,
@@ -617,7 +595,6 @@ def serialize_form(definition: FormDefinition) -> dict[str, Any]:
         "location_path_label": location["location_path_label"],
         "location_node_key": location["location_node_key"],
         "location_kind": location["location_kind"],
-        "group_name": legacy_group["group_name"],
         "library_parent_node_key": definition.library_parent_node_key,
         "current_version_number": version.version_number,
         "summary": version.summary,
