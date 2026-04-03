@@ -375,27 +375,72 @@ function blockKind(node) {
   return String(node?.kind || "").trim();
 }
 
-function ensureDraftSchemas(draft, options = {}) {
+function getDraftFormKey(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return "";
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  return compactText(meta?.form_key) || slugify(draft.name || "untitled_form") || "untitled_form";
+}
+
+function setDraftFormKey(value, draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return;
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  meta.form_key = compactText(value) || slugify(draft.name || "untitled_form") || "untitled_form";
+}
+
+function getDraftFormNotes(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return [];
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  return normalizeArray(meta?.notes);
+}
+
+function setDraftFormNotes(value, draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return;
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  const notes = normalizeArray(value);
+  if (notes.length) {
+    meta.notes = deepClone(notes);
+  } else {
+    delete meta.notes;
+  }
+}
+
+function ensureDraftBlockState(draft) {
   if (!draft || typeof draft !== "object") {
     return draft;
   }
 
-  const preferBlocks = Boolean(options.preferBlocks);
   const existingBlockSchema = draft.block_schema && typeof draft.block_schema === "object"
     ? deepClone(draft.block_schema)
     : null;
+  const fallbackSchema = draft.form_schema && typeof draft.form_schema === "object"
+    ? draft.form_schema
+    : draft.schema;
 
-  if (existingBlockSchema && (preferBlocks || !draft.schema)) {
-    draft.schema = blockSchemaToLegacySchema(existingBlockSchema, draft);
+  if (existingBlockSchema) {
+    draft.block_schema = existingBlockSchema;
+  } else if (fallbackSchema && typeof fallbackSchema === "object") {
+    draft.block_schema = legacySchemaToBlockSchema(fallbackSchema);
+  } else {
+    draft.block_schema = {
+      schema_version: 1,
+      source_kind: "compat_legacy_fields_sections",
+      meta: {},
+      blocks: [],
+    };
   }
 
-  draft.schema = normalizeSchemaShape(draft.schema || {});
-  draft.schema.name = String(draft.name || draft.schema.name || "").trim();
-  draft.schema.key = String(draft.schema.key || slugify(draft.schema.name || draft.name || "untitled_form")).trim();
-  draft.schema.order = parsePositiveInt(draft.schema.order, 1);
-  draft.block_schema = existingBlockSchema || legacySchemaToBlockSchema(draft.schema);
+  draft.name = compactText(draft.name || fallbackSchema?.name) || "Untitled Form";
   syncRootMetaToBlockSchema(draft);
   syncDraftLocationShadow(draft);
+  delete draft.schema;
   return draft;
 }
 
@@ -431,41 +476,28 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
     return;
   }
 
-  const schema = normalizeSchemaShape(draft.schema || {});
-  meta.form_key = String(schema.key || slugify(draft.name || "untitled_form")).trim() || "untitled_form";
-  meta.form_order = parsePositiveInt(schema.order, 1);
+  meta.form_key = compactText(meta.form_key) || slugify(draft.name || "untitled_form") || "untitled_form";
+  meta.form_order = parsePositiveInt(meta.form_order, 1);
   delete meta.legacy_form_key;
   delete meta.legacy_order;
 
-  const notes = normalizeArray(schema.notes);
+  const notes = normalizeArray(meta.notes);
   if (notes.length) {
     meta.notes = deepClone(notes);
   } else {
     delete meta.notes;
   }
 
-  if (schema.source && typeof schema.source === "object") {
-    meta.source = deepClone(schema.source);
-  } else {
+  if (!(meta.source && typeof meta.source === "object")) {
     delete meta.source;
   }
 }
 
-function syncDraftCompatibilitySchemas(source = "blocks") {
+function syncDraftBlockState() {
   if (!state.draft) {
     return;
   }
-
-  if (source === "legacy" || !state.draft.block_schema) {
-    ensureDraftSchemas(state.draft);
-    return;
-  }
-
   syncRootMetaToBlockSchema(state.draft);
-  state.draft.schema = normalizeSchemaShape(blockSchemaToLegacySchema(state.draft.block_schema, state.draft));
-  state.draft.schema.name = String(state.draft.name || state.draft.schema.name || "").trim();
-  state.draft.schema.key = String(state.draft.schema.key || slugify(state.draft.schema.name || state.draft.name || "untitled_form")).trim();
-  state.draft.schema.order = parsePositiveInt(state.draft.schema.order, 1);
 }
 
 function isBlockNode(node) {
@@ -1370,18 +1402,16 @@ function getParentCollection(path) {
 }
 
 function setBoundValue(target, bind, rawValue) {
-  if (target === state.draft && bind.startsWith("schema.")) {
-    const schemaBind = bind.slice("schema.".length);
-    if (schemaBind === "key") {
-      state.draft.schema.key = rawValue;
-      syncRootMetaToBlockSchema();
-      return;
-    }
-    if (schemaBind === "notes") {
-      state.draft.schema.notes = normalizeArray(rawValue);
-      syncRootMetaToBlockSchema();
-      return;
-    }
+  if (target === state.draft && bind === "form_key") {
+    setDraftFormKey(rawValue);
+    syncRootMetaToBlockSchema();
+    return;
+  }
+
+  if (target === state.draft && bind === "form_notes") {
+    setDraftFormNotes(rawValue);
+    syncRootMetaToBlockSchema();
+    return;
   }
 
   if (isStoredBlockNode(target)) {
@@ -1546,7 +1576,7 @@ function freshBlockId(kind, key) {
 
 function makeBlankForm(config = {}) {
   const formName = String(config.name || "").trim() || "Untitled Form";
-  const locationName = String(config.locationName || config.groupName || "").trim();
+  const locationName = String(config.locationName || "").trim();
 
   const draft = {
     slug: null,
@@ -1559,17 +1589,18 @@ function makeBlankForm(config = {}) {
     library_new_container_name: String(config.libraryNewContainerName || "").trim() || null,
     current_version_number: 0,
     summary: "",
-    schema: {
-      name: formName,
-      key: slugify(formName),
-      order: 1,
-      notes: [],
-      fields: [],
-      sections: [],
+    block_schema: {
+      schema_version: 1,
+      source_kind: "compat_legacy_fields_sections",
+      meta: {
+        form_key: slugify(formName),
+        form_order: 1,
+      },
+      blocks: [],
     },
   };
   syncDraftLocationShadow(draft);
-  return ensureDraftSchemas(draft, { preferBlocks: true });
+  return ensureDraftBlockState(draft);
 }
 
 function makeCopyName(name) {
@@ -1646,17 +1677,14 @@ function syncDraftKeys() {
   if (!state.draft) {
     return;
   }
-  if (!state.draft.schema.key) {
-    state.draft.schema.key = slugify(state.draft.name);
-  }
-  state.draft.schema.name = state.draft.name;
+  setDraftFormKey(getDraftFormKey(state.draft), state.draft);
   syncRootMetaToBlockSchema(state.draft);
   topLevelBlocks().forEach(syncNodeKeys);
-  syncDraftCompatibilitySchemas("blocks");
+  syncDraftBlockState();
 }
 
 function touch(options = {}) {
-  syncDraftCompatibilitySchemas(options.source || "blocks");
+  syncDraftBlockState();
   setDirty(true);
   renderShellSummary();
   renderPreview();
@@ -1725,9 +1753,9 @@ async function loadForm(slug) {
 
   const form = await api(`/api/forms/${slug}`);
   state.selectedFormSlug = slug;
-  state.loadedForm = ensureDraftSchemas(deepClone(form), { preferBlocks: true });
-  state.draft = ensureDraftSchemas(deepClone(form), { preferBlocks: true });
-  state.baselineDraft = ensureDraftSchemas(deepClone(form), { preferBlocks: true });
+  state.loadedForm = ensureDraftBlockState(deepClone(form));
+  state.draft = ensureDraftBlockState(deepClone(form));
+  state.baselineDraft = ensureDraftBlockState(deepClone(form));
   resetEditorPanels();
   setDirty(false);
   state.ui.libraryOpen = false;
@@ -1738,8 +1766,8 @@ async function loadForm(slug) {
 function startNewForm(config = {}) {
   state.selectedFormSlug = null;
   state.loadedForm = null;
-  state.draft = ensureDraftSchemas(makeBlankForm(config), { preferBlocks: true });
-  state.baselineDraft = ensureDraftSchemas(deepClone(state.draft), { preferBlocks: true });
+  state.draft = ensureDraftBlockState(makeBlankForm(config));
+  state.baselineDraft = ensureDraftBlockState(deepClone(state.draft));
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
@@ -1758,7 +1786,7 @@ function duplicateCurrentForm(overrides = {}) {
   copy.current_version_number = 0;
   copy.summary = "";
   copy.name = String(overrides.name || "").trim() || makeCopyName(copy.name);
-  const nextLocationName = String(overrides.locationName || overrides.groupName || "").trim();
+  const nextLocationName = String(overrides.locationName || "").trim();
   if (nextLocationName) {
     copy.location_name = nextLocationName;
     copy.location_path_label = nextLocationName;
@@ -1774,13 +1802,11 @@ function duplicateCurrentForm(overrides = {}) {
     copy.location_path_label = "Top level";
   }
   syncDraftLocationShadow(copy);
-  copy.schema.name = copy.name;
-  copy.schema.key = slugify(copy.name);
-  copy.schema.order = parsePositiveInt(copy.schema.order, 1);
+  setDraftFormKey(slugify(copy.name), copy);
   state.selectedFormSlug = null;
   state.loadedForm = null;
-  state.draft = ensureDraftSchemas(copy, { preferBlocks: true });
-  state.baselineDraft = ensureDraftSchemas(deepClone(copy), { preferBlocks: true });
+  state.draft = ensureDraftBlockState(copy);
+  state.baselineDraft = ensureDraftBlockState(deepClone(copy));
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
@@ -1808,7 +1834,7 @@ async function resetCurrentDraft() {
     return;
   }
 
-  state.draft = ensureDraftSchemas(deepClone(state.baselineDraft), { preferBlocks: true });
+  state.draft = ensureDraftBlockState(deepClone(state.baselineDraft));
   resetEditorPanels();
   setDirty(false);
   setStatus(state.selectedFormSlug ? "Returned to the last saved version" : "Draft reset");
@@ -2097,11 +2123,11 @@ function renderFormSetupCard(options = {}) {
             <div class="advanced-grid">
               <label>
                 <span>Key</span>
-                <input data-bind="schema.key" value="${escapeHtml(state.draft.schema.key || "")}">
+                <input data-bind="form_key" value="${escapeHtml(getDraftFormKey(state.draft))}">
               </label>
               <label style="grid-column: 1 / -1;">
                 <span>Notes</span>
-                <textarea data-bind="schema.notes" data-format="lines">${escapeHtml(normalizeArray(state.draft.schema.notes).join("\n"))}</textarea>
+                <textarea data-bind="form_notes" data-format="lines">${escapeHtml(getDraftFormNotes(state.draft).join("\n"))}</textarea>
               </label>
             </div>
           </details>
@@ -3433,9 +3459,9 @@ async function saveDraft() {
     : await api("/api/forms", { method: "POST", body: JSON.stringify(payload) });
 
   state.selectedFormSlug = saved.slug;
-  state.loadedForm = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
-  state.draft = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
-  state.baselineDraft = ensureDraftSchemas(deepClone(saved), { preferBlocks: true });
+  state.loadedForm = ensureDraftBlockState(deepClone(saved));
+  state.draft = ensureDraftBlockState(deepClone(saved));
+  state.baselineDraft = ensureDraftBlockState(deepClone(saved));
   state.bootstrap = await api("/api/builder/bootstrap");
   if (saved.slug && window.location.pathname !== `/forms/${saved.slug}/builder`) {
     window.history.replaceState({}, "", `/forms/${saved.slug}/builder`);
@@ -3475,15 +3501,15 @@ function handleRootInput(event) {
     }
   } else {
     const previousName = bind === "name" ? state.draft.name : "";
+    const previousDraftKey = bind === "name" ? getDraftFormKey(state.draft) : "";
     if (event.target.dataset.format === "lines") {
       setBoundValue(state.draft, bind, splitLines(rawValue));
     } else {
       setBoundValue(state.draft, bind, rawValue);
     }
     if (bind === "name") {
-      state.draft.schema.name = state.draft.name;
-      if (!state.draft.schema.key || state.draft.schema.key === slugify(previousName)) {
-        state.draft.schema.key = slugify(rawValue);
+      if (!previousDraftKey || previousDraftKey === slugify(previousName)) {
+        setDraftFormKey(slugify(rawValue), state.draft);
       }
       syncDraftLocationShadow(state.draft);
     } else if (bind === "location_name") {

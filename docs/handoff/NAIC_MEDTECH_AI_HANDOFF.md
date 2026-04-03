@@ -106,7 +106,7 @@ What is implemented:
 - each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
 - startup now backfills missing stored block schemas for older versions
 - non-legacy block kinds like `note` and `divider` can now be preserved in stored block schema even when the legacy compatibility projection skips them
-- the frontend builder draft now keeps a compatibility `block_schema` in sync while the current calmer editor still renders the legacy projection
+- the frontend builder draft is now block-first too: the live editor state no longer keeps a duplicated `draft.schema`, and setup details like `Key` and `Notes` now read and write directly through `block_schema.meta`
 - builder saves now go out through `block_schema` instead of posting the legacy `fields + sections` shape directly
 - the current focused editor and live preview now also read and write through block-backed paths for real edit flows, not just save-time bridging
 - top-level content editing now operates through block-backed collection handling while the visible UI stays calm
@@ -220,12 +220,13 @@ What is implemented:
 - top-level new and copied drafts are cleaner too: they no longer start from the old `Unassigned` sentinel or keep a stale previous form name as fake location state
 - the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use `location` language instead of old `group` wording where the UI already treats folders as locations
 - the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old `group_kind/group_order/form_order` inputs
-- the `/forms/new` flow reads more consistently now too: its template and browser-side logic use `location` wording for the visible create flow, and the handoff into `/builder` now uses `location_name` with backward-compatible support for old `group_name` links
+- the `/forms/new` flow reads more consistently now too: its template and browser-side logic use `location` wording for the visible create flow, and the handoff into `/builder` now uses `location_name` only
 - serialized form payloads are more tree-first too: `serialize_form()` now returns `location_name`, `location_path_label`, `location_node_key`, and `location_kind`, and the builder display/helpers prefer those aliases while keeping legacy `group_name` compatibility for save/update
 - the active save API is more tree-first too: the current builder now posts `location_name`, while the backend still accepts legacy `group_name` callers through compatibility mapping
 - active read compatibility is more tree-first too: legacy `group_*` metadata is now derived from the real library tree during serialization and grouped listings, instead of trusting the raw stored legacy columns
 - the visible builder setup flow is more tree-first too: the `Location` input now binds to `location_name` instead of the old `group_name`, while the draft still keeps compatibility metadata synchronized behind the scenes
-- the active builder draft is more tree-first too: `location_*` is now the only active location state in the editor, and the old `group_name` survives only as a backward-compatible query alias for older deep links
+- the active builder draft is more tree-first too: `location_*` is now the only active location state in the editor
+- the active builder setup internals are thinner too: `Key` and `Notes` now bind straight to `block_schema.meta`, and the live draft no longer keeps a duplicated `draft.schema` object just to drive those fields
 - the save payload schema is leaner too: `group_kind`, `group_order`, and `form_order` are no longer part of `FormSavePayload`, and old callers can still send them as ignored compatibility extras
 - dead grouped-library backend helpers are gone too: the codebase no longer keeps `list_grouped_forms` / `split_library_groups` around even though the live app is already tree-first
 - the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
