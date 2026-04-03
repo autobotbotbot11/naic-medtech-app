@@ -2125,6 +2125,14 @@ function fieldOrganizerSecondaryLabel(field, title) {
     if (field.kind === "field_group") {
       return compactText(field.name || "") ? "" : "Group";
     }
+    if (isUtilityBlockNode(field)) {
+      const summary = summarizeField(field);
+      return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
+    }
+    const fieldType = inferFieldType(field);
+    if (!["choice", "date", "time", "datetime"].includes(fieldType)) {
+      return "";
+    }
     const summary = summarizeField(field);
     return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
   }
