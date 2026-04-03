@@ -199,6 +199,10 @@ What is implemented:
 - stored version metadata is cleaner too: startup/reset backfill now strips stale `common_field_set_id` from old `schema_json` and `block_schema_json`, and it normalizes old location-bound legacy form ids into stable `form.<slug>` values
 - the save payload alias path is thinner too: `group_name` is now just a tolerated legacy input alias that gets normalized into `location_name` and removed before validation, instead of lingering as part of the active request shape
 - top-level compatibility shadows are more honest too: when a form lives at the root, legacy `group_name`, `group_kind`, and `group_order` are now kept `NULL` instead of being filled with a fake self-named group
+- grouped compatibility shadows are thinner too: live tree sync no longer actively maintains legacy `group_kind`; grouped fallback now relies on `group_name` and ordering hints only
+- stale self-named top-level shadows are safer too: if an old form still carries a fake self-named `group_name`, rebuild fallback now treats that as top-level instead of recreating a bogus folder
+- the stored model shape is thinner too: `FormDefinition.group_kind` is gone from the live SQLAlchemy/runtime DB shape, and older local DBs are rebuilt forward automatically on startup
+- the stored model shape is thinner again too: `FormDefinition.common_field_set_id` is gone from the live SQLAlchemy/runtime DB shape now too, and older local DBs are rebuilt forward automatically on startup
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths

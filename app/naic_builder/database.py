@@ -19,7 +19,7 @@ engine = create_engine(f"sqlite:///{DB_PATH}", future=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
-def migrate_form_definitions_legacy_columns_nullable(connection) -> None:
+def migrate_form_definitions_tree_first_shape(connection) -> None:
     connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
     try:
         connection.exec_driver_sql(
@@ -29,11 +29,9 @@ def migrate_form_definitions_legacy_columns_nullable(connection) -> None:
                 slug VARCHAR(120) NOT NULL,
                 name VARCHAR(255) NOT NULL,
                 group_name VARCHAR(255),
-                group_kind VARCHAR(40),
                 group_order INTEGER,
                 form_order INTEGER,
                 library_parent_node_key TEXT,
-                common_field_set_id VARCHAR(120),
                 created_at DATETIME NOT NULL,
                 updated_at DATETIME NOT NULL
             )
@@ -46,11 +44,9 @@ def migrate_form_definitions_legacy_columns_nullable(connection) -> None:
                 slug,
                 name,
                 group_name,
-                group_kind,
                 group_order,
                 form_order,
                 library_parent_node_key,
-                common_field_set_id,
                 created_at,
                 updated_at
             )
@@ -59,11 +55,9 @@ def migrate_form_definitions_legacy_columns_nullable(connection) -> None:
                 slug,
                 name,
                 group_name,
-                group_kind,
                 group_order,
                 form_order,
                 library_parent_node_key,
-                common_field_set_id,
                 created_at,
                 updated_at
             FROM form_definitions
@@ -95,9 +89,17 @@ def ensure_runtime_schema() -> None:
             str(row[1]): row
             for row in connection.exec_driver_sql("PRAGMA table_info(form_definitions)").all()
         }
-        legacy_nullable_targets = ("group_name", "group_kind", "group_order", "form_order")
-        if any(int(form_definition_info[column][3] or 0) == 1 for column in legacy_nullable_targets if column in form_definition_info):
-            migrate_form_definitions_legacy_columns_nullable(connection)
+        legacy_nullable_targets = ("group_name", "group_order", "form_order")
+        needs_tree_first_rebuild = any(
+            column in form_definition_info
+            for column in ("group_kind", "common_field_set_id")
+        ) or any(
+            int(form_definition_info[column][3] or 0) == 1
+            for column in legacy_nullable_targets
+            if column in form_definition_info
+        )
+        if needs_tree_first_rebuild:
+            migrate_form_definitions_tree_first_shape(connection)
 
 
 def get_session() -> Generator[Session, None, None]:

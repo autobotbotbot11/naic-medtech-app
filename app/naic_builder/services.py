@@ -858,7 +858,6 @@ def new_definition_compat_shell(
         slug=slug,
         name=name,
         library_parent_node_key=parent_node_key,
-        common_field_set_id=None,
     )
 
 
@@ -880,7 +879,6 @@ def sync_definition_legacy_location_fields(
 
     derived_parent_key = parent_container.node_key if parent_container is not None and parent_container.kind == "container" else None
     derived_group_name = parent_container.name if parent_container is not None and parent_container.kind == "container" else None
-    derived_group_kind = "category" if parent_container is not None and parent_container.kind == "container" else None
     derived_group_order = int(parent_container.node_order or 999) if parent_container is not None and parent_container.kind == "container" else None
     derived_form_order = int(node.node_order or 1)
 
@@ -891,33 +889,34 @@ def sync_definition_legacy_location_fields(
     if compact_text(definition.group_name) != compact_text(derived_group_name):
         definition.group_name = derived_group_name
         changed = True
-    if compact_text(definition.group_kind) != derived_group_kind:
-        definition.group_kind = derived_group_kind
-        changed = True
     if definition.group_order != derived_group_order:
         definition.group_order = derived_group_order
         changed = True
     if int(definition.form_order or 1) != derived_form_order:
         definition.form_order = derived_form_order
         changed = True
-    if definition.common_field_set_id is not None:
-        definition.common_field_set_id = None
-        changed = True
-
     return changed
 
 
 def legacy_definition_location_hint(definition: FormDefinition) -> dict[str, Any]:
     explicit_group_name = compact_text(definition.group_name)
-    explicit_group_kind = compact_text(definition.group_kind)
-    has_explicit_group_location = bool(explicit_group_name) or (
-        bool(explicit_group_kind) and explicit_group_kind != "standalone_form"
+    legacy_parent_order = int(definition.group_order or 999)
+    explicit_definition_name = compact_text(definition.name)
+    has_self_named_root_shadow = (
+        bool(explicit_group_name)
+        and bool(explicit_definition_name)
+        and explicit_group_name.casefold() == explicit_definition_name.casefold()
+        and not compact_text(definition.library_parent_node_key)
+        and legacy_parent_order == 999
     )
+    if has_self_named_root_shadow:
+        explicit_group_name = None
+    has_explicit_group_location = bool(explicit_group_name)
     legacy_is_standalone = not has_explicit_group_location
 
     return {
         "legacy_parent_name": explicit_group_name or definition.name or "Untitled Form",
-        "legacy_parent_order": int(definition.group_order or 999),
+        "legacy_parent_order": legacy_parent_order,
         "legacy_form_order": int(definition.form_order or 1),
         "legacy_is_standalone": legacy_is_standalone,
     }
@@ -1512,7 +1511,6 @@ def update_form(session: Session, slug: str, payload: FormSavePayload) -> dict[s
         node_order=location_meta["resolved_form_order"],
     )
     sync_definition_legacy_location_fields(session, definition)
-    definition.common_field_set_id = None
 
     version = FormVersion(
         form_id=definition.id,

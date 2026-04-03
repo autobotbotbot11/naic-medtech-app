@@ -19,11 +19,9 @@ class FormDefinition(Base):
     slug: Mapped[str] = mapped_column(String(120), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(255))
     group_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    group_kind: Mapped[str | None] = mapped_column(String(40), nullable=True)
     group_order: Mapped[int | None] = mapped_column(Integer, nullable=True)
     form_order: Mapped[int | None] = mapped_column(Integer, nullable=True)
     library_parent_node_key: Mapped[str | None] = mapped_column(String(160), nullable=True)
-    common_field_set_id: Mapped[str | None] = mapped_column(String(120), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
