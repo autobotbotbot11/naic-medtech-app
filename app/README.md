@@ -14,8 +14,8 @@ The app now starts from a builder-first FastAPI scaffold.
 - runtime data lives in `../data/runtime/naic_medtech.db`
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
-- the backend now exposes the compatibility `block_schema` bridge directly on form reads
-- create/update flows can now accept either the current legacy `fields + sections` shape or a limited compatible `blocks` shape
+- live form reads now expose `block_schema` as the active form shape
+- live create/update flows now use the block-based `form_schema` contract only
 - each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
 - startup now backfills missing stored block schemas for older versions
 - non-legacy block kinds like `note` and `divider` can now be preserved in stored block schema even when the legacy compatibility projection skips them

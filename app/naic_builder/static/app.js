@@ -124,253 +124,6 @@ function compactText(value) {
   return String(value || "").trim();
 }
 
-function normalizeSchemaShape(schema = {}) {
-  return {
-    name: String(schema?.name || "").trim(),
-    key: String(schema?.key || "").trim(),
-    order: parsePositiveInt(schema?.order, 1),
-    notes: normalizeArray(schema?.notes),
-    fields: normalizeArray(schema?.fields),
-    sections: normalizeArray(schema?.sections),
-    ...(schema?.source && typeof schema.source === "object" ? { source: deepClone(schema.source) } : {}),
-  };
-}
-
-function legacyFieldToBlock(field) {
-  const kind = String(field?.kind || "").trim() === "field_group" ? "field_group" : "field";
-  const props = {
-    key: String(field?.key || slugify(field?.name || "field")).trim(),
-    order: parsePositiveInt(field?.order, 1),
-  };
-
-  const notes = normalizeArray(field?.notes);
-  if (notes.length) {
-    props.notes = deepClone(notes);
-  }
-  if (field?.source && typeof field.source === "object") {
-    props.source = deepClone(field.source);
-  }
-
-  if (kind === "field_group") {
-    return {
-      id: String(field?.id || `blk_${slugify(field?.name || "group")}`).trim(),
-      kind: "field_group",
-      name: String(field?.name || "").trim() || "Untitled Group",
-      props,
-      children: normalizeArray(field?.fields).map((child) => legacyFieldToBlock(child)),
-    };
-  }
-
-  props.field_type = field?.control === "select" || field?.data_type === "enum"
-    ? "select"
-    : String(field?.data_type || "text").trim() || "text";
-  props.control = String(field?.control || "input").trim() || "input";
-  props.data_type = String(field?.data_type || "text").trim() || "text";
-  props.required = Boolean(field?.required);
-
-  if (field?.unit_hint) {
-    props.unit_hint = String(field.unit_hint).trim();
-  }
-  if (field?.normal_value) {
-    props.normal_value = String(field.normal_value).trim();
-  }
-
-  const options = normalizeArray(field?.options)
-    .map((option, index) => {
-      const label = String(option?.name || option?.label || "").trim();
-      if (!label) {
-        return null;
-      }
-      return {
-        id: String(option?.id || `${field?.id || "field"}.${slugify(label)}`).trim(),
-        key: String(option?.key || slugify(label)).trim(),
-        label,
-        order: parsePositiveInt(option?.order, index + 1),
-      };
-    })
-    .filter(Boolean);
-  if (options.length) {
-    props.options = options;
-  }
-
-  return {
-    id: String(field?.id || `blk_${slugify(field?.name || "field")}`).trim(),
-    kind: "field",
-    name: String(field?.name || "").trim() || "Untitled Field",
-    props,
-    children: [],
-  };
-}
-
-function legacySectionToBlock(section) {
-  const props = {
-    key: String(section?.key || slugify(section?.name || "section")).trim(),
-    order: parsePositiveInt(section?.order, 1),
-  };
-
-  const notes = normalizeArray(section?.notes);
-  if (notes.length) {
-    props.notes = deepClone(notes);
-  }
-  if (section?.source && typeof section.source === "object") {
-    props.source = deepClone(section.source);
-  }
-
-  return {
-    id: String(section?.id || `blk_${slugify(section?.name || "section")}`).trim(),
-    kind: "section",
-    name: String(section?.name || "").trim() || "Untitled Section",
-    props,
-    children: normalizeArray(section?.fields).map((field) => legacyFieldToBlock(field)),
-  };
-}
-
-function legacySchemaToBlockSchema(schema) {
-  const normalized = normalizeSchemaShape(schema);
-  const meta = {
-    form_key: normalized.key || slugify(normalized.name || "untitled_form"),
-    form_order: normalized.order,
-  };
-
-  if (normalized.notes.length) {
-    meta.notes = deepClone(normalized.notes);
-  }
-  if (normalized.source && typeof normalized.source === "object") {
-    meta.source = deepClone(normalized.source);
-  }
-
-  return {
-    schema_version: 1,
-    source_kind: "compat_legacy_fields_sections",
-    meta,
-    blocks: [
-      ...normalized.fields.map((field) => legacyFieldToBlock(field)),
-      ...normalized.sections.map((section) => legacySectionToBlock(section)),
-    ],
-  };
-}
-
-function blockFieldToLegacy(block) {
-  const kind = String(block?.kind || "").trim();
-  const props = block?.props && typeof block.props === "object" ? block.props : {};
-  const legacy = {
-    id: String(block?.id || "").trim(),
-    key: String(props.key || block?.name || "").trim(),
-    name: String(block?.name || "").trim() || "Untitled Field",
-    kind: kind === "field_group" ? "field_group" : "field",
-    order: parsePositiveInt(props.order, 1),
-  };
-
-  const notes = normalizeArray(props.notes);
-  if (notes.length) {
-    legacy.notes = deepClone(notes);
-  }
-  if (props.source && typeof props.source === "object") {
-    legacy.source = deepClone(props.source);
-  }
-
-  if (kind === "field_group") {
-    legacy.fields = normalizeArray(block?.children)
-      .filter((child) => {
-        const childKind = blockKind(child);
-        return childKind === "field" || childKind === "field_group";
-      })
-      .map((child) => blockFieldToLegacy(child));
-    return legacy;
-  }
-
-  const fieldType = String(props.field_type || "").trim();
-  if (fieldType === "select" || fieldType === "choice") {
-    legacy.control = "select";
-    legacy.data_type = "enum";
-  } else if (fieldType) {
-    legacy.control = String(props.control || "input").trim() || "input";
-    legacy.data_type = fieldType;
-  } else {
-    legacy.control = String(props.control || "input").trim() || "input";
-    legacy.data_type = String(props.data_type || "text").trim() || "text";
-  }
-
-  if (props.unit_hint) {
-    legacy.unit_hint = String(props.unit_hint).trim();
-  }
-  if (props.normal_value) {
-    legacy.normal_value = String(props.normal_value).trim();
-  }
-
-  const options = normalizeArray(props.options)
-    .map((option, index) => {
-      const name = String(option?.label || option?.name || "").trim();
-      if (!name) {
-        return null;
-      }
-      return {
-        id: String(option?.id || "").trim(),
-        key: String(option?.key || slugify(name)).trim(),
-        name,
-        order: parsePositiveInt(option?.order, index + 1),
-      };
-    })
-    .filter(Boolean);
-  if (options.length) {
-    legacy.options = options;
-  }
-
-  return legacy;
-}
-
-function blockSectionToLegacy(block) {
-  const props = block?.props && typeof block.props === "object" ? block.props : {};
-  const legacy = {
-    id: String(block?.id || "").trim(),
-    key: String(props.key || block?.name || "").trim(),
-    name: String(block?.name || "").trim() || "Untitled Section",
-    order: parsePositiveInt(props.order, 1),
-    fields: normalizeArray(block?.children)
-      .filter((child) => {
-        const childKind = blockKind(child);
-        return childKind === "field" || childKind === "field_group";
-      })
-      .map((child) => blockFieldToLegacy(child)),
-  };
-
-  const notes = normalizeArray(props.notes);
-  if (notes.length) {
-    legacy.notes = deepClone(notes);
-  }
-  if (props.source && typeof props.source === "object") {
-    legacy.source = deepClone(props.source);
-  }
-
-  return legacy;
-}
-
-function blockSchemaToLegacySchema(blockSchema, fallback = {}) {
-  const meta = blockSchema?.meta && typeof blockSchema.meta === "object" ? blockSchema.meta : {};
-  const blocks = normalizeArray(blockSchema?.blocks);
-  const fields = [];
-  const sections = [];
-
-  blocks.forEach((block) => {
-    const kind = String(block?.kind || "").trim();
-    if (kind === "section") {
-      sections.push(blockSectionToLegacy(block));
-    } else if (kind === "field" || kind === "field_group") {
-      fields.push(blockFieldToLegacy(block));
-    }
-  });
-
-  return {
-    name: String(fallback?.name || "").trim(),
-    key: String(meta.form_key || meta.legacy_form_key || fallback?.schema?.key || slugify(fallback?.name || "untitled_form")).trim(),
-    order: parsePositiveInt(meta.form_order, parsePositiveInt(meta.legacy_order, fallback?.schema?.order || 1)),
-    notes: normalizeArray(meta.notes),
-    fields,
-    sections,
-    ...(meta.source && typeof meta.source === "object" ? { source: deepClone(meta.source) } : {}),
-  };
-}
-
 function blockKind(node) {
   return String(node?.kind || "").trim();
 }
@@ -420,14 +173,14 @@ function ensureDraftBlockState(draft) {
   const existingBlockSchema = draft.block_schema && typeof draft.block_schema === "object"
     ? deepClone(draft.block_schema)
     : null;
-  const fallbackSchema = draft.form_schema && typeof draft.form_schema === "object"
-    ? draft.form_schema
-    : draft.schema;
+  const fallbackBlockSchema = draft.form_schema && typeof draft.form_schema === "object" && Array.isArray(draft.form_schema.blocks)
+    ? deepClone(draft.form_schema)
+    : null;
 
   if (existingBlockSchema) {
     draft.block_schema = existingBlockSchema;
-  } else if (fallbackSchema && typeof fallbackSchema === "object") {
-    draft.block_schema = legacySchemaToBlockSchema(fallbackSchema);
+  } else if (fallbackBlockSchema) {
+    draft.block_schema = fallbackBlockSchema;
   } else {
     draft.block_schema = {
       schema_version: 1,
@@ -437,10 +190,11 @@ function ensureDraftBlockState(draft) {
     };
   }
 
-  draft.name = compactText(draft.name || fallbackSchema?.name) || "Untitled Form";
+  draft.name = compactText(draft.name) || "Untitled Form";
   syncRootMetaToBlockSchema(draft);
   syncDraftLocationShadow(draft);
   delete draft.schema;
+  delete draft.form_schema;
   return draft;
 }
 

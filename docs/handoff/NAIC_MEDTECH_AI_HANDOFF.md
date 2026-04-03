@@ -100,9 +100,9 @@ What is implemented:
 - `/` now redirects to `/forms`
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
-- form reads now also expose a derived compatibility `block_schema`
+- form reads now expose `block_schema` as the active form shape
 - `/api/forms/{slug}` now carries the ordered-block view directly via `block_schema`
-- create and update flows now accept either the current legacy `fields + sections` schema or a limited compatible ordered-block schema
+- live create and update flows now use the block-based `form_schema` contract only
 - each form version now also stores a real `block_schema_json` payload alongside the legacy `schema_json`
 - startup now backfills missing stored block schemas for older versions
 - non-legacy block kinds like `note` and `divider` can now be preserved in stored block schema even when the legacy compatibility projection skips them
