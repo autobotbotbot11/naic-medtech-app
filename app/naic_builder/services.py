@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from datetime import timezone
 from typing import Any
 from uuid import uuid4
@@ -10,13 +11,19 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
-from .config import REFERENCE_SCHEMA_PATH
+from .config import RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH
 from .database import Base, engine
 from .models import FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
 from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
 
 ACTIVE_BLOCK_SCHEMA_SOURCE = "builder_blocks_v1"
 LEGACY_BLOCK_SCHEMA_SOURCE = "compat_legacy_fields_sections"
+ALLOWED_IMAGE_CONTENT_TYPES = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+}
+MAX_RECORD_IMAGE_BYTES = 10 * 1024 * 1024
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -830,6 +837,81 @@ def normalize_record_indexed_meta(
     return normalized
 
 
+def remove_file_if_present(path_value: str | None) -> None:
+    file_path = Path(path_value or "")
+    if not file_path.exists() or not file_path.is_file():
+        return
+    try:
+        file_path.unlink()
+    except OSError:
+        return
+
+    parent = file_path.parent
+    stop_dir = RECORD_UPLOADS_DIR.resolve()
+    while parent.exists():
+        try:
+            if parent.resolve() == stop_dir:
+                break
+        except OSError:
+            break
+        try:
+            parent.rmdir()
+        except OSError:
+            break
+        parent = parent.parent
+
+
+def remove_record_asset(
+    session: Session,
+    asset: RecordAsset,
+) -> None:
+    remove_file_if_present(asset.storage_path)
+    session.delete(asset)
+
+
+def preserve_existing_asset_values(
+    existing_values: dict[str, Any],
+    incoming_values: dict[str, Any],
+) -> dict[str, Any]:
+    merged = dict(incoming_values)
+    for field_id, value in existing_values.items():
+        if field_id in merged:
+            continue
+        if isinstance(value, dict) and value.get("kind") == "image" and value.get("asset_id"):
+            merged[field_id] = value
+    return merged
+
+
+def find_block_by_id(blocks: list[dict[str, Any]], block_id: str) -> dict[str, Any] | None:
+    target_id = compact_text(block_id)
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        if compact_text(block.get("id")) == target_id:
+            return block
+        children = normalize_items(block.get("children"))
+        if children:
+            found = find_block_by_id(children, target_id)
+            if found is not None:
+                return found
+    return None
+
+
+def resolve_record_image_field(record: Record, field_block_id: str) -> dict[str, Any]:
+    block_schema, _ = load_block_storage_document(record.form_version)
+    field_block = find_block_by_id(normalize_items(block_schema.get("blocks")), field_block_id)
+    if field_block is None or compact_text(field_block.get("kind")) != "field":
+        raise ValueError("Image field not found.")
+    props = field_block.get("props") if isinstance(field_block.get("props"), dict) else {}
+    if compact_text(props.get("data_type")) != "image":
+        raise ValueError("This field does not accept image uploads.")
+    return field_block
+
+
+def current_record_values(record: Record) -> dict[str, Any]:
+    return normalize_record_values(load_json_object(record.values_json))
+
+
 def next_record_key(session: Session, form_slug: str) -> str:
     base = f"rec_{slugify(form_slug or 'record')}"
     while True:
@@ -869,6 +951,11 @@ def serialize_record(
     include_entry_schema: bool = False,
 ) -> dict[str, Any]:
     location = serialize_form_location(record.form)
+    asset_by_field_id = {
+        compact_text(asset.field_block_id): serialize_record_asset(asset)
+        for asset in record.assets
+        if compact_text(asset.field_block_id)
+    }
     payload = {
         "id": record.id,
         "record_key": record.record_key,
@@ -884,6 +971,7 @@ def serialize_record(
         "form_version_id": record.form_version_id,
         "form_version_number": record.form_version.version_number,
         "assets": [serialize_record_asset(asset) for asset in record.assets],
+        "asset_by_field_id": asset_by_field_id,
         "created_at": record.created_at.astimezone(timezone.utc).isoformat(),
         "updated_at": record.updated_at.astimezone(timezone.utc).isoformat(),
         "completed_at": record.completed_at.astimezone(timezone.utc).isoformat() if record.completed_at else None,
@@ -972,7 +1060,13 @@ def create_record(session: Session, payload: RecordCreatePayload) -> dict[str, A
     return serialize_record(created, include_entry_schema=True)
 
 
-def update_record(session: Session, record_id: int, payload: RecordUpdatePayload) -> dict[str, Any]:
+def update_record(
+    session: Session,
+    record_id: int,
+    payload: RecordUpdatePayload,
+    *,
+    preserve_asset_fields: bool = False,
+) -> dict[str, Any]:
     record = get_record_or_none(session, record_id)
     if record is None:
         raise KeyError(record_id)
@@ -987,9 +1081,13 @@ def update_record(session: Session, record_id: int, payload: RecordUpdatePayload
         case_number=case_number,
     )
 
+    normalized_values = normalize_record_values(payload.values)
+    if preserve_asset_fields:
+        normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
+
     record.patient_name = patient_name or None
     record.case_number = case_number or None
-    record.values_json = json.dumps(normalize_record_values(payload.values), ensure_ascii=False)
+    record.values_json = json.dumps(normalized_values, ensure_ascii=False)
     record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
     session.commit()
     session.expire_all()
@@ -1000,7 +1098,13 @@ def update_record(session: Session, record_id: int, payload: RecordUpdatePayload
     return serialize_record(updated, include_entry_schema=True)
 
 
-def complete_record(session: Session, record_id: int, payload: RecordUpdatePayload) -> dict[str, Any]:
+def complete_record(
+    session: Session,
+    record_id: int,
+    payload: RecordUpdatePayload,
+    *,
+    preserve_asset_fields: bool = False,
+) -> dict[str, Any]:
     record = get_record_or_none(session, record_id)
     if record is None:
         raise KeyError(record_id)
@@ -1015,9 +1119,13 @@ def complete_record(session: Session, record_id: int, payload: RecordUpdatePaylo
         case_number=case_number,
     )
 
+    normalized_values = normalize_record_values(payload.values)
+    if preserve_asset_fields:
+        normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
+
     record.patient_name = patient_name or None
     record.case_number = case_number or None
-    record.values_json = json.dumps(normalize_record_values(payload.values), ensure_ascii=False)
+    record.values_json = json.dumps(normalized_values, ensure_ascii=False)
     record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
     record.status = "completed"
     record.completed_at = utc_now()
@@ -1028,6 +1136,113 @@ def complete_record(session: Session, record_id: int, payload: RecordUpdatePaylo
     if completed is None:
         raise KeyError(record_id)
     return serialize_record(completed, include_entry_schema=True)
+
+
+def store_record_image_asset(
+    session: Session,
+    *,
+    record_id: int,
+    field_block_id: str,
+    original_filename: str,
+    content_type: str | None,
+    file_bytes: bytes,
+) -> dict[str, Any]:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise KeyError(record_id)
+    if record.status == "completed":
+        raise ValueError("Completed records are read-only.")
+
+    field_block = resolve_record_image_field(record, field_block_id)
+    mime_type = compact_text(content_type)
+    extension = ALLOWED_IMAGE_CONTENT_TYPES.get(mime_type)
+    if extension is None:
+        raise ValueError("Only JPG, PNG, and WebP images are allowed.")
+    if not file_bytes:
+        raise ValueError("Choose an image before uploading.")
+    if len(file_bytes) > MAX_RECORD_IMAGE_BYTES:
+        raise ValueError("Image must be 10 MB or smaller.")
+
+    props = field_block.get("props") if isinstance(field_block.get("props"), dict) else {}
+    field_key = compact_text(props.get("key")) or None
+    safe_field = slugify(field_key or field_block_id)
+    destination_dir = RECORD_UPLOADS_DIR / record.record_key / safe_field
+    destination_dir.mkdir(parents=True, exist_ok=True)
+    destination_path = destination_dir / f"{uuid4().hex}{extension}"
+    destination_path.write_bytes(file_bytes)
+
+    current_values = current_record_values(record)
+    existing_ref = current_values.get(field_block_id)
+    if isinstance(existing_ref, dict) and existing_ref.get("asset_id"):
+        existing_asset = session.scalar(
+            select(RecordAsset).where(
+                RecordAsset.id == int(existing_ref["asset_id"]),
+                RecordAsset.record_id == record.id,
+            )
+        )
+        if existing_asset is not None:
+            remove_record_asset(session, existing_asset)
+
+    asset = RecordAsset(
+        record_id=record.id,
+        field_block_id=compact_text(field_block_id),
+        field_key=field_key,
+        kind="image",
+        storage_path=str(destination_path),
+        original_filename=compact_text(original_filename) or destination_path.name,
+        mime_type=mime_type or None,
+        size_bytes=len(file_bytes),
+        image_width=None,
+        image_height=None,
+    )
+    session.add(asset)
+    session.flush()
+
+    current_values[compact_text(field_block_id)] = {
+        "asset_id": asset.id,
+        "kind": "image",
+    }
+    record.values_json = json.dumps(current_values, ensure_ascii=False)
+    session.commit()
+    session.expire_all()
+
+    updated = get_record_or_none(session, record_id)
+    if updated is None:
+        raise KeyError(record_id)
+    return serialize_record(updated, include_entry_schema=True)
+
+
+def delete_record_asset(session: Session, record_id: int, asset_id: int) -> dict[str, Any]:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise KeyError(record_id)
+    if record.status == "completed":
+        raise ValueError("Completed records are read-only.")
+
+    asset = session.scalar(
+        select(RecordAsset).where(
+            RecordAsset.id == asset_id,
+            RecordAsset.record_id == record.id,
+        )
+    )
+    if asset is None:
+        raise KeyError(asset_id)
+
+    current_values = current_record_values(record)
+    field_id = compact_text(asset.field_block_id)
+    current_ref = current_values.get(field_id)
+    if isinstance(current_ref, dict) and current_ref.get("asset_id") == asset.id:
+        current_values.pop(field_id, None)
+        record.values_json = json.dumps(current_values, ensure_ascii=False)
+
+    remove_record_asset(session, asset)
+    session.commit()
+    session.expire_all()
+
+    updated = get_record_or_none(session, record_id)
+    if updated is None:
+        raise KeyError(record_id)
+    return serialize_record(updated, include_entry_schema=True)
 
 
 def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:

@@ -16,7 +16,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
-- the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields; image upload and final print rendering are still the next layers
+- the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, and image fields now support a first real upload/replace/remove flow during record entry; final print rendering is still a later layer
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
 - live form reads now expose `block_schema` as the active form shape
@@ -260,4 +260,4 @@ python tools/scripts/reset_builder_runtime_db.py
 ```
 
 ## Important note
-This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The next whole-app work should keep extending record entry, image upload, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.
+This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The next whole-app work should keep extending record entry, richer block rendering, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.

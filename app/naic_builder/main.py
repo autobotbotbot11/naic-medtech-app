@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from typing import Any
 from urllib.parse import parse_qs
 
-from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
+from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -17,6 +17,7 @@ from .services import (
     complete_record,
     create_container,
     delete_container,
+    delete_record_asset,
     create_form,
     create_record,
     ensure_form_version_storage_documents,
@@ -36,6 +37,7 @@ from .services import (
     serialize_record,
     serialize_form,
     serialize_form_location,
+    store_record_image_asset,
     update_record,
     update_form,
 )
@@ -240,10 +242,10 @@ async def update_record_page(
 
     try:
         if action == "complete":
-            completed = complete_record(session, record_id, payload)
+            completed = complete_record(session, record_id, payload, preserve_asset_fields=True)
             return RedirectResponse(url=f"/records/{completed['id']}", status_code=303)
 
-        update_record(session, record_id, payload)
+        update_record(session, record_id, payload, preserve_asset_fields=True)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
     except ValueError as exc:
@@ -256,6 +258,87 @@ async def update_record_page(
         )
 
     return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+
+
+@app.post("/records/{record_id}/assets")
+async def upload_record_asset_page(
+    record_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    form = await request.form()
+    field_block_id = str(form.get("field_block_id") or "")
+    image_file = form.get("image_file")
+
+    try:
+        if image_file is None or not hasattr(image_file, "read") or not getattr(image_file, "filename", ""):
+            raise ValueError("Choose an image before uploading.")
+        file_bytes = await image_file.read()
+        store_record_image_asset(
+            session,
+            record_id=record_id,
+            field_block_id=field_block_id,
+            original_filename=image_file.filename,
+            content_type=image_file.content_type,
+            file_bytes=file_bytes,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except ValueError as exc:
+        return render_record_edit_page(
+            request,
+            session,
+            record_id=record_id,
+            error_message=str(exc),
+            status_code=422,
+        )
+
+    return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+
+
+@app.post("/records/{record_id}/assets/{asset_id}/remove")
+def remove_record_asset_page(
+    record_id: int,
+    asset_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    try:
+        delete_record_asset(session, record_id, asset_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record asset not found.") from exc
+    except ValueError as exc:
+        return render_record_edit_page(
+            request,
+            session,
+            record_id=record_id,
+            error_message=str(exc),
+            status_code=422,
+        )
+    return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+
+
+@app.get("/records/{record_id}/assets/{asset_id}/file")
+def record_asset_file(
+    record_id: int,
+    asset_id: int,
+    session: Session = Depends(get_session),
+) -> FileResponse:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found.")
+
+    asset = next((item for item in record.assets if item.id == asset_id), None)
+    if asset is None:
+        raise HTTPException(status_code=404, detail="Record asset not found.")
+    if not asset.storage_path:
+        raise HTTPException(status_code=404, detail="Record asset file not found.")
+
+    return FileResponse(
+        asset.storage_path,
+        media_type=asset.mime_type or None,
+        filename=asset.original_filename,
+    )
 
 
 @app.get("/records/{record_id}", response_class=HTMLResponse)
@@ -707,6 +790,43 @@ def complete_record_endpoint(
         return complete_record(session, record_id, payload)
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/api/records/{record_id}/assets")
+async def upload_record_asset_endpoint(
+    record_id: int,
+    field_block_id: str = Form(...),
+    image_file: UploadFile = File(...),
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    try:
+        file_bytes = await image_file.read()
+        return store_record_image_asset(
+            session,
+            record_id=record_id,
+            field_block_id=field_block_id,
+            original_filename=image_file.filename or "",
+            content_type=image_file.content_type,
+            file_bytes=file_bytes,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.delete("/api/records/{record_id}/assets/{asset_id}")
+def delete_record_asset_endpoint(
+    record_id: int,
+    asset_id: int,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    try:
+        return delete_record_asset(session, record_id, asset_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record asset not found.") from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 

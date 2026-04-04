@@ -29,7 +29,7 @@
       "records are now stored separately from forms and point to a frozen form_version_id",
       "the first records API surface now exists at /api/records/bootstrap, /api/records, /api/records/{id}, and /api/records/{id}/complete",
       "record status is intentionally minimal right now: draft and completed",
-      "image upload is still the next records-runtime layer, not part of the current completed foundation"
+      "image answer fields now support a first real upload, replace, preview, serve, and remove flow during record entry"
     ],
     "engine_foundation": [
       "a persisted generic container/form library tree foundation now exists in the backend",
@@ -275,7 +275,7 @@
   "next_major_build_target": "records_runtime_completion",
   "next_major_build_scope": [
     "improve the real record-entry runtime beyond the first server-rendered foundation",
-    "support image answers during actual record entry runtime",
+    "refine the new image-answer flow for real clinic use",
     "save richer records against exact form_version_id",
     "render richer block kinds cleanly in records",
     "print later from those saved records"

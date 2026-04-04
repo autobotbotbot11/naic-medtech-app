@@ -139,7 +139,7 @@ What exists now:
 
 Current intentional limits:
 - record entry is still the first calm server-rendered foundation, not the final polished runtime
-- image upload is still not wired end to end yet, even though the builder can already model `Image` as an answer type
+- image upload now has a first real end-to-end pass in record entry: upload, replace, preview, serve, and remove are wired for image answer fields
 - print rendering is still a later layer
 - record statuses are intentionally minimal right now:
   - `draft`
@@ -147,7 +147,7 @@ Current intentional limits:
 
 What the next AI should continue from here:
 - improve the record-entry runtime instead of reopening builder architecture debates
-- add real image/file upload handling in record entry
+- refine the new image/file answer flow instead of re-planning it from zero
 - refine record rendering for richer block kinds
 - build the print/output layer after the record-entry runtime is stable
 
@@ -205,7 +205,7 @@ What is implemented:
   - `/api/records/{id}`
   - `/api/records/{id}/complete`
 - the current records runtime already supports a basic server-rendered draft/save/complete flow for ordinary scalar fields
-- image upload is still intentionally deferred to the next records-runtime pass
+- image answer fields now support the first real upload, replace, preview, serve, and remove flow in record entry
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
 - form reads now expose `block_schema` as the active form shape
