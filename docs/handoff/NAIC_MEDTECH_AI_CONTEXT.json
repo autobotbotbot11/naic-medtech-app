@@ -23,6 +23,7 @@
     "root_redirects_to_records": true,
     "records_runtime_foundation": [
       "/records now exists as the daily landing screen for the small-clinic workflow",
+      "/records now also has a first usable history layer: search plus draft/completed filtering live on the same calm screen",
       "/records/new can create a draft record from a chosen form",
       "/records/{id}/edit now supports the first calm server-rendered record-entry flow",
       "/records/{id} now shows a read-only record view",

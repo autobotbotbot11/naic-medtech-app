@@ -307,6 +307,45 @@
   gap: 14px;
 }
 
+.records-search-form {
+  display: grid;
+  gap: 12px;
+}
+
+.record-filter-pills {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.record-filter-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(68, 54, 40, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+
+.record-filter-pill:hover {
+  border-color: rgba(30, 93, 82, 0.24);
+  color: var(--text);
+}
+
+.record-filter-pill.is-active {
+  border-color: rgba(30, 93, 82, 0.26);
+  background: rgba(30, 93, 82, 0.12);
+  color: var(--accent);
+  box-shadow: 0 12px 24px rgba(30, 93, 82, 0.08);
+}
+
 .record-value-grid {
   display: grid;
   gap: 12px;

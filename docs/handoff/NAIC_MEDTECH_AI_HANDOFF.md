@@ -127,6 +127,7 @@ The first `Records Runtime` foundation has now landed in the app.
 What exists now:
 - `/` redirects to `/records`
 - `/records` is now the calm daily landing screen
+- `/records` now has a first usable history layer too: medtech can search by patient, case number, form name, or record key and filter between draft and completed records on the same screen
 - `/records/new` starts a draft from a chosen form
 - `/records/{id}/edit` now supports the first basic record-entry flow
 - `/records/{id}` now shows a read-only record view
@@ -150,6 +151,7 @@ What the next AI should continue from here:
 - refine the new image/file answer flow instead of re-planning it from zero
 - refine record rendering for richer block kinds
 - improve the print renderer instead of starting from a blank page
+- keep extending records history/search only as needed; the first calm search/filter pass is already landed
 
 ## Builder Direction Note
 The current builder prototype is not yet considered final for the real client.

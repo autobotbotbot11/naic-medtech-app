@@ -8,7 +8,7 @@ from typing import Any
 from uuid import uuid4
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
 from .config import RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH
@@ -1234,24 +1234,60 @@ def get_record_or_none(session: Session, record_id: int) -> Record | None:
     )
 
 
+def record_query_with_relationships():
+    return select(Record).options(
+        selectinload(Record.form).selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
+        selectinload(Record.form_version),
+        selectinload(Record.assets),
+    )
+
+
+def apply_record_filters(
+    query,
+    *,
+    status: str | None = None,
+    search: str | None = None,
+):
+    normalized_status = compact_text(status)
+    if normalized_status:
+        query = query.where(Record.status == normalized_status)
+
+    search_text = compact_text(search)
+    if search_text:
+        search_pattern = f"%{search_text}%"
+        query = query.join(FormDefinition, Record.form_id == FormDefinition.id).where(
+            or_(
+                Record.patient_name.ilike(search_pattern),
+                Record.case_number.ilike(search_pattern),
+                Record.record_key.ilike(search_pattern),
+                FormDefinition.name.ilike(search_pattern),
+            )
+        )
+
+    return query
+
+
+def count_records(
+    session: Session,
+    *,
+    status: str | None = None,
+    search: str | None = None,
+) -> int:
+    query = select(func.count(Record.id))
+    query = apply_record_filters(query, status=status, search=search)
+    return int(session.scalar(query) or 0)
+
+
 def list_records(
     session: Session,
     *,
     status: str | None = None,
+    search: str | None = None,
     limit: int = 24,
 ) -> list[dict[str, Any]]:
-    query = (
-        select(Record)
-        .options(
-            selectinload(Record.form).selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
-            selectinload(Record.form_version),
-            selectinload(Record.assets),
-        )
-        .order_by(Record.updated_at.desc(), Record.id.desc())
-        .limit(limit)
-    )
-    if compact_text(status):
-        query = query.where(Record.status == compact_text(status))
+    query = record_query_with_relationships()
+    query = apply_record_filters(query, status=status, search=search)
+    query = query.order_by(Record.updated_at.desc(), Record.id.desc()).limit(limit)
     records = session.scalars(query).all()
     return [serialize_record(record, include_values=False) for record in records]
 

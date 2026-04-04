@@ -15,6 +15,7 @@ from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
 from .services import (
     build_record_print_document,
+    count_records,
     complete_record,
     create_container,
     delete_container,
@@ -79,13 +80,49 @@ def render_builder_page(
 def render_records_home_page(
     request: Request,
     session: Session,
+    *,
+    search_query: str = "",
+    status_filter: str = "",
 ) -> HTMLResponse:
+    active_status = (status_filter or "").strip().lower()
+    if active_status not in {"", "draft", "completed"}:
+        active_status = ""
+    query_text = (search_query or "").strip()
+    has_filters = bool(query_text or active_status)
+    matching_records = (
+        list_records(
+            session,
+            status=active_status or None,
+            search=query_text or None,
+            limit=40,
+        )
+        if has_filters
+        else []
+    )
+    matching_total_count = (
+        count_records(
+            session,
+            status=active_status or None,
+            search=query_text or None,
+        )
+        if has_filters
+        else 0
+    )
     return templates.TemplateResponse(
         request=request,
         name="records/home.html",
         context={
             "app_title": APP_TITLE,
             "form_choices": list_form_choices(session),
+            "search_query": query_text,
+            "status_filter": active_status,
+            "has_filters": has_filters,
+            "matching_records": matching_records,
+            "matching_count": matching_total_count,
+            "matching_shown_count": len(matching_records),
+            "matching_truncated": matching_total_count > len(matching_records),
+            "draft_count": count_records(session, status="draft"),
+            "completed_count": count_records(session, status="completed"),
             "recent_drafts": list_records(session, status="draft", limit=8),
             "recent_completed": list_records(session, status="completed", limit=8),
         },
@@ -205,8 +242,13 @@ def root() -> RedirectResponse:
 
 
 @app.get("/records", response_class=HTMLResponse)
-def records_home(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
-    return render_records_home_page(request, session)
+def records_home(
+    request: Request,
+    q: str = "",
+    status: str = "",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_records_home_page(request, session, search_query=q, status_filter=status)
 
 
 @app.get("/records/new", response_class=HTMLResponse)
@@ -772,9 +814,10 @@ def records_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]
 @app.get("/api/records")
 def records_index(
     status: str = "",
+    q: str = "",
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
-    return {"records": list_records(session, status=status or None)}
+    return {"records": list_records(session, status=status or None, search=q or None)}
 
 
 @app.post("/api/records", status_code=201)
