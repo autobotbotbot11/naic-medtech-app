@@ -40,9 +40,14 @@
       <label class="entry-field">
         <div class="entry-field-head">
           <span>{{ block.name }}</span>
+          <div class="entry-field-meta">
+          {% if props.required %}
+          <small class="entry-chip entry-chip-required">Required</small>
+          {% endif %}
           {% if props.unit_hint %}
           <small class="entry-chip">{{ props.unit_hint }}</small>
           {% endif %}
+          </div>
         </div>
         {% if props.reference_text %}
         <p class="entry-inline-hint">Reference: {{ props.reference_text }}</p>
@@ -231,12 +236,26 @@
       {% if error_message %}
       <div class="error-banner">{{ error_message }}</div>
       {% endif %}
+      {% if validation_issues %}
+      <section class="completion-checklist">
+        <div class="entry-block-head">
+          <p class="eyebrow">Before completing</p>
+          <h3>Finish these required details</h3>
+        </div>
+        <ul class="completion-issues">
+          {% for issue in validation_issues %}
+          <li>{{ issue }}</li>
+          {% endfor %}
+        </ul>
+      </section>
+      {% endif %}
 
       <form method="post" action="/records/{{ record.id }}/edit" class="record-entry-form">
         <section class="panel record-section">
           <div class="entry-block-head">
             <p class="eyebrow">Record details</p>
             <h2>Header</h2>
+            <p class="entry-inline-hint">Patient name and case number are required before this record can be completed.</p>
           </div>
           <div class="record-basics-grid">
             <label class="entry-field">

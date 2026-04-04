@@ -28,6 +28,7 @@
       "/records/{id}/edit now supports the first calm server-rendered record-entry flow",
       "/records/{id} now shows a read-only record view",
       "records now surface quiet accountability metadata too: created by, last updated by, and the latest activity timestamp are visible in the live records flow",
+      "record completion is calmer but stricter now too: drafts still stay flexible, but Complete now enforces patient name, case number, and any required field answers from the form design",
       "record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholders",
       "the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number",
       "records are now stored separately from forms and point to a frozen form_version_id",

@@ -1404,6 +1404,77 @@ def serialize_record_actor(user: User | None) -> dict[str, Any] | None:
     }
 
 
+class RecordCompletionValidationError(ValueError):
+    def __init__(self, issues: list[str]):
+        self.issues = issues
+        super().__init__("Complete this record after filling the missing required details.")
+
+
+def has_meaningful_record_value(value: Any) -> bool:
+    if value is None:
+        return False
+    if isinstance(value, dict):
+        if value.get("kind") == "image" and value.get("asset_id"):
+            return True
+        return any(has_meaningful_record_value(item) for item in value.values())
+    if isinstance(value, list):
+        return any(has_meaningful_record_value(item) for item in value)
+    return bool(compact_text(value))
+
+
+def collect_required_record_field_issues(
+    blocks: list[dict[str, Any]],
+    values: dict[str, Any],
+) -> list[str]:
+    issues: list[str] = []
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        kind = compact_text(block.get("kind"))
+        if kind in {"section", "field_group"}:
+            issues.extend(
+                collect_required_record_field_issues(
+                    normalize_items(block.get("children")),
+                    values,
+                )
+            )
+            continue
+        if kind != "field":
+            continue
+        props = block.get("props") if isinstance(block.get("props"), dict) else {}
+        if not bool(props.get("required")):
+            continue
+        block_id = compact_text(block.get("id"))
+        field_name = compact_text(block.get("name")) or "Untitled field"
+        if not has_meaningful_record_value(values.get(block_id)):
+            issues.append(f"Fill in required field: {field_name}.")
+    return issues
+
+
+def validate_record_completion(
+    record: Record,
+    *,
+    patient_name: str,
+    case_number: str,
+    values: dict[str, Any],
+) -> None:
+    issues: list[str] = []
+    if not patient_name:
+        issues.append("Add the patient name.")
+    if not case_number:
+        issues.append("Add the case number.")
+
+    block_schema, _ = load_block_storage_document(record.form_version)
+    issues.extend(
+        collect_required_record_field_issues(
+            normalize_items(block_schema.get("blocks")),
+            values,
+        )
+    )
+    if issues:
+        raise RecordCompletionValidationError(issues)
+
+
 def parse_numeric_answer(value: Any) -> float | None:
     if isinstance(value, bool):
         return None
@@ -1876,6 +1947,13 @@ def update_record(
     if preserve_asset_fields:
         normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
 
+    validate_record_completion(
+        record,
+        patient_name=patient_name,
+        case_number=case_number,
+        values=normalized_values,
+    )
+
     record.patient_name = patient_name or None
     record.case_number = case_number or None
     record.values_json = json.dumps(normalized_values, ensure_ascii=False)
@@ -1919,6 +1997,13 @@ def complete_record(
     normalized_values = normalize_record_values(payload.values)
     if preserve_asset_fields:
         normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
+
+    validate_record_completion(
+        record,
+        patient_name=patient_name,
+        case_number=case_number,
+        values=normalized_values,
+    )
 
     record.patient_name = patient_name or None
     record.case_number = case_number or None

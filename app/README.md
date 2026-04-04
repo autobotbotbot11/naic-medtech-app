@@ -41,6 +41,11 @@ The app now starts from a builder-first FastAPI scaffold.
   - create/update/complete actions keep the acting user id
   - record cards now show the latest activity user and time
   - record edit/view now show quiet `Created by` and `Last updated by` metadata
+- record completion is calmer but stricter now too:
+  - drafts still stay flexible
+  - `Complete` now blocks when patient name or case number is missing
+  - `Complete` also blocks when a form-design-required field is still empty
+  - the edit screen now shows a quiet completion checklist instead of failing silently
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
 - live form reads now expose `block_schema` as the active form shape

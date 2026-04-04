@@ -58,6 +58,7 @@ from .services import (
     move_container,
     move_form,
     request_account,
+    RecordCompletionValidationError,
     remove_clinic_logo,
     rename_container,
     serialize_user,
@@ -436,6 +437,7 @@ def render_record_edit_page(
     *,
     record_id: int,
     error_message: str = "",
+    validation_issues: list[str] | None = None,
     status_code: int = 200,
 ) -> HTMLResponse:
     record = get_record_or_none(session, record_id)
@@ -449,6 +451,7 @@ def render_record_edit_page(
             "app_title": APP_TITLE,
             "record": serialize_record(record, include_entry_schema=True),
             "error_message": error_message,
+            "validation_issues": validation_issues or [],
         },
         status_code=status_code,
     )
@@ -753,6 +756,15 @@ async def update_record_page(
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except RecordCompletionValidationError as exc:
+        return render_record_edit_page(
+            request,
+            session,
+            record_id=record_id,
+            error_message=str(exc),
+            validation_issues=exc.issues,
+            status_code=422,
+        )
     except ValueError as exc:
         return render_record_edit_page(
             request,
@@ -1485,6 +1497,14 @@ def complete_record_endpoint(
         return complete_record(session, record_id, payload, actor_user_id=current_user_id(request))
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except RecordCompletionValidationError as exc:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "message": str(exc),
+                "issues": exc.issues,
+            },
+        ) from exc
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 

@@ -238,6 +238,13 @@
   align-items: center;
 }
 
+.entry-field-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .entry-chip {
   display: inline-flex;
   align-items: center;
@@ -250,6 +257,11 @@
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+}
+
+.entry-chip-required {
+  background: rgba(201, 106, 41, 0.1);
+  color: #915523;
 }
 
 .entry-inline-hint {
@@ -376,6 +388,24 @@
 .entry-image-upload-form {
   display: grid;
   gap: 10px;
+}
+
+.completion-checklist {
+  display: grid;
+  gap: 10px;
+  padding: 16px 18px;
+  border: 1px solid rgba(201, 106, 41, 0.18);
+  border-radius: var(--radius-lg);
+  background: rgba(201, 106, 41, 0.08);
+}
+
+.completion-issues {
+  margin: 0;
+  padding-left: 18px;
+  color: #7f4920;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
 }
 
 .entry-image-upload-form input[type="file"] {

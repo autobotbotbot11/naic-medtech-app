@@ -177,6 +177,11 @@ What exists now:
   - who created the record
   - who last updated it
   - when it was last saved or completed
+- record completion now has the first trust guards too:
+  - drafts remain flexible
+  - `Complete` requires patient name and case number
+  - `Complete` also enforces form-design-required field answers
+  - the edit screen now shows a quiet completion checklist when something is missing
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
 - the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
 - records are stored separately from forms and point to a frozen `form_version_id`
@@ -198,6 +203,9 @@ What the next AI should continue from here:
 - improve the record-entry runtime instead of reopening builder architecture debates
 - refine the new image/file answer flow instead of re-planning it from zero
 - preserve the current quiet accountability layer in records instead of replacing it with heavy workflow
+- preserve the current draft-versus-complete behavior:
+  - drafts should stay forgiving
+  - completion should stay trustworthy
 - refine record rendering for richer block kinds
 - improve the print renderer instead of starting from a blank page
 - keep extending records history/search only as needed; the first calm search/filter pass is already landed
