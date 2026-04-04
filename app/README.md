@@ -43,29 +43,32 @@ The app now starts from a builder-first FastAPI scaffold.
     - light mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html`
     - dark mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html`
   - the dark sample is intentionally moodier than the first luxe dark variant and is the preferred dark direction
-  - this was chosen from standalone exploration files only; the live app has not been reskinned yet
   - the concrete rollout plan now lives in `../docs/handoff/UI_RESKIN_PLAN.md`
-- the first live theme foundation has now started too:
+- the non-print live reskin is now materially in place too:
   - shared non-print theme assets now exist at `app/naic_builder/static/theme.css` and `app/naic_builder/static/theme.js`
-  - the live app now has the first shared light/dark mode plumbing across builder, auth, records, forms, and settings
-  - the current toggle is a small floating mode switcher so the theme system can land everywhere before deeper page-specific shell polish
+  - the live app now has shared light/dark mode plumbing across builder, auth, records, forms, and settings
+  - the current toggle is a small floating mode switcher with local persistence
   - print is still intentionally excluded from this theme pass
-- the records-first live reskin has now started too:
+  - the records-first live reskin is the strongest finished part of the pass:
   - `app/naic_builder/static/records.css` has been rewritten around the new `Clinical Depth Luxe` shell direction
   - records home, new, edit, and view now share a stronger premium shell language instead of only inheriting the older warm utility styling
-  - the next records pass also corrected the first real UI gap from the theme-only stage:
+  - follow-up records passes also corrected the first real UI gap from the theme-only stage:
     - headings and supporting text are now meant to stay readable in light mode
     - record fields now use real luxe field shells instead of looking like plain old scaffold inputs
     - record selects now have actual dropdown styling instead of falling back to the older raw browser feel
-  - the current priority has now shifted to `dark mode first` for records:
+  - the `dark mode first` push was then carried through the broader live screens:
     - darker-mode materials, glass depth, card treatment, and shell atmosphere were pushed closer to the locked `Clinical Depth Luxe Darker` sample
     - dark-mode typography and button treatment were also pushed closer to the sample, so the records flow now inherits more of the intended luxe feel instead of only darker colors
     - a live browser-audited follow-up then pushed actual records structure too, especially on `/records` and `/records/new`:
       - the top shell actions are now grouped more intentionally instead of reading like one flat pill bar
       - the records search area now reads more like a real workspace search surface
       - the new-record page now uses a two-column start layout with a companion workflow card instead of one plain scaffold form block
-    - light mode can be polished further later, but the immediate goal is to finish the darker luxe workspace feel first so it can be judged honestly
-  - this is still a first records pass, not the final full-product reskin
+    - browser-audited cleanup also corrected the remaining dark mismatches in status chips, accent labels, `Settings > Users`, and the builder workspace panels
+  - the non-record screens now also follow the same live luxe family:
+    - `app/naic_builder/static/library.css`, `app/naic_builder/static/auth.css`, and `app/naic_builder/static/new-form.css` now follow the same luxe family instead of the older warm scaffold grammar
+    - forms library, clinic settings, user settings, auth pages, start-new-form, and the current builder shell now share the stronger shell/material treatment
+    - native-looking file upload controls were also styled through `theme.css` so clinic logo and image-upload flows no longer break the premium feel
+  - quick light-mode audits were also run across the main non-print screens so the first consolidated user review should not hit obvious contrast regressions
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

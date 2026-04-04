@@ -23,7 +23,7 @@ body {
     radial-gradient(circle at top left, rgba(201, 106, 41, 0.12), transparent 24%),
     radial-gradient(circle at top right, rgba(30, 93, 82, 0.08), transparent 22%),
     linear-gradient(180deg, #f8f3ea, var(--bg));
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: var(--font-body, "Trebuchet MS", "Segoe UI", sans-serif);
 }
 
 a,
@@ -42,8 +42,8 @@ a {
 }
 
 .library-shell {
-  width: min(1380px, calc(100vw - 28px));
-  margin: 18px auto 28px;
+  width: min(1440px, calc(100vw - 28px));
+  margin: 14px auto 28px;
 }
 
 .panel {
@@ -56,15 +56,25 @@ a {
 .library-topbar {
   display: flex;
   justify-content: space-between;
-  gap: 18px;
-  align-items: end;
-  padding: 16px 18px;
+  gap: 22px;
+  align-items: start;
+  padding: 20px 22px;
 }
 
 .brand-copy {
   display: grid;
-  gap: 4px;
+  gap: 6px;
   max-width: 640px;
+}
+
+.library-topbar .brand-copy::after,
+.new-form-topbar .brand-copy::after {
+  content: "";
+  width: 92px;
+  height: 2px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--warm), rgba(195, 160, 108, 0));
 }
 
 .eyebrow {
@@ -80,7 +90,7 @@ h1,
 h2,
 h3 {
   margin: 0;
-  font-family: "Palatino Linotype", "Book Antiqua", serif;
+  font-family: var(--font-heading, "Palatino Linotype", "Book Antiqua", serif);
 }
 
 h1 {
@@ -100,19 +110,19 @@ h3 {
   margin: 0;
   color: var(--muted);
   font-size: 13px;
-  line-height: 1.45;
+  line-height: 1.55;
 }
 
 .topbar-actions {
   display: flex;
   gap: 10px;
-  align-items: end;
+  align-items: start;
   flex-wrap: wrap;
   justify-content: flex-end;
 }
 
 .search-wrap {
-  min-width: min(280px, 100%);
+  min-width: min(300px, 100%);
   display: grid;
   gap: 5px;
 }
@@ -127,11 +137,11 @@ h3 {
 
 input {
   width: 100%;
-  border: 1px solid rgba(68, 54, 40, 0.22);
-  border-radius: 14px;
-  background: #fff;
+  border: 1px solid rgba(68, 54, 40, 0.18);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.9);
   color: var(--text);
-  padding: 10px 12px;
+  padding: 12px 14px;
   outline: none;
 }
 
@@ -146,8 +156,8 @@ input:focus {
   justify-content: center;
   align-items: center;
   gap: 8px;
-  min-height: 38px;
-  padding: 9px 13px;
+  min-height: 40px;
+  padding: 9px 15px;
   border-radius: 999px;
   font-weight: 700;
 }
@@ -166,7 +176,7 @@ input:focus {
 .library-grid {
   margin-top: 16px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
   grid-template-columns: minmax(240px, 280px) minmax(0, 1fr);
   align-items: start;
 }
@@ -175,6 +185,9 @@ input:focus {
   position: sticky;
   top: 18px;
   padding: 18px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 74%, transparent), color-mix(in srgb, var(--panel) 92%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 9%, transparent), transparent 34%);
 }
 
 .sidebar-head {
@@ -212,7 +225,9 @@ input:focus {
   padding: 11px 12px;
   border-radius: var(--radius-md);
   border: 1px solid rgba(68, 54, 40, 0.08);
-  background: rgba(255, 255, 255, 0.72);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.74)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.04), transparent 48%);
   color: var(--text);
   font-weight: 700;
 }
@@ -232,7 +247,10 @@ input:focus {
 }
 
 .tree-folder {
-  padding: 16px 18px;
+  padding: 18px 20px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 78%, transparent), color-mix(in srgb, var(--panel) 94%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 8%, transparent), transparent 36%);
 }
 
 .tree-folder.hidden,
@@ -242,7 +260,9 @@ input:focus {
 
 .tree-folder-nested {
   border-radius: var(--radius-lg);
-  background: rgba(255, 250, 244, 0.78);
+  background:
+    linear-gradient(180deg, rgba(255, 250, 244, 0.82), rgba(255, 250, 244, 0.7)),
+    radial-gradient(circle at top right, rgba(201, 106, 41, 0.05), transparent 44%);
   box-shadow: none;
 }
 
@@ -263,7 +283,7 @@ input:focus {
   content: "+";
   flex: 0 0 auto;
   color: var(--accent);
-  font-size: 24px;
+  font-size: 26px;
   line-height: 1;
   font-weight: 400;
 }
@@ -274,7 +294,7 @@ input:focus {
 
 .tree-node-copy {
   display: grid;
-  gap: 5px;
+  gap: 6px;
 }
 
 .tree-node-title {
@@ -297,7 +317,7 @@ input:focus {
 }
 
 .tree-folder-actions .ghost-button {
-  min-height: 34px;
+  min-height: 36px;
   padding: 7px 12px;
 }
 
@@ -307,7 +327,9 @@ input:focus {
 }
 
 .tree-form-card {
-  background: rgba(255, 255, 255, 0.8);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 46%);
 }
 
 .tree-form-path {
@@ -323,10 +345,12 @@ input:focus {
 .form-card {
   display: grid;
   gap: 12px;
-  padding: 15px;
+  padding: 16px;
   border: 1px solid rgba(68, 54, 40, 0.12);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.8);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 46%);
 }
 
 .form-card.hidden {
@@ -335,7 +359,7 @@ input:focus {
 
 .form-card-copy {
   display: grid;
-  gap: 6px;
+  gap: 7px;
 }
 
 .form-card-meta {
@@ -351,6 +375,50 @@ input:focus {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.tree-form-card h3,
+.tree-node-title,
+.library-sidebar h2 {
+  letter-spacing: -0.03em;
+}
+
+html[data-theme="dark"] .library-sidebar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.015)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.07), transparent 34%);
+}
+
+html[data-theme="dark"] .group-jump-link,
+html[data-theme="dark"] .form-card,
+html[data-theme="dark"] .tree-form-card,
+html[data-theme="dark"] .tree-folder,
+html[data-theme="dark"] .tree-folder-nested {
+  border-color: rgba(223, 240, 245, 0.06);
+}
+
+html[data-theme="dark"] .group-jump-link {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.05), transparent 42%);
+}
+
+html[data-theme="dark"] .tree-folder,
+html[data-theme="dark"] .form-card,
+html[data-theme="dark"] .tree-form-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.07), transparent 36%);
+}
+
+html[data-theme="dark"] .tree-folder-nested {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.014)),
+    radial-gradient(circle at top right, rgba(195, 160, 108, 0.06), transparent 42%);
+}
+
+html[data-theme="dark"] .tree-folder-summary::after {
+  color: color-mix(in srgb, var(--accent) 86%, #eaf6fa 14%);
 }
 
 .empty-state {

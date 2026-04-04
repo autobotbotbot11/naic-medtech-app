@@ -1,12 +1,12 @@
 .auth-shell {
-  width: min(980px, calc(100vw - 28px));
-  margin: 18px auto 28px;
+  width: min(1180px, calc(100vw - 28px));
+  margin: 14px auto 28px;
 }
 
 .auth-grid {
   margin-top: 16px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
   grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
   align-items: start;
 }
@@ -15,7 +15,7 @@
 .auth-side,
 .settings-panel,
 .user-card {
-  padding: 18px;
+  padding: 20px;
 }
 
 .auth-main,
@@ -32,6 +32,15 @@
 .profile-stack {
   display: grid;
   gap: 14px;
+}
+
+.auth-shell .library-topbar .brand-copy::after {
+  content: "";
+  width: 92px;
+  height: 2px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--warm), rgba(195, 160, 108, 0));
 }
 
 .banner {
@@ -137,7 +146,9 @@
 .user-card {
   border: 1px solid rgba(68, 54, 40, 0.1);
   border-radius: 20px;
-  background: rgba(255, 255, 255, 0.78);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 44%);
   display: grid;
   gap: 12px;
 }
@@ -250,7 +261,7 @@
 
 .profile-card,
 .logo-card {
-  padding: 18px;
+  padding: 20px;
 }
 
 .field-help {
@@ -263,7 +274,9 @@
   min-height: 180px;
   border-radius: 22px;
   border: 1px dashed rgba(68, 54, 40, 0.16);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 242, 236, 0.9));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 242, 236, 0.9)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 52%);
   display: grid;
   place-items: center;
   overflow: hidden;
@@ -300,7 +313,9 @@
   padding: 14px 15px;
   border: 1px solid rgba(68, 54, 40, 0.08);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.76);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 46%);
   display: grid;
   gap: 6px;
 }
@@ -308,6 +323,46 @@
 .settings-count-card strong {
   font-size: 28px;
   line-height: 1;
+}
+
+.auth-main,
+.auth-side,
+.settings-panel,
+.profile-card,
+.logo-card {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 78%, transparent), color-mix(in srgb, var(--panel) 94%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 38%);
+}
+
+html[data-theme="dark"] .auth-main,
+html[data-theme="dark"] .auth-side,
+html[data-theme="dark"] .settings-panel,
+html[data-theme="dark"] .profile-card,
+html[data-theme="dark"] .logo-card,
+html[data-theme="dark"] .user-card,
+html[data-theme="dark"] .settings-count-card {
+  border-color: rgba(223, 240, 245, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.07), transparent 36%);
+}
+
+html[data-theme="dark"] .logo-frame {
+  border-color: rgba(223, 240, 245, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.035), rgba(255, 255, 255, 0.016)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.06), transparent 46%);
+}
+
+html[data-theme="dark"] .status-chip[data-status="disabled"] {
+  border-color: transparent;
+  background: rgba(127, 146, 154, 0.14);
+}
+
+html[data-theme="dark"] .role-chip {
+  background: rgba(99, 188, 205, 0.14);
+  color: #7fd5df;
 }
 
 @media (max-width: 900px) {

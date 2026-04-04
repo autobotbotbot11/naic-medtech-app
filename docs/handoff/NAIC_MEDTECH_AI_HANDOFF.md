@@ -138,6 +138,28 @@ The product now has a locked visual direction for the next UI work.
 Chosen design language:
 - `Clinical Depth Luxe`
 
+Current live status:
+- the non-print app now has a materially landed live reskin pass under that direction
+- dark mode was intentionally pushed first and browser-audited directly against the locked darker sample
+- the strongest finished live surfaces right now are:
+  - `Records`
+  - `Records > New`
+  - `Records > Edit`
+  - `Records > View`
+  - `Forms`
+  - `Forms > New`
+  - `Settings > Clinic`
+  - `Settings > Users`
+  - auth screens
+  - the current builder shell
+- follow-up browser-audited dark-mode cleanup already fixed the most obvious remaining mismatches:
+  - weak accent labels and status-chip strength on `/records`
+  - `DRAFT` / `COMPLETED` chip color mismatches
+  - overly bright `Settings > Users` stat cards in dark mode
+  - overly bright builder content/preview panels in dark mode
+- quick light-mode audits were also run across the main non-print screens so the first consolidated review should not hit obvious contrast or raw-browser-control regressions
+- print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
+
 Chosen mode pair:
 - light mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html`
 - dark mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html`
@@ -184,7 +206,11 @@ Current live UI checkpoint:
     - `/records` now groups top-shell utility actions more intentionally and gives search a more authored workspace shape
     - `/records/new` now uses a split start layout with a workflow side card instead of one plain scaffold form block
   - light mode should not be the current judging baseline until the darker luxe direction is considered strong enough
-  - auth, forms, settings, and builder still need deeper surface-specific reskin work after this
+  - a broader live pass has now started on the other non-print surfaces too:
+    - `library.css`, `auth.css`, and `new-form.css` were pushed into the same luxe family
+    - forms library, auth, clinic settings, user settings, and start-new-form now read less like older warm utility scaffolds
+    - native file-upload controls were also styled in `theme.css` so clinic/logo/image flows no longer drop back to default browser chrome
+  - builder still needs its own deeper surface-specific reskin work after this
 - deeper surface-specific reskin work still needs to happen in the rollout order documented in `docs/handoff/UI_RESKIN_PLAN.md`
 
 ## Next Whole-App Milestone

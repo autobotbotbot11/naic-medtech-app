@@ -10,14 +10,14 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "locked_for_future_live_reskin",
+    "status": "non_print_live_reskin_ready_for_review",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
     },
     "reskin_plan_doc": "docs/handoff/UI_RESKIN_PLAN.md",
     "live_theme_foundation": {
-      "status": "started",
+      "status": "landed",
       "shared_assets": [
         "app/naic_builder/static/theme.css",
         "app/naic_builder/static/theme.js"
@@ -33,7 +33,7 @@
       "print_excluded": true
     },
     "records_reskin_phase": {
-      "status": "first_pass_landed",
+      "status": "browser_audited_dark_first_pass_landed",
       "primary_stylesheet": "app/naic_builder/static/records.css",
       "scope": [
         "records home",
@@ -47,13 +47,17 @@
         "The next follow-up pass focused on dark-mode fidelity first so records move closer to the locked Clinical Depth Luxe Darker sample before more light-mode polish resumes.",
         "Another dark-mode follow-up also aligned the records typography and button treatment more closely with the locked darker sample so the darker experience is not relying on the old scaffold-era font and control feel.",
         "A live browser-audited records follow-up then pushed actual structure too: /records now groups its top-shell actions and search more intentionally, while /records/new now uses a split start layout with a workflow side card instead of one plain scaffold form block.",
-        "Auth, forms, settings, and builder still need their own deeper surface-specific reskin passes."
+        "A broader live pass also pushed library.css, auth.css, and new-form.css into the same luxe family, so forms library, auth, clinic settings, user settings, and start-new-form now read less like the older warm utility scaffolds.",
+        "Native file upload controls were also styled through theme.css so clinic/logo/image flows do not drop back to default browser chrome.",
+        "Direct browser-audited cleanup then fixed the remaining obvious dark-mode mismatches in record status chips, accent-label strength, settings/users stat cards, and the current builder content plus preview panels.",
+        "The current builder shell now sits inside the same non-print luxe family, but print is still intentionally excluded from this reskin."
       ]
     },
     "notes": [
       "The preferred feel is premium, modern, calm, and authored rather than generic admin minimalism.",
       "Dark mode should stay curated and atmospheric, not neon and not pure black.",
-      "The live app now has a shared theme foundation plus a first records-first reskin pass; these standalone files remain the locked visual north star for future UI work."
+      "The live app now has a shared theme foundation plus a browser-audited non-print reskin pass; these standalone files remain the locked visual north star for future UI work.",
+      "Quick light-mode audits were also run across the main non-print screens so the next review should not immediately hit obvious contrast regressions."
     ]
   },
   "alignment_lock": [

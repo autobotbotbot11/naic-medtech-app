@@ -24,7 +24,7 @@ body {
     radial-gradient(circle at top left, rgba(201, 106, 41, 0.12), transparent 24%),
     radial-gradient(circle at top right, rgba(30, 93, 82, 0.08), transparent 22%),
     linear-gradient(180deg, #f8f3ea, var(--bg));
-  font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+  font-family: var(--font-body, "Trebuchet MS", "Segoe UI", sans-serif);
 }
 
 a,
@@ -39,8 +39,8 @@ a {
 }
 
 .new-form-shell {
-  width: min(1220px, calc(100vw - 28px));
-  margin: 18px auto 28px;
+  width: min(1280px, calc(100vw - 28px));
+  margin: 14px auto 28px;
 }
 
 .panel {
@@ -54,8 +54,8 @@ a {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-  align-items: center;
-  padding: 18px 20px;
+  align-items: start;
+  padding: 20px 22px;
 }
 
 .brand-copy,
@@ -70,6 +70,15 @@ a {
   gap: 6px;
 }
 
+.new-form-topbar .brand-copy::after {
+  content: "";
+  width: 92px;
+  height: 2px;
+  margin-top: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--warm), rgba(195, 160, 108, 0));
+}
+
 .eyebrow {
   margin: 0;
   text-transform: uppercase;
@@ -82,7 +91,7 @@ a {
 h1,
 h2,
 strong {
-  font-family: "Palatino Linotype", "Book Antiqua", serif;
+  font-family: var(--font-heading, "Palatino Linotype", "Book Antiqua", serif);
 }
 
 h1,
@@ -109,7 +118,7 @@ h2 {
 .topbar-actions {
   display: flex;
   gap: 10px;
-  align-items: center;
+  align-items: start;
 }
 
 .primary-button,
@@ -143,14 +152,14 @@ h2 {
 .new-form-grid {
   margin-top: 16px;
   display: grid;
-  gap: 16px;
+  gap: 18px;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
   align-items: start;
 }
 
 .form-flow-card,
 .summary-card {
-  padding: 20px;
+  padding: 22px;
 }
 
 .form-flow-card {
@@ -180,10 +189,10 @@ input[type="text"],
 select {
   width: 100%;
   border: 1px solid rgba(68, 54, 40, 0.22);
-  border-radius: 14px;
-  background: #fff;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.92);
   color: var(--text);
-  padding: 11px 12px;
+  padding: 12px 14px;
   outline: none;
 }
 
@@ -208,7 +217,9 @@ select:focus {
   position: relative;
   border: 1px solid rgba(68, 54, 40, 0.12);
   border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.78)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 48%);
 }
 
 .choice-pill {
@@ -256,6 +267,25 @@ select:focus {
   color: var(--muted);
   font-size: 13px;
   line-height: 1.45;
+}
+
+.form-flow-card,
+.summary-card,
+.single-flow-card {
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel) 78%, transparent), color-mix(in srgb, var(--panel) 94%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 38%);
+}
+
+html[data-theme="dark"] .form-flow-card,
+html[data-theme="dark"] .summary-card,
+html[data-theme="dark"] .single-flow-card,
+html[data-theme="dark"] .choice-pill,
+html[data-theme="dark"] .start-card {
+  border-color: rgba(223, 240, 245, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.07), transparent 36%);
 }
 
 .summary-list {
