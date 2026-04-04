@@ -105,7 +105,7 @@
       "field input wording is calmer too: the picker now says Input, with simpler choices like Text, Choices, and Date & time",
       "field reference handling is more print-ready too: the live builder now uses Reference in the active field UI, numeric fields now use a Normal range with From / To, and choice options can be marked Counts as normal for future abnormal highlighting",
       "legacy compatibility is preserved too: builder storage now keeps reference_text as the active block prop while still projecting it back into legacy normal_value where older storage expects it",
-      "the visible field UX stays calm too: Reference keeps one short hint, Normal range now gets one tiny line for meaning, and choice options stay simple without extra tooltip clutter",
+      "the visible field UX stays calm too: the duplicate top Reference heading is gone, a tiny hint stays above the inputs, Normal range gets one small line for meaning, and choice options stay simple without extra tooltip clutter",
       "active organizer rows are quieter too: the old Editing pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips",
       "advanced labels and helper copy are calmer too: shorter labels like Key and Notes, plus tighter Basics/Content/Save help copy, now keep the builder less technical without adding extra clutter",
       "the old shared Record defaults selector is now hidden from the visible builder flow, so setup stays closer to the flexible lego model while backend compatibility remains intact",

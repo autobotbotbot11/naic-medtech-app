@@ -2470,7 +2470,6 @@ function renderItemCard(item, path, options = {}) {
           ${isGroup ? "" : `
             <section class="reference-editor">
               <div class="reference-editor-head">
-                <h5>Reference</h5>
                 <p>Shown beside the result.</p>
               </div>
               <div class="inline-grid item-basics-grid compact">

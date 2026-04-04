@@ -1407,12 +1407,7 @@ button.subtle[aria-pressed="true"] {
 
 .reference-editor-head {
   display: grid;
-  gap: 4px;
-}
-
-.reference-editor-head h5 {
-  margin: 0;
-  font-size: 14px;
+  gap: 2px;
 }
 
 .reference-editor-head p {
