@@ -1451,13 +1451,13 @@ def collect_required_record_field_issues(
     return issues
 
 
-def validate_record_completion(
+def list_record_completion_issues(
     record: Record,
     *,
     patient_name: str,
     case_number: str,
     values: dict[str, Any],
-) -> None:
+) -> list[str]:
     issues: list[str] = []
     if not patient_name:
         issues.append("Add the patient name.")
@@ -1470,6 +1470,22 @@ def validate_record_completion(
             normalize_items(block_schema.get("blocks")),
             values,
         )
+    )
+    return issues
+
+
+def validate_record_completion(
+    record: Record,
+    *,
+    patient_name: str,
+    case_number: str,
+    values: dict[str, Any],
+) -> None:
+    issues = list_record_completion_issues(
+        record,
+        patient_name=patient_name,
+        case_number=case_number,
+        values=values,
     )
     if issues:
         raise RecordCompletionValidationError(issues)

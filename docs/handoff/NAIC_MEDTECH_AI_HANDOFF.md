@@ -186,6 +186,10 @@ What exists now:
   - ordinary draft saves now redirect back with a quiet `Saved the draft.` banner
   - `Sex` now uses the same small standard select in both record create and record edit
   - the image file hint now uses plain ASCII text instead of the old broken separator artifact
+- record edit is more self-guiding now too:
+  - draft records already show a quiet readiness panel while editing
+  - if details are still missing, the panel lists what still blocks `Complete`
+  - if the draft is ready, the same panel flips into a calm ready-to-complete state
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
 - the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
 - records are stored separately from forms and point to a frozen `form_version_id`

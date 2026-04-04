@@ -399,12 +399,29 @@
   background: rgba(201, 106, 41, 0.08);
 }
 
+.completion-checklist.is-ready {
+  border-color: rgba(30, 93, 82, 0.18);
+  background: rgba(30, 93, 82, 0.08);
+}
+
 .completion-issues {
   margin: 0;
   padding-left: 18px;
   color: #7f4920;
   display: grid;
   gap: 6px;
+  font-size: 13px;
+}
+
+.completion-checklist.is-ready .completion-issues,
+.completion-checklist.is-ready .entry-block-head h3,
+.completion-checklist.is-ready .eyebrow {
+  color: var(--accent);
+}
+
+.completion-ready-copy {
+  margin: 0;
+  color: var(--accent);
   font-size: 13px;
 }
 

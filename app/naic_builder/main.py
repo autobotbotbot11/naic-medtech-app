@@ -41,6 +41,7 @@ from .services import (
     create_form,
     create_record,
     create_user_account,
+    current_record_values,
     ensure_form_version_storage_documents,
     ensure_library_tree,
     ensure_reference_seed,
@@ -52,6 +53,7 @@ from .services import (
     list_container_choices,
     list_form_choices,
     list_library_tree,
+    list_record_completion_issues,
     list_records,
     list_users,
     list_move_target_choices,
@@ -449,6 +451,15 @@ def render_record_edit_page(
     if not resolved_success_message and request.query_params.get("saved") == "1":
         resolved_success_message = "Saved the draft."
 
+    resolved_validation_issues = validation_issues or []
+    if record.status == "draft" and not resolved_validation_issues:
+        resolved_validation_issues = list_record_completion_issues(
+            record,
+            patient_name=record.patient_name or "",
+            case_number=record.case_number or "",
+            values=current_record_values(record),
+        )
+
     return templates.TemplateResponse(
         request=request,
         name="records/edit.html",
@@ -457,7 +468,7 @@ def render_record_edit_page(
             "record": serialize_record(record, include_entry_schema=True),
             "error_message": error_message,
             "success_message": resolved_success_message,
-            "validation_issues": validation_issues or [],
+            "validation_issues": resolved_validation_issues,
         },
         status_code=status_code,
     )

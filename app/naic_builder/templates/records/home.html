@@ -23,7 +23,7 @@
       <p class="record-activity-copy">
         {{ "Completed" if record.completed_at_label else "Updated" }} {{ record.completed_at_label or record.updated_at_label }}
         {% if activity_user %}
-          · {{ activity_user.full_name }}
+          - {{ activity_user.full_name }}
         {% endif %}
       </p>
     </div>
