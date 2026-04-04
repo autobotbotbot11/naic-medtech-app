@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 
@@ -15,3 +16,4 @@ DB_PATH = DATA_RUNTIME_DIR / "naic_medtech.db"
 REFERENCE_SCHEMA_PATH = ROOT_DIR / "artifacts" / "schema" / "naic_medtech_app_schema.json"
 
 APP_TITLE = "NAIC Medtech Builder"
+SESSION_SECRET = os.environ.get("NAIC_SESSION_SECRET") or "naic-medtech-dev-session-secret"

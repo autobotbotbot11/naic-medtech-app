@@ -61,6 +61,89 @@ def migrate_form_definitions_tree_first_shape(connection) -> None:
         connection.exec_driver_sql("PRAGMA foreign_keys=ON")
 
 
+def migrate_users_auth_shape(connection) -> None:
+    user_columns = {
+        str(row[1]): row
+        for row in connection.exec_driver_sql("PRAGMA table_info(users)").all()
+    }
+
+    select_email = "email" if "email" in user_columns else "NULL"
+    select_login_id = (
+        "login_id"
+        if "login_id" in user_columns
+        else ("username" if "username" in user_columns else "('user_' || id)")
+    )
+    select_full_name = (
+        "full_name"
+        if "full_name" in user_columns
+        else ("display_name" if "display_name" in user_columns else "('User ' || id)")
+    )
+    select_role = "role" if "role" in user_columns else "'medtech'"
+    select_password_hash = "password_hash" if "password_hash" in user_columns else "NULL"
+    if "status" in user_columns:
+        select_status = "status"
+    elif "is_active" in user_columns:
+        select_status = "CASE WHEN is_active THEN 'active' ELSE 'disabled' END"
+    else:
+        select_status = "'pending'"
+    select_must_change_password = "must_change_password" if "must_change_password" in user_columns else "0"
+    select_created_at = "created_at" if "created_at" in user_columns else "CURRENT_TIMESTAMP"
+    select_updated_at = "updated_at" if "updated_at" in user_columns else "CURRENT_TIMESTAMP"
+
+    connection.exec_driver_sql("PRAGMA foreign_keys=OFF")
+    try:
+        connection.exec_driver_sql(
+            """
+            CREATE TABLE users_new (
+                id INTEGER NOT NULL PRIMARY KEY,
+                email VARCHAR(255),
+                login_id VARCHAR(120) NOT NULL,
+                full_name VARCHAR(255) NOT NULL,
+                role VARCHAR(40) NOT NULL,
+                password_hash VARCHAR(255),
+                status VARCHAR(40) NOT NULL,
+                must_change_password BOOLEAN NOT NULL,
+                created_at DATETIME NOT NULL,
+                updated_at DATETIME NOT NULL
+            )
+            """
+        )
+        connection.exec_driver_sql(
+            f"""
+            INSERT INTO users_new (
+                id,
+                email,
+                login_id,
+                full_name,
+                role,
+                password_hash,
+                status,
+                must_change_password,
+                created_at,
+                updated_at
+            )
+            SELECT
+                id,
+                {select_email},
+                {select_login_id},
+                {select_full_name},
+                {select_role},
+                {select_password_hash},
+                {select_status},
+                {select_must_change_password},
+                {select_created_at},
+                {select_updated_at}
+            FROM users
+            """
+        )
+        connection.exec_driver_sql("DROP TABLE users")
+        connection.exec_driver_sql("ALTER TABLE users_new RENAME TO users")
+        connection.exec_driver_sql("CREATE UNIQUE INDEX ix_users_email ON users (email)")
+        connection.exec_driver_sql("CREATE UNIQUE INDEX ix_users_login_id ON users (login_id)")
+    finally:
+        connection.exec_driver_sql("PRAGMA foreign_keys=ON")
+
+
 def ensure_runtime_schema() -> None:
     Base.metadata.create_all(bind=engine)
     with engine.begin() as connection:
@@ -86,6 +169,19 @@ def ensure_runtime_schema() -> None:
         )
         if needs_tree_first_rebuild:
             migrate_form_definitions_tree_first_shape(connection)
+        user_columns = {
+            str(row[1])
+            for row in connection.exec_driver_sql("PRAGMA table_info(users)").all()
+        }
+        needs_user_auth_rebuild = any(
+            column not in user_columns
+            for column in ("email", "login_id", "full_name", "status", "must_change_password")
+        ) or any(
+            legacy_column in user_columns
+            for legacy_column in ("username", "display_name", "is_active")
+        )
+        if needs_user_auth_rebuild:
+            migrate_users_auth_shape(connection)
 
 
 def get_session() -> Generator[Session, None, None]:

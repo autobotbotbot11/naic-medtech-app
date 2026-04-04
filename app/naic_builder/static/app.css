@@ -49,6 +49,11 @@ textarea {
   font: inherit;
 }
 
+.inline-action-form {
+  display: inline;
+  margin: 0;
+}
+
 .shell {
   width: min(1240px, calc(100vw - 28px));
   margin: 18px auto 28px;

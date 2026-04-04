@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Users | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='auth.css') }}">
+</head>
+<body>
+  {% macro render_user_card(user, section) %}
+  <article class="user-card">
+    <div class="user-card-head">
+      <div class="user-card-copy">
+        <div class="settings-meta-row">
+          <span class="status-chip" data-status="{{ user.status }}">{{ user.status }}</span>
+          <span class="role-chip">{{ user.role }}</span>
+        </div>
+        <h3>{{ user.full_name }}</h3>
+        <p>{{ user.email or "No email" }}</p>
+        <p>Login ID: {{ user.login_id }}</p>
+      </div>
+    </div>
+
+    <div class="user-card-actions">
+      {% if section == 'pending' %}
+      <form method="post" action="/settings/users/{{ user.id }}/approve" class="inline-action-form settings-meta-row">
+        <label class="select-stack">
+          <span>Role</span>
+          <select name="role">
+            <option value="medtech">Medtech</option>
+            <option value="admin">Admin</option>
+          </select>
+        </label>
+        <button class="primary-button" type="submit">Approve</button>
+      </form>
+      <form method="post" action="/settings/users/{{ user.id }}/disable" class="inline-action-form">
+        <button class="ghost-button" type="submit">Disable</button>
+      </form>
+      {% elif section == 'active' %}
+      <form method="post" action="/settings/users/{{ user.id }}/disable" class="inline-action-form">
+        <button class="ghost-button" type="submit">Disable</button>
+      </form>
+      {% else %}
+      <form method="post" action="/settings/users/{{ user.id }}/activate" class="inline-action-form">
+        <button class="primary-button" type="submit">Activate</button>
+      </form>
+      {% endif %}
+    </div>
+  </article>
+  {% endmacro %}
+
+  <main class="auth-shell">
+    <header class="library-topbar panel">
+      <div class="brand-copy">
+        <p class="eyebrow">Settings</p>
+        <h1>User accounts</h1>
+        <p class="panel-copy">Approve requests, create accounts manually, and keep clinic access organized without a heavy workflow.</p>
+      </div>
+      <div class="settings-topbar-actions">
+        <a class="ghost-button" href="/records">Records</a>
+        <a class="ghost-button" href="/forms">Forms</a>
+        <a class="ghost-button" href="/change-password">Password</a>
+        <a class="primary-button" href="/settings/users/new">Create user</a>
+        <form method="post" action="/logout" class="inline-action-form">
+          <button class="ghost-button" type="submit">Log out</button>
+        </form>
+      </div>
+    </header>
+
+    <section class="panel settings-panel">
+      {% if error_message %}
+      <div class="banner error">{{ error_message }}</div>
+      {% endif %}
+      {% if success_message %}
+      <div class="banner success">{{ success_message }}</div>
+      {% endif %}
+
+      <div class="settings-count-grid">
+        <article class="settings-count-card">
+          <span class="eyebrow">Pending</span>
+          <strong>{{ pending_count }}</strong>
+        </article>
+        <article class="settings-count-card">
+          <span class="eyebrow">Active</span>
+          <strong>{{ active_count }}</strong>
+        </article>
+        <article class="settings-count-card">
+          <span class="eyebrow">Disabled</span>
+          <strong>{{ disabled_count }}</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="settings-stack">
+      <section class="panel settings-panel">
+        <div class="brand-copy">
+          <p class="eyebrow">Pending</p>
+          <h2>Waiting for approval</h2>
+        </div>
+        <div class="user-list">
+          {% if pending_users %}
+            {% for user in pending_users %}
+              {{ render_user_card(user, 'pending') }}
+            {% endfor %}
+          {% else %}
+          <div class="panel empty-state">
+            <h3>No pending requests</h3>
+            <p class="panel-copy">New account requests will appear here.</p>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="panel settings-panel">
+        <div class="brand-copy">
+          <p class="eyebrow">Active</p>
+          <h2>Working accounts</h2>
+        </div>
+        <div class="user-list">
+          {% if active_users %}
+            {% for user in active_users %}
+              {{ render_user_card(user, 'active') }}
+            {% endfor %}
+          {% else %}
+          <div class="panel empty-state">
+            <h3>No active users</h3>
+            <p class="panel-copy">Create or approve one when the clinic is ready.</p>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="panel settings-panel">
+        <div class="brand-copy">
+          <p class="eyebrow">Disabled</p>
+          <h2>Inactive accounts</h2>
+        </div>
+        <div class="user-list">
+          {% if disabled_users %}
+            {% for user in disabled_users %}
+              {{ render_user_card(user, 'disabled') }}
+            {% endfor %}
+          {% else %}
+          <div class="panel empty-state">
+            <h3>No disabled users</h3>
+            <p class="panel-copy">Disabled accounts will stay here until reactivated.</p>
+          </div>
+          {% endif %}
+        </div>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

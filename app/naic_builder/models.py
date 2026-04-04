@@ -100,11 +100,13 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    username: Mapped[str] = mapped_column(String(120), unique=True, index=True)
-    display_name: Mapped[str] = mapped_column(String(255))
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True, unique=True, index=True)
+    login_id: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    full_name: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(40), default="medtech")
     password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    status: Mapped[str] = mapped_column(String(40), default="pending", index=True)
+    must_change_password: Mapped[bool] = mapped_column(Boolean, default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

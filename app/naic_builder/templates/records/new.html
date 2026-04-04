@@ -17,6 +17,14 @@
         <p class="panel-copy">Choose the form first, then the medtech can enter the result in the next screen.</p>
       </div>
       <div class="topbar-actions">
+        {% if request.state.is_admin %}
+        <a class="ghost-button" href="/forms">Forms</a>
+        <a class="ghost-button" href="/settings/users">Settings</a>
+        {% endif %}
+        <a class="ghost-button" href="/change-password">Password</a>
+        <form method="post" action="/logout" class="inline-action-form">
+          <button class="ghost-button" type="submit">Log out</button>
+        </form>
         <a class="ghost-button" href="/records">Back to records</a>
       </div>
     </header>

@@ -35,6 +35,17 @@
       "image answer fields now support a first real upload, replace, preview, serve, and remove flow during record entry",
       "/records/{id}/print now exists as the first browser-printable record/result surface"
     ],
+    "auth_settings_foundation": [
+      "/setup now exists as the first-run admin setup screen",
+      "/login now exists as the main sign-in screen",
+      "/request-account now exists for staff account requests",
+      "/change-password now exists for first-login and self-service password changes",
+      "/settings/users now exists as the first admin user-management screen",
+      "the auth model is now hybrid: request account plus admin approval plus admin manual-create fallback",
+      "login now accepts email or login ID",
+      "admin-created accounts are forced to change password on first login",
+      "visible role gating is now active for Admin and Medtech"
+    ],
     "engine_foundation": [
       "a persisted generic container/form library tree foundation now exists in the backend",
       "the compatibility tree is exposed at /api/library/tree",

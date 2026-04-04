@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import base64
+import hashlib
+import hmac
 import json
 import re
+import secrets
 from pathlib import Path
 from datetime import timezone
 from typing import Any
@@ -14,7 +18,16 @@ from sqlalchemy.orm import Session, selectinload
 from .config import RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH
 from .database import Base, engine
 from .models import FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
-from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
+from .schemas import (
+    AccountRequestPayload,
+    FormSavePayload,
+    LoginPayload,
+    PasswordChangePayload,
+    RecordCreatePayload,
+    RecordUpdatePayload,
+    SetupAdminPayload,
+    UserCreatePayload,
+)
 
 ACTIVE_BLOCK_SCHEMA_SOURCE = "builder_blocks_v1"
 LEGACY_BLOCK_SCHEMA_SOURCE = "compat_legacy_fields_sections"
@@ -39,6 +52,282 @@ def slugify(value: str) -> str:
 
 def compact_text(value: Any) -> str:
     return re.sub(r"\s+", " ", str(value or "")).strip()
+
+
+def normalize_email(value: Any) -> str:
+    return compact_text(value).lower()
+
+
+def normalize_login_id(value: Any) -> str:
+    return slugify(compact_text(value))
+
+
+def validate_email_format(email: str) -> bool:
+    return bool(re.fullmatch(r"[^@\s]+@[^@\s]+\.[^@\s]+", email))
+
+
+def validate_role(value: Any) -> str:
+    role = compact_text(value).lower()
+    return role if role in {"admin", "medtech"} else "medtech"
+
+
+def validate_user_status(value: Any) -> str:
+    status = compact_text(value).lower()
+    return status if status in {"pending", "active", "disabled"} else "pending"
+
+
+def password_hash_value(password: str) -> str:
+    salt = secrets.token_bytes(16)
+    iterations = 120_000
+    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
+    return "pbkdf2_sha256${iterations}${salt}${digest}".format(
+        iterations=iterations,
+        salt=base64.b64encode(salt).decode("ascii"),
+        digest=base64.b64encode(digest).decode("ascii"),
+    )
+
+
+def verify_password_hash(password_hash: str | None, password: str) -> bool:
+    stored = compact_text(password_hash)
+    if not stored:
+        return False
+    try:
+        algorithm, iterations_text, salt_text, digest_text = stored.split("$", 3)
+        if algorithm != "pbkdf2_sha256":
+            return False
+        iterations = int(iterations_text)
+        salt = base64.b64decode(salt_text.encode("ascii"))
+        expected = base64.b64decode(digest_text.encode("ascii"))
+    except (TypeError, ValueError, base64.binascii.Error):
+        return False
+    actual = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt, iterations)
+    return hmac.compare_digest(actual, expected)
+
+
+def validate_password_strength(password: str) -> None:
+    if len(password or "") < 8:
+        raise ValueError("Use at least 8 characters for the password.")
+
+
+def derive_login_id(*, full_name: str, email: str, requested_login_id: str = "") -> str:
+    requested = normalize_login_id(requested_login_id)
+    if requested:
+        return requested
+    email_local = normalize_email(email).split("@", 1)[0]
+    email_candidate = normalize_login_id(email_local)
+    if email_candidate:
+        return email_candidate
+    return normalize_login_id(full_name) or "user"
+
+
+def next_available_login_id(session: Session, base_login_id: str) -> str:
+    base = normalize_login_id(base_login_id) or "user"
+    candidate = base
+    suffix = 2
+    while session.scalar(select(User.id).where(User.login_id == candidate)) is not None:
+        candidate = f"{base}{suffix}"
+        suffix += 1
+    return candidate
+
+
+def has_any_users(session: Session) -> bool:
+    return session.scalar(select(User.id).limit(1)) is not None
+
+
+def has_any_admin_users(session: Session) -> bool:
+    return session.scalar(
+        select(User.id).where(User.role == "admin", User.status == "active").limit(1)
+    ) is not None
+
+
+def count_active_admin_users(session: Session) -> int:
+    return int(
+        session.scalar(
+            select(func.count(User.id)).where(User.role == "admin", User.status == "active")
+        )
+        or 0
+    )
+
+
+def get_user_or_none(session: Session, user_id: int) -> User | None:
+    return session.scalar(select(User).where(User.id == user_id))
+
+
+def get_user_by_identifier(session: Session, identifier: str) -> User | None:
+    normalized = compact_text(identifier).lower()
+    if not normalized:
+        return None
+    return session.scalar(
+        select(User).where(
+            or_(
+                func.lower(User.login_id) == normalized,
+                func.lower(User.email) == normalized,
+            )
+        )
+    )
+
+
+def serialize_user(user: User) -> dict[str, Any]:
+    return {
+        "id": user.id,
+        "email": user.email,
+        "login_id": user.login_id,
+        "full_name": user.full_name,
+        "role": user.role,
+        "status": user.status,
+        "must_change_password": bool(user.must_change_password),
+        "created_at": user.created_at.astimezone(timezone.utc).isoformat(),
+        "updated_at": user.updated_at.astimezone(timezone.utc).isoformat(),
+    }
+
+
+def list_users(session: Session, *, status: str | None = None) -> list[dict[str, Any]]:
+    query = select(User).order_by(User.created_at.desc(), User.id.desc())
+    normalized_status = validate_user_status(status) if compact_text(status) else ""
+    if normalized_status:
+        query = query.where(User.status == normalized_status)
+    users = session.scalars(query).all()
+    return [serialize_user(user) for user in users]
+
+
+def count_users(session: Session, *, status: str | None = None) -> int:
+    query = select(func.count(User.id))
+    normalized_status = validate_user_status(status) if compact_text(status) else ""
+    if normalized_status:
+        query = query.where(User.status == normalized_status)
+    return int(session.scalar(query) or 0)
+
+
+def save_user(session: Session, user: User) -> User:
+    session.add(user)
+    try:
+        session.commit()
+    except IntegrityError as exc:
+        session.rollback()
+        raise ValueError("This email or login ID is already in use.") from exc
+    session.refresh(user)
+    return user
+
+
+def request_account(session: Session, payload: AccountRequestPayload) -> dict[str, Any]:
+    full_name = compact_text(payload.full_name)
+    email = normalize_email(payload.email)
+    validate_password_strength(payload.password)
+    if not full_name:
+        raise ValueError("Enter the staff member's full name.")
+    if not validate_email_format(email):
+        raise ValueError("Enter a valid email address.")
+    login_id = next_available_login_id(
+        session,
+        derive_login_id(full_name=full_name, email=email, requested_login_id=payload.login_id or ""),
+    )
+    user = User(
+        email=email,
+        login_id=login_id,
+        full_name=full_name,
+        role="medtech",
+        status="pending",
+        password_hash=password_hash_value(payload.password),
+        must_change_password=False,
+    )
+    return serialize_user(save_user(session, user))
+
+
+def create_initial_admin(session: Session, payload: SetupAdminPayload) -> dict[str, Any]:
+    if has_any_users(session):
+        raise ValueError("Initial setup is already complete.")
+    full_name = compact_text(payload.full_name)
+    email = normalize_email(payload.email)
+    validate_password_strength(payload.password)
+    if not full_name:
+        raise ValueError("Enter the admin's full name.")
+    if not validate_email_format(email):
+        raise ValueError("Enter a valid email address.")
+    login_id = next_available_login_id(
+        session,
+        derive_login_id(full_name=full_name, email=email, requested_login_id=payload.login_id or ""),
+    )
+    user = User(
+        email=email,
+        login_id=login_id,
+        full_name=full_name,
+        role="admin",
+        status="active",
+        password_hash=password_hash_value(payload.password),
+        must_change_password=False,
+    )
+    return serialize_user(save_user(session, user))
+
+
+def create_user_account(session: Session, payload: UserCreatePayload) -> dict[str, Any]:
+    full_name = compact_text(payload.full_name)
+    email = normalize_email(payload.email)
+    validate_password_strength(payload.password)
+    if not full_name:
+        raise ValueError("Enter the staff member's full name.")
+    if not validate_email_format(email):
+        raise ValueError("Enter a valid email address.")
+    login_id = next_available_login_id(
+        session,
+        derive_login_id(full_name=full_name, email=email, requested_login_id=payload.login_id or ""),
+    )
+    user = User(
+        email=email,
+        login_id=login_id,
+        full_name=full_name,
+        role=validate_role(payload.role),
+        status="active",
+        password_hash=password_hash_value(payload.password),
+        must_change_password=True,
+    )
+    return serialize_user(save_user(session, user))
+
+
+def approve_user_account(session: Session, user_id: int, *, role: str) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+    user.role = validate_role(role)
+    user.status = "active"
+    return serialize_user(save_user(session, user))
+
+
+def update_user_status(session: Session, user_id: int, *, status: str) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+    next_status = validate_user_status(status)
+    if next_status == "disabled" and user.role == "admin" and user.status == "active" and count_active_admin_users(session) <= 1:
+        raise ValueError("Keep at least one active admin account.")
+    user.status = next_status
+    return serialize_user(save_user(session, user))
+
+
+def authenticate_user(session: Session, payload: LoginPayload) -> dict[str, Any]:
+    user = get_user_by_identifier(session, payload.identifier)
+    if user is None or not verify_password_hash(user.password_hash, payload.password):
+        raise ValueError("The email or login ID and password do not match.")
+    if user.status != "active":
+        raise ValueError("This account is not active yet.")
+    return serialize_user(user)
+
+
+def change_user_password(
+    session: Session,
+    user_id: int,
+    payload: PasswordChangePayload,
+    *,
+    require_current_password: bool = True,
+) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+    if require_current_password and not verify_password_hash(user.password_hash, payload.current_password):
+        raise ValueError("The current password is incorrect.")
+    validate_password_strength(payload.new_password)
+    user.password_hash = password_hash_value(payload.new_password)
+    user.must_change_password = False
+    return serialize_user(save_user(session, user))
 
 
 def normalize_items(value: Any) -> list[Any]:
@@ -1337,8 +1626,12 @@ def list_records(
     records = session.scalars(query).all()
     return [serialize_record(record, include_values=False) for record in records]
 
-
-def create_record(session: Session, payload: RecordCreatePayload) -> dict[str, Any]:
+def create_record(
+    session: Session,
+    payload: RecordCreatePayload,
+    *,
+    actor_user_id: int | None = None,
+) -> dict[str, Any]:
     form_slug = compact_text(payload.form_slug)
     if not form_slug:
         raise ValueError("Choose a form before you continue.")
@@ -1372,6 +1665,8 @@ def create_record(session: Session, payload: RecordCreatePayload) -> dict[str, A
         case_number=case_number or None,
         values_json=json.dumps(normalize_record_values(payload.values), ensure_ascii=False),
         indexed_meta_json=json.dumps(indexed_meta, ensure_ascii=False),
+        created_by_user_id=actor_user_id,
+        updated_by_user_id=actor_user_id,
     )
     session.add(record)
     session.commit()
@@ -1389,6 +1684,7 @@ def update_record(
     payload: RecordUpdatePayload,
     *,
     preserve_asset_fields: bool = False,
+    actor_user_id: int | None = None,
 ) -> dict[str, Any]:
     record = get_record_or_none(session, record_id)
     if record is None:
@@ -1416,6 +1712,7 @@ def update_record(
     record.case_number = case_number or None
     record.values_json = json.dumps(normalized_values, ensure_ascii=False)
     record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
+    record.updated_by_user_id = actor_user_id
     session.commit()
     session.expire_all()
 
@@ -1431,6 +1728,7 @@ def complete_record(
     payload: RecordUpdatePayload,
     *,
     preserve_asset_fields: bool = False,
+    actor_user_id: int | None = None,
 ) -> dict[str, Any]:
     record = get_record_or_none(session, record_id)
     if record is None:
@@ -1460,6 +1758,7 @@ def complete_record(
     record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
     record.status = "completed"
     record.completed_at = utc_now()
+    record.updated_by_user_id = actor_user_id
     session.commit()
     session.expire_all()
 

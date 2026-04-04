@@ -97,6 +97,31 @@ Important:
 - keep the **visible product** minimal
 - do not design the current app around lab-admin / pathologist / reviewer chains unless the real clinic workflow demands it
 
+## Auth And Settings Foundation Status
+The first real auth/settings foundation has now landed.
+
+What exists now:
+- first-run setup at `/setup`
+- login at `/login`
+- account request at `/request-account`
+- password change at `/change-password`
+- admin user management at `/settings/users`
+- hybrid account flow:
+  - staff can request an account
+  - admin can approve pending accounts
+  - admin can also create accounts manually as a fallback
+- login accepts `email or login ID`
+- admin-created accounts are forced through a first-login password change
+- role gating is active now:
+  - `Medtech` stays in records
+  - `Admin` can access records, forms, builder, and settings
+
+Important:
+- keep this auth model simple
+- do not replace it with public consumer signup
+- do not introduce heavy enterprise role hierarchy unless the real clinic workflow demands it
+- accountability should continue to rely on immutable internal user ids, while admin-facing management stays readable through full name and email
+
 ## Next Whole-App Milestone
 The builder is now at the point where the core direction is effectively done.
 
@@ -126,6 +151,11 @@ The first `Records Runtime` foundation has now landed in the app.
 
 What exists now:
 - `/` redirects to `/records`
+- `/setup`, `/login`, `/request-account`, `/change-password`, and `/settings/users` now exist as the first auth/settings flow
+- login now accepts `email or login ID`
+- pending account requests, admin approval, and admin manual account creation now all exist in the live app
+- admin-created accounts are forced to change password on first login
+- visible role gating is now active for `Admin` and `Medtech`
 - `/records` is now the calm daily landing screen
 - `/records` now has a first usable history layer too: medtech can search by patient, case number, form name, or record key and filter between draft and completed records on the same screen
 - `/records/new` starts a draft from a chosen form

@@ -44,3 +44,45 @@ class RecordUpdatePayload(BaseModel):
     case_number: str | None = None
     values: dict[str, Any] = Field(default_factory=dict)
     indexed_meta: dict[str, Any] = Field(default_factory=dict)
+
+
+class AccountRequestPayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    full_name: str = ""
+    email: str = ""
+    login_id: str | None = None
+    password: str = ""
+
+
+class UserCreatePayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    full_name: str = ""
+    email: str = ""
+    login_id: str | None = None
+    role: str = "medtech"
+    password: str = ""
+
+
+class LoginPayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    identifier: str = ""
+    password: str = ""
+
+
+class PasswordChangePayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    current_password: str = ""
+    new_password: str = ""
+
+
+class SetupAdminPayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    full_name: str = ""
+    email: str = ""
+    login_id: str | None = None
+    password: str = ""

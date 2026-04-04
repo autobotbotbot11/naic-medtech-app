@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='auth.css') }}">
+</head>
+<body>
+  <main class="auth-shell">
+    <header class="library-topbar panel">
+      <div class="brand-copy">
+        <p class="eyebrow">Login</p>
+        <h1>{{ app_title }}</h1>
+        <p class="panel-copy">Sign in with your email or login ID to continue to records and forms.</p>
+      </div>
+      <div class="settings-topbar-actions">
+        <a class="ghost-button" href="/request-account">Request account</a>
+      </div>
+    </header>
+
+    <section class="auth-grid">
+      <section class="panel auth-main">
+        {% if error_message %}
+        <div class="banner error">{{ error_message }}</div>
+        {% endif %}
+
+        <form method="post" action="/login" class="auth-form">
+          <label class="field-stack">
+            <span>Email or login ID</span>
+            <input type="text" name="identifier" value="{{ identifier }}" placeholder="example@clinic.com or medtech01" required>
+          </label>
+
+          <label class="field-stack">
+            <span>Password</span>
+            <input type="password" name="password" required>
+          </label>
+
+          <div class="auth-actions">
+            <button class="primary-button" type="submit">Sign in</button>
+            <a class="ghost-button" href="/request-account">Request account</a>
+          </div>
+        </form>
+      </section>
+
+      <aside class="panel auth-side">
+        <div class="brand-copy">
+          <p class="eyebrow">Access</p>
+          <h2>Simple clinic access</h2>
+          <p class="panel-copy">Use one calm sign-in path whether the account came from a request or an admin-created fallback.</p>
+        </div>
+        <ul class="auth-hint-list">
+          <li>Use either your email or your login ID.</li>
+          <li>Pending accounts wait for admin approval before sign-in works.</li>
+          <li>Admin-created accounts will ask for a password change on first login.</li>
+        </ul>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

@@ -36,6 +36,11 @@ a {
   text-decoration: none;
 }
 
+.inline-action-form {
+  display: inline;
+  margin: 0;
+}
+
 .library-shell {
   width: min(1380px, calc(100vw - 28px));
   margin: 18px auto 28px;

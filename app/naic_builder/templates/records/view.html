@@ -125,10 +125,18 @@
         </div>
         <div class="record-header-actions">
           <a class="ghost-button" href="/records">Records</a>
+          {% if request.state.is_admin %}
+          <a class="ghost-button" href="/forms">Forms</a>
+          <a class="ghost-button" href="/settings/users">Settings</a>
+          {% endif %}
+          <a class="ghost-button" href="/change-password">Password</a>
           <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
           {% if record.status == "draft" %}
           <a class="primary-button" href="/records/{{ record.id }}/edit">Continue editing</a>
           {% endif %}
+          <form method="post" action="/logout" class="inline-action-form">
+            <button class="ghost-button" type="submit">Log out</button>
+          </form>
         </div>
       </div>
 

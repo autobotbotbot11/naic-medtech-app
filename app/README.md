@@ -13,6 +13,21 @@ The app now starts from a builder-first FastAPI scaffold.
 - the app seeds itself from `../artifacts/schema/naic_medtech_app_schema.json`
 - runtime data lives in `../data/runtime/naic_medtech.db`
 - `/` now redirects to `/records`, so the app starts from the small-clinic daily workflow instead of dropping everyone into the builder/library first
+- the app now has a first auth/settings foundation too:
+  - first-run setup lives at `/setup`
+  - sign-in lives at `/login`
+  - account requests live at `/request-account`
+  - admin user management lives at `/settings/users`
+  - password changes live at `/change-password`
+- the current auth model is intentionally small-clinic friendly:
+  - login accepts `email or login ID`
+  - staff can request an account and wait for admin approval
+  - admins can also create accounts manually as a fallback
+  - admin-created accounts must change password on first login
+  - visible roles are still just `Admin` and `Medtech`
+- role gating is active now too:
+  - `Medtech` stays in the records flow
+  - `Admin` can also access forms, builder, and settings
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

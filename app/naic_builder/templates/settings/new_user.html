@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Create User | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='auth.css') }}">
+</head>
+<body>
+  <main class="auth-shell">
+    <header class="library-topbar panel">
+      <div class="brand-copy">
+        <p class="eyebrow">Settings</p>
+        <h1>Create user</h1>
+        <p class="panel-copy">Use this manual fallback if the clinic needs access immediately or the email flow is not available.</p>
+      </div>
+      <div class="settings-topbar-actions">
+        <a class="ghost-button" href="/settings/users">Back to users</a>
+      </div>
+    </header>
+
+    <section class="auth-grid">
+      <section class="panel auth-main">
+        {% if error_message %}
+        <div class="banner error">{{ error_message }}</div>
+        {% endif %}
+
+        <form method="post" action="/settings/users/new" class="auth-form">
+          <label class="field-stack">
+            <span>Full name</span>
+            <input type="text" name="full_name" value="{{ full_name }}" required>
+          </label>
+
+          <label class="field-stack">
+            <span>Email</span>
+            <input type="email" name="email" value="{{ email }}" required>
+          </label>
+
+          <label class="field-stack">
+            <span>Login ID</span>
+            <input type="text" name="login_id" value="{{ login_id }}" placeholder="Optional">
+          </label>
+
+          <label class="select-stack">
+            <span>Role</span>
+            <select name="role">
+              <option value="medtech" {% if selected_role == 'medtech' %}selected{% endif %}>Medtech</option>
+              <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+          </label>
+
+          <label class="field-stack">
+            <span>Temporary password</span>
+            <input type="password" name="password" required>
+          </label>
+
+          <div class="auth-actions">
+            <button class="primary-button" type="submit">Create account</button>
+            <a class="ghost-button" href="/settings/users">Cancel</a>
+          </div>
+        </form>
+      </section>
+
+      <aside class="panel auth-side">
+        <div class="brand-copy">
+          <p class="eyebrow">Manual fallback</p>
+          <h2>Still simple</h2>
+          <p class="panel-copy">The account becomes active right away, but the user will be forced to change the temporary password on first login.</p>
+        </div>
+        <ul class="auth-hint-list">
+          <li>Use this when a new medtech needs access right away.</li>
+          <li>If login ID is blank, the system will generate one.</li>
+          <li>The user can sign in with email or login ID after creation.</li>
+        </ul>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

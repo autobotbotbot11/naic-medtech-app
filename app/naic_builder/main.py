@@ -5,41 +5,64 @@ from typing import Any
 from urllib.parse import parse_qs
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
-from fastapi.responses import FileResponse, HTMLResponse, RedirectResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 
-from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
+from .config import APP_TITLE, SESSION_SECRET, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
-from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
+from .schemas import (
+    AccountRequestPayload,
+    FormSavePayload,
+    LoginPayload,
+    PasswordChangePayload,
+    RecordCreatePayload,
+    RecordUpdatePayload,
+    SetupAdminPayload,
+    UserCreatePayload,
+)
 from .services import (
+    authenticate_user,
     build_record_print_document,
+    change_user_password,
     count_records,
+    count_users,
     complete_record,
+    create_initial_admin,
     create_container,
     delete_container,
     delete_record_asset,
     create_form,
     create_record,
+    create_user_account,
     ensure_form_version_storage_documents,
     ensure_library_tree,
     ensure_reference_seed,
+    get_user_or_none,
     get_form_or_none,
     get_container_or_none,
     get_record_or_none,
+    has_any_users,
     list_container_choices,
     list_form_choices,
     list_library_tree,
     list_records,
+    list_users,
     list_move_target_choices,
     move_container,
     move_form,
+    request_account,
     rename_container,
+    serialize_user,
     serialize_record,
     serialize_form,
     serialize_form_location,
     store_record_image_asset,
+    update_user_status,
+    approve_user_account,
     update_record,
     update_form,
 )
@@ -60,6 +83,82 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
+PUBLIC_PATHS = {
+    "/api/health",
+    "/login",
+    "/logout",
+    "/request-account",
+    "/setup",
+    "/change-password",
+}
+PUBLIC_PREFIXES = ("/static",)
+ADMIN_PREFIXES = ("/forms", "/folders", "/builder", "/settings", "/api/forms", "/api/builder", "/api/library")
+
+
+def redirect_for_html(path: str) -> RedirectResponse:
+    return RedirectResponse(url=path, status_code=303)
+
+
+def auth_error_response(path: str, status_code: int, detail: str, redirect_path: str) -> JSONResponse | RedirectResponse:
+    if path.startswith("/api/"):
+        return JSONResponse(status_code=status_code, content={"detail": detail})
+    return redirect_for_html(redirect_path)
+
+
+class AuthFlowMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        path = request.url.path
+        if any(path.startswith(prefix) for prefix in PUBLIC_PREFIXES):
+            return await call_next(request)
+
+        with SessionLocal() as session:
+            user_present = has_any_users(session)
+            session_user = None
+            raw_user_id = request.session.get("user_id")
+            if raw_user_id not in (None, ""):
+                try:
+                    session_user = get_user_or_none(session, int(raw_user_id))
+                except (TypeError, ValueError):
+                    session_user = None
+            if session_user is not None and session_user.status != "active":
+                request.session.pop("user_id", None)
+                session_user = None
+
+            request.state.current_user = serialize_user(session_user) if session_user is not None else None
+            request.state.has_users = user_present
+            request.state.is_admin = bool(session_user is not None and session_user.role == "admin")
+
+            if not user_present:
+                if path == "/setup":
+                    return await call_next(request)
+                return auth_error_response(path, 503, "Initial setup is required.", "/setup")
+
+            if session_user is None:
+                if path in PUBLIC_PATHS:
+                    return await call_next(request)
+                return auth_error_response(path, 401, "Login required.", "/login")
+
+            if session_user.must_change_password and path not in {"/change-password", "/logout", "/api/health"}:
+                return auth_error_response(
+                    path,
+                    403,
+                    "Password change required.",
+                    "/change-password",
+                )
+
+            if path in {"/login", "/request-account", "/setup"}:
+                return redirect_for_html("/records")
+
+            if any(path.startswith(prefix) for prefix in ADMIN_PREFIXES) and session_user.role != "admin":
+                return auth_error_response(path, 403, "Admin access required.", "/records")
+
+        return await call_next(request)
+
+
+app.add_middleware(AuthFlowMiddleware)
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET, same_site="lax")
+
+
 def render_builder_page(
     request: Request,
     *,
@@ -74,6 +173,150 @@ def render_builder_page(
             "initial_form_slug": initial_form_slug,
             "initial_builder_mode": initial_builder_mode,
         },
+    )
+
+
+def current_user_id(request: Request) -> int | None:
+    current_user = getattr(request.state, "current_user", None) or {}
+    raw_user_id = current_user.get("id")
+    return int(raw_user_id) if raw_user_id not in (None, "") else None
+
+
+def render_login_page(
+    request: Request,
+    *,
+    identifier: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/login.html",
+        context={
+            "app_title": APP_TITLE,
+            "identifier": identifier,
+            "error_message": error_message,
+            "needs_setup": not getattr(request.state, "has_users", True),
+        },
+        status_code=status_code,
+    )
+
+
+def render_request_account_page(
+    request: Request,
+    *,
+    full_name: str = "",
+    email: str = "",
+    login_id: str = "",
+    error_message: str = "",
+    success_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/request_account.html",
+        context={
+            "app_title": APP_TITLE,
+            "full_name": full_name,
+            "email": email,
+            "login_id": login_id,
+            "error_message": error_message,
+            "success_message": success_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_setup_page(
+    request: Request,
+    *,
+    full_name: str = "",
+    email: str = "",
+    login_id: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/setup.html",
+        context={
+            "app_title": APP_TITLE,
+            "full_name": full_name,
+            "email": email,
+            "login_id": login_id,
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_change_password_page(
+    request: Request,
+    *,
+    error_message: str = "",
+    success_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/change_password.html",
+        context={
+            "app_title": APP_TITLE,
+            "error_message": error_message,
+            "success_message": success_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_settings_users_page(
+    request: Request,
+    session: Session,
+    *,
+    error_message: str = "",
+    success_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="settings/users.html",
+        context={
+            "app_title": APP_TITLE,
+            "pending_users": list_users(session, status="pending"),
+            "active_users": list_users(session, status="active"),
+            "disabled_users": list_users(session, status="disabled"),
+            "pending_count": count_users(session, status="pending"),
+            "active_count": count_users(session, status="active"),
+            "disabled_count": count_users(session, status="disabled"),
+            "error_message": error_message,
+            "success_message": success_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_new_user_page(
+    request: Request,
+    *,
+    full_name: str = "",
+    email: str = "",
+    login_id: str = "",
+    role: str = "medtech",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="settings/new_user.html",
+        context={
+            "app_title": APP_TITLE,
+            "full_name": full_name,
+            "email": email,
+            "login_id": login_id,
+            "selected_role": role,
+            "error_message": error_message,
+        },
+        status_code=status_code,
     )
 
 
@@ -243,8 +486,156 @@ def record_update_payload_from_form_data(form_data: dict[str, list[str]]) -> Rec
 
 
 @app.get("/", include_in_schema=False)
-def root() -> RedirectResponse:
-    return RedirectResponse(url="/records", status_code=303)
+def root(request: Request) -> RedirectResponse:
+    if not getattr(request.state, "has_users", True):
+        return redirect_for_html("/setup")
+    if getattr(request.state, "current_user", None):
+        if request.state.current_user.get("must_change_password"):
+            return redirect_for_html("/change-password")
+        return redirect_for_html("/records")
+    return redirect_for_html("/login")
+
+
+@app.get("/setup", response_class=HTMLResponse)
+def setup_page(request: Request) -> HTMLResponse:
+    if getattr(request.state, "has_users", True):
+        return redirect_for_html("/login")
+    return render_setup_page(request)
+
+
+@app.post("/setup")
+async def create_initial_admin_page(request: Request, session: Session = Depends(get_session)):
+    if getattr(request.state, "has_users", True):
+        return redirect_for_html("/login")
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    payload = SetupAdminPayload(
+        full_name=(form_data.get("full_name") or [""])[0],
+        email=(form_data.get("email") or [""])[0],
+        login_id=(form_data.get("login_id") or [""])[0],
+        password=(form_data.get("password") or [""])[0],
+    )
+    try:
+        user = create_initial_admin(session, payload)
+    except ValueError as exc:
+        return render_setup_page(
+            request,
+            full_name=payload.full_name,
+            email=payload.email,
+            login_id=payload.login_id or "",
+            error_message=str(exc),
+            status_code=422,
+        )
+    request.session["user_id"] = user["id"]
+    return redirect_for_html("/records")
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page(request: Request) -> HTMLResponse:
+    if not getattr(request.state, "has_users", True):
+        return redirect_for_html("/setup")
+    return render_login_page(request)
+
+
+@app.post("/login")
+async def login_action(request: Request, session: Session = Depends(get_session)):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    payload = LoginPayload(
+        identifier=(form_data.get("identifier") or [""])[0],
+        password=(form_data.get("password") or [""])[0],
+    )
+    try:
+        user = authenticate_user(session, payload)
+    except ValueError as exc:
+        return render_login_page(
+            request,
+            identifier=payload.identifier,
+            error_message=str(exc),
+            status_code=422,
+        )
+    request.session["user_id"] = user["id"]
+    if user.get("must_change_password"):
+        return redirect_for_html("/change-password")
+    return redirect_for_html("/records")
+
+
+@app.get("/request-account", response_class=HTMLResponse)
+def request_account_page(request: Request) -> HTMLResponse:
+    return render_request_account_page(request)
+
+
+@app.post("/request-account")
+async def request_account_action(request: Request, session: Session = Depends(get_session)):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    payload = AccountRequestPayload(
+        full_name=(form_data.get("full_name") or [""])[0],
+        email=(form_data.get("email") or [""])[0],
+        login_id=(form_data.get("login_id") or [""])[0],
+        password=(form_data.get("password") or [""])[0],
+    )
+    try:
+        user = request_account(session, payload)
+    except ValueError as exc:
+        return render_request_account_page(
+            request,
+            full_name=payload.full_name,
+            email=payload.email,
+            login_id=payload.login_id or "",
+            error_message=str(exc),
+            status_code=422,
+        )
+    return render_request_account_page(
+        request,
+        success_message=f"Account request saved for {user['full_name']}. Wait for admin approval before logging in.",
+    )
+
+
+@app.get("/change-password", response_class=HTMLResponse)
+def change_password_page(request: Request) -> HTMLResponse:
+    if not getattr(request.state, "current_user", None):
+        return redirect_for_html("/login")
+    return render_change_password_page(request)
+
+
+@app.post("/change-password")
+async def change_password_action(request: Request, session: Session = Depends(get_session)):
+    user_id = current_user_id(request)
+    if user_id is None:
+        return redirect_for_html("/login")
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    payload = PasswordChangePayload(
+        current_password=(form_data.get("current_password") or [""])[0],
+        new_password=(form_data.get("new_password") or [""])[0],
+    )
+    try:
+        change_user_password(
+            session,
+            user_id,
+            payload,
+            require_current_password=not bool((request.state.current_user or {}).get("must_change_password")),
+        )
+    except KeyError:
+        request.session.pop("user_id", None)
+        return redirect_for_html("/login")
+    except ValueError as exc:
+        return render_change_password_page(
+            request,
+            error_message=str(exc),
+            status_code=422,
+        )
+    return render_change_password_page(
+        request,
+        success_message="Password updated. You can continue using the app now.",
+    )
+
+
+@app.post("/logout")
+def logout_action(request: Request) -> RedirectResponse:
+    request.session.clear()
+    return redirect_for_html("/login")
 
 
 @app.get("/records", response_class=HTMLResponse)
@@ -277,7 +668,7 @@ async def create_record_page(
         case_number=(form_data.get("case_number") or [""])[0],
     )
     try:
-        created = create_record(session, payload)
+        created = create_record(session, payload, actor_user_id=current_user_id(request))
     except ValueError as exc:
         return render_new_record_page(
             request,
@@ -315,10 +706,22 @@ async def update_record_page(
 
     try:
         if action == "complete":
-            completed = complete_record(session, record_id, payload, preserve_asset_fields=True)
+            completed = complete_record(
+                session,
+                record_id,
+                payload,
+                preserve_asset_fields=True,
+                actor_user_id=current_user_id(request),
+            )
             return RedirectResponse(url=f"/records/{completed['id']}", status_code=303)
 
-        update_record(session, record_id, payload, preserve_asset_fields=True)
+        update_record(
+            session,
+            record_id,
+            payload,
+            preserve_asset_fields=True,
+            actor_user_id=current_user_id(request),
+        )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
     except ValueError as exc:
@@ -806,6 +1209,111 @@ async def update_form_location_page(
     return RedirectResponse(url=f"/forms#{node_anchor}", status_code=303)
 
 
+@app.get("/settings", response_class=HTMLResponse)
+def settings_home() -> RedirectResponse:
+    return redirect_for_html("/settings/users")
+
+
+@app.get("/settings/users", response_class=HTMLResponse)
+def settings_users_page(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
+    return render_settings_users_page(request, session)
+
+
+@app.get("/settings/users/new", response_class=HTMLResponse)
+def settings_new_user_page(request: Request) -> HTMLResponse:
+    return render_new_user_page(request)
+
+
+@app.post("/settings/users/new")
+async def create_user_account_page(request: Request, session: Session = Depends(get_session)):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    payload = UserCreatePayload(
+        full_name=(form_data.get("full_name") or [""])[0],
+        email=(form_data.get("email") or [""])[0],
+        login_id=(form_data.get("login_id") or [""])[0],
+        role=(form_data.get("role") or ["medtech"])[0],
+        password=(form_data.get("password") or [""])[0],
+    )
+    try:
+        created = create_user_account(session, payload)
+    except ValueError as exc:
+        return render_new_user_page(
+            request,
+            full_name=payload.full_name,
+            email=payload.email,
+            login_id=payload.login_id or "",
+            role=payload.role,
+            error_message=str(exc),
+            status_code=422,
+        )
+    return render_settings_users_page(
+        request,
+        session,
+        success_message=f"Created {created['full_name']} as an active {created['role']} account.",
+    )
+
+
+@app.post("/settings/users/{user_id}/approve")
+async def approve_user_account_page(
+    user_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    role = (form_data.get("role") or ["medtech"])[0]
+    try:
+        updated = approve_user_account(session, user_id, role=role)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="User not found.") from exc
+    except ValueError as exc:
+        return render_settings_users_page(request, session, error_message=str(exc), status_code=422)
+    return render_settings_users_page(
+        request,
+        session,
+        success_message=f"Approved {updated['full_name']} as {updated['role']}.",
+    )
+
+
+@app.post("/settings/users/{user_id}/disable")
+def disable_user_account_page(
+    user_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    try:
+        updated = update_user_status(session, user_id, status="disabled")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="User not found.") from exc
+    except ValueError as exc:
+        return render_settings_users_page(request, session, error_message=str(exc), status_code=422)
+    return render_settings_users_page(
+        request,
+        session,
+        success_message=f"Disabled {updated['full_name']}.",
+    )
+
+
+@app.post("/settings/users/{user_id}/activate")
+def activate_user_account_page(
+    user_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    try:
+        updated = update_user_status(session, user_id, status="active")
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="User not found.") from exc
+    except ValueError as exc:
+        return render_settings_users_page(request, session, error_message=str(exc), status_code=422)
+    return render_settings_users_page(
+        request,
+        session,
+        success_message=f"Reactivated {updated['full_name']}.",
+    )
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
@@ -833,10 +1341,11 @@ def records_index(
 @app.post("/api/records", status_code=201)
 def create_record_endpoint(
     payload: RecordCreatePayload,
+    request: Request,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     try:
-        return create_record(session, payload)
+        return create_record(session, payload, actor_user_id=current_user_id(request))
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
@@ -853,10 +1362,11 @@ def get_record(record_id: int, session: Session = Depends(get_session)) -> dict[
 def update_record_endpoint(
     record_id: int,
     payload: RecordUpdatePayload,
+    request: Request,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     try:
-        return update_record(session, record_id, payload)
+        return update_record(session, record_id, payload, actor_user_id=current_user_id(request))
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
     except ValueError as exc:
@@ -867,10 +1377,11 @@ def update_record_endpoint(
 def complete_record_endpoint(
     record_id: int,
     payload: RecordUpdatePayload,
+    request: Request,
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     try:
-        return complete_record(session, record_id, payload)
+        return complete_record(session, record_id, payload, actor_user_id=current_user_id(request))
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
     except ValueError as exc:
