@@ -810,8 +810,6 @@ def list_form_choices(session: Session) -> list[dict[str, Any]]:
                     "location_name": path[-1] if path else "Top level",
                     "location_path_label": " / ".join(path) or "Top level",
                     "form_path_label": " / ".join(current_path),
-                    "location_label": " / ".join(path) or "Top level",
-                    "path_label": " / ".join(current_path),
                     "depth": len(path),
                     "order": int(node.get("order") or 1),
                     "current_version_number": int(form.get("current_version_number") or 1),
