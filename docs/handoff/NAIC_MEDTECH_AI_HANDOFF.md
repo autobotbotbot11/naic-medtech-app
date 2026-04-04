@@ -166,6 +166,10 @@ What exists now:
 - login now accepts `email or login ID`
 - pending account requests, admin approval, and admin manual account creation now all exist in the live app
 - admin-created accounts are forced to change password on first login
+- auth feedback is steadier now too:
+  - pending-account login now says the account is still waiting for admin approval
+  - disabled-account login now says admin access is needed again
+  - successful password changes now redirect straight back to `Records` with a quiet success banner
 - visible role gating is now active for `Admin` and `Medtech`
 - clinic profile data and logo upload/remove now exist as the base for future branded output work
 - `/records` is now the calm daily landing screen

@@ -358,6 +358,7 @@ def render_records_home_page(
     *,
     search_query: str = "",
     status_filter: str = "",
+    success_message: str = "",
 ) -> HTMLResponse:
     active_status = (status_filter or "").strip().lower()
     if active_status not in {"", "draft", "completed"}:
@@ -389,6 +390,7 @@ def render_records_home_page(
         context={
             "app_title": APP_TITLE,
             "form_choices": list_form_choices(session),
+            "success_message": success_message,
             "search_query": query_text,
             "status_filter": active_status,
             "has_filters": has_filters,
@@ -675,10 +677,7 @@ async def change_password_action(request: Request, session: Session = Depends(ge
             error_message=str(exc),
             status_code=422,
         )
-    return render_change_password_page(
-        request,
-        success_message="Password updated. You can continue using the app now.",
-    )
+    return redirect_for_html("/records?password_changed=1")
 
 
 @app.post("/logout")
@@ -692,9 +691,16 @@ def records_home(
     request: Request,
     q: str = "",
     status: str = "",
+    password_changed: str = "",
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
-    return render_records_home_page(request, session, search_query=q, status_filter=status)
+    return render_records_home_page(
+        request,
+        session,
+        search_query=q,
+        status_filter=status,
+        success_message="Password updated." if password_changed == "1" else "",
+    )
 
 
 @app.get("/records/new", response_class=HTMLResponse)

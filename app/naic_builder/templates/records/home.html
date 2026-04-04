@@ -88,6 +88,9 @@
       </aside>
 
       <section class="records-main">
+        {% if success_message %}
+        <div class="success-banner">{{ success_message }}</div>
+        {% endif %}
         <section class="panel record-values-panel">
           <div class="record-title-row">
             <div class="record-header-copy">

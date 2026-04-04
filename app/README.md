@@ -26,6 +26,10 @@ The app now starts from a builder-first FastAPI scaffold.
   - admins can also create accounts manually as a fallback
   - admin-created accounts must change password on first login
   - visible roles are still just `Admin` and `Medtech`
+- auth flow polish is steadier now too:
+  - pending-account login now explains that the account is still waiting for admin approval
+  - disabled-account login now explains that admin access is needed again
+  - successful password changes now return straight to `Records` with a quiet success banner instead of leaving the user parked on the password page
 - role gating is active now too:
   - `Medtech` stays in the records flow
   - `Admin` can also access forms, builder, and settings

@@ -50,6 +50,7 @@
       "the auth model is now hybrid: request account plus admin approval plus admin manual-create fallback",
       "login now accepts email or login ID",
       "admin-created accounts are forced to change password on first login",
+      "auth feedback is steadier now too: pending-account login explains that approval is still needed, disabled-account login explains that admin access is needed again, and successful password changes now redirect back to Records with a quiet success banner",
       "visible role gating is now active for Admin and Medtech",
       "clinic profile data and clinic logo upload/remove now exist as the branding base for future print work"
     ],

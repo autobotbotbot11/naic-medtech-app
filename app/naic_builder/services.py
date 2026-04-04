@@ -338,8 +338,14 @@ def update_user_status(session: Session, user_id: int, *, status: str) -> dict[s
 
 def authenticate_user(session: Session, payload: LoginPayload) -> dict[str, Any]:
     user = get_user_by_identifier(session, payload.identifier)
-    if user is None or not verify_password_hash(user.password_hash, payload.password):
+    if user is None:
         raise ValueError("The email or login ID and password do not match.")
+    if not verify_password_hash(user.password_hash, payload.password):
+        raise ValueError("The email or login ID and password do not match.")
+    if user.status == "pending":
+        raise ValueError("This account is still waiting for admin approval.")
+    if user.status == "disabled":
+        raise ValueError("This account is currently disabled. Ask an admin for access.")
     if user.status != "active":
         raise ValueError("This account is not active yet.")
     return serialize_user(user)
