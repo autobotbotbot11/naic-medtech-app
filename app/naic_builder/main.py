@@ -437,12 +437,17 @@ def render_record_edit_page(
     *,
     record_id: int,
     error_message: str = "",
+    success_message: str = "",
     validation_issues: list[str] | None = None,
     status_code: int = 200,
 ) -> HTMLResponse:
     record = get_record_or_none(session, record_id)
     if record is None:
         raise HTTPException(status_code=404, detail="Record not found.")
+
+    resolved_success_message = success_message
+    if not resolved_success_message and request.query_params.get("saved") == "1":
+        resolved_success_message = "Saved the draft."
 
     return templates.TemplateResponse(
         request=request,
@@ -451,6 +456,7 @@ def render_record_edit_page(
             "app_title": APP_TITLE,
             "record": serialize_record(record, include_entry_schema=True),
             "error_message": error_message,
+            "success_message": resolved_success_message,
             "validation_issues": validation_issues or [],
         },
         status_code=status_code,
@@ -774,7 +780,7 @@ async def update_record_page(
             status_code=422,
         )
 
-    return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+    return RedirectResponse(url=f"/records/{record_id}/edit?saved=1", status_code=303)
 
 
 @app.post("/records/{record_id}/assets")

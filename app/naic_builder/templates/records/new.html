@@ -35,6 +35,11 @@
       {% endif %}
 
       <form method="post" action="/records/new" class="record-entry-form">
+        <div class="entry-block-head">
+          <p class="eyebrow">Start</p>
+          <h2>Choose the form and basic details</h2>
+          <p class="entry-inline-hint">Patient name and case number can wait while the record is still a draft, but both are required before completion.</p>
+        </div>
         <div class="record-basics-grid">
           <label class="entry-field">
             <span>Form</span>
@@ -60,7 +65,15 @@
 
           <label class="entry-field">
             <span>Sex</span>
-            <input type="text" name="patient_sex" value="{{ patient_sex }}" placeholder="Optional">
+            <select name="patient_sex">
+              <option value=""></option>
+              {% if patient_sex and patient_sex not in ['Male', 'Female', 'Other'] %}
+              <option value="{{ patient_sex }}" selected>{{ patient_sex }}</option>
+              {% endif %}
+              <option value="Male" {% if patient_sex == 'Male' %}selected{% endif %}>Male</option>
+              <option value="Female" {% if patient_sex == 'Female' %}selected{% endif %}>Female</option>
+              <option value="Other" {% if patient_sex == 'Other' %}selected{% endif %}>Other</option>
+            </select>
           </label>
 
           <label class="entry-field">

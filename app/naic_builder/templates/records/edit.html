@@ -59,7 +59,7 @@
         <div class="entry-image-field">
           {% if image_asset %}
           <img class="entry-image-preview" src="/records/{{ record_id }}/assets/{{ image_asset.id }}/file" alt="{{ block.name }}">
-          <p class="entry-inline-hint">{{ image_asset.original_filename }}{% if image_asset.size_bytes %} · {{ ((image_asset.size_bytes / 1024 / 1024) | round(1)) }} MB{% endif %}</p>
+          <p class="entry-inline-hint">{{ image_asset.original_filename }}{% if image_asset.size_bytes %} - {{ ((image_asset.size_bytes / 1024 / 1024) | round(1)) }} MB{% endif %}</p>
           <div class="entry-image-actions">
             <button
               class="ghost-button"
@@ -236,6 +236,9 @@
       {% if error_message %}
       <div class="error-banner">{{ error_message }}</div>
       {% endif %}
+      {% if success_message %}
+      <div class="success-banner">{{ success_message }}</div>
+      {% endif %}
       {% if validation_issues %}
       <section class="completion-checklist">
         <div class="entry-block-head">
@@ -268,7 +271,15 @@
             </label>
             <label class="entry-field">
               <span>Sex</span>
-              <input type="text" name="patient_sex" value="{{ record.patient_sex or '' }}">
+              <select name="patient_sex">
+                <option value=""></option>
+                {% if record.patient_sex and record.patient_sex not in ['Male', 'Female', 'Other'] %}
+                <option value="{{ record.patient_sex }}" selected>{{ record.patient_sex }}</option>
+                {% endif %}
+                <option value="Male" {% if record.patient_sex == 'Male' %}selected{% endif %}>Male</option>
+                <option value="Female" {% if record.patient_sex == 'Female' %}selected{% endif %}>Female</option>
+                <option value="Other" {% if record.patient_sex == 'Other' %}selected{% endif %}>Other</option>
+              </select>
             </label>
             <label class="entry-field">
               <span>Case number</span>

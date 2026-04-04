@@ -506,6 +506,14 @@
   border-radius: var(--radius-lg);
 }
 
+.success-banner {
+  border: 1px solid rgba(30, 93, 82, 0.24);
+  background: rgba(30, 93, 82, 0.12);
+  color: var(--accent);
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+}
+
 @media (max-width: 980px) {
   .records-grid,
   .record-title-row {

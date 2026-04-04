@@ -46,6 +46,10 @@ The app now starts from a builder-first FastAPI scaffold.
   - `Complete` now blocks when patient name or case number is missing
   - `Complete` also blocks when a form-design-required field is still empty
   - the edit screen now shows a quiet completion checklist instead of failing silently
+- record-entry polish is calmer now too:
+  - ordinary draft saves now redirect back with a quiet `Saved the draft.` success banner
+  - `Sex` now uses the same small standard select in both record create and record edit
+  - the image file hint now uses plain ASCII text instead of the old broken separator artifact
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
 - live form reads now expose `block_schema` as the active form shape
@@ -289,4 +293,4 @@ python tools/scripts/reset_builder_runtime_db.py
 ```
 
 ## Important note
-This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The records home now also has a first usable history layer: search plus draft/completed filtering live in the same calm screen instead of staying buried in API-only plumbing. Utility blocks are less fake now too: note text, divider captions, and sample tables already render in record entry, record view, and print instead of falling back to generic placeholders. The record header is more clinic-ready too: new/edit/view/print now all carry simple patient metadata like age and sex without turning the workflow into a heavy enterprise chart. The next whole-app work should keep extending record entry, richer block rendering, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.
+This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The records home now also has a first usable history layer: search plus draft/completed filtering live in the same calm screen instead of staying buried in API-only plumbing. Utility blocks are less fake now too: note text, divider captions, and sample tables already render in record entry, record view, and print instead of falling back to generic placeholders. The record header is more clinic-ready too: new/edit/view/print now all carry simple patient metadata like age and sex without turning the workflow into a heavy enterprise chart, and the edit flow now gives quiet draft-save feedback instead of feeling silent after an ordinary save. The next whole-app work should keep extending record entry, richer block rendering, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.
