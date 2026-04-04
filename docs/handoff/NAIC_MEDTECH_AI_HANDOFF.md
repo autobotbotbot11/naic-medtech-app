@@ -173,6 +173,10 @@ What exists now:
 - `/records/new` starts a draft from a chosen form
 - `/records/{id}/edit` now supports the first basic record-entry flow
 - `/records/{id}` now shows a read-only record view
+- records now surface quiet accountability metadata too:
+  - who created the record
+  - who last updated it
+  - when it was last saved or completed
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
 - the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
 - records are stored separately from forms and point to a frozen `form_version_id`
@@ -193,6 +197,7 @@ Current intentional limits:
 What the next AI should continue from here:
 - improve the record-entry runtime instead of reopening builder architecture debates
 - refine the new image/file answer flow instead of re-planning it from zero
+- preserve the current quiet accountability layer in records instead of replacing it with heavy workflow
 - refine record rendering for richer block kinds
 - improve the print renderer instead of starting from a blank page
 - keep extending records history/search only as needed; the first calm search/filter pass is already landed

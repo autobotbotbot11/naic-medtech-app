@@ -1381,6 +1381,29 @@ def serialize_record_asset(asset: RecordAsset) -> dict[str, Any]:
     }
 
 
+def format_timestamp_label(value: Any) -> str:
+    if value is None:
+        return ""
+    try:
+        local_value = value.astimezone()
+    except Exception:
+        return ""
+    tz_name = compact_text(local_value.tzname()) or "local"
+    return f"{local_value.strftime('%b %d, %Y %I:%M %p')} {tz_name}"
+
+
+def serialize_record_actor(user: User | None) -> dict[str, Any] | None:
+    if user is None:
+        return None
+    return {
+        "id": user.id,
+        "full_name": compact_text(user.full_name),
+        "email": compact_text(user.email),
+        "login_id": compact_text(user.login_id),
+        "role": compact_text(user.role),
+    }
+
+
 def parse_numeric_answer(value: Any) -> float | None:
     if isinstance(value, bool):
         return None
@@ -1683,6 +1706,11 @@ def serialize_record(
         "created_at": record.created_at.astimezone(timezone.utc).isoformat(),
         "updated_at": record.updated_at.astimezone(timezone.utc).isoformat(),
         "completed_at": record.completed_at.astimezone(timezone.utc).isoformat() if record.completed_at else None,
+        "created_at_label": format_timestamp_label(record.created_at),
+        "updated_at_label": format_timestamp_label(record.updated_at),
+        "completed_at_label": format_timestamp_label(record.completed_at) if record.completed_at else "",
+        "created_by": serialize_record_actor(record.created_by_user),
+        "updated_by": serialize_record_actor(record.updated_by_user),
         "indexed_meta": indexed_meta,
     }
     if include_values:
@@ -1701,6 +1729,8 @@ def get_record_or_none(session: Session, record_id: int) -> Record | None:
             selectinload(Record.form).selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
             selectinload(Record.form_version),
             selectinload(Record.assets),
+            selectinload(Record.created_by_user),
+            selectinload(Record.updated_by_user),
         )
     )
 
@@ -1710,6 +1740,8 @@ def record_query_with_relationships():
         selectinload(Record.form).selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
         selectinload(Record.form_version),
         selectinload(Record.assets),
+        selectinload(Record.created_by_user),
+        selectinload(Record.updated_by_user),
     )
 
 

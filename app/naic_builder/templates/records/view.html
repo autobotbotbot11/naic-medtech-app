@@ -111,6 +111,8 @@
   {% set entry_schema = record["entry_schema"] or {} %}
   {% set record_values = record["values"] or {} %}
   {% set asset_by_field = record["asset_by_field_id"] or {} %}
+  {% set created_by = record["created_by"] %}
+  {% set updated_by = record["updated_by"] or record["created_by"] %}
 
   <main class="library-shell record-shell">
     <header class="panel record-header">
@@ -160,6 +162,28 @@
         <article class="record-meta-card">
           <span>Record key</span>
           <strong>{{ record.record_key }}</strong>
+        </article>
+      </div>
+
+      <div class="record-audit-strip">
+        <article class="record-audit-item">
+          <span>Created by</span>
+          <strong>{{ created_by.full_name if created_by else "Unknown" }}</strong>
+          {% if created_by and created_by.email %}
+          <p>{{ created_by.email }}</p>
+          {% endif %}
+        </article>
+        <article class="record-audit-item">
+          <span>Last updated by</span>
+          <strong>{{ updated_by.full_name if updated_by else "Unknown" }}</strong>
+          <p>{{ record.updated_at_label or "Not saved yet" }}</p>
+        </article>
+        <article class="record-audit-item">
+          <span>{{ "Completed" if record.completed_at_label else "Last saved" }}</span>
+          <strong>{{ record.completed_at_label or record.updated_at_label or "Not saved yet" }}</strong>
+          {% if record.completed_at_label and updated_by %}
+          <p>{{ updated_by.full_name }}</p>
+          {% endif %}
         </article>
       </div>
     </header>

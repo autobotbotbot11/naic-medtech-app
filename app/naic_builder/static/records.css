@@ -72,6 +72,12 @@
   align-items: center;
 }
 
+.record-activity-copy {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .record-status-chip {
   display: inline-flex;
   align-items: center;
@@ -132,6 +138,12 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+.record-audit-strip {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
 .record-meta-card {
   display: grid;
   gap: 6px;
@@ -146,6 +158,33 @@
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.record-audit-item {
+  display: grid;
+  gap: 4px;
+  padding: 14px 15px;
+  border: 1px dashed rgba(68, 54, 40, 0.14);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.66);
+}
+
+.record-audit-item span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.record-audit-item strong,
+.record-audit-item p {
+  margin: 0;
+}
+
+.record-audit-item p {
+  color: var(--muted);
+  font-size: 12px;
 }
 
 .record-entry-form {

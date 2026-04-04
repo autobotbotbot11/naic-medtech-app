@@ -37,6 +37,10 @@ The app now starts from a builder-first FastAPI scaffold.
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
 - the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, image fields now support a first real upload/replace/remove flow during record entry, and `/records/{id}/print` now provides the first browser-printable result renderer
+- records are more accountable now too:
+  - create/update/complete actions keep the acting user id
+  - record cards now show the latest activity user and time
+  - record edit/view now show quiet `Created by` and `Last updated by` metadata
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
 - live form reads now expose `block_schema` as the active form shape
