@@ -440,7 +440,19 @@
 }
 
 .entry-actions {
+  align-items: center;
   justify-content: flex-end;
+}
+
+.entry-save-state {
+  margin: 0 auto 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.entry-save-state.is-dirty {
+  color: #915523;
 }
 
 .record-values-panel {

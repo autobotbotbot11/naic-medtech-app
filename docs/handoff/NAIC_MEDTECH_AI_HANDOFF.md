@@ -190,6 +190,9 @@ What exists now:
   - draft records already show a quiet readiness panel while editing
   - if details are still missing, the panel lists what still blocks `Complete`
   - if the draft is ready, the same panel flips into a calm ready-to-complete state
+- record forms are safer now too:
+  - `new` and `edit` now show a quiet dirty-state label instead of leaving save state implicit
+  - browser leave protection now warns before a medtech accidentally navigates away with unsaved record changes
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
 - the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
 - records are stored separately from forms and point to a frozen `form_version_id`

@@ -31,6 +31,7 @@
       "record completion is calmer but stricter now too: drafts still stay flexible, but Complete now enforces patient name, case number, and any required field answers from the form design",
       "record-entry polish is calmer now too: ordinary draft saves return with a quiet Saved the draft banner, Sex now uses the same standard select in create and edit, and the image file hint no longer shows the old broken separator artifact",
       "record edit is more self-guiding now too: draft records already show a quiet readiness panel while editing, and that same panel flips between blocked and ready-to-complete states instead of waiting for a failed submit first",
+      "record forms are safer now too: new and edit show a quiet dirty-state label and browser leave protection now warns before accidental navigation away from unsaved changes",
       "record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholders",
       "the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number",
       "records are now stored separately from forms and point to a frozen form_version_id",

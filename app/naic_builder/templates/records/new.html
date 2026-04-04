@@ -7,6 +7,7 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='records.css') }}">
+  <script src="{{ url_for('static', path='records.js') }}" defer></script>
 </head>
 <body>
   <main class="library-shell record-shell">
@@ -34,7 +35,7 @@
       <div class="error-banner">{{ error_message }}</div>
       {% endif %}
 
-      <form method="post" action="/records/new" class="record-entry-form">
+      <form method="post" action="/records/new" class="record-entry-form" data-dirty-guard>
         <div class="entry-block-head">
           <p class="eyebrow">Start</p>
           <h2>Choose the form and basic details</h2>
@@ -83,6 +84,7 @@
         </div>
 
         <div class="entry-actions">
+          <p class="entry-save-state" data-dirty-state>All changes saved.</p>
           <a class="ghost-button" href="/records">Cancel</a>
           <button class="primary-button" type="submit">Create draft</button>
         </div>
