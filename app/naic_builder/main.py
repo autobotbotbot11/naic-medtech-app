@@ -135,6 +135,8 @@ def render_new_record_page(
     *,
     selected_form_slug: str = "",
     patient_name: str = "",
+    patient_age: str = "",
+    patient_sex: str = "",
     case_number: str = "",
     error_message: str = "",
     status_code: int = 200,
@@ -147,6 +149,8 @@ def render_new_record_page(
             "form_choices": list_form_choices(session),
             "selected_form_slug": selected_form_slug,
             "patient_name": patient_name,
+            "patient_age": patient_age,
+            "patient_sex": patient_sex,
             "case_number": case_number,
             "error_message": error_message,
         },
@@ -231,6 +235,8 @@ def record_update_payload_from_form_data(form_data: dict[str, list[str]]) -> Rec
 
     return RecordUpdatePayload(
         patient_name=(form_data.get("patient_name") or [""])[0],
+        patient_age=(form_data.get("patient_age") or [""])[0],
+        patient_sex=(form_data.get("patient_sex") or [""])[0],
         case_number=(form_data.get("case_number") or [""])[0],
         values=values,
     )
@@ -266,6 +272,8 @@ async def create_record_page(
     payload = RecordCreatePayload(
         form_slug=(form_data.get("form_slug") or [""])[0],
         patient_name=(form_data.get("patient_name") or [""])[0],
+        patient_age=(form_data.get("patient_age") or [""])[0],
+        patient_sex=(form_data.get("patient_sex") or [""])[0],
         case_number=(form_data.get("case_number") or [""])[0],
     )
     try:
@@ -276,6 +284,8 @@ async def create_record_page(
             session,
             selected_form_slug=payload.form_slug,
             patient_name=payload.patient_name or "",
+            patient_age=payload.patient_age or "",
+            patient_sex=payload.patient_sex or "",
             case_number=payload.case_number or "",
             error_message=str(exc),
             status_code=422,

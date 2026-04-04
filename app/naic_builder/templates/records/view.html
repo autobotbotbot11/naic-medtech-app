@@ -138,6 +138,14 @@
           <strong>{{ record.case_number or "Not set yet" }}</strong>
         </article>
         <article class="record-meta-card">
+          <span>Age</span>
+          <strong>{{ record.patient_age or "Not set yet" }}</strong>
+        </article>
+        <article class="record-meta-card">
+          <span>Sex</span>
+          <strong>{{ record.patient_sex or "Not set yet" }}</strong>
+        </article>
+        <article class="record-meta-card">
           <span>Version</span>
           <strong>Form v{{ record.form_version_number }}</strong>
         </article>

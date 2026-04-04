@@ -132,6 +132,7 @@ What exists now:
 - `/records/{id}/edit` now supports the first basic record-entry flow
 - `/records/{id}` now shows a read-only record view
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
+- the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
 - records are stored separately from forms and point to a frozen `form_version_id`
 - the first records API surface now exists:
   - `/api/records/bootstrap`

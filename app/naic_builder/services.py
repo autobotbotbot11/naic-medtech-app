@@ -820,6 +820,8 @@ def normalize_record_indexed_meta(
     raw_meta: Any,
     *,
     patient_name: str,
+    patient_age: str,
+    patient_sex: str,
     case_number: str,
 ) -> dict[str, Any]:
     normalized = dict(raw_meta) if isinstance(raw_meta, dict) else {}
@@ -828,6 +830,16 @@ def normalize_record_indexed_meta(
         normalized["patient_name"] = patient_name
     else:
         normalized.pop("patient_name", None)
+
+    if patient_age:
+        normalized["patient_age"] = patient_age
+    else:
+        normalized.pop("patient_age", None)
+
+    if patient_sex:
+        normalized["patient_sex"] = patient_sex
+    else:
+        normalized.pop("patient_sex", None)
 
     if case_number:
         normalized["case_number"] = case_number
@@ -1194,6 +1206,8 @@ def build_record_print_document(record: Record) -> dict[str, Any]:
         "title": serialized["form_name"],
         "status": serialized["status"],
         "patient_name": serialized["patient_name"] or "",
+        "patient_age": serialized["patient_age"] or "",
+        "patient_sex": serialized["patient_sex"] or "",
         "case_number": serialized["case_number"] or "",
         "form_name": serialized["form_name"],
         "form_path_label": serialized["form_path_label"],
@@ -1217,6 +1231,7 @@ def serialize_record(
     include_entry_schema: bool = False,
 ) -> dict[str, Any]:
     location = serialize_form_location(record.form)
+    indexed_meta = load_json_object(record.indexed_meta_json)
     asset_by_field_id = {
         compact_text(asset.field_block_id): serialize_record_asset(asset)
         for asset in record.assets
@@ -1227,6 +1242,8 @@ def serialize_record(
         "record_key": record.record_key,
         "status": record.status,
         "patient_name": record.patient_name,
+        "patient_age": compact_text(indexed_meta.get("patient_age")) or None,
+        "patient_sex": compact_text(indexed_meta.get("patient_sex")) or None,
         "case_number": record.case_number,
         "form_slug": record.form.slug,
         "form_name": record.form.name,
@@ -1241,7 +1258,7 @@ def serialize_record(
         "created_at": record.created_at.astimezone(timezone.utc).isoformat(),
         "updated_at": record.updated_at.astimezone(timezone.utc).isoformat(),
         "completed_at": record.completed_at.astimezone(timezone.utc).isoformat() if record.completed_at else None,
-        "indexed_meta": load_json_object(record.indexed_meta_json),
+        "indexed_meta": indexed_meta,
     }
     if include_values:
         payload["values"] = normalize_record_values(load_json_object(record.values_json))
@@ -1335,10 +1352,14 @@ def create_record(session: Session, payload: RecordCreatePayload) -> dict[str, A
         raise ValueError("This form has no current version yet.")
 
     patient_name = compact_text(payload.patient_name)
+    patient_age = compact_text(payload.patient_age)
+    patient_sex = compact_text(payload.patient_sex)
     case_number = compact_text(payload.case_number)
     indexed_meta = normalize_record_indexed_meta(
         payload.indexed_meta,
         patient_name=patient_name,
+        patient_age=patient_age,
+        patient_sex=patient_sex,
         case_number=case_number,
     )
 
@@ -1376,10 +1397,14 @@ def update_record(
         raise ValueError("Completed records are read-only.")
 
     patient_name = compact_text(payload.patient_name)
+    patient_age = compact_text(payload.patient_age)
+    patient_sex = compact_text(payload.patient_sex)
     case_number = compact_text(payload.case_number)
     indexed_meta = normalize_record_indexed_meta(
         payload.indexed_meta,
         patient_name=patient_name,
+        patient_age=patient_age,
+        patient_sex=patient_sex,
         case_number=case_number,
     )
 
@@ -1414,10 +1439,14 @@ def complete_record(
         raise ValueError("This record is already completed.")
 
     patient_name = compact_text(payload.patient_name)
+    patient_age = compact_text(payload.patient_age)
+    patient_sex = compact_text(payload.patient_sex)
     case_number = compact_text(payload.case_number)
     indexed_meta = normalize_record_indexed_meta(
         payload.indexed_meta,
         patient_name=patient_name,
+        patient_age=patient_age,
+        patient_sex=patient_sex,
         case_number=case_number,
     )
 

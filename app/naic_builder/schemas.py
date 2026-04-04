@@ -28,6 +28,8 @@ class RecordCreatePayload(BaseModel):
 
     form_slug: str = ""
     patient_name: str | None = None
+    patient_age: str | None = None
+    patient_sex: str | None = None
     case_number: str | None = None
     values: dict[str, Any] = Field(default_factory=dict)
     indexed_meta: dict[str, Any] = Field(default_factory=dict)
@@ -37,6 +39,8 @@ class RecordUpdatePayload(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
     patient_name: str | None = None
+    patient_age: str | None = None
+    patient_sex: str | None = None
     case_number: str | None = None
     values: dict[str, Any] = Field(default_factory=dict)
     indexed_meta: dict[str, Any] = Field(default_factory=dict)
