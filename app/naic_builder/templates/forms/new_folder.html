@@ -41,7 +41,7 @@
         <select name="parent_node_key">
           <option value="" {% if not selected_parent_key %}selected{% endif %}>Top level</option>
           {% for container in container_options %}
-          <option value="{{ container.node_key }}" {% if container.node_key == selected_parent_key %}selected{% endif %}>{{ container.path_label }}</option>
+          <option value="{{ container.node_key }}" {% if container.node_key == selected_parent_key %}selected{% endif %}>{{ container.folder_path_label }}</option>
           {% endfor %}
         </select>
       </label>

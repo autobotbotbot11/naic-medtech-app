@@ -80,11 +80,11 @@ function updateSummary() {
 
   let locationName = "Top level";
   if (locationMode === "new") {
-    const parentPath = String(selectedNewLocationParentOption()?.dataset.pathLabel || "").trim();
+    const parentPath = String(selectedNewLocationParentOption()?.dataset.folderPathLabel || "").trim();
     const newFolderName = String(newLocationNameEl?.value || "").trim();
     locationName = [parentPath, newFolderName].filter(Boolean).join(" / ");
   } else if (locationMode === "existing") {
-    locationName = String(selectedLocationOption()?.dataset.pathLabel || selectedLocationOption()?.textContent || "").trim();
+    locationName = String(selectedLocationOption()?.dataset.folderPathLabel || selectedLocationOption()?.textContent || "").trim();
   }
 
   let startLabel = "Start empty";

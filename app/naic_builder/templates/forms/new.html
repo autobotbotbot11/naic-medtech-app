@@ -83,9 +83,9 @@
               <option
                 value="{{ container.node_key }}"
                 data-location-name="{{ container.name }}"
-                data-path-label="{{ container.path_label }}"
+                data-folder-path-label="{{ container.folder_path_label }}"
                 {% if container.node_key == default_parent_node_key %}selected{% endif %}
-              >{{ container.path_label }}</option>
+              >{{ container.folder_path_label }}</option>
               {% endfor %}
             </select>
           </label>
@@ -103,9 +103,9 @@
               {% for container in container_options %}
               <option
                 value="{{ container.node_key }}"
-                data-path-label="{{ container.path_label }}"
+                data-folder-path-label="{{ container.folder_path_label }}"
                 {% if container.node_key == default_new_folder_parent_key %}selected{% endif %}
-              >{{ container.path_label }}</option>
+              >{{ container.folder_path_label }}</option>
               {% endfor %}
             </select>
           </label>

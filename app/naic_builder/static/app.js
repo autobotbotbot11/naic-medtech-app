@@ -608,7 +608,7 @@ function findLocationOptionByPathLabel(pathLabel) {
   if (!label) {
     return null;
   }
-  return availableLocationOptions().find((option) => compactText(option.path_label) === label) || null;
+  return availableLocationOptions().find((option) => compactText(option.folder_path_label) === label) || null;
 }
 
 function isTopLevelDraftLocation(draft = state.draft) {
@@ -632,8 +632,8 @@ function displayLocationName(draft = state.draft) {
     return explicitPath;
   }
   const matchedOption = findLocationOptionByNodeKey(draft.library_parent_node_key);
-  if (matchedOption?.path_label) {
-    return matchedOption.path_label;
+  if (matchedOption?.folder_path_label) {
+    return matchedOption.folder_path_label;
   }
   return isTopLevelDraftLocation(draft) ? "Top level" : compactLocationName(draft) || "Top level";
 }
@@ -647,8 +647,8 @@ function editableLocationValue(draft = state.draft) {
     return explicitPath;
   }
   const matchedOption = findLocationOptionByNodeKey(draft.library_parent_node_key);
-  if (matchedOption?.path_label) {
-    return matchedOption.path_label;
+  if (matchedOption?.folder_path_label) {
+    return matchedOption.folder_path_label;
   }
   return isTopLevelDraftLocation(draft) ? "" : compactLocationName(draft);
 }
@@ -665,7 +665,7 @@ function syncDraftLocationState(draft = state.draft) {
   const matchedOption = findLocationOptionByNodeKey(draft.library_parent_node_key);
 
   if (pendingFolderName) {
-    const parentPath = compactText(matchedOption?.path_label);
+    const parentPath = compactText(matchedOption?.folder_path_label);
     const folderName = explicitName || pendingFolderName;
     draft.location_name = folderName || "Top level";
     draft.location_path_label = [parentPath, folderName].filter(Boolean).join(" / ") || folderName || "Top level";
@@ -676,7 +676,7 @@ function syncDraftLocationState(draft = state.draft) {
 
   if (matchedOption) {
     draft.location_name = compactText(matchedOption.name) || explicitName || "Top level";
-    draft.location_path_label = compactText(matchedOption.path_label) || explicitPath || draft.location_name;
+    draft.location_path_label = compactText(matchedOption.folder_path_label) || explicitPath || draft.location_name;
     draft.location_node_key = compactText(matchedOption.node_key) || null;
     draft.location_kind = "folder";
     return;
@@ -700,7 +700,7 @@ function syncDraftLocationState(draft = state.draft) {
 function availableLocationNames() {
   const names = new Set();
   availableLocationOptions().forEach((option) => {
-    const label = compactText(option.path_label);
+    const label = compactText(option.folder_path_label);
     if (label) {
       names.add(label);
     }
@@ -3270,7 +3270,7 @@ function handleRootInput(event) {
         if (matchedLocation) {
           state.draft.library_parent_node_key = matchedLocation.node_key;
           state.draft.location_name = matchedLocation.name;
-          state.draft.location_path_label = matchedLocation.path_label;
+          state.draft.location_path_label = matchedLocation.folder_path_label;
         } else if (isTopLevelLocationName(rawValue)) {
           state.draft.library_parent_node_key = null;
           state.draft.location_name = "Top level";

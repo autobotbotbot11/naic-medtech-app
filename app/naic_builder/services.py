@@ -773,7 +773,7 @@ def list_container_choices(session: Session) -> list[dict[str, Any]]:
                 {
                     "node_key": compact_text(node.get("id")),
                     "name": compact_text(node.get("name")) or "Untitled Folder",
-                    "path_label": " / ".join(current_path),
+                    "folder_path_label": " / ".join(current_path),
                     "depth": len(path),
                     "order": int(node.get("order") or 999),
                     "next_form_order": next_form_order,
