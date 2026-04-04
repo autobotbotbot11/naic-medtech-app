@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Print Record | {{ document.form_name }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='print.css') }}">
+</head>
+<body>
+  {% set doc_items = document["items"] or [] %}
+  {% set record_meta = document["record"] or {} %}
+  {% macro render_items(items) %}
+    {% for item in items %}
+      {% if item.kind == "section" %}
+      {% set child_items = item["items"] or [] %}
+      <section class="print-section">
+        <div>
+          <p class="print-eyebrow">Section</p>
+          <h2 class="print-section-title">{{ item.name }}</h2>
+        </div>
+        <div class="print-items">
+          {{ render_items(child_items) }}
+        </div>
+      </section>
+      {% elif item.kind == "group" %}
+      {% set child_items = item["items"] or [] %}
+      <section class="print-group">
+        <div>
+          <p class="print-eyebrow">Group</p>
+          <h3 class="print-group-title">{{ item.name }}</h3>
+        </div>
+        <div class="print-items">
+          {{ render_items(child_items) }}
+        </div>
+      </section>
+      {% elif item.kind == "field" %}
+      {% set display = item["display"] or {} %}
+      <article class="print-row">
+        <div class="print-row-head">
+          <p class="print-row-name">{{ item.name }}</p>
+          {% if item.unit_hint %}
+          <span class="print-unit">{{ item.unit_hint }}</span>
+          {% endif %}
+        </div>
+
+        {% if display.kind == "image" %}
+          {% if display.image_url %}
+          <img class="print-image" src="{{ display.image_url }}" alt="{{ item.name }}">
+          {% if display.filename %}
+          <div class="print-image-meta">{{ display.filename }}</div>
+          {% endif %}
+          {% else %}
+          <p class="print-answer is-empty">No image uploaded.</p>
+          {% endif %}
+        {% elif display.text %}
+        <p class="print-answer{% if item.is_abnormal %} is-abnormal{% endif %}">{{ display.text }}</p>
+        {% else %}
+        <p class="print-answer is-empty">No value recorded.</p>
+        {% endif %}
+
+        {% if item.reference_text %}
+        <p class="print-reference{% if item.is_abnormal %} is-abnormal{% endif %}">
+          Reference: {{ item.reference_text }}
+        </p>
+        {% endif %}
+      </article>
+      {% elif item.kind == "note" %}
+      <div class="print-note">{{ item.name }}</div>
+      {% elif item.kind == "divider" %}
+      <hr class="print-divider">
+      {% elif item.kind == "table_placeholder" %}
+      <div class="print-placeholder">{{ item.name }} will use a richer print renderer in a later pass.</div>
+      {% endif %}
+    {% endfor %}
+  {% endmacro %}
+
+  <main class="print-shell">
+    <div class="print-toolbar">
+      <div class="print-copy">
+        <p class="print-eyebrow">Print preview</p>
+        <p class="print-path">{{ document.form_name }}</p>
+      </div>
+      <div class="print-toolbar-actions">
+        <a class="print-link" href="/records/{{ record_meta["id"] }}">Back to record</a>
+        <button class="print-button" type="button" onclick="window.print()">Print</button>
+      </div>
+    </div>
+
+    <section class="print-page">
+      <header>
+        <div class="print-meta-top">
+          <div class="print-copy">
+            <p class="print-eyebrow">NAIC Medtech</p>
+            <h1 class="print-title">{{ document.form_name }}</h1>
+            <p class="print-path">{{ document.form_path_label }}</p>
+          </div>
+          <div class="print-status">{{ document.status }}</div>
+        </div>
+
+        <div class="print-meta-grid">
+          <article class="print-meta-card">
+            <span>Patient</span>
+            <strong>{{ document.patient_name or "Not set yet" }}</strong>
+          </article>
+          <article class="print-meta-card">
+            <span>Case number</span>
+            <strong>{{ document.case_number or "Not set yet" }}</strong>
+          </article>
+          <article class="print-meta-card">
+            <span>Version</span>
+            <strong>Form v{{ document.form_version_number }}</strong>
+          </article>
+          <article class="print-meta-card">
+            <span>Record key</span>
+            <strong>{{ document.record_key }}</strong>
+          </article>
+        </div>
+      </header>
+
+      <section class="print-body">
+        {{ render_items(doc_items) }}
+      </section>
+    </section>
+  </main>
+</body>
+</html>

@@ -73,6 +73,7 @@
                 <div class="record-card-actions">
                   <a class="primary-button" href="/records/{{ record.id }}/edit">Open draft</a>
                   <a class="ghost-button" href="/records/{{ record.id }}">View</a>
+                  <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
                 </div>
               </article>
               {% endfor %}
@@ -107,6 +108,7 @@
                 </div>
                 <div class="record-card-actions">
                   <a class="primary-button" href="/records/{{ record.id }}">View record</a>
+                  <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
                 </div>
               </article>
               {% endfor %}

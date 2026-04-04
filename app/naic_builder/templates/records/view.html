@@ -92,6 +92,7 @@
         </div>
         <div class="record-header-actions">
           <a class="ghost-button" href="/records">Records</a>
+          <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
           {% if record.status == "draft" %}
           <a class="primary-button" href="/records/{{ record.id }}/edit">Continue editing</a>
           {% endif %}

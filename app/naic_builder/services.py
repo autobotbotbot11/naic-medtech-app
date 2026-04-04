@@ -944,6 +944,243 @@ def serialize_record_asset(asset: RecordAsset) -> dict[str, Any]:
     }
 
 
+def parse_numeric_answer(value: Any) -> float | None:
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = compact_text(value)
+    if not text:
+        return None
+    text = text.replace(",", "")
+    try:
+        return float(text)
+    except ValueError:
+        return None
+
+
+def build_print_reference(props: dict[str, Any]) -> str:
+    reference_text = compact_text(props.get("reference_text"))
+    if reference_text:
+        return reference_text
+
+    normal_min = compact_text(props.get("normal_min"))
+    normal_max = compact_text(props.get("normal_max"))
+    if normal_min and normal_max:
+        return f"{normal_min} to {normal_max}"
+    if normal_min:
+        return f">= {normal_min}"
+    if normal_max:
+        return f"<= {normal_max}"
+    return ""
+
+
+def evaluate_numeric_abnormal(props: dict[str, Any], value: Any) -> tuple[bool, str | None]:
+    numeric_value = parse_numeric_answer(value)
+    if numeric_value is None:
+        return False, None
+
+    normal_min = parse_numeric_answer(props.get("normal_min"))
+    normal_max = parse_numeric_answer(props.get("normal_max"))
+    if normal_min is not None and numeric_value < normal_min:
+        return True, "low"
+    if normal_max is not None and numeric_value > normal_max:
+        return True, "high"
+    return False, None
+
+
+def evaluate_choice_abnormal(props: dict[str, Any], value: Any) -> tuple[bool, str | None]:
+    selected = compact_text(value)
+    if not selected:
+        return False, None
+
+    options = normalize_items(props.get("options"))
+    normal_names = {
+        compact_text(option.get("name"))
+        for option in options
+        if isinstance(option, dict) and bool(option.get("is_normal")) and compact_text(option.get("name"))
+    }
+    if not normal_names:
+        return False, None
+    if selected in normal_names:
+        return False, None
+    return True, "abnormal"
+
+
+def evaluate_print_abnormal(props: dict[str, Any], value: Any) -> tuple[bool, str | None]:
+    data_type = compact_text(props.get("data_type"))
+    control = compact_text(props.get("control"))
+
+    if data_type == "image":
+        return False, None
+    if control == "select":
+        return evaluate_choice_abnormal(props, value)
+    return evaluate_numeric_abnormal(props, value)
+
+
+def build_print_display_value(
+    props: dict[str, Any],
+    value: Any,
+    image_asset: dict[str, Any] | None,
+    *,
+    record_id: int,
+) -> dict[str, Any]:
+    data_type = compact_text(props.get("data_type"))
+    if data_type == "image":
+        if image_asset is None:
+            return {
+                "kind": "image",
+                "text": "",
+                "image_url": None,
+                "filename": "",
+                "is_empty": True,
+            }
+        return {
+            "kind": "image",
+            "text": "",
+            "image_url": f"/records/{record_id}/assets/{image_asset['id']}/file",
+            "filename": compact_text(image_asset.get("original_filename")),
+            "is_empty": False,
+        }
+
+    text_value = compact_text(value)
+    return {
+        "kind": "text",
+        "text": text_value,
+        "image_url": None,
+        "filename": "",
+        "is_empty": not text_value,
+    }
+
+
+def build_print_field_item(
+    block: dict[str, Any],
+    values: dict[str, Any],
+    asset_by_field: dict[str, dict[str, Any]],
+    *,
+    record_id: int,
+) -> dict[str, Any]:
+    props = block.get("props") if isinstance(block.get("props"), dict) else {}
+    block_id = compact_text(block.get("id"))
+    raw_value = values.get(block_id)
+    image_asset = asset_by_field.get(block_id)
+    display = build_print_display_value(props, raw_value, image_asset, record_id=record_id)
+    is_abnormal, abnormal_reason = evaluate_print_abnormal(props, raw_value)
+
+    return {
+        "kind": "field",
+        "id": block_id,
+        "name": compact_text(block.get("name")) or "Untitled Field",
+        "unit_hint": compact_text(props.get("unit_hint")),
+        "reference_text": build_print_reference(props),
+        "display": display,
+        "is_abnormal": is_abnormal,
+        "abnormal_reason": abnormal_reason,
+    }
+
+
+def build_print_items(
+    blocks: list[dict[str, Any]],
+    values: dict[str, Any],
+    asset_by_field: dict[str, dict[str, Any]],
+    *,
+    record_id: int,
+) -> list[dict[str, Any]]:
+    items: list[dict[str, Any]] = []
+
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        kind = compact_text(block.get("kind"))
+        props = block.get("props") if isinstance(block.get("props"), dict) else {}
+
+        if kind == "section":
+            items.append(
+                {
+                    "kind": "section",
+                    "name": compact_text(block.get("name")) or "Untitled Section",
+                    "items": build_print_items(
+                        normalize_items(block.get("children")),
+                        values,
+                        asset_by_field,
+                        record_id=record_id,
+                    ),
+                }
+            )
+            continue
+
+        if kind == "field_group":
+            items.append(
+                {
+                    "kind": "group",
+                    "name": compact_text(block.get("name")) or "Untitled Group",
+                    "items": build_print_items(
+                        normalize_items(block.get("children")),
+                        values,
+                        asset_by_field,
+                        record_id=record_id,
+                    ),
+                }
+            )
+            continue
+
+        if kind == "field":
+            items.append(build_print_field_item(block, values, asset_by_field, record_id=record_id))
+            continue
+
+        if kind == "note":
+            items.append(
+                {
+                    "kind": "note",
+                    "name": compact_text(block.get("name")) or "",
+                }
+            )
+            continue
+
+        if kind == "divider":
+            items.append({"kind": "divider"})
+            continue
+
+        if kind == "table":
+            items.append(
+                {
+                    "kind": "table_placeholder",
+                    "name": compact_text(block.get("name")) or "Table",
+                    "sample_rows": int(props.get("sample_rows") or 0),
+                }
+            )
+            continue
+
+    return items
+
+
+def build_record_print_document(record: Record) -> dict[str, Any]:
+    serialized = serialize_record(record, include_entry_schema=True)
+    entry_schema = serialized.get("entry_schema") or {}
+    values = serialized.get("values") or {}
+    asset_by_field = serialized.get("asset_by_field_id") or {}
+
+    return {
+        "record": serialized,
+        "title": serialized["form_name"],
+        "status": serialized["status"],
+        "patient_name": serialized["patient_name"] or "",
+        "case_number": serialized["case_number"] or "",
+        "form_name": serialized["form_name"],
+        "form_path_label": serialized["form_path_label"],
+        "form_version_number": serialized["form_version_number"],
+        "record_key": serialized["record_key"],
+        "created_at": serialized["created_at"],
+        "updated_at": serialized["updated_at"],
+        "items": build_print_items(
+            normalize_items(entry_schema.get("blocks")),
+            values,
+            asset_by_field,
+            record_id=serialized["id"],
+        ),
+    }
+
+
 def serialize_record(
     record: Record,
     *,

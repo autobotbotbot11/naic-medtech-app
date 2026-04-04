@@ -29,7 +29,8 @@
       "records are now stored separately from forms and point to a frozen form_version_id",
       "the first records API surface now exists at /api/records/bootstrap, /api/records, /api/records/{id}, and /api/records/{id}/complete",
       "record status is intentionally minimal right now: draft and completed",
-      "image answer fields now support a first real upload, replace, preview, serve, and remove flow during record entry"
+      "image answer fields now support a first real upload, replace, preview, serve, and remove flow during record entry",
+      "/records/{id}/print now exists as the first browser-printable record/result surface"
     ],
     "engine_foundation": [
       "a persisted generic container/form library tree foundation now exists in the backend",
@@ -278,7 +279,7 @@
     "refine the new image-answer flow for real clinic use",
     "save richer records against exact form_version_id",
     "render richer block kinds cleanly in records",
-    "print later from those saved records"
+    "improve the new browser-printable result surface"
   ],
   "source_of_truth": {
     "app_schema": "artifacts/schema/naic_medtech_app_schema.json",

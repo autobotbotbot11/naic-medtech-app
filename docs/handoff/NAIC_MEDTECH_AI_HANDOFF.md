@@ -140,7 +140,7 @@ What exists now:
 Current intentional limits:
 - record entry is still the first calm server-rendered foundation, not the final polished runtime
 - image upload now has a first real end-to-end pass in record entry: upload, replace, preview, serve, and remove are wired for image answer fields
-- print rendering is still a later layer
+- print rendering now has a first real browser-printable pass at `/records/{id}/print`
 - record statuses are intentionally minimal right now:
   - `draft`
   - `completed`
@@ -149,7 +149,7 @@ What the next AI should continue from here:
 - improve the record-entry runtime instead of reopening builder architecture debates
 - refine the new image/file answer flow instead of re-planning it from zero
 - refine record rendering for richer block kinds
-- build the print/output layer after the record-entry runtime is stable
+- improve the print renderer instead of starting from a blank page
 
 ## Builder Direction Note
 The current builder prototype is not yet considered final for the real client.
@@ -206,6 +206,7 @@ What is implemented:
   - `/api/records/{id}/complete`
 - the current records runtime already supports a basic server-rendered draft/save/complete flow for ordinary scalar fields
 - image answer fields now support the first real upload, replace, preview, serve, and remove flow in record entry
+- `/records/{id}/print` now exists as the first printable record/result surface, including initial abnormal red-highlighting for numeric and choice fields plus inline image rendering
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
 - form reads now expose `block_schema` as the active form shape

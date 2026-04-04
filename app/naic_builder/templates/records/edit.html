@@ -55,9 +55,13 @@
           <img class="entry-image-preview" src="/records/{{ record_id }}/assets/{{ image_asset.id }}/file" alt="{{ block.name }}">
           <p class="entry-inline-hint">{{ image_asset.original_filename }}{% if image_asset.size_bytes %} · {{ ((image_asset.size_bytes / 1024 / 1024) | round(1)) }} MB{% endif %}</p>
           <div class="entry-image-actions">
-            <form method="post" action="/records/{{ record_id }}/assets/{{ image_asset.id }}/remove" class="record-inline-form">
-              <button class="ghost-button" type="submit">Remove image</button>
-            </form>
+            <button
+              class="ghost-button"
+              type="submit"
+              formaction="/records/{{ record_id }}/assets/{{ image_asset.id }}/remove"
+              formmethod="post"
+              formnovalidate
+            >Remove image</button>
           </div>
           {% else %}
           <div class="entry-image-placeholder">
@@ -66,13 +70,21 @@
           </div>
           {% endif %}
 
-          <form method="post" action="/records/{{ record_id }}/assets" enctype="multipart/form-data" class="entry-image-upload-form">
-            <input type="hidden" name="field_block_id" value="{{ block.id }}">
-            <input type="file" name="image_file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp" required>
+          <div class="entry-image-upload-form">
+            <input type="file" name="image_file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
             <div class="entry-image-actions">
-              <button class="primary-button" type="submit">{{ "Replace image" if image_asset else "Upload image" }}</button>
+              <button
+                class="primary-button"
+                type="submit"
+                name="field_block_id"
+                value="{{ block.id }}"
+                formaction="/records/{{ record_id }}/assets"
+                formmethod="post"
+                formenctype="multipart/form-data"
+                formnovalidate
+              >{{ "Replace image" if image_asset else "Upload image" }}</button>
             </div>
-          </form>
+          </div>
           <p class="entry-inline-hint">PNG, JPG, or WebP up to 10 MB.</p>
         </div>
         {% elif props.control == "select" %}
@@ -128,6 +140,7 @@
         <div class="record-header-actions">
           <a class="ghost-button" href="/records">Records</a>
           <a class="ghost-button" href="/records/{{ record.id }}">View</a>
+          <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
         </div>
       </div>
 

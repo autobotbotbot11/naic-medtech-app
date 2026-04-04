@@ -14,6 +14,7 @@ from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
 from .services import (
+    build_record_print_document,
     complete_record,
     create_container,
     delete_container,
@@ -156,6 +157,26 @@ def render_record_view_page(
         context={
             "app_title": APP_TITLE,
             "record": serialize_record(record, include_entry_schema=True),
+        },
+    )
+
+
+def render_record_print_page(
+    request: Request,
+    session: Session,
+    *,
+    record_id: int,
+) -> HTMLResponse:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found.")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="records/print.html",
+        context={
+            "app_title": APP_TITLE,
+            "document": build_record_print_document(record),
         },
     )
 
@@ -348,6 +369,15 @@ def view_record_page(
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
     return render_record_view_page(request, session, record_id=record_id)
+
+
+@app.get("/records/{record_id}/print", response_class=HTMLResponse)
+def print_record_page(
+    record_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_record_print_page(request, session, record_id=record_id)
 
 
 @app.get("/forms", response_class=HTMLResponse)

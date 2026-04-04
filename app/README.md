@@ -16,7 +16,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
-- the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, and image fields now support a first real upload/replace/remove flow during record entry; final print rendering is still a later layer
+- the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, image fields now support a first real upload/replace/remove flow during record entry, and `/records/{id}/print` now provides the first browser-printable result renderer
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
 - live form reads now expose `block_schema` as the active form shape
