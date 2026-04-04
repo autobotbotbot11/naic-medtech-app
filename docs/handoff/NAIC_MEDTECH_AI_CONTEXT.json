@@ -8,6 +8,19 @@
   "active_builder_wireframe_doc": "docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md",
   "active_builder_direction_doc": "docs/handoff/BUILDER_V2_PLAN.md",
   "main_goal_status": "core_done_cleanup_remaining",
+  "locked_ui_direction": {
+    "design_language": "clinical_depth_luxe",
+    "status": "locked_for_future_live_reskin",
+    "mode_pair": {
+      "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
+      "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
+    },
+    "notes": [
+      "The preferred feel is premium, modern, calm, and authored rather than generic admin minimalism.",
+      "Dark mode should stay curated and atmospheric, not neon and not pure black.",
+      "The live app has not been reskinned yet; these standalone files are the locked visual north star for future UI work."
+    ]
+  },
   "alignment_lock": [
     "keep the engine flexible and future-proof",
     "keep the visible UX calm and simple for non-technical users",

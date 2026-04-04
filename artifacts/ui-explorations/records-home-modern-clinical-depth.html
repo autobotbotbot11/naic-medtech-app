@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modern Clinical Depth</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --shell: #14242a;
+      --shell-2: #1a3138;
+      --page: #ebf3f5;
+      --panel: rgba(250, 253, 254, 0.94);
+      --panel-soft: rgba(255,255,255,0.74);
+      --ink: #142128;
+      --muted: #62757d;
+      --line: rgba(21, 53, 67, 0.1);
+      --accent: #0d6777;
+      --accent-soft: rgba(13, 103, 119, 0.1);
+      --warning: #a76d3a;
+      --success: #1c7058;
+      --shadow: 0 28px 70px rgba(12, 30, 38, 0.14);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-md: 16px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(180deg, var(--shell) 0%, var(--shell-2) 280px, var(--page) 280px, #eaf1f4 100%);
+      color: var(--ink);
+      font-family: "Manrope", sans-serif;
+    }
+    .shell { max-width: 1440px; margin: 0 auto; padding: 24px; display: grid; gap: 18px; }
+    .topbar {
+      border-radius: var(--radius-xl);
+      background: linear-gradient(135deg, rgba(255,255,255,0.09), rgba(255,255,255,0.03));
+      border: 1px solid rgba(235, 247, 249, 0.12);
+      box-shadow: 0 26px 60px rgba(8, 18, 22, 0.18);
+      padding: 22px 24px;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      color: #eef8fb;
+      backdrop-filter: blur(16px);
+    }
+    .brand, .sidebar, .content, .section, .cards { display: grid; gap: 12px; }
+    .eyebrow { margin: 0; color: #90d8e3; font-size: 11px; font-weight: 800; letter-spacing: 0.16em; text-transform: uppercase; }
+    h1, h2, h3 { margin: 0; font-family: "Space Grotesk", sans-serif; }
+    h1 { font-size: clamp(2.1rem, 3vw, 3.4rem); line-height: 0.98; }
+    .topbar .copy { color: rgba(238, 248, 251, 0.76); }
+    .copy, .record p { margin: 0; color: var(--muted); line-height: 1.55; }
+    .topbar-actions, .search-actions, .record-actions, .meta, .section-head { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .btn, .btn-ghost {
+      min-height: 44px; padding: 0 16px; border-radius: 14px; border: 0; font: inherit; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center;
+    }
+    .btn { background: #1c8aa0; color: #eefafd; box-shadow: 0 18px 34px rgba(12, 92, 108, 0.26); }
+    .btn-ghost { background: rgba(255,255,255,0.08); color: #eef8fb; border: 1px solid rgba(235, 247, 249, 0.14); }
+    .layout { display: grid; gap: 18px; grid-template-columns: 300px minmax(0, 1fr); }
+    .panel {
+      border-radius: var(--radius-xl);
+      background: var(--panel-soft);
+      border: 1px solid rgba(21, 53, 67, 0.1);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+    .card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--line);
+      background: var(--panel);
+      padding: 18px;
+    }
+    .metric-grid { display: grid; gap: 12px; }
+    .metric {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(13, 103, 119, 0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.94), rgba(247,251,252,0.94));
+      padding: 16px;
+      display: grid;
+      gap: 8px;
+    }
+    .metric strong { font-family: "Space Grotesk", sans-serif; font-size: 2rem; }
+    .search { padding: 18px; display: grid; gap: 16px; }
+    .search-row { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr) auto; align-items: end; }
+    label { display: grid; gap: 8px; font-weight: 700; }
+    input {
+      min-height: 50px;
+      border-radius: 16px;
+      border: 1px solid rgba(18, 57, 71, 0.12);
+      padding: 0 14px;
+      font: inherit;
+      color: var(--ink);
+      background: rgba(255,255,255,0.94);
+    }
+    .pills { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill {
+      min-height: 38px; border-radius: 12px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid var(--line);
+      background: rgba(255,255,255,0.82); color: var(--muted); font-size: 13px; font-weight: 700;
+    }
+    .pill.active { color: var(--accent); background: var(--accent-soft); border-color: rgba(13, 103, 119, 0.16); }
+    .record {
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(18, 57, 71, 0.1);
+      background: rgba(255,255,255,0.95);
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+    .chip {
+      min-height: 24px; border-radius: 999px; padding: 0 10px; font-size: 11px; font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase; display: inline-flex; align-items: center;
+    }
+    .draft { background: rgba(167, 109, 58, 0.12); color: var(--warning); }
+    .done { background: rgba(28, 112, 88, 0.12); color: var(--success); }
+    .form-name { color: var(--muted); font-size: 13px; font-weight: 700; }
+    .divider { height: 1px; background: linear-gradient(90deg, rgba(18, 57, 71, 0.12), transparent); }
+    .sample-tag {
+      position: fixed; right: 16px; bottom: 16px; min-height: 42px; padding: 0 14px; border-radius: 12px;
+      background: rgba(20, 33, 40, 0.92); color: #edf8fb; display: inline-flex; align-items: center;
+      font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; box-shadow: var(--shadow);
+    }
+    @media (max-width: 980px) { .layout { grid-template-columns: 1fr; } .search-row { grid-template-columns: 1fr; } .topbar, .section-head { flex-direction: column; align-items: start; } }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div class="brand">
+        <p class="eyebrow">Records</p>
+        <h1>Modern Clinical Depth</h1>
+        <p class="copy">A refined version of the modern clinical direction with more contrast, mood, and premium shell presence, without becoming full dark mode.</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="btn-ghost" href="./index.html">Back to directions</a>
+        <a class="btn-ghost" href="#">Forms</a>
+        <a class="btn-ghost" href="#">Settings</a>
+        <a class="btn" href="#">Start new record</a>
+      </div>
+    </header>
+
+    <section class="layout">
+      <aside class="sidebar">
+        <section class="panel card">
+          <p class="eyebrow">Quick view</p>
+          <h2>Today</h2>
+          <div class="metric-grid">
+            <article class="metric"><span class="eyebrow">Drafts</span><strong>08</strong><p class="copy">Still open and waiting for final values.</p></article>
+            <article class="metric"><span class="eyebrow">Completed</span><strong>14</strong><p class="copy">Ready for review, release, or later printing.</p></article>
+          </div>
+        </section>
+        <section class="panel card">
+          <p class="eyebrow">Available forms</p>
+          <h2>7 active forms</h2>
+          <p class="copy">This version keeps the clinical efficiency, but adds more atmosphere and contrast to the shell.</p>
+        </section>
+      </aside>
+
+      <section class="content">
+        <section class="panel search">
+          <div><p class="eyebrow">Search</p><h2>Find a past record</h2></div>
+          <div class="search-row">
+            <label><span>Find</span><input type="search" placeholder="Patient, case number, form, or record key"></label>
+            <div class="search-actions"><button class="btn-ghost" type="button" style="color:var(--ink);background:rgba(255,255,255,0.86);border-color:var(--line);">Clear</button><button class="btn" type="button">Search</button></div>
+          </div>
+          <div class="pills"><span class="pill active">All</span><span class="pill">Drafts</span><span class="pill">Completed</span></div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><p class="eyebrow">Drafts</p><h2>Continue working</h2></div></div>
+          <div class="cards">
+            <article class="record">
+              <div class="meta"><span class="chip draft">Draft</span><span class="form-name">Urinalysis</span></div>
+              <div><h3>Maria Santos</h3><p>Clinical Microscopy / Urinalysis</p><p>Case: UA-2026-0014</p></div>
+              <div class="divider"></div>
+              <p>Updated Apr 05, 2026 11:20 AM - Med Tech</p>
+              <div class="record-actions"><a class="btn" href="#">Open draft</a><a class="btn-ghost" href="#" style="color:var(--ink);background:rgba(255,255,255,0.86);border-color:var(--line);">View</a></div>
+            </article>
+            <article class="record">
+              <div class="meta"><span class="chip draft">Draft</span><span class="form-name">CBC</span></div>
+              <div><h3>Rafael Cruz</h3><p>Hematology / Complete Blood Count</p><p>Case: HEMA-2026-0007</p></div>
+              <div class="divider"></div>
+              <p>Updated Apr 05, 2026 10:42 AM - Med Tech</p>
+              <div class="record-actions"><a class="btn" href="#">Open draft</a><a class="btn-ghost" href="#" style="color:var(--ink);background:rgba(255,255,255,0.86);border-color:var(--line);">View</a></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="section">
+          <div class="section-head"><div><p class="eyebrow">Completed</p><h2>Recent finished records</h2></div></div>
+          <div class="cards">
+            <article class="record">
+              <div class="meta"><span class="chip done">Completed</span><span class="form-name">Fecalysis</span></div>
+              <div><h3>Jessa Molina</h3><p>Clinical Microscopy / Fecalysis</p><p>Case: FECA-2026-0011</p></div>
+              <div class="divider"></div>
+              <p>Completed Apr 05, 2026 09:08 AM - Med Tech</p>
+              <div class="record-actions"><a class="btn" href="#">View record</a><a class="btn-ghost" href="#" style="color:var(--ink);background:rgba(255,255,255,0.86);border-color:var(--line);">Print</a></div>
+            </article>
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+  <div class="sample-tag">Modern Clinical Depth</div>
+</body>
+</html>

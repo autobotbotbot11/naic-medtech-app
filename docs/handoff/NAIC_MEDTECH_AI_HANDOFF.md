@@ -132,6 +132,32 @@ Important:
 - do not introduce heavy enterprise role hierarchy unless the real clinic workflow demands it
 - accountability should continue to rely on immutable internal user ids, while admin-facing management stays readable through full name and email
 
+## Locked UI Direction
+The product now has a locked visual direction for the next UI work.
+
+Chosen design language:
+- `Clinical Depth Luxe`
+
+Chosen mode pair:
+- light mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html`
+- dark mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html`
+
+Important interpretation:
+- the client preference is not for generic dashboard minimalism
+- the preferred feel is premium, modern, calm, and authored
+- dark mode should stay curated and atmospheric, not neon and not pure black
+- light and dark should feel like one product, not two unrelated themes
+
+Important implementation rule:
+- do not invent a new UI style from scratch when the live reskin starts
+- use the chosen standalone exploration pair as the visual north star
+- treat those files as reference mood boards and starting implementation guides, not throwaway experiments
+
+Important current boundary:
+- the chosen visual direction is locked
+- the live app has **not** been reskinned yet
+- this decision should inform future app-shell, records, auth, settings, and later print styling work
+
 ## Next Whole-App Milestone
 The builder is now at the point where the core direction is effectively done.
 
@@ -224,6 +250,7 @@ What the next AI should continue from here:
 - refine record rendering for richer block kinds
 - improve the print renderer instead of starting from a blank page
 - keep extending records history/search only as needed; the first calm search/filter pass is already landed
+- when visual work resumes, align it to the locked `Clinical Depth Luxe` light/dark pair instead of exploring a different style family first
 
 ## Builder Direction Note
 The current builder prototype is not yet considered final for the real client.

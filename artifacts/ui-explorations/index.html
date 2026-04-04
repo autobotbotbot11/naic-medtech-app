@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UI Direction Samples</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #efe7dc;
+      --panel: rgba(255, 252, 247, 0.9);
+      --ink: #1e2724;
+      --muted: #6c726e;
+      --line: rgba(44, 53, 49, 0.12);
+      --accent: #1e5d52;
+      --accent-soft: rgba(30, 93, 82, 0.12);
+      --shadow: 0 24px 70px rgba(40, 33, 23, 0.1);
+      --radius: 28px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(30, 93, 82, 0.1), transparent 28%),
+        radial-gradient(circle at bottom right, rgba(176, 131, 72, 0.12), transparent 26%),
+        linear-gradient(180deg, #f4ede3 0%, #ece4d8 100%);
+      color: var(--ink);
+      font-family: "DM Sans", sans-serif;
+      padding: 40px 24px 72px;
+    }
+    .shell { max-width: 1180px; margin: 0 auto; display: grid; gap: 24px; }
+    .hero, .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(16px);
+    }
+    .hero { padding: 32px; display: grid; gap: 14px; }
+    .eyebrow {
+      margin: 0;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-size: clamp(2.4rem, 4vw, 4rem);
+      line-height: 0.94;
+      max-width: 10ch;
+    }
+    h2 { margin: 0; font-size: 1.4rem; }
+    p { margin: 0; color: var(--muted); line-height: 1.6; }
+    .grid { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .card { padding: 24px; display: grid; gap: 16px; }
+    .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    a { text-decoration: none; color: inherit; }
+    .primary, .secondary {
+      display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 0 18px; border-radius: 999px; font-weight: 700;
+    }
+    .primary { background: var(--accent); color: #f8f5f0; }
+    .secondary { border: 1px solid var(--line); color: var(--ink); background: rgba(255, 255, 255, 0.7); }
+    .thumb {
+      border-radius: 22px; border: 1px solid var(--line); min-height: 180px; padding: 18px; display: grid; gap: 12px; align-content: start;
+    }
+    .thumb.quiet { background: linear-gradient(180deg, #f8f2e9 0%, #f4ede3 100%); }
+    .thumb.clinical { background: linear-gradient(180deg, #eef5f7 0%, #e9f0f4 100%); }
+    .thumb.editorial { background: linear-gradient(180deg, #f5efe8 0%, #f0e7dd 100%); }
+    .bars { display: flex; gap: 10px; align-items: center; }
+    .dot { width: 38px; height: 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.09); }
+    .line { height: 11px; border-radius: 999px; background: rgba(0, 0, 0, 0.08); }
+    .line.short { width: 34%; }
+    .line.mid { width: 64%; }
+    .line.full { width: 100%; }
+    .panel-row { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; }
+    .mini-panel {
+      min-height: 74px; border-radius: 18px; border: 1px solid rgba(0, 0, 0, 0.08); background: rgba(255, 255, 255, 0.68); padding: 12px; display: grid; gap: 8px;
+    }
+    ul { margin: 0; padding-left: 18px; display: grid; gap: 8px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <section class="hero">
+      <p class="eyebrow">UI Explorations</p>
+      <h1>Pick the feeling before we touch the real app.</h1>
+      <p>These are standalone HTML samples only. Nothing here changes the live app. Each sample uses the same `Records Home` content so you can judge the shell, hierarchy, buttons, cards, and overall product feel without getting distracted by feature differences.</p>
+      <div class="actions">
+        <a class="primary" href="./records-home-quiet-premium.html">Open Quiet Premium Clinic</a>
+        <a class="secondary" href="./records-home-modern-clinical.html">Open Modern Clinical Workspace</a>
+        <a class="secondary" href="./records-home-warm-editorial.html">Open Warm Editorial Healthcare</a>
+        <a class="secondary" href="./records-home-modern-clinical-depth.html">Open Modern Clinical Depth</a>
+        <a class="secondary" href="./records-home-modern-clinical-depth-luxe.html">Open Clinical Depth Luxe</a>
+        <a class="secondary" href="./records-home-modern-clinical-depth-luxe-dark.html">Open Clinical Depth Luxe Dark</a>
+        <a class="secondary" href="./records-home-modern-clinical-depth-luxe-dark-deeper.html">Open Clinical Depth Luxe Darker</a>
+        <a class="secondary" href="./records-home-modern-clinical-depth-focus.html">Open Clinical Depth Focus</a>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="card">
+        <p class="eyebrow">Direction 1</p>
+        <h2>Quiet Premium Clinic</h2>
+        <p>Warm premium surfaces, restrained luxury, and stronger brand presence without becoming flashy.</p>
+        <div class="thumb quiet">
+          <div class="bars"><div class="dot"></div><div class="line short"></div></div>
+          <div class="line mid"></div>
+          <div class="panel-row">
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+          </div>
+          <div class="mini-panel"><div class="line short"></div><div class="line full"></div><div class="line mid"></div></div>
+        </div>
+        <ul>
+          <li>Best fit if you want expensive-looking calmness.</li>
+          <li>Strongest path for future branded print alignment.</li>
+          <li>Feels boutique and trustworthy rather than corporate.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-quiet-premium.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 2</p>
+        <h2>Modern Clinical Workspace</h2>
+        <p>Sharper, cooler, and more workstation-like. Clean, efficient, and safest for dense operational screens.</p>
+        <div class="thumb clinical">
+          <div class="bars"><div class="dot"></div><div class="line short"></div></div>
+          <div class="line mid"></div>
+          <div class="panel-row">
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+          </div>
+          <div class="mini-panel"><div class="line short"></div><div class="line full"></div><div class="line mid"></div></div>
+        </div>
+        <ul>
+          <li>Strongest for clarity and operational efficiency.</li>
+          <li>Easiest to scale across more screens later.</li>
+          <li>Lower risk, but slightly less memorable.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-modern-clinical.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 3</p>
+        <h2>Warm Editorial Healthcare</h2>
+        <p>More authored and design-forward, with a soft paper-like mood and stronger visual personality.</p>
+        <div class="thumb editorial">
+          <div class="bars"><div class="dot"></div><div class="line short"></div></div>
+          <div class="line mid"></div>
+          <div class="panel-row">
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+          </div>
+          <div class="mini-panel"><div class="line short"></div><div class="line full"></div><div class="line mid"></div></div>
+        </div>
+        <ul>
+          <li>Most memorable and custom-feeling.</li>
+          <li>Great if you want more visual identity in the shell.</li>
+          <li>Needs discipline so it does not overpower dense forms.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-warm-editorial.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 4</p>
+        <h2>Modern Clinical Depth</h2>
+        <p>The same modern clinical base, but with a darker shell, deeper contrast, and more premium atmosphere without becoming full dark mode.</p>
+        <div class="thumb clinical">
+          <div class="bars"><div class="dot"></div><div class="line short"></div></div>
+          <div class="line mid"></div>
+          <div class="panel-row">
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+          </div>
+          <div class="mini-panel"><div class="line short"></div><div class="line full"></div><div class="line mid"></div></div>
+        </div>
+        <ul>
+          <li>Good if the clean modern direction feels too flat.</li>
+          <li>Adds atmosphere without the maintenance burden of theme switching.</li>
+          <li>Likely the best bridge between modern and premium.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-modern-clinical-depth.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 5</p>
+        <h2>Clinical Depth Luxe</h2>
+        <p>The richer, more luxurious version of the depth direction. More premium shell drama, softer cards, stronger wow factor.</p>
+        <div class="thumb quiet">
+          <div class="bars"><div class="dot"></div><div class="line short"></div></div>
+          <div class="line mid"></div>
+          <div class="panel-row">
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+          </div>
+          <div class="mini-panel"><div class="line short"></div><div class="line full"></div><div class="line mid"></div></div>
+        </div>
+        <ul>
+          <li>Best if you want the most premium client-facing first impression.</li>
+          <li>Closer to a boutique custom product than standard med software.</li>
+          <li>Slightly riskier if you want very utilitarian density later.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-modern-clinical-depth-luxe.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 5B</p>
+        <h2>Clinical Depth Luxe Dark</h2>
+        <p>The dark counterpart of the luxe direction: same premium identity, but tuned for eye comfort and longer work sessions.</p>
+        <div class="thumb clinical" style="background:linear-gradient(180deg,#23373f 0%,#1a2b31 100%); border-color: rgba(255,255,255,0.08);">
+          <div class="bars"><div class="dot" style="background:rgba(255,255,255,0.14)"></div><div class="line short" style="background:rgba(255,255,255,0.14)"></div></div>
+          <div class="line mid" style="background:rgba(255,255,255,0.12)"></div>
+          <div class="panel-row">
+            <div class="mini-panel" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.08)"><div class="line short" style="background:rgba(255,255,255,0.14)"></div><div class="line full" style="background:rgba(255,255,255,0.14)"></div></div>
+            <div class="mini-panel" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.08)"><div class="line short" style="background:rgba(255,255,255,0.14)"></div><div class="line full" style="background:rgba(255,255,255,0.14)"></div></div>
+          </div>
+          <div class="mini-panel" style="background:rgba(255,255,255,0.08); border-color:rgba(255,255,255,0.08)"><div class="line short" style="background:rgba(255,255,255,0.14)"></div><div class="line full" style="background:rgba(255,255,255,0.14)"></div><div class="line mid" style="background:rgba(255,255,255,0.14)"></div></div>
+        </div>
+        <ul>
+          <li>Best if the luxe direction is right, but white-heavy screens still feel tiring.</li>
+          <li>Should feel like the same product, not a separate theme experiment.</li>
+          <li>Good fit for long medtech sessions if the contrast stays soft and controlled.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-modern-clinical-depth-luxe-dark.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 5C</p>
+        <h2>Clinical Depth Luxe Darker</h2>
+        <p>A deeper, moodier version of the dark luxe direction. More dramatic shell, lower luminance, and stronger night-work atmosphere.</p>
+        <div class="thumb clinical" style="background:linear-gradient(180deg,#17262c 0%,#101b20 100%); border-color: rgba(255,255,255,0.08);">
+          <div class="bars"><div class="dot" style="background:rgba(255,255,255,0.12)"></div><div class="line short" style="background:rgba(255,255,255,0.12)"></div></div>
+          <div class="line mid" style="background:rgba(255,255,255,0.1)"></div>
+          <div class="panel-row">
+            <div class="mini-panel" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.07)"><div class="line short" style="background:rgba(255,255,255,0.12)"></div><div class="line full" style="background:rgba(255,255,255,0.12)"></div></div>
+            <div class="mini-panel" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.07)"><div class="line short" style="background:rgba(255,255,255,0.12)"></div><div class="line full" style="background:rgba(255,255,255,0.12)"></div></div>
+          </div>
+          <div class="mini-panel" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.07)"><div class="line short" style="background:rgba(255,255,255,0.12)"></div><div class="line full" style="background:rgba(255,255,255,0.12)"></div><div class="line mid" style="background:rgba(255,255,255,0.12)"></div></div>
+        </div>
+        <ul>
+          <li>Best if you want the dark mode to feel more cinematic and premium.</li>
+          <li>Better for mood, but must still be checked against long-session readability.</li>
+          <li>Good comparison point before we lock the final dark theme.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-modern-clinical-depth-luxe-dark-deeper.html">View sample</a></div>
+      </article>
+
+      <article class="card">
+        <p class="eyebrow">Direction 6</p>
+        <h2>Clinical Depth Focus</h2>
+        <p>The more operational version of the depth direction. Keeps the dark shell and premium feel, but tighter and more medtech-workstation focused.</p>
+        <div class="thumb clinical">
+          <div class="bars"><div class="dot"></div><div class="line short"></div></div>
+          <div class="line mid"></div>
+          <div class="panel-row">
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+            <div class="mini-panel"><div class="line short"></div><div class="line full"></div></div>
+          </div>
+          <div class="mini-panel"><div class="line short"></div><div class="line full"></div><div class="line mid"></div></div>
+        </div>
+        <ul>
+          <li>Best if you want daily usability to stay the priority.</li>
+          <li>Feels premium, but a bit more disciplined and work-focused.</li>
+          <li>Likely easiest to scale across forms and settings later.</li>
+        </ul>
+        <div class="actions"><a class="primary" href="./records-home-modern-clinical-depth-focus.html">View sample</a></div>
+      </article>
+    </section>
+  </main>
+</body>
+</html>
