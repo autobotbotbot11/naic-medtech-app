@@ -309,8 +309,33 @@ function getInputUnitHint(field) {
   return isBlockNode(field) ? String(getNodeProps(field).unit_hint || "").trim() : "";
 }
 
-function getInputNormalValue(field) {
-  return isBlockNode(field) ? String(getNodeProps(field).normal_value || "").trim() : "";
+function getInputReferenceText(field) {
+  return isBlockNode(field)
+    ? String(getNodeProps(field).reference_text || getNodeProps(field).normal_value || "").trim()
+    : "";
+}
+
+function getInputNormalMin(field) {
+  return isBlockNode(field) ? String(getNodeProps(field).normal_min || "").trim() : "";
+}
+
+function getInputNormalMax(field) {
+  return isBlockNode(field) ? String(getNodeProps(field).normal_max || "").trim() : "";
+}
+
+function inputNormalRangeLabel(field) {
+  const min = compactText(getInputNormalMin(field));
+  const max = compactText(getInputNormalMax(field));
+  if (min && max) {
+    return `Normal ${min} - ${max}`;
+  }
+  if (min) {
+    return `Normal from ${min}`;
+  }
+  if (max) {
+    return `Normal to ${max}`;
+  }
+  return "";
 }
 
 function normalizeInputOptions(field, { allowLegacyLabel = false } = {}) {
@@ -328,6 +353,7 @@ function normalizeInputOptions(field, { allowLegacyLabel = false } = {}) {
       delete normalized.label;
       normalized.key = compactText(normalized.key) || slugify(normalizedName || `option_${index + 1}`) || `option_${index + 1}`;
       normalized.order = parsePositiveInt(normalized.order, index + 1);
+      normalized.is_normal = Boolean(normalized.is_normal);
       return normalized;
     }
     const normalizedName = compactText(option);
@@ -335,6 +361,7 @@ function normalizeInputOptions(field, { allowLegacyLabel = false } = {}) {
       name: normalizedName,
       key: slugify(normalizedName || `option_${index + 1}`) || `option_${index + 1}`,
       order: index + 1,
+      is_normal: false,
     };
   });
   return props.options;
@@ -347,6 +374,28 @@ function normalizeLiveBlockNode(node) {
 
   const props = getNodeProps(node);
   delete props.field_type;
+
+  const referenceText = compactText(props.reference_text || props.normal_value);
+  if (referenceText) {
+    props.reference_text = referenceText;
+  } else {
+    delete props.reference_text;
+  }
+  delete props.normal_value;
+
+  const normalMin = compactText(props.normal_min);
+  if (normalMin) {
+    props.normal_min = normalMin;
+  } else {
+    delete props.normal_min;
+  }
+
+  const normalMax = compactText(props.normal_max);
+  if (normalMax) {
+    props.normal_max = normalMax;
+  } else {
+    delete props.normal_max;
+  }
 
   if (blockKind(node) === "field") {
     normalizeInputOptions(node, { allowLegacyLabel: true });
@@ -1125,7 +1174,16 @@ function setBoundValue(target, bind, rawValue) {
       props.sample_rows = parsePositiveInt(rawValue, 3);
       return;
     }
-    if (bind === "key" || bind === "notes" || bind === "normal_value" || bind === "unit_hint" || bind === "content" || bind === "columns") {
+    if (
+      bind === "key" ||
+      bind === "notes" ||
+      bind === "reference_text" ||
+      bind === "normal_min" ||
+      bind === "normal_max" ||
+      bind === "unit_hint" ||
+      bind === "content" ||
+      bind === "columns"
+    ) {
       props[bind] = rawValue;
       return;
     }
@@ -1169,7 +1227,9 @@ function makeBlankField() {
       control: "input",
       data_type: "text",
       unit_hint: "",
-      normal_value: "",
+      reference_text: "",
+      normal_min: "",
+      normal_max: "",
       notes: [],
       options: [],
     },
@@ -1350,8 +1410,12 @@ function applyInputType(field, typeId) {
   if (selected.id === "choice") {
     const options = getInputOptions(field);
     if (!options.length) {
-      options.push({ name: "Option 1", key: "option_1", order: 1 });
+      options.push({ name: "Option 1", key: "option_1", order: 1, is_normal: false });
     }
+  }
+  if (selected.id !== "number") {
+    delete props.normal_min;
+    delete props.normal_max;
   }
 }
 
@@ -2338,13 +2402,14 @@ function renderItemCard(item, path, options = {}) {
     const inputType = inferInputType(item);
     const focusedCard = Boolean(options.focusedCard);
     const showHeaderActions = !focusedCard || !options.hideToggle;
-    const compactNormal = compactText(getInputNormalValue(item));
+    const compactReference = compactText(getInputReferenceText(item));
     const compactUnit = compactText(getInputUnitHint(item));
     const focusCopy = isGroup
       ? "Nested content"
       : [
+          compactReference ? `Reference ${compactReference}` : "",
           compactUnit ? `Unit ${compactUnit}` : "",
-          compactNormal ? `Normal ${compactNormal}` : "",
+          inputNormalRangeLabel(item),
         ].filter(Boolean).join(" | ");
     const addItems = isGroup
       ? [
@@ -2392,15 +2457,38 @@ function renderItemCard(item, path, options = {}) {
               <span>Name</span>
               <input class="item-title-input" data-path="${encodePath(path)}" data-bind="name" value="${escapeHtml(item.name || "")}" placeholder="${isGroup ? "Example: Vital Signs" : "Example: Color"}">
             </label>
-            ${isGroup ? "" : `
-              <label>
-                <span>Input</span>
-                <select data-action="item-input-type" data-path="${encodePath(path)}">
-                  ${INPUT_TYPES.map((item) => `<option value="${item.id}"${item.id === inputType ? " selected" : ""}>${item.label}</option>`).join("")}
-                </select>
-              </label>
-            `}
+              ${isGroup ? "" : `
+                <label>
+                  <span>Input</span>
+                  <select data-action="item-input-type" data-path="${encodePath(path)}">
+                    ${INPUT_TYPES.map((item) => `<option value="${item.id}"${item.id === inputType ? " selected" : ""}>${item.label}</option>`).join("")}
+                  </select>
+                </label>
+              `}
           </div>
+
+          ${isGroup ? "" : `
+            <div class="inline-grid item-basics-grid compact">
+              <label>
+                <span>Reference</span>
+                <input data-path="${encodePath(path)}" data-bind="reference_text" value="${escapeHtml(getInputReferenceText(item) || "")}" placeholder="${inputType === "choice" ? "Example: Negative" : "Example: 4.5 - 11.0"}">
+              </label>
+              <label>
+                <span>Unit</span>
+                <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getInputUnitHint(item) || "")}" placeholder="Example: mg/dL">
+              </label>
+              ${inputType === "number" ? `
+                <label>
+                  <span>Normal from</span>
+                  <input type="number" step="any" data-path="${encodePath(path)}" data-bind="normal_min" value="${escapeHtml(getInputNormalMin(item) || "")}" placeholder="Example: 4.5">
+                </label>
+                <label>
+                  <span>Normal to</span>
+                  <input type="number" step="any" data-path="${encodePath(path)}" data-bind="normal_max" value="${escapeHtml(getInputNormalMax(item) || "")}" placeholder="Example: 11.0">
+                </label>
+              ` : ""}
+            </div>
+          `}
 
         ${isGroup ? `
           <div class="nested-items">
@@ -2421,16 +2509,6 @@ function renderItemCard(item, path, options = {}) {
                 <span>Key</span>
                 <input data-path="${encodePath(path)}" data-bind="key" value="${escapeHtml(getNodeKey(item) || "")}">
               </label>
-              ${isGroup ? "" : `
-                <label>
-                  <span>Normal</span>
-                  <input data-path="${encodePath(path)}" data-bind="normal_value" value="${escapeHtml(getInputNormalValue(item) || "")}" placeholder="Example: 4.5 - 11.0">
-                </label>
-                <label>
-                  <span>Unit</span>
-                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getInputUnitHint(item) || "")}" placeholder="Example: mg/dL">
-                </label>
-              `}
               <label style="grid-column: 1 / -1;">
                 <span>Notes</span>
                 <textarea data-path="${encodePath(path)}" data-bind="notes" data-format="lines">${escapeHtml(getNodeNotes(item).join("\n"))}</textarea>
@@ -2468,6 +2546,7 @@ function renderOptionsEditor(field, path) {
               <button class="option-organizer-select" type="button" data-action="focus-option" data-path="${encodePath(path)}" data-index="${index}">
                 <span class="option-organizer-copy">
                   <strong>${escapeHtml(option.name || "Untitled option")}</strong>
+                  ${option.is_normal ? '<span>Normal</span>' : ""}
                 </span>
               </button>
             </div>
@@ -2484,6 +2563,10 @@ function renderOptionsEditor(field, path) {
                 <label class="option-focus-input">
                   <span>Name</span>
                   <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Example: Positive">
+                </label>
+                <label class="option-focus-toggle">
+                  <input type="checkbox" data-action="option-normal" data-path="${encodePath(path)}" data-index="${selectedIndex}" ${selectedOption.is_normal ? "checked" : ""}>
+                  <span>Normal</span>
                 </label>
                 ${renderOptionManageFooter(path, selectedIndex)}
               </div>
@@ -2669,7 +2752,7 @@ function renderPreviewItem(item) {
 
   const hints = [];
   if (getInputUnitHint(item)) hints.push(getInputUnitHint(item));
-  if (getInputNormalValue(item)) hints.push(`normal ${getInputNormalValue(item)}`);
+  if (getInputReferenceText(item)) hints.push(`reference ${getInputReferenceText(item)}`);
 
   return `
     <label class="preview-field">
@@ -2860,7 +2943,7 @@ function insertTopLevelContentBlock(kind) {
 function addOption(path) {
   const field = getNodeByPath(path);
   const options = getInputOptions(field);
-  options.push({ name: `Option ${options.length + 1}`, key: `option_${options.length + 1}`, order: options.length + 1 });
+  options.push({ name: `Option ${options.length + 1}`, key: `option_${options.length + 1}`, order: options.length + 1, is_normal: false });
   state.ui.activeOptionToken = optionToken(path, options.length - 1);
   touch({ full: true, source: "blocks" });
 }
@@ -2876,6 +2959,7 @@ function duplicateOption(path, index) {
   const baseName = String(duplicate.name || "").trim() || "Untitled option";
   duplicate.name = `${baseName} Copy`;
   duplicate.key = slugify(duplicate.name);
+  duplicate.is_normal = Boolean(source.is_normal);
   options.splice(index + 1, 0, duplicate);
   state.ui.activeOptionToken = optionToken(path, index + 1);
   touch({ full: true, source: "blocks" });
@@ -3070,6 +3154,11 @@ function handleOptionInput(event) {
   const field = getNodeByPath(decodePath(path));
   const options = getInputOptions(field);
   if (!options[index]) {
+    return;
+  }
+  if (event.target.dataset.action === "option-normal") {
+    options[index].is_normal = Boolean(event.target.checked);
+    touch({ source: "blocks" });
     return;
   }
   options[index].name = event.target.value;
@@ -3293,6 +3382,10 @@ formEditorEl.addEventListener("input", (event) => {
   }
 });
 formEditorEl.addEventListener("change", (event) => {
+  if (event.target.dataset.action === "option-normal") {
+    handleOptionInput(event);
+    return;
+  }
   if (event.target.matches("select")) {
     handleEditorChange(event);
   }

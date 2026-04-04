@@ -78,6 +78,7 @@ def normalize_options(raw_options: Any, field_id: str) -> list[dict[str, Any]]:
                 "key": key,
                 "name": name,
                 "order": index,
+                "is_normal": bool(option.get("is_normal")) if isinstance(option, dict) else False,
             }
         )
 
@@ -126,9 +127,18 @@ def normalize_field(field: dict[str, Any], parent_id: str, order: int, used_keys
     if unit_hint:
         normalized["unit_hint"] = unit_hint
 
-    normal_value = compact_text(field.get("normal_value"))
-    if normal_value:
-        normalized["normal_value"] = normal_value
+    reference_text = compact_text(field.get("reference_text") or field.get("normal_value"))
+    if reference_text:
+        normalized["reference_text"] = reference_text
+        normalized["normal_value"] = reference_text
+
+    normal_min = compact_text(field.get("normal_min"))
+    if normal_min:
+        normalized["normal_min"] = normal_min
+
+    normal_max = compact_text(field.get("normal_max"))
+    if normal_max:
+        normalized["normal_max"] = normal_max
 
     if options:
         normalized["options"] = options
@@ -202,9 +212,17 @@ def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
     if unit_hint:
         props["unit_hint"] = unit_hint
 
-    normal_value = compact_text(field.get("normal_value"))
-    if normal_value:
-        props["normal_value"] = normal_value
+    reference_text = compact_text(field.get("reference_text") or field.get("normal_value"))
+    if reference_text:
+        props["reference_text"] = reference_text
+
+    normal_min = compact_text(field.get("normal_min"))
+    if normal_min:
+        props["normal_min"] = normal_min
+
+    normal_max = compact_text(field.get("normal_max"))
+    if normal_max:
+        props["normal_max"] = normal_max
 
     options = []
     for option in normalize_items(field.get("options")):
@@ -219,6 +237,7 @@ def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
                 "key": compact_text(option.get("key")) or slugify(name),
                 "name": name,
                 "order": int(option.get("order") or len(options) + 1),
+                "is_normal": bool(option.get("is_normal")),
             }
         )
     if options:
@@ -344,9 +363,18 @@ def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: in
     if unit_hint:
         raw_field["unit_hint"] = unit_hint
 
-    normal_value = compact_text(props.get("normal_value"))
-    if normal_value:
-        raw_field["normal_value"] = normal_value
+    reference_text = compact_text(props.get("reference_text") or props.get("normal_value"))
+    if reference_text:
+        raw_field["reference_text"] = reference_text
+        raw_field["normal_value"] = reference_text
+
+    normal_min = compact_text(props.get("normal_min"))
+    if normal_min:
+        raw_field["normal_min"] = normal_min
+
+    normal_max = compact_text(props.get("normal_max"))
+    if normal_max:
+        raw_field["normal_max"] = normal_max
 
     options = []
     for option in normalize_items(props.get("options")):
@@ -361,6 +389,7 @@ def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: in
                 "key": compact_text(option.get("key")) or slugify(name),
                 "name": name,
                 "order": int(option.get("order") or len(options) + 1),
+                "is_normal": bool(option.get("is_normal")),
             }
         )
     if options:
@@ -452,6 +481,7 @@ def normalize_block_option_props(raw_options: Any) -> list[dict[str, Any]]:
             normalized_option.pop("label", None)
             normalized_option["key"] = compact_text(normalized_option.get("key")) or slugify(name) or f"option_{index}"
             normalized_option["order"] = int(normalized_option.get("order") or index)
+            normalized_option["is_normal"] = bool(normalized_option.get("is_normal"))
             normalized.append(normalized_option)
             continue
 
@@ -463,6 +493,7 @@ def normalize_block_option_props(raw_options: Any) -> list[dict[str, Any]]:
                 "name": name,
                 "key": slugify(name) or f"option_{index}",
                 "order": index,
+                "is_normal": False,
             }
         )
 
@@ -478,6 +509,37 @@ def normalize_active_block_storage_node(node: dict[str, Any]) -> bool:
     if isinstance(props, dict):
         if "field_type" in props:
             props.pop("field_type", None)
+            changed = True
+
+        reference_text = compact_text(props.get("reference_text") or props.get("normal_value"))
+        if reference_text:
+            if props.get("reference_text") != reference_text:
+                props["reference_text"] = reference_text
+                changed = True
+        elif "reference_text" in props:
+            props.pop("reference_text", None)
+            changed = True
+
+        if "normal_value" in props:
+            props.pop("normal_value", None)
+            changed = True
+
+        normal_min = compact_text(props.get("normal_min"))
+        if normal_min:
+            if props.get("normal_min") != normal_min:
+                props["normal_min"] = normal_min
+                changed = True
+        elif "normal_min" in props:
+            props.pop("normal_min", None)
+            changed = True
+
+        normal_max = compact_text(props.get("normal_max"))
+        if normal_max:
+            if props.get("normal_max") != normal_max:
+                props["normal_max"] = normal_max
+                changed = True
+        elif "normal_max" in props:
+            props.pop("normal_max", None)
             changed = True
 
         if "options" in props:
