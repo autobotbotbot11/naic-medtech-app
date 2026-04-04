@@ -1243,14 +1243,13 @@ def resolve_form_location_metadata(
     resolved_parent_key = compact_text(library_parent_node_key) or None
     pending_container_name = compact_text(library_new_container_name) or None
     explicit_location_name = normalize_location_name_input(location_name)
-    compact_form_name = compact_text(form_name)
 
     if pending_container_name:
         resolved_parent_key = ensure_container_node(session, pending_container_name, resolved_parent_key).node_key
     elif (
         not resolved_parent_key
         and explicit_location_name
-        and explicit_location_name not in {"Top level", compact_form_name}
+        and explicit_location_name != "Top level"
     ):
         resolved_parent_key = ensure_container_node(session, explicit_location_name, None).node_key
 
