@@ -4,6 +4,7 @@ import json
 import re
 from datetime import timezone
 from typing import Any
+from uuid import uuid4
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select
@@ -11,8 +12,8 @@ from sqlalchemy.orm import Session, selectinload
 
 from .config import REFERENCE_SCHEMA_PATH
 from .database import Base, engine
-from .models import FormDefinition, FormVersion, LibraryNode
-from .schemas import FormSavePayload
+from .models import FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
+from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
 
 ACTIVE_BLOCK_SCHEMA_SOURCE = "builder_blocks_v1"
 LEGACY_BLOCK_SCHEMA_SOURCE = "compat_legacy_fields_sections"
@@ -755,6 +756,278 @@ def load_block_storage_document(
             pass
     fallback_legacy_storage = legacy_storage_schema if isinstance(legacy_storage_schema, dict) else load_legacy_storage_document(version)
     return build_block_storage_document_from_legacy_storage(fallback_legacy_storage), True
+
+
+def load_json_object(raw_value: str | None) -> dict[str, Any]:
+    payload = compact_text(raw_value)
+    if not payload:
+        return {}
+    try:
+        parsed = json.loads(payload)
+    except json.JSONDecodeError:
+        return {}
+    return parsed if isinstance(parsed, dict) else {}
+
+
+def normalize_record_values(raw_values: Any) -> dict[str, Any]:
+    if not isinstance(raw_values, dict):
+        return {}
+
+    normalized: dict[str, Any] = {}
+    for raw_key, raw_value in raw_values.items():
+        field_id = compact_text(raw_key)
+        if not field_id:
+            continue
+
+        if isinstance(raw_value, dict):
+            asset_payload: dict[str, Any] = {}
+            asset_id = raw_value.get("asset_id")
+            if asset_id not in (None, ""):
+                try:
+                    asset_payload["asset_id"] = int(asset_id)
+                except (TypeError, ValueError):
+                    pass
+            kind = compact_text(raw_value.get("kind"))
+            if kind:
+                asset_payload["kind"] = kind
+            if asset_payload:
+                normalized[field_id] = asset_payload
+            continue
+
+        if isinstance(raw_value, bool):
+            normalized[field_id] = raw_value
+            continue
+
+        if isinstance(raw_value, (int, float)):
+            normalized[field_id] = raw_value
+            continue
+
+        text_value = compact_text(raw_value)
+        if text_value:
+            normalized[field_id] = text_value
+
+    return normalized
+
+
+def normalize_record_indexed_meta(
+    raw_meta: Any,
+    *,
+    patient_name: str,
+    case_number: str,
+) -> dict[str, Any]:
+    normalized = dict(raw_meta) if isinstance(raw_meta, dict) else {}
+
+    if patient_name:
+        normalized["patient_name"] = patient_name
+    else:
+        normalized.pop("patient_name", None)
+
+    if case_number:
+        normalized["case_number"] = case_number
+    else:
+        normalized.pop("case_number", None)
+
+    return normalized
+
+
+def next_record_key(session: Session, form_slug: str) -> str:
+    base = f"rec_{slugify(form_slug or 'record')}"
+    while True:
+        candidate = f"{base}_{uuid4().hex[:8]}"
+        exists = session.scalar(select(Record.id).where(Record.record_key == candidate))
+        if exists is None:
+            return candidate
+
+
+def form_path_label_for_record(record: Record) -> str:
+    location = serialize_form_location(record.form)
+    if location["location_kind"] == "top_level":
+        return compact_text(record.form.name) or "Untitled Form"
+    return f"{location['location_path_label']} / {compact_text(record.form.name) or 'Untitled Form'}"
+
+
+def serialize_record_asset(asset: RecordAsset) -> dict[str, Any]:
+    return {
+        "id": asset.id,
+        "field_block_id": asset.field_block_id,
+        "field_key": asset.field_key,
+        "kind": asset.kind,
+        "storage_path": asset.storage_path,
+        "original_filename": asset.original_filename,
+        "mime_type": asset.mime_type,
+        "size_bytes": asset.size_bytes,
+        "image_width": asset.image_width,
+        "image_height": asset.image_height,
+        "created_at": asset.created_at.astimezone(timezone.utc).isoformat(),
+    }
+
+
+def serialize_record(
+    record: Record,
+    *,
+    include_values: bool = True,
+    include_entry_schema: bool = False,
+) -> dict[str, Any]:
+    location = serialize_form_location(record.form)
+    payload = {
+        "id": record.id,
+        "record_key": record.record_key,
+        "status": record.status,
+        "patient_name": record.patient_name,
+        "case_number": record.case_number,
+        "form_slug": record.form.slug,
+        "form_name": record.form.name,
+        "form_path_label": form_path_label_for_record(record),
+        "location_name": location["location_name"],
+        "location_path_label": location["location_path_label"],
+        "location_node_key": location["location_node_key"],
+        "form_version_id": record.form_version_id,
+        "form_version_number": record.form_version.version_number,
+        "assets": [serialize_record_asset(asset) for asset in record.assets],
+        "created_at": record.created_at.astimezone(timezone.utc).isoformat(),
+        "updated_at": record.updated_at.astimezone(timezone.utc).isoformat(),
+        "completed_at": record.completed_at.astimezone(timezone.utc).isoformat() if record.completed_at else None,
+        "indexed_meta": load_json_object(record.indexed_meta_json),
+    }
+    if include_values:
+        payload["values"] = normalize_record_values(load_json_object(record.values_json))
+    if include_entry_schema:
+        block_schema, _ = load_block_storage_document(record.form_version)
+        payload["entry_schema"] = block_schema
+    return payload
+
+
+def get_record_or_none(session: Session, record_id: int) -> Record | None:
+    return session.scalar(
+        select(Record)
+        .where(Record.id == record_id)
+        .options(
+            selectinload(Record.form).selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
+            selectinload(Record.form_version),
+            selectinload(Record.assets),
+        )
+    )
+
+
+def list_records(
+    session: Session,
+    *,
+    status: str | None = None,
+    limit: int = 24,
+) -> list[dict[str, Any]]:
+    query = (
+        select(Record)
+        .options(
+            selectinload(Record.form).selectinload(FormDefinition.library_node).selectinload(LibraryNode.parent),
+            selectinload(Record.form_version),
+            selectinload(Record.assets),
+        )
+        .order_by(Record.updated_at.desc(), Record.id.desc())
+        .limit(limit)
+    )
+    if compact_text(status):
+        query = query.where(Record.status == compact_text(status))
+    records = session.scalars(query).all()
+    return [serialize_record(record, include_values=False) for record in records]
+
+
+def create_record(session: Session, payload: RecordCreatePayload) -> dict[str, Any]:
+    form_slug = compact_text(payload.form_slug)
+    if not form_slug:
+        raise ValueError("Choose a form before you continue.")
+
+    definition = get_form_or_none(session, form_slug)
+    if definition is None:
+        raise ValueError("Form not found.")
+
+    version = current_version(definition)
+    if version is None:
+        raise ValueError("This form has no current version yet.")
+
+    patient_name = compact_text(payload.patient_name)
+    case_number = compact_text(payload.case_number)
+    indexed_meta = normalize_record_indexed_meta(
+        payload.indexed_meta,
+        patient_name=patient_name,
+        case_number=case_number,
+    )
+
+    record = Record(
+        record_key=next_record_key(session, definition.slug),
+        form_id=definition.id,
+        form_version_id=version.id,
+        status="draft",
+        patient_name=patient_name or None,
+        case_number=case_number or None,
+        values_json=json.dumps(normalize_record_values(payload.values), ensure_ascii=False),
+        indexed_meta_json=json.dumps(indexed_meta, ensure_ascii=False),
+    )
+    session.add(record)
+    session.commit()
+    session.expire_all()
+
+    created = get_record_or_none(session, record.id)
+    if created is None:
+        raise ValueError("Record could not be loaded.")
+    return serialize_record(created, include_entry_schema=True)
+
+
+def update_record(session: Session, record_id: int, payload: RecordUpdatePayload) -> dict[str, Any]:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise KeyError(record_id)
+    if record.status == "completed":
+        raise ValueError("Completed records are read-only.")
+
+    patient_name = compact_text(payload.patient_name)
+    case_number = compact_text(payload.case_number)
+    indexed_meta = normalize_record_indexed_meta(
+        payload.indexed_meta,
+        patient_name=patient_name,
+        case_number=case_number,
+    )
+
+    record.patient_name = patient_name or None
+    record.case_number = case_number or None
+    record.values_json = json.dumps(normalize_record_values(payload.values), ensure_ascii=False)
+    record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
+    session.commit()
+    session.expire_all()
+
+    updated = get_record_or_none(session, record_id)
+    if updated is None:
+        raise KeyError(record_id)
+    return serialize_record(updated, include_entry_schema=True)
+
+
+def complete_record(session: Session, record_id: int, payload: RecordUpdatePayload) -> dict[str, Any]:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise KeyError(record_id)
+    if record.status == "completed":
+        raise ValueError("This record is already completed.")
+
+    patient_name = compact_text(payload.patient_name)
+    case_number = compact_text(payload.case_number)
+    indexed_meta = normalize_record_indexed_meta(
+        payload.indexed_meta,
+        patient_name=patient_name,
+        case_number=case_number,
+    )
+
+    record.patient_name = patient_name or None
+    record.case_number = case_number or None
+    record.values_json = json.dumps(normalize_record_values(payload.values), ensure_ascii=False)
+    record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
+    record.status = "completed"
+    record.completed_at = utc_now()
+    session.commit()
+    session.expire_all()
+
+    completed = get_record_or_none(session, record_id)
+    if completed is None:
+        raise KeyError(record_id)
+    return serialize_record(completed, include_entry_schema=True)
 
 
 def serialize_form_location(definition: FormDefinition) -> dict[str, Any]:

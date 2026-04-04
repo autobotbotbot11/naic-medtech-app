@@ -9,9 +9,14 @@ The app now starts from a builder-first FastAPI scaffold.
 - Builder V2 recommendation: minimal helper libraries such as `Alpine.js` and `SortableJS`
 
 ## Current focus
-- phase 1 is the `exam/form builder`
+- phase 1 started with the `exam/form builder`, but the app now also has a first `records runtime` foundation
 - the app seeds itself from `../artifacts/schema/naic_medtech_app_schema.json`
 - runtime data lives in `../data/runtime/naic_medtech.db`
+- `/` now redirects to `/records`, so the app starts from the small-clinic daily workflow instead of dropping everyone into the builder/library first
+- `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
+- records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
+- the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
+- the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields; image upload and final print rendering are still the next layers
 - the backend now includes a first safe future-proofing step: a generic persisted `container | form` library tree foundation
 - the compatibility library tree is exposed at `/api/library/tree`
 - live form reads now expose `block_schema` as the active form shape
@@ -255,4 +260,4 @@ python tools/scripts/reset_builder_runtime_db.py
 ```
 
 ## Important note
-This scaffold started builder-first, but the next whole-app milestone should now shift toward a calm `Records Runtime` for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.
+This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The next whole-app work should keep extending record entry, image upload, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.

@@ -35,6 +35,11 @@ class FormDefinition(Base):
         back_populates="form_definition",
         uselist=False,
     )
+    records: Mapped[list["Record"]] = relationship(
+        back_populates="form",
+        cascade="all, delete-orphan",
+        order_by="Record.updated_at",
+    )
 
 
 class FormVersion(Base):
@@ -52,6 +57,7 @@ class FormVersion(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
 
     form: Mapped[FormDefinition] = relationship(back_populates="versions")
+    records: Mapped[list["Record"]] = relationship(back_populates="form_version")
 
 
 class LibraryNode(Base):
@@ -88,3 +94,87 @@ class LibraryNode(Base):
     form_definition: Mapped[FormDefinition | None] = relationship(
         back_populates="library_node",
     )
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    username: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    display_name: Mapped[str] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(40), default="medtech")
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+    created_records: Mapped[list["Record"]] = relationship(
+        back_populates="created_by_user",
+        foreign_keys="Record.created_by_user_id",
+    )
+    updated_records: Mapped[list["Record"]] = relationship(
+        back_populates="updated_by_user",
+        foreign_keys="Record.updated_by_user_id",
+    )
+
+
+class Record(Base):
+    __tablename__ = "records"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    record_key: Mapped[str] = mapped_column(String(120), unique=True, index=True)
+    form_id: Mapped[int] = mapped_column(ForeignKey("form_definitions.id"), index=True)
+    form_version_id: Mapped[int] = mapped_column(ForeignKey("form_versions.id"), index=True)
+    status: Mapped[str] = mapped_column(String(40), default="draft", index=True)
+    patient_name: Mapped[str | None] = mapped_column(String(255), nullable=True, index=True)
+    case_number: Mapped[str | None] = mapped_column(String(120), nullable=True, index=True)
+    values_json: Mapped[str] = mapped_column(Text, default="{}")
+    indexed_meta_json: Mapped[str] = mapped_column(Text, default="{}")
+    created_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    updated_by_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+    form: Mapped[FormDefinition] = relationship(back_populates="records")
+    form_version: Mapped[FormVersion] = relationship(back_populates="records")
+    created_by_user: Mapped["User | None"] = relationship(
+        back_populates="created_records",
+        foreign_keys=[created_by_user_id],
+    )
+    updated_by_user: Mapped["User | None"] = relationship(
+        back_populates="updated_records",
+        foreign_keys=[updated_by_user_id],
+    )
+    assets: Mapped[list["RecordAsset"]] = relationship(
+        back_populates="record",
+        cascade="all, delete-orphan",
+        order_by="RecordAsset.created_at",
+    )
+
+
+class RecordAsset(Base):
+    __tablename__ = "record_assets"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    record_id: Mapped[int] = mapped_column(ForeignKey("records.id"), index=True)
+    field_block_id: Mapped[str] = mapped_column(String(255), index=True)
+    field_key: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    kind: Mapped[str] = mapped_column(String(40), default="image")
+    storage_path: Mapped[str] = mapped_column(Text)
+    original_filename: Mapped[str] = mapped_column(String(255))
+    mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    size_bytes: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    image_width: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    image_height: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+
+    record: Mapped[Record] = relationship(back_populates="assets")

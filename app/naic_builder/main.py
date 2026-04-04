@@ -12,25 +12,31 @@ from sqlalchemy.orm import Session
 
 from .config import APP_TITLE, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
-from .schemas import FormSavePayload
+from .schemas import FormSavePayload, RecordCreatePayload, RecordUpdatePayload
 from .services import (
+    complete_record,
     create_container,
     delete_container,
     create_form,
+    create_record,
     ensure_form_version_storage_documents,
     ensure_library_tree,
     ensure_reference_seed,
     get_form_or_none,
     get_container_or_none,
+    get_record_or_none,
     list_container_choices,
     list_form_choices,
     list_library_tree,
+    list_records,
     list_move_target_choices,
     move_container,
     move_form,
     rename_container,
+    serialize_record,
     serialize_form,
     serialize_form_location,
+    update_record,
     update_form,
 )
 
@@ -67,9 +73,198 @@ def render_builder_page(
     )
 
 
+def render_records_home_page(
+    request: Request,
+    session: Session,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="records/home.html",
+        context={
+            "app_title": APP_TITLE,
+            "form_choices": list_form_choices(session),
+            "recent_drafts": list_records(session, status="draft", limit=8),
+            "recent_completed": list_records(session, status="completed", limit=8),
+        },
+    )
+
+
+def render_new_record_page(
+    request: Request,
+    session: Session,
+    *,
+    selected_form_slug: str = "",
+    patient_name: str = "",
+    case_number: str = "",
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    return templates.TemplateResponse(
+        request=request,
+        name="records/new.html",
+        context={
+            "app_title": APP_TITLE,
+            "form_choices": list_form_choices(session),
+            "selected_form_slug": selected_form_slug,
+            "patient_name": patient_name,
+            "case_number": case_number,
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_record_edit_page(
+    request: Request,
+    session: Session,
+    *,
+    record_id: int,
+    error_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found.")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="records/edit.html",
+        context={
+            "app_title": APP_TITLE,
+            "record": serialize_record(record, include_entry_schema=True),
+            "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_record_view_page(
+    request: Request,
+    session: Session,
+    *,
+    record_id: int,
+) -> HTMLResponse:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found.")
+
+    return templates.TemplateResponse(
+        request=request,
+        name="records/view.html",
+        context={
+            "app_title": APP_TITLE,
+            "record": serialize_record(record, include_entry_schema=True),
+        },
+    )
+
+
+def record_update_payload_from_form_data(form_data: dict[str, list[str]]) -> RecordUpdatePayload:
+    values: dict[str, Any] = {}
+    for key, raw_values in form_data.items():
+        if not key.startswith("value__"):
+            continue
+        block_id = key.removeprefix("value__").strip()
+        if not block_id:
+            continue
+        value = (raw_values or [""])[0]
+        values[block_id] = value
+
+    return RecordUpdatePayload(
+        patient_name=(form_data.get("patient_name") or [""])[0],
+        case_number=(form_data.get("case_number") or [""])[0],
+        values=values,
+    )
+
+
 @app.get("/", include_in_schema=False)
 def root() -> RedirectResponse:
-    return RedirectResponse(url="/forms", status_code=303)
+    return RedirectResponse(url="/records", status_code=303)
+
+
+@app.get("/records", response_class=HTMLResponse)
+def records_home(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
+    return render_records_home_page(request, session)
+
+
+@app.get("/records/new", response_class=HTMLResponse)
+def start_new_record_page(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
+    return render_new_record_page(request, session)
+
+
+@app.post("/records/new")
+async def create_record_page(
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    payload = RecordCreatePayload(
+        form_slug=(form_data.get("form_slug") or [""])[0],
+        patient_name=(form_data.get("patient_name") or [""])[0],
+        case_number=(form_data.get("case_number") or [""])[0],
+    )
+    try:
+        created = create_record(session, payload)
+    except ValueError as exc:
+        return render_new_record_page(
+            request,
+            session,
+            selected_form_slug=payload.form_slug,
+            patient_name=payload.patient_name or "",
+            case_number=payload.case_number or "",
+            error_message=str(exc),
+            status_code=422,
+        )
+    return RedirectResponse(url=f"/records/{created['id']}/edit", status_code=303)
+
+
+@app.get("/records/{record_id}/edit", response_class=HTMLResponse)
+def edit_record_page(
+    record_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_record_edit_page(request, session, record_id=record_id)
+
+
+@app.post("/records/{record_id}/edit")
+async def update_record_page(
+    record_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    action = ((form_data.get("action") or ["draft"])[0] or "draft").strip().lower()
+    payload = record_update_payload_from_form_data(form_data)
+
+    try:
+        if action == "complete":
+            completed = complete_record(session, record_id, payload)
+            return RedirectResponse(url=f"/records/{completed['id']}", status_code=303)
+
+        update_record(session, record_id, payload)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except ValueError as exc:
+        return render_record_edit_page(
+            request,
+            session,
+            record_id=record_id,
+            error_message=str(exc),
+            status_code=422,
+        )
+
+    return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+
+
+@app.get("/records/{record_id}", response_class=HTMLResponse)
+def view_record_page(
+    record_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_record_view_page(request, session, record_id=record_id)
 
 
 @app.get("/forms", response_class=HTMLResponse)
@@ -449,6 +644,71 @@ async def update_form_location_page(
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok"}
+
+
+@app.get("/api/records/bootstrap")
+def records_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]:
+    return {
+        "app_title": APP_TITLE,
+        "form_choices": list_form_choices(session),
+        "recent_drafts": list_records(session, status="draft", limit=8),
+        "recent_completed": list_records(session, status="completed", limit=8),
+    }
+
+
+@app.get("/api/records")
+def records_index(
+    status: str = "",
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    return {"records": list_records(session, status=status or None)}
+
+
+@app.post("/api/records", status_code=201)
+def create_record_endpoint(
+    payload: RecordCreatePayload,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    try:
+        return create_record(session, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/api/records/{record_id}")
+def get_record(record_id: int, session: Session = Depends(get_session)) -> dict[str, Any]:
+    record = get_record_or_none(session, record_id)
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found.")
+    return serialize_record(record, include_entry_schema=True)
+
+
+@app.put("/api/records/{record_id}")
+def update_record_endpoint(
+    record_id: int,
+    payload: RecordUpdatePayload,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    try:
+        return update_record(session, record_id, payload)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.post("/api/records/{record_id}/complete")
+def complete_record_endpoint(
+    record_id: int,
+    payload: RecordUpdatePayload,
+    session: Session = Depends(get_session),
+) -> dict[str, Any]:
+    try:
+        return complete_record(session, record_id, payload)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Record not found.") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
 @app.get("/api/builder/bootstrap")

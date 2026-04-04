@@ -121,6 +121,36 @@ Recommended product priority after the builder:
 Do not make the builder keep growing just because it is the most developed module right now.
 The builder should now become the quiet setup tool behind the app, while the real product center shifts to record entry and output.
 
+## Records Runtime Foundation Status
+The first `Records Runtime` foundation has now landed in the app.
+
+What exists now:
+- `/` redirects to `/records`
+- `/records` is now the calm daily landing screen
+- `/records/new` starts a draft from a chosen form
+- `/records/{id}/edit` now supports the first basic record-entry flow
+- `/records/{id}` now shows a read-only record view
+- records are stored separately from forms and point to a frozen `form_version_id`
+- the first records API surface now exists:
+  - `/api/records/bootstrap`
+  - `/api/records`
+  - `/api/records/{id}`
+  - `/api/records/{id}/complete`
+
+Current intentional limits:
+- record entry is still the first calm server-rendered foundation, not the final polished runtime
+- image upload is still not wired end to end yet, even though the builder can already model `Image` as an answer type
+- print rendering is still a later layer
+- record statuses are intentionally minimal right now:
+  - `draft`
+  - `completed`
+
+What the next AI should continue from here:
+- improve the record-entry runtime instead of reopening builder architecture debates
+- add real image/file upload handling in record entry
+- refine record rendering for richer block kinds
+- build the print/output layer after the record-entry runtime is stable
+
 ## Builder Direction Note
 The current builder prototype is not yet considered final for the real client.
 
@@ -166,7 +196,16 @@ What the next AI should optimize for:
 The first real screen from the newer builder direction now exists.
 
 What is implemented:
-- `/` now redirects to `/forms`
+- `/` now redirects to `/records`
+- `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first small-clinic records runtime
+- records are now stored separately from form design and point to a frozen `form_version_id`
+- the first records API surface now exists:
+  - `/api/records/bootstrap`
+  - `/api/records`
+  - `/api/records/{id}`
+  - `/api/records/{id}/complete`
+- the current records runtime already supports a basic server-rendered draft/save/complete flow for ordinary scalar fields
+- image upload is still intentionally deferred to the next records-runtime pass
 - the backend now includes a first future-proof library foundation: a persisted generic `container | form` tree
 - the compatibility tree is exposed at `/api/library/tree`
 - form reads now expose `block_schema` as the active form shape

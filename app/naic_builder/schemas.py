@@ -21,3 +21,22 @@ class FormSavePayload(BaseModel):
         if self.form_schema and "blocks" not in self.form_schema:
             raise ValueError("form_schema must use the block-based builder shape.")
         return self
+
+
+class RecordCreatePayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    form_slug: str = ""
+    patient_name: str | None = None
+    case_number: str | None = None
+    values: dict[str, Any] = Field(default_factory=dict)
+    indexed_meta: dict[str, Any] = Field(default_factory=dict)
+
+
+class RecordUpdatePayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    patient_name: str | None = None
+    case_number: str | None = None
+    values: dict[str, Any] = Field(default_factory=dict)
+    indexed_meta: dict[str, Any] = Field(default_factory=dict)

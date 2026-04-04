@@ -19,8 +19,18 @@
     "continue simplifying the current builder instead of restarting the architecture debate"
   ],
   "current_implementation_checkpoint": {
-    "entry_route": "/forms",
-    "root_redirects_to_library": true,
+    "entry_route": "/records",
+    "root_redirects_to_records": true,
+    "records_runtime_foundation": [
+      "/records now exists as the daily landing screen for the small-clinic workflow",
+      "/records/new can create a draft record from a chosen form",
+      "/records/{id}/edit now supports the first calm server-rendered record-entry flow",
+      "/records/{id} now shows a read-only record view",
+      "records are now stored separately from forms and point to a frozen form_version_id",
+      "the first records API surface now exists at /api/records/bootstrap, /api/records, /api/records/{id}, and /api/records/{id}/complete",
+      "record status is intentionally minimal right now: draft and completed",
+      "image upload is still the next records-runtime layer, not part of the current completed foundation"
+    ],
     "engine_foundation": [
       "a persisted generic container/form library tree foundation now exists in the backend",
       "the compatibility tree is exposed at /api/library/tree",
@@ -262,13 +272,13 @@
   "optional_later_roles": [
     "view_only"
   ],
-  "next_major_build_target": "records_runtime",
+  "next_major_build_target": "records_runtime_completion",
   "next_major_build_scope": [
-    "choose a form",
-    "fill up patient and result data",
-    "support image answers during record entry",
-    "save records against a specific form_version_id",
-    "prepare for later print or release output"
+    "improve the real record-entry runtime beyond the first server-rendered foundation",
+    "support image answers during actual record entry runtime",
+    "save richer records against exact form_version_id",
+    "render richer block kinds cleanly in records",
+    "print later from those saved records"
   ],
   "source_of_truth": {
     "app_schema": "artifacts/schema/naic_medtech_app_schema.json",

@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Records | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='records.css') }}">
+</head>
+<body>
+  <main class="library-shell record-shell">
+    <header class="library-topbar panel">
+      <div class="brand-copy">
+        <p class="eyebrow">Records</p>
+        <h1>{{ app_title }}</h1>
+        <p class="panel-copy">Create a record, continue a draft, or review a completed result.</p>
+      </div>
+      <div class="topbar-actions">
+        <a class="ghost-button" href="/forms">Forms</a>
+        <a class="primary-button" href="/records/new">Start new record</a>
+      </div>
+    </header>
+
+    <section class="records-grid">
+      <aside class="panel records-sidebar">
+        <div class="sidebar-head">
+          <p class="eyebrow">Today</p>
+          <h2>Quick view</h2>
+        </div>
+        <div class="summary-grid">
+          <article class="record-summary-card panel">
+            <p class="eyebrow">Drafts</p>
+            <h3>{{ recent_drafts|length }}</h3>
+            <p class="panel-copy">Records that can still be opened and finished.</p>
+          </article>
+          <article class="record-summary-card panel">
+            <p class="eyebrow">Completed</p>
+            <h3>{{ recent_completed|length }}</h3>
+            <p class="panel-copy">Recently finished records ready to review or print later.</p>
+          </article>
+        </div>
+        <div class="sidebar-note">
+          <p class="eyebrow">Available forms</p>
+          <p class="panel-copy">{{ form_choices|length }} active form{{ '' if form_choices|length == 1 else 's' }} ready for record entry.</p>
+        </div>
+      </aside>
+
+      <section class="records-main">
+        <section class="panel record-values-panel">
+          <div class="record-title-row">
+            <div class="record-header-copy">
+              <p class="eyebrow">Drafts</p>
+              <h2>Continue working</h2>
+            </div>
+            <div class="record-header-actions">
+              <a class="ghost-button" href="/records/new">Choose another form</a>
+            </div>
+          </div>
+          <div class="record-list">
+            {% if recent_drafts %}
+              {% for record in recent_drafts %}
+              <article class="record-card">
+                <div class="record-card-copy">
+                  <div class="record-card-meta-line">
+                    <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
+                    <p class="form-card-meta">{{ record.form_name }}</p>
+                  </div>
+                  <h3>{{ record.patient_name or "Unnamed patient" }}</h3>
+                  <p class="panel-copy">{{ record.form_path_label }}</p>
+                  <p class="panel-copy">Case: {{ record.case_number or "Not set yet" }}</p>
+                </div>
+                <div class="record-card-actions">
+                  <a class="primary-button" href="/records/{{ record.id }}/edit">Open draft</a>
+                  <a class="ghost-button" href="/records/{{ record.id }}">View</a>
+                </div>
+              </article>
+              {% endfor %}
+            {% else %}
+              <div class="panel empty-state">
+                <h3>No drafts yet</h3>
+                <p class="panel-copy">Start a new record when you are ready to enter results.</p>
+              </div>
+            {% endif %}
+          </div>
+        </section>
+
+        <section class="panel record-values-panel">
+          <div class="record-title-row">
+            <div class="record-header-copy">
+              <p class="eyebrow">Completed</p>
+              <h2>Recent finished records</h2>
+            </div>
+          </div>
+          <div class="record-list">
+            {% if recent_completed %}
+              {% for record in recent_completed %}
+              <article class="record-card">
+                <div class="record-card-copy">
+                  <div class="record-card-meta-line">
+                    <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
+                    <p class="form-card-meta">{{ record.form_name }}</p>
+                  </div>
+                  <h3>{{ record.patient_name or "Unnamed patient" }}</h3>
+                  <p class="panel-copy">{{ record.form_path_label }}</p>
+                  <p class="panel-copy">Case: {{ record.case_number or "Not set yet" }}</p>
+                </div>
+                <div class="record-card-actions">
+                  <a class="primary-button" href="/records/{{ record.id }}">View record</a>
+                </div>
+              </article>
+              {% endfor %}
+            {% else %}
+              <div class="panel empty-state">
+                <h3>No completed records yet</h3>
+                <p class="panel-copy">Completed records will start showing up here after medtech entry is finished.</p>
+              </div>
+            {% endif %}
+          </div>
+        </section>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

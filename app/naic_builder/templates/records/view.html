@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Record View | {{ app_title }}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='records.css') }}">
+</head>
+<body>
+  {% macro render_values(blocks, values) %}
+    {% for block in blocks %}
+      {% set kind = block.kind %}
+      {% set props = block.props or {} %}
+      {% if kind == "section" %}
+      <section class="panel record-section">
+        <div class="entry-block-head">
+          <p class="eyebrow">Section</p>
+          <h3>{{ block.name }}</h3>
+        </div>
+        <div class="record-value-grid">
+          {{ render_values(block.children or [], values) }}
+        </div>
+      </section>
+      {% elif kind == "field_group" %}
+      <section class="entry-group">
+        <div class="entry-block-head">
+          <p class="eyebrow">Group</p>
+          <h4>{{ block.name }}</h4>
+        </div>
+        <div class="record-value-grid">
+          {{ render_values(block.children or [], values) }}
+        </div>
+      </section>
+      {% elif kind == "field" %}
+      {% set block_value = values.get(block.id) %}
+      <article class="record-value-row">
+        <div class="entry-field-head">
+          <span>{{ block.name }}</span>
+          {% if props.unit_hint %}
+          <small class="entry-chip">{{ props.unit_hint }}</small>
+          {% endif %}
+        </div>
+        {% if props.data_type == "image" %}
+        <p class="record-value-answer is-empty">Image uploads will appear here after the upload runtime lands.</p>
+        {% elif block_value %}
+        <p class="record-value-answer">{{ block_value }}</p>
+        {% else %}
+        <p class="record-value-answer is-empty">No value recorded.</p>
+        {% endif %}
+        {% if props.reference_text %}
+        <p class="entry-inline-hint">Reference: {{ props.reference_text }}</p>
+        {% endif %}
+      </article>
+      {% elif kind == "note" %}
+      <div class="entry-note">
+        <p class="eyebrow">Note</p>
+        <p class="panel-copy">{{ block.name }}</p>
+      </div>
+      {% elif kind == "divider" %}
+      <hr class="entry-divider">
+      {% else %}
+      <div class="entry-unsupported">
+        <strong>{{ block.name or (kind | replace("_", " ") | title) }}</strong>
+        <span>{{ kind | replace("_", " ") | title }} display will be refined in a later records pass.</span>
+      </div>
+      {% endif %}
+    {% endfor %}
+  {% endmacro %}
+
+  <main class="library-shell record-shell">
+    <header class="panel record-header">
+      <div class="record-title-row">
+        <div class="record-header-copy">
+          <div class="record-card-meta-line">
+            <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
+            <p class="form-card-meta">{{ record.form_name }}</p>
+          </div>
+          <h1>{{ record.patient_name or "Unnamed patient" }}</h1>
+          <p class="panel-copy">{{ record.form_path_label }}</p>
+        </div>
+        <div class="record-header-actions">
+          <a class="ghost-button" href="/records">Records</a>
+          {% if record.status == "draft" %}
+          <a class="primary-button" href="/records/{{ record.id }}/edit">Continue editing</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="record-meta-grid">
+        <article class="record-meta-card">
+          <span>Case number</span>
+          <strong>{{ record.case_number or "Not set yet" }}</strong>
+        </article>
+        <article class="record-meta-card">
+          <span>Version</span>
+          <strong>Form v{{ record.form_version_number }}</strong>
+        </article>
+        <article class="record-meta-card">
+          <span>Record key</span>
+          <strong>{{ record.record_key }}</strong>
+        </article>
+      </div>
+    </header>
+
+    <section class="panel record-values-panel">
+      <div class="entry-block-head">
+        <p class="eyebrow">Values</p>
+        <h2>Recorded result</h2>
+      </div>
+      <div class="record-value-grid">
+        {{ render_values(record.entry_schema.blocks or [], record.values or {}) }}
+      </div>
+    </section>
+  </main>
+</body>
+</html>
