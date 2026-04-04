@@ -40,7 +40,7 @@ function selectedNewLocationParentOption() {
 
 function selectedDuplicateLabel() {
   const option = duplicateSourceSelectEl?.selectedOptions?.[0];
-  return String(option?.dataset.pathLabel || option?.textContent || "").trim() || "existing form";
+  return String(option?.dataset.formPathLabel || option?.textContent || "").trim() || "existing form";
 }
 
 function syncLocationMode() {

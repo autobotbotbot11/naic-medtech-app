@@ -147,7 +147,7 @@
               {% for form in duplicate_options %}
               <option
                 value="{{ form.slug }}"
-                data-path-label="{{ form.form_path_label }}"
+                data-form-path-label="{{ form.form_path_label }}"
                 {% if source_form and source_form.slug == form.slug %}selected{% endif %}
               >{{ form.form_path_label }}</option>
               {% endfor %}

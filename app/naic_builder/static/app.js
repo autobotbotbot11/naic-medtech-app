@@ -512,13 +512,13 @@ function quickSwitchLocationLabel(form) {
   if (direct) {
     return direct;
   }
-  const pathLabel = compactText(form?.form_path_label);
+  const formPathLabel = compactText(form?.form_path_label);
   const name = compactText(form?.name);
-  if (!pathLabel || pathLabel === name) {
+  if (!formPathLabel || formPathLabel === name) {
     return "Top level";
   }
   const suffix = ` / ${name}`;
-  return pathLabel.endsWith(suffix) ? pathLabel.slice(0, -suffix.length) : pathLabel;
+  return formPathLabel.endsWith(suffix) ? formPathLabel.slice(0, -suffix.length) : formPathLabel;
 }
 
 function currentVersionLabel() {
@@ -603,8 +603,8 @@ function findLocationOptionByNodeKey(nodeKey) {
   return availableLocationOptions().find((option) => compactText(option.node_key) === key) || null;
 }
 
-function findLocationOptionByPathLabel(pathLabel) {
-  const label = compactText(pathLabel);
+function findLocationOptionByFolderPathLabel(folderPathLabel) {
+  const label = compactText(folderPathLabel);
   if (!label) {
     return null;
   }
@@ -3266,7 +3266,7 @@ function handleRootInput(event) {
         state.draft.location_name = compactText(rawValue);
         state.draft.location_path_label = compactText(rawValue);
       } else {
-        const matchedLocation = findLocationOptionByPathLabel(rawValue);
+        const matchedLocation = findLocationOptionByFolderPathLabel(rawValue);
         if (matchedLocation) {
           state.draft.library_parent_node_key = matchedLocation.node_key;
           state.draft.location_name = matchedLocation.name;
