@@ -88,6 +88,9 @@
     {% endfor %}
   {% endmacro %}
 
+  {% set entry_schema = record["entry_schema"] or {} %}
+  {% set record_values = record["values"] or {} %}
+
   <main class="library-shell record-shell">
     <header class="panel record-header">
       <div class="record-title-row">
@@ -145,7 +148,7 @@
         </section>
 
         <div class="entry-stack">
-          {{ render_blocks(record.entry_schema.blocks or [], record.values or {}) }}
+          {{ render_blocks(entry_schema["blocks"] or [], record_values) }}
         </div>
 
         <div class="entry-actions">
