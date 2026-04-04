@@ -22,15 +22,14 @@ The app now starts from a builder-first FastAPI scaffold.
 - the frontend builder draft is now block-first too: the live editor state no longer keeps a duplicated `draft.schema`, and setup details like `Key` and `Notes` now read and write directly through `block_schema.meta`
 - save requests now go out through `block_schema`
 - the current calmer editor now reads and writes through block-backed paths for focused editing, preview rendering, and top-level content/section organizer flows
-- advanced mode now exposes a real `Layout` pane that works on the top-level ordered `block_schema.blocks` collection
-- advanced `Layout` can now add real `note` and `divider` blocks without forcing them into the calmer default editing panes
-- advanced `Layout` can now also add a real `table` block for richer structured result layouts without exposing that complexity in the default panes
+- advanced mode now stays inside the same `Content` pane instead of opening a separate `Layout` or `Arrange` lane
+- advanced mode can now add real `note`, `divider`, and `table` blocks in root, section, and group editors without forcing the user into another pane
 - the live preview now follows the real top-level block order, including separated top-field clusters when root fields appear in multiple places
 - the live preview can now render `note` and `divider` blocks from stored `block_schema`, while the calm default pane stays focused on ordinary field and section editing
 - the live preview can now render real `table` blocks too, including nested tables inside sections
 - selected sections can now add real `note`, `divider`, and `table` blocks too, but only in `Advanced` mode so the normal section editor stays simple by default
 - selected groups can now add real `note`, `divider`, and `table` blocks in `Advanced` mode too, and the live preview now renders those nested utility blocks from the real block tree
-- advanced mode can now open a real child-layout workspace for a selected section or group, so nested block order can be edited directly without changing the calmer default panes
+- selected sections and groups now keep their nested organizers and focused editors inside the same `Content` pane, so there is no separate child-layout workspace anymore
 - when a section contains advanced utility blocks, the default section editor hides them and shows a quiet hint instead of exposing extra controls in the normal flow
 - richer stored block schema is now preserved correctly across save/reload hydration, so advanced-only blocks are no longer dropped when a saved response is reloaded into the calmer builder UI
 - presets have been deliberately removed from the active product path for now so the builder stays focused on the core flow
@@ -43,28 +42,29 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/folders/edit` now gives folders a real management path too: they can be renamed, and they can be deleted once empty
 - `/folders/move` and `/forms/move` now give the tree real move flows too, so folders and forms can change parent location without falling back to the old one-level grouped model
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
-- builder bootstrap and advanced `Layout` no longer expose preset actions while the core flexible engine is being finished
+- builder bootstrap and advanced editing no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it
 - the new entry screen is `/forms`, a dedicated `Form Library`
 - new form creation now starts from `/forms/new`, a guided `Start New Form` screen
 - the builder workspace now uses a calmer `outline + focused editor + live preview` layout
 - the default workspace now lands on a single `Content` pane driven by real top-level block order instead of splitting the root flow into separate `Ungrouped fields` and `Sections` panes
+- the live top-level builder flow now stays on just `Basics`, `Content`, and `Save`
 - the root `Content` pane now inserts new top-level blocks relative to the current selected block when possible, so the main workspace follows real root order instead of old bucket placement rules
 - the left outline now follows that same root content model too, showing real top-level content items instead of a section-only shortcut list
-- in `Advanced` mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into `Layout` just to place them
+- in `Advanced` mode, the root `Content` pane can now add `note`, `divider`, and `table` blocks directly without forcing users into another pane just to place them
 - the focused content pane uses one organizer plus one focused editor, while selected sections and groups still use compact item organizers plus one focused item editor
 - nested section and group content now also inserts relative to the currently selected child block when possible, so deeper editing follows real ordered block behavior instead of always appending at the end
 - selected groups can now add nested groups in the normal flow too, so grouped content is less locked to a field-only structure
 - selected groups now use the same compact child organizer plus one focused child editor pattern as selected sections, instead of spilling every child card open at once
 - the old separate root `Ungrouped fields` and `Sections` panes are no longer active workspace paths; the builder now uses one real root `Content` path instead of keeping both models alive
 - the old root section-only focus path has now been removed from the active builder flow, so the workspace no longer keeps that extra root shortcut model alive behind the scenes
-- advanced `Layout` add actions now insert relative to the current selected block when possible, so the true ordered-block surface no longer blindly appends new blocks
+- root and nested `Content` add actions now insert relative to the current selected block when possible, so the true ordered-block surface no longer blindly appends new blocks
 - advanced and fallback wording is calmer now too: the builder now prefers `content` and `item` language over more technical `block` wording in the visible UI
 - the live preview now also uses calmer root labels like `Top content` instead of the older `Top fields` or `Layout` wording for mixed root content
-- repeated add-button clusters are now collapsed into a quieter `Add` menu in `Content`, `Layout`, sections, and groups, so deeper editing feels less like managing buckets and more like inserting content pieces
+- repeated add-button clusters are now collapsed into a quieter `Add` menu in `Content`, sections, and groups, so deeper editing feels less like managing buckets and more like inserting content pieces
 - focused group cards are lighter too: the dead disabled `Type = Group` row is gone, and the focused spotlight now uses quieter summary copy like `Nested content` instead of repeating mechanical metadata
 - focused field cards are lighter too: their focused state no longer repeats the field-type label above the title, their spotlight only shows truly useful metadata, advanced labels like `Normal` and `Unit` are shorter, and multi-cluster preview labels now read `More content` instead of awkward numbering like `Top content 2`
-- focused section cards are lighter too: the duplicate `Section` spotlight strip is gone, and deeper advanced actions now use the shorter `Layout` label instead of `Open layout`
+- focused section cards are lighter too: the duplicate `Section` spotlight strip is gone, and deeper editing now stays in the same focused `Content` flow instead of jumping to a separate layout action
 - focused field and option editors are flatter too: the extra focused spotlight panels are gone, so those editors now read more like direct content editing and less like schema inspector cards
 - preview root clusters now use calmer labels like `Details` and `More details` instead of `Top content`
 - focused section, group, and utility cards are flatter too: redundant kind chips and utility spotlights are gone, so those editors now spend less space repeating what the item already is
@@ -162,7 +162,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the live frontend block state is more honest too: new drafts and edited drafts now keep `source_kind = builder_blocks_v1` instead of reusing the old compatibility label
 - the save payload schema is leaner too: `group_kind`, `group_order`, and `form_order` are no longer part of `FormSavePayload`, and old callers can still send them as ignored compatibility extras
 - dead grouped-library backend helpers are gone too: the codebase no longer keeps `list_grouped_forms` / `split_library_groups` around even though the live app is already tree-first
-- the visible advanced pane now reads `Arrange` instead of `Layout`, so the UI feels more like arranging content than editing a technical layer
+- the old separate `Arrange` pane is gone; `Advanced` now means deeper controls inside the same `Content` editor
 - builder action wording is quieter too: `Duplicate` now reads `Copy`, `More` is shorter and calmer than the old `More options`, and destructive actions now prefer `Remove` language for a less tool-like feel
 - toggle and preview wording are calmer too: setup/save/section cards now use `Show` and `Hide` instead of `Open` and `Done`, and preview helper copy now says `Choose` or `Show` instead of `Open`
 - dropdown `Choices` editors now use compact choice organizers plus one focused choice editor
@@ -214,7 +214,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - `../docs/handoff/BUILDER_UX_FLOW_SPEC.md`
   - `../docs/handoff/BUILDER_WIREFRAME_IMPLEMENTATION_PLAN.md`
 - important limitation: the visible builder is now partially block-backed, but deeper editing still uses some compatibility behavior while the root flow moves toward true ordered blocks
-- richer block kinds like `note`, `divider`, and `table` are now available only through advanced `Layout`, while the legacy compatibility projection is still intentionally limited to `field`, `field_group`, and `section`
+- richer block kinds like `note`, `divider`, and `table` are now available through advanced `Content` editing, while the legacy compatibility projection is still intentionally limited to `field`, `field_group`, and `section`
 - reusable preset concepts are deferred, not active, until the core builder flow is finished and simpler
 
 ## Run locally
