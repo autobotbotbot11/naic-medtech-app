@@ -50,6 +50,10 @@ The app now starts from a builder-first FastAPI scaffold.
   - the live app now has the first shared light/dark mode plumbing across builder, auth, records, forms, and settings
   - the current toggle is a small floating mode switcher so the theme system can land everywhere before deeper page-specific shell polish
   - print is still intentionally excluded from this theme pass
+- the records-first live reskin has now started too:
+  - `app/naic_builder/static/records.css` has been rewritten around the new `Clinical Depth Luxe` shell direction
+  - records home, new, edit, and view now share a stronger premium shell language instead of only inheriting the older warm utility styling
+  - this is still a first records pass, not the final full-product reskin
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

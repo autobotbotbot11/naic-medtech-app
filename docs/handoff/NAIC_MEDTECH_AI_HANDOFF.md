@@ -169,6 +169,10 @@ Current live UI checkpoint:
   - local persistence
   - system-dark fallback on first load
 - this is only the foundation pass
+- the first records-first live reskin pass has now landed too:
+  - `app/naic_builder/static/records.css` has been rewritten toward the locked `Clinical Depth Luxe` direction
+  - records home, new, edit, and view now carry the stronger premium shell, card, and form treatment first
+  - auth, forms, settings, and builder still need deeper surface-specific reskin work after this
 - deeper surface-specific reskin work still needs to happen in the rollout order documented in `docs/handoff/UI_RESKIN_PLAN.md`
 
 ## Next Whole-App Milestone

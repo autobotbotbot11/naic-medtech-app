@@ -32,10 +32,24 @@
       "current_toggle": "floating light/dark toggle with local persistence and system fallback",
       "print_excluded": true
     },
+    "records_reskin_phase": {
+      "status": "first_pass_landed",
+      "primary_stylesheet": "app/naic_builder/static/records.css",
+      "scope": [
+        "records home",
+        "records new",
+        "records edit",
+        "records view"
+      ],
+      "notes": [
+        "This is the first records-first live reskin pass under the Clinical Depth Luxe direction.",
+        "Auth, forms, settings, and builder still need their own deeper surface-specific reskin passes."
+      ]
+    },
     "notes": [
       "The preferred feel is premium, modern, calm, and authored rather than generic admin minimalism.",
       "Dark mode should stay curated and atmospheric, not neon and not pure black.",
-      "The live app has not been reskinned yet; these standalone files are the locked visual north star for future UI work."
+      "The live app now has a shared theme foundation plus a first records-first reskin pass; these standalone files remain the locked visual north star for future UI work."
     ]
   },
   "alignment_lock": [
