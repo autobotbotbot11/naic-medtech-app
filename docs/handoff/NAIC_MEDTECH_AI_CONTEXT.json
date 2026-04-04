@@ -104,6 +104,7 @@
       "field organizers are quieter too: plain text and number fields no longer repeat type subtitles, while higher-signal cues like Dropdown, Date, Time, and utility kinds stay visible for faster scanning",
       "field input wording is calmer too: the picker now says Input, with simpler choices like Text, Choices, and Date & time",
       "field reference handling is more print-ready too: the live builder now uses Reference in the active field UI, numeric fields now use a Normal range with From / To, and choice options can be marked Counts as normal for future abnormal highlighting",
+      "the builder can now model Image as a real answer type too: the active schema can save image fields cleanly, while the preview stays honest that actual file upload belongs to the future fill-up runtime",
       "legacy compatibility is preserved too: builder storage now keeps reference_text as the active block prop while still projecting it back into legacy normal_value where older storage expects it",
       "the visible field UX stays calm too: the duplicate top Reference heading is gone, a tiny hint stays above the inputs, Normal range gets one small line for meaning, and choice options stay simple without extra tooltip clutter",
       "active organizer rows are quieter too: the old Editing pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips",

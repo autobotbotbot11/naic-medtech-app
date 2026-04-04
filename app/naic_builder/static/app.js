@@ -25,6 +25,7 @@ const INPUT_TYPES = [
   { id: "text", label: "Text", control: "input", dataType: "text" },
   { id: "number", label: "Number", control: "input", dataType: "number" },
   { id: "choice", label: "Choices", control: "select", dataType: "enum" },
+  { id: "image", label: "Image", control: "input", dataType: "image" },
   { id: "date", label: "Date", control: "input", dataType: "date" },
   { id: "time", label: "Time", control: "input", dataType: "time" },
   { id: "datetime", label: "Date & time", control: "input", dataType: "datetime" },
@@ -1956,7 +1957,7 @@ function itemOrganizerSecondaryLabel(item, title) {
       return summary && compactText(title).toLowerCase() !== summary.toLowerCase() ? summary : "";
     }
     const inputType = inferInputType(item);
-    if (!["choice", "date", "time", "datetime"].includes(inputType)) {
+    if (!["choice", "image", "date", "time", "datetime"].includes(inputType)) {
       return "";
     }
     const summary = summarizeItem(item);
@@ -2406,6 +2407,8 @@ function renderItemCard(item, path, options = {}) {
     const compactUnit = compactText(getInputUnitHint(item));
     const focusCopy = isGroup
       ? "Nested content"
+      : inputType === "image"
+        ? "One image will be uploaded when this form is filled up."
       : [
           compactReference ? `Reference ${compactReference}` : "",
           compactUnit ? `Unit ${compactUnit}` : "",
@@ -2467,7 +2470,13 @@ function renderItemCard(item, path, options = {}) {
               `}
           </div>
 
-          ${isGroup ? "" : `
+          ${isGroup ? "" : inputType === "image" ? `
+            <section class="reference-editor image-answer-editor">
+              <div class="reference-editor-head">
+                <p>One image will be uploaded when this form is filled up.</p>
+              </div>
+            </section>
+          ` : `
             <section class="reference-editor">
               <div class="reference-editor-head">
                 <p>Shown beside the result.</p>
@@ -2766,6 +2775,20 @@ function renderPreviewItem(item) {
   const hints = [];
   if (getInputUnitHint(item)) hints.push(getInputUnitHint(item));
   if (getInputReferenceText(item)) hints.push(`reference ${getInputReferenceText(item)}`);
+  const inputType = inferInputType(item);
+
+  if (inputType === "image") {
+    return `
+      <label class="preview-field">
+        <span>${escapeHtml(item.name || "Untitled Field")}</span>
+        <div class="preview-image-upload">
+          <strong>Add image</strong>
+          <span>One image will be uploaded here.</span>
+        </div>
+        ${hints.length ? `<div class="preview-hint">${escapeHtml(hints.join(" | "))}</div>` : ""}
+      </label>
+    `;
+  }
 
   return `
     <label class="preview-field">

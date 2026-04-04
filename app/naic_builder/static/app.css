@@ -1868,6 +1868,26 @@ details.advanced summary {
   opacity: 1;
 }
 
+.preview-image-upload {
+  display: grid;
+  gap: 4px;
+  padding: 14px 12px;
+  border: 1px dashed rgba(30, 93, 82, 0.3);
+  border-radius: var(--radius-sm);
+  background: rgba(247, 244, 239, 0.95);
+  color: #5e5246;
+}
+
+.preview-image-upload strong {
+  font-size: 13px;
+}
+
+.preview-image-upload span {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .preview-hint {
   color: var(--muted);
   font-size: 11px;
