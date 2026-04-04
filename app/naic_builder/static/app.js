@@ -314,7 +314,7 @@ function getInputNormalValue(field) {
   return isBlockNode(field) ? String(getNodeProps(field).normal_value || "").trim() : "";
 }
 
-function ensureOptionShape(field) {
+function normalizeInputOptions(field, { allowLegacyLabel = false } = {}) {
   if (!isBlockNode(field)) {
     return [];
   }
@@ -322,7 +322,9 @@ function ensureOptionShape(field) {
   props.options = normalizeArray(props.options).map((option, index) => {
     if (option && typeof option === "object") {
       const normalized = { ...option };
-      const normalizedName = compactText(normalized.name || normalized.label);
+      const normalizedName = compactText(
+        normalized.name || (allowLegacyLabel ? normalized.label : "")
+      );
       normalized.name = normalizedName;
       delete normalized.label;
       normalized.key = compactText(normalized.key) || slugify(normalizedName || `option_${index + 1}`) || `option_${index + 1}`;
@@ -348,14 +350,14 @@ function normalizeLiveBlockNode(node) {
   delete props.field_type;
 
   if (blockKind(node) === "field") {
-    ensureOptionShape(node);
+    normalizeInputOptions(node, { allowLegacyLabel: true });
   }
 
   getNodeChildren(node).forEach(normalizeLiveBlockNode);
 }
 
 function getInputOptions(field) {
-  return ensureOptionShape(field);
+  return normalizeInputOptions(field);
 }
 
 function topLevelBlocks() {
@@ -1407,7 +1409,7 @@ function applyInputType(field, typeId) {
   props.control = selected.control;
   props.data_type = selected.dataType;
   if (selected.id === "choice") {
-    const options = ensureOptionShape(field);
+    const options = getInputOptions(field);
     if (!options.length) {
       options.push({ name: "Option 1", key: "option_1", order: 1 });
     }
@@ -3084,7 +3086,7 @@ function insertCurrentLayoutBlock(kind) {
 
 function addOption(path) {
   const field = getNodeByPath(path);
-  const options = ensureOptionShape(field);
+  const options = getInputOptions(field);
   options.push({ name: `Option ${options.length + 1}`, key: `option_${options.length + 1}`, order: options.length + 1 });
   state.ui.activeOptionToken = optionToken(path, options.length - 1);
   touch({ full: true, source: "blocks" });
@@ -3092,7 +3094,7 @@ function addOption(path) {
 
 function duplicateOption(path, index) {
   const field = getNodeByPath(path);
-  const options = ensureOptionShape(field);
+  const options = getInputOptions(field);
   const source = options[index];
   if (!source) {
     return;
@@ -3108,7 +3110,7 @@ function duplicateOption(path, index) {
 
 function deleteOption(path, index) {
   const field = getNodeByPath(path);
-  const options = ensureOptionShape(field);
+  const options = getInputOptions(field);
   options.splice(index, 1);
   if (options.length) {
     state.ui.activeOptionToken = optionToken(path, Math.max(0, Math.min(index, options.length - 1)));
@@ -3120,7 +3122,7 @@ function deleteOption(path, index) {
 
 async function confirmDeleteOption(path, index) {
   const field = getNodeByPath(path);
-  const options = ensureOptionShape(field);
+  const options = getInputOptions(field);
   const option = options[index];
   if (!option) {
     return;
@@ -3293,7 +3295,7 @@ function handleOptionInput(event) {
     return;
   }
   const field = getNodeByPath(decodePath(path));
-  const options = ensureOptionShape(field);
+  const options = getInputOptions(field);
   if (!options[index]) {
     return;
   }
