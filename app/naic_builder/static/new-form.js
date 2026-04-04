@@ -118,7 +118,7 @@ function syncHiddenInputs() {
       ? ""
       : String(selectedOption?.value || "").trim();
   const locationName = usingRoot
-    ? (draftName || "Untitled Form")
+    ? "Top level"
     : usingNewLocation
     ? String(newLocationNameEl?.value || "").trim()
     : String(selectedOption?.dataset.locationName || "").trim();
