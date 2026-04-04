@@ -43,6 +43,10 @@
       ],
       "notes": [
         "This is the first records-first live reskin pass under the Clinical Depth Luxe direction.",
+        "A direct follow-up pass strengthened light-mode heading contrast, added real select styling, and added actual field-shell structure so records no longer read like the old scaffold with only recolored surfaces.",
+        "The next follow-up pass focused on dark-mode fidelity first so records move closer to the locked Clinical Depth Luxe Darker sample before more light-mode polish resumes.",
+        "Another dark-mode follow-up also aligned the records typography and button treatment more closely with the locked darker sample so the darker experience is not relying on the old scaffold-era font and control feel.",
+        "A live browser-audited records follow-up then pushed actual structure too: /records now groups its top-shell actions and search more intentionally, while /records/new now uses a split start layout with a workflow side card instead of one plain scaffold form block.",
         "Auth, forms, settings, and builder still need their own deeper surface-specific reskin passes."
       ]
     },

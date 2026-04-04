@@ -53,6 +53,18 @@ The app now starts from a builder-first FastAPI scaffold.
 - the records-first live reskin has now started too:
   - `app/naic_builder/static/records.css` has been rewritten around the new `Clinical Depth Luxe` shell direction
   - records home, new, edit, and view now share a stronger premium shell language instead of only inheriting the older warm utility styling
+  - the next records pass also corrected the first real UI gap from the theme-only stage:
+    - headings and supporting text are now meant to stay readable in light mode
+    - record fields now use real luxe field shells instead of looking like plain old scaffold inputs
+    - record selects now have actual dropdown styling instead of falling back to the older raw browser feel
+  - the current priority has now shifted to `dark mode first` for records:
+    - darker-mode materials, glass depth, card treatment, and shell atmosphere were pushed closer to the locked `Clinical Depth Luxe Darker` sample
+    - dark-mode typography and button treatment were also pushed closer to the sample, so the records flow now inherits more of the intended luxe feel instead of only darker colors
+    - a live browser-audited follow-up then pushed actual records structure too, especially on `/records` and `/records/new`:
+      - the top shell actions are now grouped more intentionally instead of reading like one flat pill bar
+      - the records search area now reads more like a real workspace search surface
+      - the new-record page now uses a two-column start layout with a companion workflow card instead of one plain scaffold form block
+    - light mode can be polished further later, but the immediate goal is to finish the darker luxe workspace feel first so it can be judged honestly
   - this is still a first records pass, not the final full-product reskin
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning

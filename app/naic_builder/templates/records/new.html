@@ -17,22 +17,26 @@
       <div class="brand-copy">
         <p class="eyebrow">Records</p>
         <h1>Start a new record</h1>
+        <div class="record-hero-rule"></div>
         <p class="panel-copy">Choose the form first, then the medtech can enter the result in the next screen.</p>
       </div>
-      <div class="topbar-actions">
-        {% if request.state.is_admin %}
-        <a class="ghost-button" href="/forms">Forms</a>
-        <a class="ghost-button" href="/settings">Settings</a>
-        {% endif %}
-        <a class="ghost-button" href="/change-password">Password</a>
-        <form method="post" action="/logout" class="inline-action-form">
-          <button class="ghost-button" type="submit">Log out</button>
-        </form>
+      <div class="topbar-actions topbar-actions-records">
+        <div class="topbar-utility-actions">
+          {% if request.state.is_admin %}
+          <a class="ghost-button" href="/forms">Forms</a>
+          <a class="ghost-button" href="/settings">Settings</a>
+          {% endif %}
+          <a class="ghost-button" href="/change-password">Password</a>
+          <form method="post" action="/logout" class="inline-action-form">
+            <button class="ghost-button" type="submit">Log out</button>
+          </form>
+        </div>
         <a class="ghost-button" href="/records">Back to records</a>
       </div>
     </header>
 
-    <section class="panel records-main">
+    <section class="record-start-layout">
+      <section class="panel records-main">
       {% if error_message %}
       <div class="error-banner">{{ error_message }}</div>
       {% endif %}
@@ -91,6 +95,27 @@
           <button class="primary-button" type="submit">Create draft</button>
         </div>
       </form>
+      </section>
+
+      <aside class="panel record-start-side">
+        <div class="entry-block-head">
+          <p class="eyebrow">Draft workflow</p>
+          <h2>Calm first step</h2>
+          <p class="entry-inline-hint">Start the draft with the correct form. Patient name and case number can follow, but both are still required before completion.</p>
+        </div>
+        <div class="record-start-metrics">
+          <article class="record-start-metric">
+            <p class="eyebrow">Active forms</p>
+            <strong>{{ form_choices|length }}</strong>
+            <p class="panel-copy">Published forms ready for medtech entry.</p>
+          </article>
+          <article class="record-start-metric">
+            <p class="eyebrow">Before complete</p>
+            <strong>Name + case number</strong>
+            <p class="panel-copy">The record can stay a draft until those details are ready.</p>
+          </article>
+        </div>
+      </aside>
     </section>
   </main>
 </body>

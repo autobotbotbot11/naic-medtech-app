@@ -46,17 +46,20 @@
       <div class="brand-copy">
         <p class="eyebrow">Records</p>
         <h1>{{ app_title }}</h1>
+        <div class="record-hero-rule"></div>
         <p class="panel-copy">Create a record, continue a draft, or review a completed result.</p>
       </div>
-      <div class="topbar-actions">
-        {% if request.state.is_admin %}
-        <a class="ghost-button" href="/forms">Forms</a>
-        <a class="ghost-button" href="/settings">Settings</a>
-        {% endif %}
-        <a class="ghost-button" href="/change-password">Password</a>
-        <form method="post" action="/logout" class="inline-action-form">
-          <button class="ghost-button" type="submit">Log out</button>
-        </form>
+      <div class="topbar-actions topbar-actions-records">
+        <div class="topbar-utility-actions">
+          {% if request.state.is_admin %}
+          <a class="ghost-button" href="/forms">Forms</a>
+          <a class="ghost-button" href="/settings">Settings</a>
+          {% endif %}
+          <a class="ghost-button" href="/change-password">Password</a>
+          <form method="post" action="/logout" class="inline-action-form">
+            <button class="ghost-button" type="submit">Log out</button>
+          </form>
+        </div>
         <a class="primary-button" href="/records/new">Start new record</a>
       </div>
     </header>
@@ -101,20 +104,22 @@
             </div>
           </div>
           <form method="get" action="/records" class="records-search-form">
-            <label class="entry-field">
-              <span>Find</span>
-              <input type="search" name="q" value="{{ search_query }}" placeholder="Patient, case number, form, or record key">
-            </label>
+            <div class="records-search-row">
+              <label class="entry-field">
+                <span>Find</span>
+                <input type="search" name="q" value="{{ search_query }}" placeholder="Patient, case number, form, or record key">
+              </label>
+              <div class="record-header-actions">
+                {% if has_filters %}
+                <a class="ghost-button" href="/records">Clear</a>
+                {% endif %}
+                <button class="primary-button" type="submit">Search</button>
+              </div>
+            </div>
             <div class="record-filter-pills">
               <a class="record-filter-pill{% if not status_filter %} is-active{% endif %}" href="/records{% if search_query %}?q={{ search_query | urlencode }}{% endif %}">All</a>
               <a class="record-filter-pill{% if status_filter == 'draft' %} is-active{% endif %}" href="/records?status=draft{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Drafts</a>
               <a class="record-filter-pill{% if status_filter == 'completed' %} is-active{% endif %}" href="/records?status=completed{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Completed</a>
-            </div>
-            <div class="record-header-actions">
-              {% if has_filters %}
-              <a class="ghost-button" href="/records">Clear</a>
-              {% endif %}
-              <button class="primary-button" type="submit">Search</button>
             </div>
           </form>
         </section>

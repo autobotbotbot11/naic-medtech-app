@@ -172,6 +172,18 @@ Current live UI checkpoint:
 - the first records-first live reskin pass has now landed too:
   - `app/naic_builder/static/records.css` has been rewritten toward the locked `Clinical Depth Luxe` direction
   - records home, new, edit, and view now carry the stronger premium shell, card, and form treatment first
+  - one immediate follow-up pass also fixed the first obvious theme-foundation gap:
+    - stronger heading and helper-text contrast in light mode
+    - actual select styling for records pages
+    - actual field-shell treatment so records no longer feel like the old scaffold with only recolored surfaces
+- the current UI priority is now darker-mode fidelity first:
+  - the next follow-up pass focused on `Clinical Depth Luxe Darker` specifically
+  - records dark mode now has stronger atmospheric shell treatment, darker glass materials, deeper card structure, and less of the old recolored-scaffold feel
+  - another follow-up pass also pushed dark-mode typography and button styling closer to the locked darker sample, so the records experience is no longer relying on the old font/button feel
+  - a live browser-audited records follow-up then pushed actual structure too:
+    - `/records` now groups top-shell utility actions more intentionally and gives search a more authored workspace shape
+    - `/records/new` now uses a split start layout with a workflow side card instead of one plain scaffold form block
+  - light mode should not be the current judging baseline until the darker luxe direction is considered strong enough
   - auth, forms, settings, and builder still need deeper surface-specific reskin work after this
 - deeper surface-specific reskin work still needs to happen in the rollout order documented in `docs/handoff/UI_RESKIN_PLAN.md`
 
