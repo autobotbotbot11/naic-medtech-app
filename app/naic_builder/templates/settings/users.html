@@ -62,12 +62,20 @@
         <a class="ghost-button" href="/records">Records</a>
         <a class="ghost-button" href="/forms">Forms</a>
         <a class="ghost-button" href="/change-password">Password</a>
+        <a class="ghost-button" href="/settings/clinic">Clinic profile</a>
         <a class="primary-button" href="/settings/users/new">Create user</a>
         <form method="post" action="/logout" class="inline-action-form">
           <button class="ghost-button" type="submit">Log out</button>
         </form>
       </div>
     </header>
+
+    <section class="panel settings-panel">
+      <div class="settings-nav">
+        <a class="settings-tab" href="/settings/clinic">Clinic profile</a>
+        <a class="settings-tab is-active" href="/settings/users">Users</a>
+      </div>
+    </section>
 
     <section class="panel settings-panel">
       {% if error_message %}

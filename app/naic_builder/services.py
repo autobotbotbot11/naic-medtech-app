@@ -15,11 +15,12 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from .config import RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH
+from .config import CLINIC_UPLOADS_DIR, RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH
 from .database import Base, engine
-from .models import FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
+from .models import ClinicProfile, FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
 from .schemas import (
     AccountRequestPayload,
+    ClinicProfilePayload,
     FormSavePayload,
     LoginPayload,
     PasswordChangePayload,
@@ -37,6 +38,7 @@ ALLOWED_IMAGE_CONTENT_TYPES = {
     "image/webp": ".webp",
 }
 MAX_RECORD_IMAGE_BYTES = 10 * 1024 * 1024
+MAX_CLINIC_LOGO_BYTES = 5 * 1024 * 1024
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -179,6 +181,37 @@ def serialize_user(user: User) -> dict[str, Any]:
         "created_at": user.created_at.astimezone(timezone.utc).isoformat(),
         "updated_at": user.updated_at.astimezone(timezone.utc).isoformat(),
     }
+
+
+def get_or_create_clinic_profile(session: Session) -> ClinicProfile:
+    profile = session.scalar(select(ClinicProfile).limit(1))
+    if profile is not None:
+        return profile
+    profile = ClinicProfile(clinic_name="")
+    session.add(profile)
+    session.commit()
+    session.refresh(profile)
+    return profile
+
+
+def serialize_clinic_profile(profile: ClinicProfile) -> dict[str, Any]:
+    return {
+        "id": profile.id,
+        "clinic_name": compact_text(profile.clinic_name),
+        "address": compact_text(profile.address),
+        "contact_number": compact_text(profile.contact_number),
+        "contact_email": compact_text(profile.contact_email),
+        "logo_path": profile.logo_path,
+        "logo_original_filename": compact_text(profile.logo_original_filename),
+        "logo_mime_type": compact_text(profile.logo_mime_type),
+        "has_logo": bool(compact_text(profile.logo_path)),
+        "created_at": profile.created_at.astimezone(timezone.utc).isoformat(),
+        "updated_at": profile.updated_at.astimezone(timezone.utc).isoformat(),
+    }
+
+
+def get_clinic_profile(session: Session) -> dict[str, Any]:
+    return serialize_clinic_profile(get_or_create_clinic_profile(session))
 
 
 def list_users(session: Session, *, status: str | None = None) -> list[dict[str, Any]]:
@@ -1162,12 +1195,115 @@ def remove_file_if_present(path_value: str | None) -> None:
         parent = parent.parent
 
 
+def remove_file_if_present_under(path_value: str | None, *, stop_dir: Path) -> None:
+    file_path = Path(path_value or "")
+    if not file_path.exists() or not file_path.is_file():
+        return
+    try:
+        file_path.unlink()
+    except OSError:
+        return
+
+    parent = file_path.parent
+    safe_stop_dir = stop_dir.resolve()
+    while parent.exists():
+        try:
+            if parent.resolve() == safe_stop_dir:
+                break
+        except OSError:
+            break
+        try:
+            parent.rmdir()
+        except OSError:
+            break
+        parent = parent.parent
+
+
 def remove_record_asset(
     session: Session,
     asset: RecordAsset,
 ) -> None:
     remove_file_if_present(asset.storage_path)
     session.delete(asset)
+
+
+def save_clinic_profile(
+    session: Session,
+    payload: ClinicProfilePayload,
+    *,
+    logo_filename: str = "",
+    logo_content_type: str | None = None,
+    logo_bytes: bytes | None = None,
+) -> dict[str, Any]:
+    profile = get_or_create_clinic_profile(session)
+
+    clinic_name = compact_text(payload.clinic_name)
+    address = compact_text(payload.address)
+    contact_number = compact_text(payload.contact_number)
+    contact_email = normalize_email(payload.contact_email) if compact_text(payload.contact_email) else ""
+
+    if not clinic_name:
+        raise ValueError("Enter the clinic name.")
+    if contact_email and not validate_email_format(contact_email):
+        raise ValueError("Enter a valid contact email address.")
+
+    old_logo_path = profile.logo_path
+    old_logo_name = profile.logo_original_filename
+    old_logo_type = profile.logo_mime_type
+    new_logo_path: Path | None = None
+
+    if logo_bytes is not None:
+        mime_type = compact_text(logo_content_type)
+        extension = ALLOWED_IMAGE_CONTENT_TYPES.get(mime_type)
+        if extension is None:
+            raise ValueError("Only JPG, PNG, and WebP logos are allowed.")
+        if not logo_bytes:
+            raise ValueError("Choose an image before uploading.")
+        if len(logo_bytes) > MAX_CLINIC_LOGO_BYTES:
+            raise ValueError("Logo image must be 5 MB or smaller.")
+        CLINIC_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+        new_logo_path = CLINIC_UPLOADS_DIR / f"logo_{uuid4().hex}{extension}"
+        new_logo_path.write_bytes(logo_bytes)
+        profile.logo_path = str(new_logo_path)
+        profile.logo_original_filename = compact_text(logo_filename) or new_logo_path.name
+        profile.logo_mime_type = mime_type or None
+
+    profile.clinic_name = clinic_name
+    profile.address = address or None
+    profile.contact_number = contact_number or None
+    profile.contact_email = contact_email or None
+
+    try:
+        session.add(profile)
+        session.commit()
+    except Exception:
+        session.rollback()
+        if new_logo_path is not None:
+            remove_file_if_present_under(str(new_logo_path), stop_dir=CLINIC_UPLOADS_DIR)
+        profile.logo_path = old_logo_path
+        profile.logo_original_filename = old_logo_name
+        profile.logo_mime_type = old_logo_type
+        raise
+
+    if new_logo_path is not None and old_logo_path and old_logo_path != str(new_logo_path):
+        remove_file_if_present_under(old_logo_path, stop_dir=CLINIC_UPLOADS_DIR)
+
+    session.refresh(profile)
+    return serialize_clinic_profile(profile)
+
+
+def remove_clinic_logo(session: Session) -> dict[str, Any]:
+    profile = get_or_create_clinic_profile(session)
+    old_logo_path = profile.logo_path
+    profile.logo_path = None
+    profile.logo_original_filename = None
+    profile.logo_mime_type = None
+    session.add(profile)
+    session.commit()
+    if old_logo_path:
+        remove_file_if_present_under(old_logo_path, stop_dir=CLINIC_UPLOADS_DIR)
+    session.refresh(profile)
+    return serialize_clinic_profile(profile)
 
 
 def preserve_existing_asset_values(

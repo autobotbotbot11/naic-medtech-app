@@ -104,6 +104,7 @@ What exists now:
 - first-run setup at `/setup`
 - login at `/login`
 - account request at `/request-account`
+- clinic profile settings at `/settings/clinic`
 - password change at `/change-password`
 - admin user management at `/settings/users`
 - hybrid account flow:
@@ -115,6 +116,15 @@ What exists now:
 - role gating is active now:
   - `Medtech` stays in records
   - `Admin` can access records, forms, builder, and settings
+- clinic profile settings now carry the first branding foundation too:
+  - clinic name
+  - address
+  - contact details
+  - upload/remove clinic logo
+
+Important:
+- this is not the final print system
+- it is the branding/settings base that future print templates should read from
 
 Important:
 - keep this auth model simple
@@ -152,10 +162,12 @@ The first `Records Runtime` foundation has now landed in the app.
 What exists now:
 - `/` redirects to `/records`
 - `/setup`, `/login`, `/request-account`, `/change-password`, and `/settings/users` now exist as the first auth/settings flow
+- `/settings/clinic` now exists as the first clinic identity/branding settings flow
 - login now accepts `email or login ID`
 - pending account requests, admin approval, and admin manual account creation now all exist in the live app
 - admin-created accounts are forced to change password on first login
 - visible role gating is now active for `Admin` and `Medtech`
+- clinic profile data and logo upload/remove now exist as the base for future branded output work
 - `/records` is now the calm daily landing screen
 - `/records` now has a first usable history layer too: medtech can search by patient, case number, form name, or record key and filter between draft and completed records on the same screen
 - `/records/new` starts a draft from a chosen form

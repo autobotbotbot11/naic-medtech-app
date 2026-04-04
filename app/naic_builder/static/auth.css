@@ -28,7 +28,8 @@
 .auth-form,
 .settings-stack,
 .user-list,
-.inline-stack {
+.inline-stack,
+.profile-stack {
   display: grid;
   gap: 14px;
 }
@@ -92,6 +93,24 @@
 }
 
 .select-stack select:focus {
+  border-color: rgba(30, 93, 82, 0.42);
+  box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.12);
+}
+
+.field-stack textarea {
+  width: 100%;
+  min-height: 112px;
+  border: 1px solid rgba(68, 54, 40, 0.22);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--text);
+  padding: 10px 12px;
+  outline: none;
+  resize: vertical;
+  font: inherit;
+}
+
+.field-stack textarea:focus {
   border-color: rgba(30, 93, 82, 0.42);
   box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.12);
 }
@@ -194,6 +213,83 @@
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
+.settings-nav {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.settings-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(68, 54, 40, 0.12);
+  background: rgba(255, 255, 255, 0.82);
+  color: var(--muted);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.settings-tab.is-active {
+  border-color: rgba(30, 93, 82, 0.2);
+  background: rgba(30, 93, 82, 0.12);
+  color: var(--accent);
+}
+
+.profile-grid {
+  margin-top: 16px;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
+  align-items: start;
+}
+
+.profile-card,
+.logo-card {
+  padding: 18px;
+}
+
+.field-help {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.logo-frame {
+  min-height: 180px;
+  border-radius: 22px;
+  border: 1px dashed rgba(68, 54, 40, 0.16);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(247, 242, 236, 0.9));
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.logo-frame img {
+  display: block;
+  width: auto;
+  max-width: calc(100% - 28px);
+  max-height: 140px;
+  object-fit: contain;
+}
+
+.logo-empty {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  color: var(--muted);
+  padding: 24px;
+}
+
+.logo-empty strong {
+  color: var(--text);
+}
+
 .settings-count-grid {
   display: grid;
   gap: 12px;
@@ -216,6 +312,10 @@
 
 @media (max-width: 900px) {
   .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-grid {
     grid-template-columns: 1fr;
   }
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Any
 from urllib.parse import parse_qs
 
@@ -16,6 +17,7 @@ from .config import APP_TITLE, SESSION_SECRET, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import (
     AccountRequestPayload,
+    ClinicProfilePayload,
     FormSavePayload,
     LoginPayload,
     PasswordChangePayload,
@@ -34,6 +36,7 @@ from .services import (
     create_initial_admin,
     create_container,
     delete_container,
+    get_clinic_profile,
     delete_record_asset,
     create_form,
     create_record,
@@ -55,11 +58,13 @@ from .services import (
     move_container,
     move_form,
     request_account,
+    remove_clinic_logo,
     rename_container,
     serialize_user,
     serialize_record,
     serialize_form,
     serialize_form_location,
+    save_clinic_profile,
     store_record_image_asset,
     update_user_status,
     approve_user_account,
@@ -262,6 +267,30 @@ def render_change_password_page(
         name="auth/change_password.html",
         context={
             "app_title": APP_TITLE,
+            "error_message": error_message,
+            "success_message": success_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_settings_clinic_page(
+    request: Request,
+    session: Session,
+    *,
+    profile_override: dict[str, Any] | None = None,
+    error_message: str = "",
+    success_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    clinic_profile = profile_override or get_clinic_profile(session)
+    return templates.TemplateResponse(
+        request=request,
+        name="settings/clinic.html",
+        context={
+            "app_title": APP_TITLE,
+            "clinic_profile": clinic_profile,
+            "clinic_logo_url": "/settings/clinic/logo" if clinic_profile.get("has_logo") else "",
             "error_message": error_message,
             "success_message": success_message,
         },
@@ -1211,7 +1240,79 @@ async def update_form_location_page(
 
 @app.get("/settings", response_class=HTMLResponse)
 def settings_home() -> RedirectResponse:
-    return redirect_for_html("/settings/users")
+    return redirect_for_html("/settings/clinic")
+
+
+@app.get("/settings/clinic", response_class=HTMLResponse)
+def settings_clinic_page(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
+    success_message = ""
+    if request.query_params.get("saved") == "1":
+        success_message = "Saved the clinic profile."
+    elif request.query_params.get("logo_removed") == "1":
+        success_message = "Removed the clinic logo."
+    return render_settings_clinic_page(request, session, success_message=success_message)
+
+
+@app.post("/settings/clinic")
+async def save_settings_clinic_page(request: Request, session: Session = Depends(get_session)):
+    form = await request.form()
+    payload = ClinicProfilePayload(
+        clinic_name=str(form.get("clinic_name") or ""),
+        address=str(form.get("address") or ""),
+        contact_number=str(form.get("contact_number") or ""),
+        contact_email=str(form.get("contact_email") or ""),
+    )
+    logo_file = form.get("logo_file")
+    logo_bytes: bytes | None = None
+    logo_filename = ""
+    logo_content_type = ""
+    if logo_file is not None and hasattr(logo_file, "read") and getattr(logo_file, "filename", ""):
+        logo_bytes = await logo_file.read()
+        logo_filename = str(getattr(logo_file, "filename", "") or "")
+        logo_content_type = str(getattr(logo_file, "content_type", "") or "")
+
+    try:
+        save_clinic_profile(
+            session,
+            payload,
+            logo_filename=logo_filename,
+            logo_content_type=logo_content_type,
+            logo_bytes=logo_bytes,
+        )
+    except ValueError as exc:
+        return render_settings_clinic_page(
+            request,
+            session,
+            profile_override={
+                **get_clinic_profile(session),
+                "clinic_name": payload.clinic_name,
+                "address": payload.address or "",
+                "contact_number": payload.contact_number or "",
+                "contact_email": payload.contact_email or "",
+            },
+            error_message=str(exc),
+            status_code=422,
+        )
+    return RedirectResponse(url="/settings/clinic?saved=1", status_code=303)
+
+
+@app.post("/settings/clinic/logo/remove")
+def remove_settings_clinic_logo_page(request: Request, session: Session = Depends(get_session)):
+    remove_clinic_logo(session)
+    return RedirectResponse(url="/settings/clinic?logo_removed=1", status_code=303)
+
+
+@app.get("/settings/clinic/logo")
+def settings_clinic_logo_file(session: Session = Depends(get_session)) -> FileResponse:
+    clinic_profile = get_clinic_profile(session)
+    logo_path = str(clinic_profile.get("logo_path") or "")
+    if not logo_path or not Path(logo_path).is_file():
+        raise HTTPException(status_code=404, detail="Clinic logo not found.")
+    return FileResponse(
+        logo_path,
+        media_type=str(clinic_profile.get("logo_mime_type") or "") or None,
+        filename=str(clinic_profile.get("logo_original_filename") or "") or None,
+    )
 
 
 @app.get("/settings/users", response_class=HTMLResponse)

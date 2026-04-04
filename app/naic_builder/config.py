@@ -12,6 +12,7 @@ STATIC_DIR = PACKAGE_DIR / "static"
 DATA_SOURCE_DIR = ROOT_DIR / "data" / "source"
 DATA_RUNTIME_DIR = ROOT_DIR / "data" / "runtime"
 RECORD_UPLOADS_DIR = DATA_RUNTIME_DIR / "uploads" / "records"
+CLINIC_UPLOADS_DIR = DATA_RUNTIME_DIR / "uploads" / "clinic"
 DB_PATH = DATA_RUNTIME_DIR / "naic_medtech.db"
 REFERENCE_SCHEMA_PATH = ROOT_DIR / "artifacts" / "schema" / "naic_medtech_app_schema.json"
 

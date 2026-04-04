@@ -65,6 +65,15 @@ class UserCreatePayload(BaseModel):
     password: str = ""
 
 
+class ClinicProfilePayload(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    clinic_name: str = ""
+    address: str | None = None
+    contact_number: str | None = None
+    contact_email: str | None = None
+
+
 class LoginPayload(BaseModel):
     model_config = ConfigDict(extra="ignore")
 

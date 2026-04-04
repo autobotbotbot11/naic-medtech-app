@@ -17,6 +17,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - first-run setup lives at `/setup`
   - sign-in lives at `/login`
   - account requests live at `/request-account`
+  - clinic profile settings now live at `/settings/clinic`
   - admin user management lives at `/settings/users`
   - password changes live at `/change-password`
 - the current auth model is intentionally small-clinic friendly:
@@ -28,6 +29,10 @@ The app now starts from a builder-first FastAPI scaffold.
 - role gating is active now too:
   - `Medtech` stays in the records flow
   - `Admin` can also access forms, builder, and settings
+- clinic branding groundwork exists now too:
+  - the app can store the clinic name, address, contact details, and logo
+  - the clinic logo can be uploaded, served back, and removed cleanly
+  - this profile is meant to become the base for future branded print/output work
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

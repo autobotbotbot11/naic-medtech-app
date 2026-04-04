@@ -124,6 +124,25 @@ class User(Base):
     )
 
 
+class ClinicProfile(Base):
+    __tablename__ = "clinic_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    clinic_name: Mapped[str] = mapped_column(String(255), default="")
+    address: Mapped[str | None] = mapped_column(Text, nullable=True)
+    contact_number: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    contact_email: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    logo_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    logo_original_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    logo_mime_type: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utc_now,
+        onupdate=utc_now,
+    )
+
+
 class Record(Base):
     __tablename__ = "records"
 
