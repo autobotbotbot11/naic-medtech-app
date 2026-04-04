@@ -73,6 +73,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - field input wording is calmer too: the picker now says `Input`, with simpler choices like `Text`, `Choices`, and `Date & time`
 - field reference handling is more print-ready too: the live builder now uses `Reference` in the active field UI, numeric fields can store `Normal from` / `Normal to`, and choice options can be marked `Normal` for future abnormal highlighting
 - legacy compatibility is preserved too: builder storage now keeps `reference_text` as the active block prop while still projecting it back into legacy `normal_value` where older storage expects it
+- the visible field UX stays calm too: `Reference` now appears as one small section with a short hint, numeric bounds are grouped under `Normal range`, and choice options now say `Counts as normal` instead of relying on heavier help copy
 - active organizer rows are quieter too: the old `Editing` pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips
 - advanced labels and helper copy are calmer too: shorter labels like `Key` and `Notes`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
 - the old shared `Record defaults` selector is now hidden from the visible builder flow, so setup stays closer to the flexible lego model while backend compatibility remains intact

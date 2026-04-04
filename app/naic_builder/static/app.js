@@ -2468,26 +2468,37 @@ function renderItemCard(item, path, options = {}) {
           </div>
 
           ${isGroup ? "" : `
-            <div class="inline-grid item-basics-grid compact">
-              <label>
-                <span>Reference</span>
-                <input data-path="${encodePath(path)}" data-bind="reference_text" value="${escapeHtml(getInputReferenceText(item) || "")}" placeholder="${inputType === "choice" ? "Example: Negative" : "Example: 4.5 - 11.0"}">
-              </label>
-              <label>
-                <span>Unit</span>
-                <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getInputUnitHint(item) || "")}" placeholder="Example: mg/dL">
-              </label>
+            <section class="reference-editor">
+              <div class="reference-editor-head">
+                <h5>Reference</h5>
+                <p>Shown beside the result.</p>
+              </div>
+              <div class="inline-grid item-basics-grid compact">
+                <label>
+                  <span>Reference</span>
+                  <input data-path="${encodePath(path)}" data-bind="reference_text" value="${escapeHtml(getInputReferenceText(item) || "")}" placeholder="${inputType === "choice" ? "Example: Negative" : "Example: 4.5 - 11.0"}">
+                </label>
+                <label>
+                  <span>Unit</span>
+                  <input data-path="${encodePath(path)}" data-bind="unit_hint" value="${escapeHtml(getInputUnitHint(item) || "")}" placeholder="Example: mg/dL">
+                </label>
+              </div>
               ${inputType === "number" ? `
-                <label>
-                  <span>Normal from</span>
-                  <input type="number" step="any" data-path="${encodePath(path)}" data-bind="normal_min" value="${escapeHtml(getInputNormalMin(item) || "")}" placeholder="Example: 4.5">
-                </label>
-                <label>
-                  <span>Normal to</span>
-                  <input type="number" step="any" data-path="${encodePath(path)}" data-bind="normal_max" value="${escapeHtml(getInputNormalMax(item) || "")}" placeholder="Example: 11.0">
-                </label>
+                <div class="reference-range">
+                  <span class="reference-range-title">Normal range</span>
+                  <div class="inline-grid reference-range-grid">
+                    <label>
+                      <span>From</span>
+                      <input type="number" step="any" data-path="${encodePath(path)}" data-bind="normal_min" value="${escapeHtml(getInputNormalMin(item) || "")}" placeholder="Example: 4.5">
+                    </label>
+                    <label>
+                      <span>To</span>
+                      <input type="number" step="any" data-path="${encodePath(path)}" data-bind="normal_max" value="${escapeHtml(getInputNormalMax(item) || "")}" placeholder="Example: 11.0">
+                    </label>
+                  </div>
+                </div>
               ` : ""}
-            </div>
+            </section>
           `}
 
         ${isGroup ? `
@@ -2566,7 +2577,7 @@ function renderOptionsEditor(field, path) {
                 </label>
                 <label class="option-focus-toggle">
                   <input type="checkbox" data-action="option-normal" data-path="${encodePath(path)}" data-index="${selectedIndex}" ${selectedOption.is_normal ? "checked" : ""}>
-                  <span>Normal</span>
+                  <span>Counts as normal</span>
                 </label>
                 ${renderOptionManageFooter(path, selectedIndex)}
               </div>

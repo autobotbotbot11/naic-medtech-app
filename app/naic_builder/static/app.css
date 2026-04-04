@@ -1399,6 +1399,44 @@ button.subtle[aria-pressed="true"] {
   grid-template-columns: minmax(0, 1fr);
 }
 
+.reference-editor {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.reference-editor-head {
+  display: grid;
+  gap: 4px;
+}
+
+.reference-editor-head h5 {
+  margin: 0;
+  font-size: 14px;
+}
+
+.reference-editor-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.reference-range {
+  display: grid;
+  gap: 8px;
+}
+
+.reference-range-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+}
+
+.reference-range-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .row-actions > .ghost,
 .row-actions > .secondary,
 .row-actions > .action-details,
