@@ -619,8 +619,7 @@ function isTopLevelDraftLocation(draft = state.draft) {
     return false;
   }
   const locationName = compactLocationName(draft);
-  const formName = compactText(draft.name);
-  return !locationName || locationName === "Top level" || locationName === formName;
+  return !locationName || locationName === "Top level";
 }
 
 function displayLocationName(draft = state.draft) {
@@ -658,7 +657,6 @@ function syncDraftLocationState(draft = state.draft) {
     return;
   }
 
-  const formName = compactText(draft.name) || "Untitled Form";
   const explicitName = compactLocationName(draft);
   const explicitPath = compactLocationPathLabel(draft);
   const pendingFolderName = compactText(draft.library_new_container_name);
@@ -683,7 +681,7 @@ function syncDraftLocationState(draft = state.draft) {
   }
 
   const freeform = explicitPath || explicitName;
-  if (!freeform || isTopLevelLocationName(freeform) || freeform === formName) {
+  if (!freeform || isTopLevelLocationName(freeform)) {
     draft.location_name = "Top level";
     draft.location_path_label = "Top level";
     draft.location_node_key = null;
@@ -1535,7 +1533,6 @@ function duplicateCurrentForm(overrides = {}) {
     return;
   }
   const copy = deepClone(state.draft);
-  const previousName = compactText(copy.name);
   copy.slug = null;
   copy.current_version_number = 0;
   copy.summary = "";
@@ -1550,7 +1547,7 @@ function duplicateCurrentForm(overrides = {}) {
   if (
     !copy.library_parent_node_key
     && !copy.library_new_container_name
-    && (isTopLevelLocationName(copy.location_name) || compactText(copy.location_name) === previousName)
+    && isTopLevelLocationName(copy.location_name)
   ) {
     copy.location_name = "Top level";
     copy.location_path_label = "Top level";

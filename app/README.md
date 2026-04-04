@@ -145,6 +145,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths
 - top-level new and copied drafts are cleaner too: they no longer start from the old `Unassigned` sentinel or keep a stale previous form name as fake location state
 - `/forms/new` root-mode handoff is more explicit too: it now passes `location_name = Top level` into `/builder` instead of using the old form-name placeholder for top-level drafts
+- the active browser path is stricter too: the builder no longer treats `location_name === form name` as a top-level shortcut, so top-level handling in the live UI now depends on explicit `Top level` state instead of that old placeholder convention
 - old `Unassigned` location residue is thinner too: stale inputs are now normalized once at ingress to `Top level`, instead of being special-cased across multiple live location helpers
 - the builder frontend reads more tree-first too: active suggestion helpers and setup variables now use `location` language instead of old `group` wording where the UI already treats folders as locations
 - the active create/update resolver is more tree-first too: it now derives parent/order state from real library nodes and the current location intent, instead of depending on old `group_kind/group_order/form_order` inputs
