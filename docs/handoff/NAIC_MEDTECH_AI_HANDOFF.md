@@ -54,6 +54,73 @@ Phase 1 is not primarily about:
 
 Those can come later, but the architecture should still allow them.
 
+## Small Clinic Product Lock
+The client is a **small clinic**, not a large hospital network or enterprise laboratory.
+
+That changes the product strategy in an important way:
+- the app should feel professional because it is calm, fast, and reliable
+- the app should **not** feel professional by adding enterprise workflow complexity the client does not need
+- the daily user is primarily the **medtech**
+- the builder is an admin/setup tool, not the center of the daily workflow
+
+Current locked assumption:
+- most day-to-day usage should happen in a future `Records` or data-entry runtime
+- most users should not need to touch the builder
+- the visible workflow should stay extremely simple and obvious
+
+Do not default to:
+- enterprise approval chains
+- hospital-style multi-stage review flows
+- many visible user-role surfaces
+- feature-heavy admin portals just because the architecture can support them
+
+## Recommended Minimal Roles
+The current recommended role model for this client is intentionally small:
+
+1. `Admin`
+- manages forms
+- opens the builder
+- manages settings and users
+- can still fill up and print records if needed
+
+2. `Medtech`
+- opens forms
+- fills up records
+- uploads images when needed
+- saves and prints results
+
+Optional later only:
+- `View only` or similar support role if the clinic actually needs it
+
+Important:
+- keep the architecture expandable
+- keep the **visible product** minimal
+- do not design the current app around lab-admin / pathologist / reviewer chains unless the real clinic workflow demands it
+
+## Next Whole-App Milestone
+The builder is now at the point where the core direction is effectively done.
+
+That means the next major milestone for the whole app should be:
+
+`Records Runtime`
+
+This is the future screen/module where the medtech will:
+- choose the needed form
+- fill up patient and result data
+- upload image answers when needed
+- save the record
+- print or release the output later
+
+Recommended product priority after the builder:
+1. record/data-entry runtime
+2. record storage model tied to `form_version_id`
+3. image/file asset support for record answers
+4. print/output renderer
+5. only then broader settings/admin growth if truly needed
+
+Do not make the builder keep growing just because it is the most developed module right now.
+The builder should now become the quiet setup tool behind the app, while the real product center shifts to record entry and output.
+
 ## Builder Direction Note
 The current builder prototype is not yet considered final for the real client.
 
@@ -373,6 +440,7 @@ The strongest future-proof direction currently recommended is:
 - generic fields instead of hardcoded domain-specific field concepts
 - optional reusable blocks later if they can be reintroduced without hurting simplicity
 - versioned records separate from form design
+- a small-clinic runtime centered on medtech record entry instead of enterprise workflow choreography
 
 This is documented in:
 - `docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
@@ -383,6 +451,7 @@ This is documented in:
 Important:
 - the engine should be highly flexible
 - the UI should still stay very simple for non-technical users
+- visible role complexity should stay minimal unless the real clinic workflow proves otherwise
 
 Current migration status:
 - the generic library tree foundation has started in the real backend via a new persisted `library_nodes` table

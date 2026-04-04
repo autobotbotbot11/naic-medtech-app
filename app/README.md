@@ -255,4 +255,4 @@ python tools/scripts/reset_builder_runtime_db.py
 ```
 
 ## Important note
-This scaffold is intentionally builder-first. Accounts, deeper admin controls, and broader operations modules should come after the form builder foundation is stable.
+This scaffold started builder-first, but the next whole-app milestone should now shift toward a calm `Records Runtime` for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.

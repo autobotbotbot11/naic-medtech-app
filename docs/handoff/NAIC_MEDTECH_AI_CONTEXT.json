@@ -230,6 +230,8 @@
     "current_builder_surface_note": "The builder is now block-backed and tree-first in the live path. The visible workspace uses one real Content editor for root and nested editing, and Advanced now means deeper controls on that same pane instead of a separate Arrange or Layout lane."
   },
   "phase_1_priority": "exam_form_builder",
+  "client_scale": "small_clinic",
+  "primary_daily_user": "medtech",
   "phase_1_goals": [
     "Create exam/form definitions",
     "Edit existing exam/form definitions",
@@ -245,6 +247,28 @@
     "Advanced permissions",
     "Broader reporting",
     "Non-builder operations modules"
+  ],
+  "current_product_lock": [
+    "the client is a small clinic, so the app should feel premium through calmness, clarity, speed, and reliability instead of enterprise workflow complexity",
+    "the builder is now a setup/admin tool, not the main daily surface of the product",
+    "the main daily user should be the medtech",
+    "most day to day use should eventually happen in a records or data-entry runtime, not in the builder",
+    "do not default to lab admin, pathologist, reviewer, or approval-chain workflow unless the real clinic process explicitly requires it"
+  ],
+  "recommended_minimal_roles": [
+    "admin",
+    "medtech"
+  ],
+  "optional_later_roles": [
+    "view_only"
+  ],
+  "next_major_build_target": "records_runtime",
+  "next_major_build_scope": [
+    "choose a form",
+    "fill up patient and result data",
+    "support image answers during record entry",
+    "save records against a specific form_version_id",
+    "prepare for later print or release output"
   ],
   "source_of_truth": {
     "app_schema": "artifacts/schema/naic_medtech_app_schema.json",
