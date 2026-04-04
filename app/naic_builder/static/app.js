@@ -2485,7 +2485,10 @@ function renderItemCard(item, path, options = {}) {
               </div>
               ${inputType === "number" ? `
                 <div class="reference-range">
-                  <span class="reference-range-title">Normal range</span>
+                  <div class="reference-range-head">
+                    <span class="reference-range-title">Normal range</span>
+                    <p>Used for normal checks.</p>
+                  </div>
                   <div class="inline-grid reference-range-grid">
                     <label>
                       <span>From</span>
@@ -2576,8 +2579,8 @@ function renderOptionsEditor(field, path) {
                   <input data-action="option-name" data-path="${encodePath(path)}" data-index="${selectedIndex}" value="${escapeHtml(selectedOption.name || "")}" placeholder="Example: Positive">
                 </label>
                 <label class="option-focus-toggle">
-                  <input type="checkbox" data-action="option-normal" data-path="${encodePath(path)}" data-index="${selectedIndex}" ${selectedOption.is_normal ? "checked" : ""}>
                   <span>Counts as normal</span>
+                  <input type="checkbox" data-action="option-normal" data-path="${encodePath(path)}" data-index="${selectedIndex}" ${selectedOption.is_normal ? "checked" : ""}>
                 </label>
                 ${renderOptionManageFooter(path, selectedIndex)}
               </div>

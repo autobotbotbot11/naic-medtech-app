@@ -1427,10 +1427,22 @@ button.subtle[aria-pressed="true"] {
   gap: 8px;
 }
 
+.reference-range-head {
+  display: grid;
+  gap: 2px;
+}
+
 .reference-range-title {
   font-size: 12px;
   font-weight: 800;
   color: var(--muted);
+}
+
+.reference-range-head p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
 }
 
 .reference-range-grid {
@@ -1522,11 +1534,30 @@ button.subtle[aria-pressed="true"] {
   gap: 6px;
 }
 
-.option-focus-toggle {
-  display: inline-flex;
+.item-stack label.option-focus-toggle {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
   gap: 8px;
   margin-top: 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+  width: 100%;
+}
+
+.item-stack label.option-focus-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+  box-shadow: none;
+}
+
+.item-stack label.option-focus-toggle span {
   color: var(--text);
   font-size: 13px;
   font-weight: 700;
