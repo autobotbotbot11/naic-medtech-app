@@ -13,6 +13,7 @@
     {% for block in blocks %}
       {% set kind = block.kind %}
       {% set props = block.props or {} %}
+      {% set utility_content = (props.content or "") | trim %}
       {% if kind == "section" %}
       <section class="panel record-section">
         <div class="entry-block-head">
@@ -109,14 +110,47 @@
       {% elif kind == "note" %}
       <div class="entry-note">
         <p class="eyebrow">Note</p>
-        <p class="panel-copy">{{ block.name }}</p>
+        {% if block.name %}
+        <strong>{{ block.name }}</strong>
+        {% endif %}
+        <p class="panel-copy">{{ utility_content or block.name or "Note" }}</p>
       </div>
       {% elif kind == "divider" %}
-      <hr class="entry-divider">
-      {% else %}
-      <div class="entry-unsupported">
-        <strong>{{ block.name or (kind | replace("_", " ") | title) }}</strong>
-        <span>{{ kind | replace("_", " ") | title }} entry will be wired in a later records pass.</span>
+      <div class="entry-divider-block">
+        {% if utility_content or block.name %}
+        <p class="entry-divider-copy">{{ utility_content or block.name }}</p>
+        {% endif %}
+        <hr class="entry-divider">
+      </div>
+      {% elif kind == "table" %}
+      {% set columns = props.columns or ["Column 1", "Column 2"] %}
+      {% set sample_rows = (props.sample_rows or 3) | int %}
+      <div class="entry-table-block">
+        <div class="entry-block-head">
+          <p class="eyebrow">Table</p>
+          <h4>{{ block.name or "Table" }}</h4>
+        </div>
+        <div class="entry-table-shell">
+          <table class="entry-table">
+            <thead>
+              <tr>
+                {% for column in columns if column %}
+                <th>{{ column }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for _ in range(sample_rows if sample_rows > 0 else 3) %}
+              <tr>
+                {% for column in columns if column %}
+                <td><span class="entry-table-placeholder"></span></td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <p class="entry-inline-hint">Sample table from the form design.</p>
       </div>
       {% endif %}
     {% endfor %}

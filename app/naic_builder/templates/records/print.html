@@ -66,11 +66,47 @@
         {% endif %}
       </article>
       {% elif item.kind == "note" %}
-      <div class="print-note">{{ item.name }}</div>
+      <div class="print-note">
+        {% if item.name %}
+        <div class="print-note-title">{{ item.name }}</div>
+        {% endif %}
+        <div>{{ item.content or item.name or "Note" }}</div>
+      </div>
       {% elif item.kind == "divider" %}
-      <hr class="print-divider">
-      {% elif item.kind == "table_placeholder" %}
-      <div class="print-placeholder">{{ item.name }} will use a richer print renderer in a later pass.</div>
+      <div class="print-divider-block">
+        {% if item.content or item.name %}
+        <div class="print-divider-copy">{{ item.content or item.name }}</div>
+        {% endif %}
+        <hr class="print-divider">
+      </div>
+      {% elif item.kind == "table" %}
+      {% set columns = item["columns"] or [] %}
+      {% set sample_rows = item["sample_rows"] or 3 %}
+      <section class="print-table-block">
+        <div class="print-row-head">
+          <p class="print-row-name">{{ item.name }}</p>
+        </div>
+        <div class="print-table-shell">
+          <table class="print-table">
+            <thead>
+              <tr>
+                {% for column in columns %}
+                <th>{{ column }}</th>
+                {% endfor %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for _ in range(sample_rows) %}
+              <tr>
+                {% for column in columns %}
+                <td><span class="print-table-placeholder"></span></td>
+                {% endfor %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </section>
       {% endif %}
     {% endfor %}
   {% endmacro %}

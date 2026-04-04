@@ -27,6 +27,7 @@
       "/records/new can create a draft record from a chosen form",
       "/records/{id}/edit now supports the first calm server-rendered record-entry flow",
       "/records/{id} now shows a read-only record view",
+      "record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholders",
       "records are now stored separately from forms and point to a frozen form_version_id",
       "the first records API surface now exists at /api/records/bootstrap, /api/records, /api/records/{id}, and /api/records/{id}/complete",
       "record status is intentionally minimal right now: draft and completed",

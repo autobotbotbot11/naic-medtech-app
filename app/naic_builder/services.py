@@ -1053,6 +1053,27 @@ def build_print_display_value(
     }
 
 
+def build_print_utility_content(props: dict[str, Any]) -> str:
+    return compact_text(props.get("content")) or ""
+
+
+def build_print_table_columns(props: dict[str, Any]) -> list[str]:
+    columns = [
+        compact_text(column)
+        for column in normalize_items(props.get("columns"))
+        if compact_text(column)
+    ]
+    return columns or ["Column 1", "Column 2"]
+
+
+def build_print_table_sample_rows(props: dict[str, Any]) -> int:
+    try:
+        sample_rows = int(props.get("sample_rows") or 0)
+    except (TypeError, ValueError):
+        sample_rows = 0
+    return max(1, min(sample_rows or 3, 6))
+
+
 def build_print_field_item(
     block: dict[str, Any],
     values: dict[str, Any],
@@ -1133,20 +1154,28 @@ def build_print_items(
                 {
                     "kind": "note",
                     "name": compact_text(block.get("name")) or "",
+                    "content": build_print_utility_content(props),
                 }
             )
             continue
 
         if kind == "divider":
-            items.append({"kind": "divider"})
+            items.append(
+                {
+                    "kind": "divider",
+                    "name": compact_text(block.get("name")) or "",
+                    "content": build_print_utility_content(props),
+                }
+            )
             continue
 
         if kind == "table":
             items.append(
                 {
-                    "kind": "table_placeholder",
+                    "kind": "table",
                     "name": compact_text(block.get("name")) or "Table",
-                    "sample_rows": int(props.get("sample_rows") or 0),
+                    "columns": build_print_table_columns(props),
+                    "sample_rows": build_print_table_sample_rows(props),
                 }
             )
             continue
