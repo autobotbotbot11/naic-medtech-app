@@ -26,6 +26,21 @@
   max-width: 42rem;
 }
 
+.record-shell .eyebrow {
+  color: color-mix(in srgb, var(--accent) 82%, var(--text) 18%);
+}
+
+.record-shell .library-topbar .eyebrow {
+  color: color-mix(in srgb, var(--accent) 88%, white 12%);
+}
+
+.record-shell .library-topbar .panel-copy,
+.record-shell .record-header .panel-copy,
+.record-shell .record-header .form-card-meta,
+.record-shell .record-header .eyebrow {
+  color: color-mix(in srgb, var(--shell-muted) 76%, white 24%);
+}
+
 .record-shell .record-header-copy .form-card-meta {
   font-size: 13px;
   font-weight: 700;
@@ -135,6 +150,12 @@
 
 .records-sidebar .record-summary-card .eyebrow {
   color: color-mix(in srgb, var(--accent) 84%, var(--text) 16%);
+}
+
+.sidebar-note .eyebrow,
+.sidebar-head .eyebrow,
+.record-start-metric .eyebrow {
+  color: color-mix(in srgb, var(--accent) 86%, var(--text) 14%);
 }
 
 .record-summary-card::after {
@@ -832,6 +853,22 @@ html[data-theme="dark"] .record-shell h3,
 html[data-theme="dark"] .record-shell .record-meta-card strong,
 html[data-theme="dark"] .record-shell .record-audit-item strong {
   color: var(--shell-text);
+}
+
+html[data-theme="dark"] .record-shell .eyebrow {
+  color: color-mix(in srgb, var(--accent) 92%, #dff1f6 8%);
+}
+
+html[data-theme="dark"] .record-shell .library-topbar .eyebrow,
+html[data-theme="dark"] .record-shell .record-header .eyebrow {
+  color: color-mix(in srgb, var(--accent) 94%, #eaf7fa 6%);
+}
+
+html[data-theme="dark"] .record-shell .panel-copy,
+html[data-theme="dark"] .record-shell .entry-inline-hint,
+html[data-theme="dark"] .record-shell .record-activity-copy,
+html[data-theme="dark"] .record-shell .sidebar-note .panel-copy {
+  color: color-mix(in srgb, var(--muted) 78%, #eef8fb 22%);
 }
 
 html[data-theme="dark"] .record-card:hover {

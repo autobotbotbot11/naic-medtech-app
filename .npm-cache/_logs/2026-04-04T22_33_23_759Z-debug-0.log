@@ -1,0 +1,40 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@10.2.4
+2 info using node@v21.4.0
+3 timing npm:load:whichnode Completed in 3ms
+4 timing config:load:defaults Completed in 4ms
+5 timing config:load:file:C:\Program Files\nodejs\node_modules\npm\npmrc Completed in 4ms
+6 timing config:load:builtin Completed in 4ms
+7 timing config:load:cli Completed in 2ms
+8 timing config:load:env Completed in 0ms
+9 timing config:load:file:C:\Users\acer\Desktop\others-naic-app\structuring-data\.npmrc Completed in 0ms
+10 timing config:load:project Completed in 6ms
+11 timing config:load:file:C:\Users\acer\.npmrc Completed in 0ms
+12 timing config:load:user Completed in 0ms
+13 timing config:load:file:C:\Users\acer\AppData\Roaming\npm\etc\npmrc Completed in 0ms
+14 timing config:load:global Completed in 0ms
+15 timing config:load:setEnvs Completed in 1ms
+16 timing config:load Completed in 18ms
+17 timing npm:load:configload Completed in 18ms
+18 timing config:load:flatten Completed in 1ms
+19 timing npm:load:mkdirpcache Completed in 1ms
+20 timing npm:load:mkdirplogs Completed in 1ms
+21 verbose title npm exec playwright-cli -s=naic-ui open http://127.0.0.1:8114/records --headed
+22 verbose argv "exec" "--yes" "--package" "@playwright/cli" "--" "playwright-cli" "-s=naic-ui" "open" "http://127.0.0.1:8114/records" "--headed"
+23 timing npm:load:setTitle Completed in 1ms
+24 timing npm:load:display Completed in 1ms
+25 verbose logfile logs-max:10 dir:C:\Users\acer\Desktop\others-naic-app\structuring-data\.npm-cache\_logs\2026-04-04T22_33_23_759Z-
+26 verbose logfile C:\Users\acer\Desktop\others-naic-app\structuring-data\.npm-cache\_logs\2026-04-04T22_33_23_759Z-debug-0.log
+27 timing npm:load:logFile Completed in 11ms
+28 timing npm:load:timers Completed in 0ms
+29 timing npm:load:configScope Completed in 0ms
+30 timing npm:load Completed in 62ms
+31 timing arborist:ctor Completed in 1ms
+32 silly logfile done cleaning log files
+33 http fetch GET 200 https://registry.npmjs.org/@playwright%2fcli 1119ms (cache revalidated)
+34 timing arborist:ctor Completed in 1ms
+35 timing arborist:ctor Completed in 0ms
+36 timing command:exec Completed in 7173ms
+37 verbose exit 0
+38 timing npm Completed in 7548ms
+39 info ok

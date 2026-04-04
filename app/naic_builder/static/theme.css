@@ -313,11 +313,16 @@ html[data-theme="dark"] .save-dock {
 
 .record-filter-pill.is-active,
 .settings-tab.is-active,
-.record-status-chip[data-status="completed"],
 .status-chip[data-status="active"] {
   background: var(--accent-soft);
   color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.record-status-chip[data-status="completed"] {
+  background: var(--success-soft);
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 28%, transparent);
 }
 
 .record-status-chip[data-status="draft"],
@@ -325,6 +330,21 @@ html[data-theme="dark"] .save-dock {
   background: var(--warm-soft);
   color: var(--warm);
   border-color: color-mix(in srgb, var(--warm) 28%, transparent);
+}
+
+html[data-theme="dark"] .record-status-chip[data-status="draft"],
+html[data-theme="dark"] .status-chip[data-status="pending"] {
+  background: rgba(215, 154, 96, 0.14);
+  color: #d79a60;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+html[data-theme="dark"] .record-status-chip[data-status="completed"] {
+  background: rgba(110, 195, 171, 0.14);
+  color: #6ec3ab;
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .status-chip[data-status="disabled"] {
