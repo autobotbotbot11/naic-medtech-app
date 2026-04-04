@@ -1789,7 +1789,7 @@ function renderFormSetupCard(options = {}) {
           <p class="eyebrow">Basics</p>
           <div class="card-title-row">
             <h3 class="card-title">Basics</h3>
-            ${renderHelpPopover("Basics help", "Name the form and choose its location. Leave advanced details tucked away unless you need them.")}
+            ${renderHelpPopover("Basics help", "Set the name and location. Advanced details are optional.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -1860,7 +1860,7 @@ function renderSaveCard(options = {}) {
           <p class="eyebrow">Save</p>
           <div class="card-title-row">
             <h3 class="card-title">Save</h3>
-            ${renderHelpPopover("Save help", "Notes are optional. Add one only if it helps.")}
+            ${renderHelpPopover("Save help", "Notes are optional.")}
           </div>
         </div>
         ${focusMode ? "" : `
@@ -2025,8 +2025,8 @@ function renderContentCard() {
   const hiddenBlockCount = Math.max(0, topLevelBlockEntries().length - entries.length);
   const selectedEntry = resolveFocusedTopLevelBlockEntry(entries);
   const helpCopy = state.ui.advancedMode
-    ? "This is the main editing flow. Advanced items and deeper editing stay in this same Content pane."
-    : "This is the main editing flow. Add sections, fields, or groups here without worrying about the underlying structure.";
+    ? "Add, edit, and order everything here."
+    : "Add sections, fields, or groups here.";
   const addItems = [
     { action: "add-content-section", label: "Section" },
     { action: "add-content-field", label: "Field" },

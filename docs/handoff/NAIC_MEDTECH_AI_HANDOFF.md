@@ -179,7 +179,7 @@ What is implemented:
 - legacy compatibility is preserved too: builder storage now keeps `reference_text` as the active block prop while still projecting it back into legacy `normal_value` where older storage expects it
 - the visible field UX stays calm too: `Reference` keeps one short hint, `Normal range` now gets one tiny line for meaning, and choice options stay simple without extra tooltip clutter
 - active organizer rows are quieter too: the old `Editing` pills are gone from the outline and nested organizers, so focus now reads through the active highlight instead of extra status chips
-- advanced labels and helper copy are calmer too: shorter labels like `Key` and `Notes`, and simpler content/help text now keep the builder and library screens less technical without changing behavior
+- advanced labels and helper copy are calmer too: shorter labels like `Key` and `Notes`, plus tighter Basics/Content/Save help copy, now keep the builder less technical without adding extra clutter
 - the old shared `Record defaults` selector is now hidden from the visible builder flow, so setup stays closer to the flexible lego model while backend compatibility remains intact
 - the guided `/forms/new` flow is less legacy too: it no longer carries old grouping/order hidden fields into the builder, only the tree/location data the current flow actually needs
 - the frontend draft logic is less legacy too: new and duplicated drafts no longer depend on old grouping/order fields just to keep the current builder working
