@@ -44,6 +44,12 @@ The app now starts from a builder-first FastAPI scaffold.
     - dark mode: `artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html`
   - the dark sample is intentionally moodier than the first luxe dark variant and is the preferred dark direction
   - this was chosen from standalone exploration files only; the live app has not been reskinned yet
+  - the concrete rollout plan now lives in `../docs/handoff/UI_RESKIN_PLAN.md`
+- the first live theme foundation has now started too:
+  - shared non-print theme assets now exist at `app/naic_builder/static/theme.css` and `app/naic_builder/static/theme.js`
+  - the live app now has the first shared light/dark mode plumbing across builder, auth, records, forms, and settings
+  - the current toggle is a small floating mode switcher so the theme system can land everywhere before deeper page-specific shell polish
+  - print is still intentionally excluded from this theme pass
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

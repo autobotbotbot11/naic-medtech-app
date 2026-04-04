@@ -15,6 +15,23 @@
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
     },
+    "reskin_plan_doc": "docs/handoff/UI_RESKIN_PLAN.md",
+    "live_theme_foundation": {
+      "status": "started",
+      "shared_assets": [
+        "app/naic_builder/static/theme.css",
+        "app/naic_builder/static/theme.js"
+      ],
+      "wiring_scope": [
+        "builder",
+        "auth",
+        "records",
+        "forms",
+        "settings"
+      ],
+      "current_toggle": "floating light/dark toggle with local persistence and system fallback",
+      "print_excluded": true
+    },
     "notes": [
       "The preferred feel is premium, modern, calm, and authored rather than generic admin minimalism.",
       "Dark mode should stay curated and atmospheric, not neon and not pure black.",

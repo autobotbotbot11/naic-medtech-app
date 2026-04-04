@@ -155,8 +155,21 @@ Important implementation rule:
 
 Important current boundary:
 - the chosen visual direction is locked
-- the live app has **not** been reskinned yet
+- the live app has only started the first shared theme pass; the full page-by-page reskin is still ahead
 - this decision should inform future app-shell, records, auth, settings, and later print styling work
+- the concrete rollout plan for the live reskin now lives in `docs/handoff/UI_RESKIN_PLAN.md`
+
+Current live UI checkpoint:
+- shared non-print theme assets now exist at:
+  - `app/naic_builder/static/theme.css`
+  - `app/naic_builder/static/theme.js`
+- those assets are now wired into builder, auth, records, forms, and settings templates
+- the current theme control is intentionally simple:
+  - a floating light/dark toggle
+  - local persistence
+  - system-dark fallback on first load
+- this is only the foundation pass
+- deeper surface-specific reskin work still needs to happen in the rollout order documented in `docs/handoff/UI_RESKIN_PLAN.md`
 
 ## Next Whole-App Milestone
 The builder is now at the point where the core direction is effectively done.
