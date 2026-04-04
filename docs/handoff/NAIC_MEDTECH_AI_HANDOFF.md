@@ -238,6 +238,7 @@ What is implemented:
 - form-version storage assembly is cleaner too: raw live block payloads are normalized before the legacy storage bridge runs, so the live save path no longer depends on fallback reads of stale option `label` keys
 - old option `label` residue is thinner in the browser too: legacy `label -> name` cleanup now lives in draft-ingress normalization, while repeated live option helpers read the active `name` shape only
 - seed and missing-block fallback storage are cleaner too: both now rebuild block storage through one explicit legacy-storage -> block-storage bridge helper instead of open-coding direct legacy block conversion paths
+- form-choice payloads are more location-first too: builder quick-switch reads now prefer `location_path_label` and explicit `form_path_label`, instead of depending on older `path_label/location_label` aliases in the live browser path
 - form create, update, and move flows now use a shared tree-first form-node sync helper, so the real `LibraryNode` state is updated directly before legacy mirrors are backfilled
 - `resolve_form_location_metadata()` is more tree-first too: it now feeds create/update with `resolved_parent_*` and `resolved_form_order` values instead of returning `group_*` as the primary active shape
 - legacy `group_*` mirror backfill is now centralized too: one helper derives those compatibility fields from the real node state instead of duplicating that logic across create/update/move/tree-sync paths

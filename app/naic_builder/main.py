@@ -200,7 +200,7 @@ def render_move_form_page(
             "app_title": APP_TITLE,
             "form_slug": definition.slug,
             "form_name": definition.name,
-            "form_path_label": current_choice["path_label"] if current_choice else definition.name,
+            "form_path_label": current_choice["form_path_label"] if current_choice else definition.name,
             "selected_parent_key": selected_parent_key.strip() or resolved_parent_key,
             "container_options": container_options,
             "error_message": error_message,

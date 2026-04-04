@@ -807,6 +807,9 @@ def list_form_choices(session: Session) -> list[dict[str, Any]]:
                 {
                     "slug": compact_text(form.get("slug")),
                     "name": form_name,
+                    "location_name": path[-1] if path else "Top level",
+                    "location_path_label": " / ".join(path) or "Top level",
+                    "form_path_label": " / ".join(current_path),
                     "location_label": " / ".join(path) or "Top level",
                     "path_label": " / ".join(current_path),
                     "depth": len(path),

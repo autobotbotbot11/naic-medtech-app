@@ -508,11 +508,11 @@ function quickSwitchForms() {
 }
 
 function quickSwitchLocationLabel(form) {
-  const direct = compactText(form?.location_label);
+  const direct = compactText(form?.location_path_label);
   if (direct) {
     return direct;
   }
-  const pathLabel = compactText(form?.path_label);
+  const pathLabel = compactText(form?.form_path_label);
   const name = compactText(form?.name);
   if (!pathLabel || pathLabel === name) {
     return "Top level";
@@ -1654,8 +1654,8 @@ function renderFormList() {
     }
     const haystack = [
       compactText(form?.name),
-      compactText(form?.path_label),
-      compactText(form?.location_label),
+      compactText(form?.form_path_label),
+      compactText(form?.location_path_label),
     ].join(" ").toLowerCase();
     return haystack.includes(query);
   });
