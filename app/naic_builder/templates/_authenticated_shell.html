@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block html_title %}{{ app_title }}{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <script src="{{ url_for('static', path='theme.js') }}"></script>
+  {% block extra_css %}{% endblock %}
+  <link rel="stylesheet" href="{{ url_for('static', path='theme.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='shell.css') }}">
+</head>
+<body class="app-shell-body{% if shell_variant|default('default') == 'workspace' %} app-shell-body--workspace{% endif %}" {% block body_attrs %}{% endblock %}>
+  {% set clinic_profile = request.state.clinic_profile or {} %}
+  {% set current_user = request.state.current_user or {} %}
+  {% set active_nav = shell_active|default('records') %}
+
+  <div class="app-scaffold{% if shell_variant|default('default') == 'workspace' %} app-scaffold--workspace{% endif %}">
+    <aside class="app-sidebar panel" data-shell-sidebar aria-hidden="false">
+      <div class="app-sidebar__brand">
+        <div class="app-sidebar__brand-mark">
+          {% if clinic_profile.get('has_logo') %}
+          <img src="/settings/clinic/logo" alt="{{ clinic_profile.get('clinic_name') or app_title }}">
+          {% else %}
+          <span class="app-sidebar__brand-fallback">N</span>
+          {% endif %}
+        </div>
+        <div class="app-sidebar__brand-copy">
+          <strong>{{ clinic_profile.get('clinic_name') or 'Clinic workspace' }}</strong>
+          <span>{{ app_title }}</span>
+        </div>
+      </div>
+
+      <p class="app-nav-label">Workspace</p>
+
+      <nav class="app-nav" aria-label="Primary">
+        <a class="app-nav__item{% if active_nav == 'records' %} is-active{% endif %}" href="/records">
+          <strong>Records</strong>
+          <span>Drafts, completed entries, and daily medtech work.</span>
+        </a>
+        {% if request.state.is_admin %}
+        <a class="app-nav__item{% if active_nav == 'forms' %} is-active{% endif %}" href="/forms">
+          <strong>Forms</strong>
+          <span>Manage the form library and creation flow.</span>
+        </a>
+        <a class="app-nav__item{% if active_nav == 'builder' %} is-active{% endif %}" href="/builder">
+          <strong>Builder</strong>
+          <span>Refine structure, fields, and reusable form logic.</span>
+        </a>
+        <a class="app-nav__item{% if active_nav == 'settings' %} is-active{% endif %}" href="/settings">
+          <strong>Settings</strong>
+          <span>Clinic identity, users, and account controls.</span>
+        </a>
+        {% endif %}
+      </nav>
+
+      <div class="app-sidebar__footer">
+        <button class="shell-theme-toggle" type="button" data-theme-toggle></button>
+
+        <div class="app-account-card">
+          <strong>{{ current_user.get('full_name') or 'Signed in' }}</strong>
+          <span>
+            {{ (current_user.get('role') or 'user') | title }}
+            {% if current_user.get('email') %}
+            - {{ current_user.get('email') }}
+            {% endif %}
+          </span>
+        </div>
+
+        <div class="app-sidebar__footer-actions">
+          <a class="ghost-button" href="/change-password">Password</a>
+          <form method="post" action="/logout" class="inline-action-form">
+            <button class="ghost-button" type="submit">Log out</button>
+          </form>
+        </div>
+      </div>
+    </aside>
+
+    <div class="app-drawer-scrim" data-shell-drawer-close hidden></div>
+
+    <main class="app-main">
+      <header class="app-topbar panel">
+        <div class="app-topbar__copy">
+          <div class="app-topbar__lead">
+            <button class="app-nav-toggle" type="button" data-shell-drawer-toggle aria-expanded="false">Menu</button>
+            <p class="eyebrow">{% block shell_eyebrow %}Workspace{% endblock %}</p>
+          </div>
+          <h1>{% block shell_title %}{{ app_title }}{% endblock %}</h1>
+          {% block shell_description %}{% endblock %}
+        </div>
+        <div class="app-topbar__actions">
+          {% block topbar_actions %}{% endblock %}
+        </div>
+      </header>
+
+      <section class="app-main__body{% if shell_variant|default('default') == 'workspace' %} app-main__body--workspace{% endif %}">
+        {% block content %}{% endblock %}
+      </section>
+    </main>
+  </div>
+
+  {% block page_scripts %}{% endblock %}
+  <script src="{{ url_for('static', path='shell.js') }}" defer></script>
+</body>
+</html>

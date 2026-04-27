@@ -187,9 +187,10 @@ Current live UI checkpoint:
   - `app/naic_builder/static/theme.js`
 - those assets are now wired into builder, auth, records, forms, and settings templates
 - the current theme control is intentionally simple:
-  - a floating light/dark toggle
+  - the authenticated shell now carries the primary light/dark toggle in the sidebar footer
   - local persistence
   - system-dark fallback on first load
+  - the older floating toggle now remains mainly as a fallback on public auth screens
 - this is only the foundation pass
 - the first records-first live reskin pass has now landed too:
   - `app/naic_builder/static/records.css` has been rewritten toward the locked `Clinical Depth Luxe` direction
@@ -212,30 +213,41 @@ Current live UI checkpoint:
     - native file-upload controls were also styled in `theme.css` so clinic/logo/image flows no longer drop back to default browser chrome
   - builder still needs its own deeper surface-specific reskin work after this
 - deeper surface-specific reskin work still needs to happen in the rollout order documented in `docs/handoff/UI_RESKIN_PLAN.md`
+- the shared authenticated shell foundation has now landed too:
+  - shared shell assets now exist at:
+    - `app/naic_builder/static/shell.css`
+    - `app/naic_builder/static/shell.js`
+    - `app/naic_builder/templates/_authenticated_shell.html`
+  - authenticated records, forms, settings, and builder screens now sit inside one role-aware product shell
+  - the shell now provides:
+    - a left sidebar for stable product navigation
+    - a top contextual bar for page title and page-level actions
+    - a builder workspace variant so the builder keeps a focused tool mode without living outside the product family
+  - route-level smoke for the new shell already passed through a real login path and across the main authenticated routes
 
 ## Next Whole-App Milestone
 The builder is now at the point where the core direction is effectively done.
 
-That means the next major milestone for the whole app should be:
+That means the next major milestone for the whole app should now be:
 
-`Records Runtime`
+`Template-driven print system`
 
-This is the future screen/module where the medtech will:
-- choose the needed form
-- fill up patient and result data
-- upload image answers when needed
-- save the record
-- print or release the output later
+This is the future screen/module where the clinic will:
+- reuse the saved `Record + form_version_id`
+- apply the real clinic print template and branding rules
+- place logo, patient header, result body, images, and footer intentionally
+- stop relying on the current generic first-pass browser print renderer
 
-Recommended product priority after the builder:
-1. record/data-entry runtime
-2. record storage model tied to `form_version_id`
-3. image/file asset support for record answers
-4. print/output renderer
-5. only then broader settings/admin growth if truly needed
+Recommended product priority from this checkpoint:
+1. real template-driven print architecture
+2. branded clinic header and logo handling inside print
+3. arrangement-sensitive result layout rules
+4. image sizing and print placement rules
+5. only then smaller non-print polish passes if direct issues remain
 
-Do not make the builder keep growing just because it is the most developed module right now.
-The builder should now become the quiet setup tool behind the app, while the real product center shifts to record entry and output.
+Do not reopen major builder growth now that its core direction is done.
+Do not keep stretching the generic print renderer now that the shared product shell is in place.
+The right next move is the real clinic-facing print system.
 
 ## Records Runtime Foundation Status
 The first `Records Runtime` foundation has now landed in the app.

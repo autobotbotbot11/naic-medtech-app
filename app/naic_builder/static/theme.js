@@ -21,6 +21,9 @@
 
   const getActiveTheme = () => getStoredTheme() || getSystemTheme();
 
+  const allToggleButtons = () =>
+    Array.from(document.querySelectorAll("[data-theme-toggle], [data-theme-toggle-mounted]"));
+
   applyTheme(getActiveTheme());
 
   const updateToggleCopy = (button) => {
@@ -36,16 +39,17 @@
     `;
   };
 
-  const mountToggle = () => {
-    if (!document.body || document.querySelector("[data-theme-toggle-mounted]")) {
+  const refreshToggleCopy = () => {
+    allToggleButtons().forEach(updateToggleCopy);
+  };
+
+  const bindToggle = (button) => {
+    if (button.dataset.themeToggleBound === "true") {
+      updateToggleCopy(button);
       return;
     }
 
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "theme-toggle-fab";
-    button.dataset.themeToggleMounted = "true";
-
+    button.dataset.themeToggleBound = "true";
     button.addEventListener("click", () => {
       const next = root.dataset.theme === "dark" ? "light" : "dark";
       applyTheme(next);
@@ -54,10 +58,33 @@
       } catch (error) {
         // Ignore storage failures and keep the session theme.
       }
-      updateToggleCopy(button);
+      refreshToggleCopy();
     });
 
     updateToggleCopy(button);
+  };
+
+  const mountToggle = () => {
+    if (!document.body) {
+      return;
+    }
+
+    const inlineButtons = document.querySelectorAll("[data-theme-toggle]");
+    if (inlineButtons.length) {
+      inlineButtons.forEach(bindToggle);
+      return;
+    }
+
+    if (document.querySelector("[data-theme-toggle-mounted]")) {
+      refreshToggleCopy();
+      return;
+    }
+
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "theme-toggle-fab";
+    button.dataset.themeToggleMounted = "true";
+    bindToggle(button);
     document.body.appendChild(button);
   };
 
@@ -66,10 +93,7 @@
     const listener = () => {
       if (!getStoredTheme()) {
         applyTheme(getSystemTheme());
-        const button = document.querySelector("[data-theme-toggle-mounted]");
-        if (button) {
-          updateToggleCopy(button);
-        }
+        refreshToggleCopy();
       }
     };
 

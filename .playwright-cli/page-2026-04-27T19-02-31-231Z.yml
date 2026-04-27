@@ -1,0 +1,160 @@
+- generic [ref=e2]:
+  - complementary [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e6]: "N"
+      - generic [ref=e7]:
+        - strong [ref=e8]: Clinic workspace
+        - generic [ref=e9]: NAIC Medtech Builder
+    - paragraph [ref=e10]: Workspace
+    - navigation [ref=e11]:
+      - link [ref=e12] [cursor=pointer]:
+        - /url: /records
+        - strong [ref=e13]: Records
+        - generic [ref=e14]: Drafts, completed entries, and daily medtech work.
+      - link [ref=e15] [cursor=pointer]:
+        - /url: /forms
+        - strong [ref=e16]: Forms
+        - generic [ref=e17]: Manage the form library and creation flow.
+      - link [ref=e18] [cursor=pointer]:
+        - /url: /builder
+        - strong [ref=e19]: Builder
+        - generic [ref=e20]: Refine structure, fields, and reusable form logic.
+      - link [ref=e21] [cursor=pointer]:
+        - /url: /settings
+        - strong [ref=e22]: Settings
+        - generic [ref=e23]: Clinic identity, users, and account controls.
+    - generic [ref=e24]:
+      - button [ref=e25]:
+        - generic [ref=e27]: Dark mode
+      - generic [ref=e28]:
+        - strong [ref=e29]: admin
+        - generic [ref=e30]: Admin - admin@gmail.com
+      - generic [ref=e31]:
+        - link [ref=e32] [cursor=pointer]:
+          - /url: /change-password
+          - text: Password
+        - button [ref=e34]: Log out
+  - main [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - button "Menu" [ref=e39]
+          - paragraph [ref=e40]: Records
+        - heading "Records" [level=1] [ref=e41]
+        - paragraph [ref=e42]: Create a record, continue a draft, or review a completed result without leaving the main clinic workspace.
+      - link "Start new record" [ref=e44] [cursor=pointer]:
+        - /url: /records/new
+    - generic [ref=e47]:
+      - complementary [ref=e48]:
+        - generic [ref=e49]:
+          - paragraph [ref=e50]: Quick view
+          - heading "Today" [level=2] [ref=e51]
+        - generic [ref=e52]:
+          - article [ref=e53]:
+            - paragraph [ref=e54]: Drafts
+            - heading "3" [level=3] [ref=e55]
+            - paragraph [ref=e56]: Records that can still be opened and finished.
+          - article [ref=e57]:
+            - paragraph [ref=e58]: Completed
+            - heading "1" [level=3] [ref=e59]
+            - paragraph [ref=e60]: Recently finished records ready to review or print later.
+        - generic [ref=e61]:
+          - paragraph [ref=e62]: Available forms
+          - paragraph [ref=e63]: 18 active forms ready for record entry.
+        - generic [ref=e64]:
+          - paragraph [ref=e65]: Find records
+          - paragraph [ref=e66]: Search by patient, case number, form name, or record key.
+      - generic [ref=e67]:
+        - generic [ref=e68]:
+          - generic [ref=e70]:
+            - paragraph [ref=e71]: Search
+            - heading "Find a past record" [level=2] [ref=e72]
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - generic [ref=e75]:
+                - generic [ref=e76]: Find
+                - searchbox "Find" [ref=e77]
+              - button "Search" [ref=e79]
+            - generic [ref=e80]:
+              - link "All" [ref=e81] [cursor=pointer]:
+                - /url: /records
+              - link "Drafts" [ref=e82] [cursor=pointer]:
+                - /url: /records?status=draft
+              - link "Completed" [ref=e83] [cursor=pointer]:
+                - /url: /records?status=completed
+        - generic [ref=e84]:
+          - generic [ref=e85]:
+            - generic [ref=e86]:
+              - paragraph [ref=e87]: Drafts
+              - heading "Continue working" [level=2] [ref=e88]
+            - link "Choose another form" [ref=e90] [cursor=pointer]:
+              - /url: /records/new
+          - generic [ref=e91]:
+            - article [ref=e92]:
+              - generic [ref=e93]:
+                - generic [ref=e94]:
+                  - generic [ref=e95]: draft
+                  - paragraph [ref=e96]: Microbiology
+                - heading "Unnamed patient" [level=3] [ref=e97]
+                - paragraph [ref=e98]: Microbiology
+                - paragraph [ref=e99]: "Case: Not set yet"
+                - paragraph [ref=e100]: Updated Apr 04, 2026 10:45 PM Malay Peninsula Standard Time - admin
+              - generic [ref=e101]:
+                - link "Open draft" [ref=e102] [cursor=pointer]:
+                  - /url: /records/4/edit
+                - link "View" [ref=e103] [cursor=pointer]:
+                  - /url: /records/4
+                - link "Print" [ref=e104] [cursor=pointer]:
+                  - /url: /records/4/print
+            - article [ref=e105]:
+              - generic [ref=e106]:
+                - generic [ref=e107]:
+                  - generic [ref=e108]: draft
+                  - paragraph [ref=e109]: Pro-Time, APTT
+                - heading "Unnamed patient" [level=3] [ref=e110]
+                - paragraph [ref=e111]: Hematology / Pro-Time, APTT
+                - paragraph [ref=e112]: "Case: Not set yet"
+                - paragraph [ref=e113]: Updated Apr 04, 2026 10:05 PM Malay Peninsula Standard Time - admin
+              - generic [ref=e114]:
+                - link "Open draft" [ref=e115] [cursor=pointer]:
+                  - /url: /records/3/edit
+                - link "View" [ref=e116] [cursor=pointer]:
+                  - /url: /records/3
+                - link "Print" [ref=e117] [cursor=pointer]:
+                  - /url: /records/3/print
+            - article [ref=e118]:
+              - generic [ref=e119]:
+                - generic [ref=e120]:
+                  - generic [ref=e121]: draft
+                  - paragraph [ref=e122]: Cardiaci
+                - heading "Unnamed patient" [level=3] [ref=e123]
+                - paragraph [ref=e124]: Serology / Cardiaci
+                - paragraph [ref=e125]: "Case: Not set yet"
+                - paragraph [ref=e126]: Updated Apr 04, 2026 09:54 PM Malay Peninsula Standard Time - admin
+              - generic [ref=e127]:
+                - link "Open draft" [ref=e128] [cursor=pointer]:
+                  - /url: /records/2/edit
+                - link "View" [ref=e129] [cursor=pointer]:
+                  - /url: /records/2
+                - link "Print" [ref=e130] [cursor=pointer]:
+                  - /url: /records/2/print
+        - generic [ref=e131]:
+          - generic [ref=e133]:
+            - paragraph [ref=e134]: Completed
+            - heading "Recent finished records" [level=2] [ref=e135]
+          - article [ref=e137]:
+            - generic [ref=e138]:
+              - generic [ref=e139]:
+                - generic [ref=e140]: completed
+                - paragraph [ref=e141]: Semen
+              - heading "Juan" [level=3] [ref=e142]
+              - paragraph [ref=e143]: Clinical Microscopy / Semen
+              - paragraph [ref=e144]: "Case: 1"
+              - paragraph [ref=e145]: Completed Apr 04, 2026 01:32 PM Malay Peninsula Standard Time
+            - generic [ref=e146]:
+              - link "View record" [ref=e147] [cursor=pointer]:
+                - /url: /records/1
+              - link "View" [ref=e148] [cursor=pointer]:
+                - /url: /records/1
+              - link "Print" [ref=e149] [cursor=pointer]:
+                - /url: /records/1/print

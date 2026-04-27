@@ -1,16 +1,25 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Users | {{ app_title }}</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <script src="{{ url_for('static', path='theme.js') }}"></script>
+{% extends "_authenticated_shell.html" %}
+{% set shell_active = "settings" %}
+
+{% block html_title %}Users | {{ app_title }}{% endblock %}
+
+{% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='auth.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='theme.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block shell_eyebrow %}Settings{% endblock %}
+{% block shell_title %}User accounts{% endblock %}
+{% block shell_description %}
+  <p class="panel-copy">Approve requests, create accounts manually, and keep clinic access organized without a heavy workflow.</p>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a class="ghost-button" href="/settings/clinic">Clinic profile</a>
+  <a class="primary-button" href="/settings/users/new">Create user</a>
+{% endblock %}
+
+{% block content %}
   {% macro render_user_card(user, section) %}
   <article class="user-card">
     <div class="user-card-head">
@@ -53,25 +62,7 @@
   </article>
   {% endmacro %}
 
-  <main class="auth-shell">
-    <header class="library-topbar panel">
-      <div class="brand-copy">
-        <p class="eyebrow">Settings</p>
-        <h1>User accounts</h1>
-        <p class="panel-copy">Approve requests, create accounts manually, and keep clinic access organized without a heavy workflow.</p>
-      </div>
-      <div class="settings-topbar-actions">
-        <a class="ghost-button" href="/records">Records</a>
-        <a class="ghost-button" href="/forms">Forms</a>
-        <a class="ghost-button" href="/change-password">Password</a>
-        <a class="ghost-button" href="/settings/clinic">Clinic profile</a>
-        <a class="primary-button" href="/settings/users/new">Create user</a>
-        <form method="post" action="/logout" class="inline-action-form">
-          <button class="ghost-button" type="submit">Log out</button>
-        </form>
-      </div>
-    </header>
-
+  <div class="auth-shell">
     <section class="panel settings-panel">
       <div class="settings-nav">
         <a class="settings-tab" href="/settings/clinic">Clinic profile</a>
@@ -161,6 +152,5 @@
         </div>
       </section>
     </section>
-  </main>
-</body>
-</html>
+  </div>
+{% endblock %}

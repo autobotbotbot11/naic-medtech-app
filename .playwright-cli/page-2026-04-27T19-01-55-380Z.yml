@@ -1,0 +1,33 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - paragraph [ref=e5]: Login
+        - heading "NAIC Medtech Builder" [level=1] [ref=e6]
+        - paragraph [ref=e7]: Sign in with your email or login ID to continue to records and forms.
+      - link "Request account" [ref=e9] [cursor=pointer]:
+        - /url: /request-account
+    - generic [ref=e10]:
+      - generic [ref=e12]:
+        - generic [ref=e13]:
+          - generic [ref=e14]: Email or login ID
+          - textbox "Email or login ID" [ref=e15]:
+            - /placeholder: example@clinic.com or medtech01
+        - generic [ref=e16]:
+          - generic [ref=e17]: Password
+          - textbox "Password" [ref=e18]
+        - generic [ref=e19]:
+          - button "Sign in" [ref=e20]
+          - link "Request account" [ref=e21] [cursor=pointer]:
+            - /url: /request-account
+      - complementary [ref=e22]:
+        - generic [ref=e23]:
+          - paragraph [ref=e24]: Access
+          - heading "Simple clinic access" [level=2] [ref=e25]
+          - paragraph [ref=e26]: Use one calm sign-in path whether the account came from a request or an admin-created fallback.
+        - list [ref=e27]:
+          - listitem [ref=e28]: Use either your email or your login ID.
+          - listitem [ref=e29]: Pending accounts wait for admin approval before sign-in works.
+          - listitem [ref=e30]: Admin-created accounts will ask for a password change on first login.
+  - button "Switch to dark mode" [ref=e31] [cursor=pointer]:
+    - generic [ref=e33]: Dark mode

@@ -1,33 +1,26 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clinic Profile | {{ app_title }}</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <script src="{{ url_for('static', path='theme.js') }}"></script>
+{% extends "_authenticated_shell.html" %}
+{% set shell_active = "settings" %}
+
+{% block html_title %}Clinic Profile | {{ app_title }}{% endblock %}
+
+{% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
   <link rel="stylesheet" href="{{ url_for('static', path='auth.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='theme.css') }}">
-</head>
-<body>
-  <main class="auth-shell">
-    <header class="library-topbar panel">
-      <div class="brand-copy">
-        <p class="eyebrow">Settings</p>
-        <h1>Clinic profile</h1>
-        <p class="panel-copy">Keep the clinic identity calm and complete now so future print and branded screens can build on one trusted profile.</p>
-      </div>
-      <div class="settings-topbar-actions">
-        <a class="ghost-button" href="/records">Records</a>
-        <a class="ghost-button" href="/forms">Forms</a>
-        <a class="ghost-button" href="/change-password">Password</a>
-        <form method="post" action="/logout" class="inline-action-form">
-          <button class="ghost-button" type="submit">Log out</button>
-        </form>
-      </div>
-    </header>
+{% endblock %}
 
+{% block shell_eyebrow %}Settings{% endblock %}
+{% block shell_title %}Clinic profile{% endblock %}
+{% block shell_description %}
+  <p class="panel-copy">Keep the clinic identity calm and complete now so future print and branded screens can build on one trusted profile.</p>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a class="ghost-button" href="/settings/users">Users</a>
+  <button class="primary-button" type="submit" form="clinicProfileForm">Save changes</button>
+{% endblock %}
+
+{% block content %}
+  <div class="auth-shell">
     <section class="panel settings-panel">
       <div class="settings-nav">
         <a class="settings-tab is-active" href="/settings/clinic">Clinic profile</a>
@@ -44,7 +37,7 @@
         <div class="banner success">{{ success_message }}</div>
         {% endif %}
 
-        <form method="post" action="/settings/clinic" enctype="multipart/form-data" class="profile-stack">
+        <form id="clinicProfileForm" method="post" action="/settings/clinic" enctype="multipart/form-data" class="profile-stack">
           <div class="brand-copy">
             <p class="eyebrow">Identity</p>
             <h2>Core clinic details</h2>
@@ -123,6 +116,5 @@
         {% endif %}
       </aside>
     </section>
-  </main>
-</body>
-</html>
+  </div>
+{% endblock %}

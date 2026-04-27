@@ -1,15 +1,28 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Form Library | {{ app_title }}</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <script src="{{ url_for('static', path='theme.js') }}"></script>
+{% extends "_authenticated_shell.html" %}
+{% set shell_active = "forms" %}
+
+{% block html_title %}Form Library | {{ app_title }}{% endblock %}
+
+{% block extra_css %}
   <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='theme.css') }}">
-</head>
-<body>
+{% endblock %}
+
+{% block shell_eyebrow %}Forms{% endblock %}
+{% block shell_title %}Form library{% endblock %}
+{% block shell_description %}
+  <p class="panel-copy">Choose a form, copy one, or keep the library structure organized before the builder work starts.</p>
+{% endblock %}
+
+{% block topbar_actions %}
+  <label class="search-wrap">
+    <span>Find</span>
+    <input id="librarySearch" type="search" placeholder="Search forms">
+  </label>
+  <a class="ghost-button" href="/folders/new">New folder</a>
+  <a class="primary-button" href="/forms/new">New form</a>
+{% endblock %}
+
+{% block content %}
   {% macro render_nodes(nodes, path_label='', level=0) %}
     {% for node in nodes if not node.archived %}
       {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
@@ -72,29 +85,7 @@
     {% endfor %}
   {% endmacro %}
 
-  <main class="library-shell">
-    <header class="library-topbar panel">
-      <div class="brand-copy">
-        <p class="eyebrow">Forms</p>
-        <h1>{{ app_title }}</h1>
-        <p class="panel-copy">Choose a form, copy one, or start new.</p>
-      </div>
-      <div class="topbar-actions">
-        <a class="ghost-button" href="/records">Records</a>
-        <a class="ghost-button" href="/settings">Settings</a>
-        <a class="ghost-button" href="/change-password">Password</a>
-        <form method="post" action="/logout" class="inline-action-form">
-          <button class="ghost-button" type="submit">Log out</button>
-        </form>
-        <label class="search-wrap">
-          <span>Find</span>
-          <input id="librarySearch" type="search" placeholder="Search forms">
-        </label>
-        <a class="ghost-button" href="/folders/new">New folder</a>
-        <a class="primary-button" href="/forms/new">New</a>
-      </div>
-    </header>
-
+  <div class="library-shell">
     <section class="library-grid">
       <aside class="panel library-sidebar">
         <div class="sidebar-head">
@@ -135,8 +126,9 @@
         </div>
       </section>
     </section>
-  </main>
+  </div>
+{% endblock %}
 
+{% block page_scripts %}
   <script src="{{ url_for('static', path='library.js') }}" defer></script>
-</body>
-</html>
+{% endblock %}

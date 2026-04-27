@@ -114,6 +114,30 @@ Definition of done:
 - the app can switch between the chosen light and dark modes
 - the shell and generic controls already feel like the new design family
 
+Current status:
+- landed
+- `theme.css` and `theme.js` already exist
+- the shared token layer and light/dark plumbing are already live
+
+### Phase 1.5
+Authenticated product shell
+- add one shared authenticated shell
+- add sidebar navigation
+- add top contextual bar
+- keep the builder in the same product family through a workspace variant
+
+Definition of done:
+- authenticated records, forms, settings, and builder screens all use one product shell
+- page-level actions move into the contextual top bar instead of every page inventing its own nav chrome
+
+Current status:
+- landed
+- shared shell assets now exist at:
+  - `app/naic_builder/static/shell.css`
+  - `app/naic_builder/static/shell.js`
+  - `app/naic_builder/templates/_authenticated_shell.html`
+- the builder now uses the same family through a workspace shell variant
+
 ### Phase 2
 Records-first reskin
 - `/records`

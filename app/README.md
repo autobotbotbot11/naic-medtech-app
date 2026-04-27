@@ -47,7 +47,15 @@ The app now starts from a builder-first FastAPI scaffold.
 - the non-print live reskin is now materially in place too:
   - shared non-print theme assets now exist at `app/naic_builder/static/theme.css` and `app/naic_builder/static/theme.js`
   - the live app now has shared light/dark mode plumbing across builder, auth, records, forms, and settings
-  - the current toggle is a small floating mode switcher with local persistence
+  - the authenticated app shell now carries the primary light/dark toggle in the sidebar footer, while the floating toggle remains as a fallback on public auth screens
+  - a shared authenticated shell foundation now also exists:
+    - `app/naic_builder/static/shell.css`
+    - `app/naic_builder/static/shell.js`
+    - `app/naic_builder/templates/_authenticated_shell.html`
+  - authenticated records, forms, settings, and builder screens now sit inside one role-aware shell:
+    - left sidebar for stable product navigation
+    - top contextual bar for page title and page actions
+    - a builder-specific workspace variant instead of forcing builder into a generic page shell
   - print is still intentionally excluded from this theme pass
   - the records-first live reskin is the strongest finished part of the pass:
   - `app/naic_builder/static/records.css` has been rewritten around the new `Clinical Depth Luxe` shell direction
@@ -69,6 +77,11 @@ The app now starts from a builder-first FastAPI scaffold.
     - forms library, clinic settings, user settings, auth pages, start-new-form, and the current builder shell now share the stronger shell/material treatment
     - native-looking file upload controls were also styled through `theme.css` so clinic logo and image-upload flows no longer break the premium feel
   - quick light-mode audits were also run across the main non-print screens so the first consolidated user review should not hit obvious contrast regressions
+  - the shared authenticated shell rollout itself is now landed too:
+    - `/records`, `/records/new`, `/records/{id}/edit`, `/records/{id}`
+    - `/forms`, `/forms/new`, folder create/edit/move, and form move
+    - `/settings/clinic`, `/settings/users`, and `/settings/users/new`
+    - `/builder` now uses the same product family through a workspace shell variant
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

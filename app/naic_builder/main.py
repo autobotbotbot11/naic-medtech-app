@@ -122,6 +122,7 @@ class AuthFlowMiddleware(BaseHTTPMiddleware):
         with SessionLocal() as session:
             user_present = has_any_users(session)
             session_user = None
+            clinic_profile = get_clinic_profile(session) if user_present else {}
             raw_user_id = request.session.get("user_id")
             if raw_user_id not in (None, ""):
                 try:
@@ -135,6 +136,7 @@ class AuthFlowMiddleware(BaseHTTPMiddleware):
             request.state.current_user = serialize_user(session_user) if session_user is not None else None
             request.state.has_users = user_present
             request.state.is_admin = bool(session_user is not None and session_user.role == "admin")
+            request.state.clinic_profile = clinic_profile
 
             if not user_present:
                 if path == "/setup":

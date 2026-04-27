@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "non_print_live_reskin_ready_for_review",
+    "status": "authenticated_shell_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -29,7 +29,7 @@
         "forms",
         "settings"
       ],
-      "current_toggle": "floating light/dark toggle with local persistence and system fallback",
+      "current_toggle": "integrated shell light/dark toggle with local persistence and system fallback; floating fallback remains on public auth screens",
       "print_excluded": true
     },
     "records_reskin_phase": {
@@ -50,7 +50,8 @@
         "A broader live pass also pushed library.css, auth.css, and new-form.css into the same luxe family, so forms library, auth, clinic settings, user settings, and start-new-form now read less like the older warm utility scaffolds.",
         "Native file upload controls were also styled through theme.css so clinic/logo/image flows do not drop back to default browser chrome.",
         "Direct browser-audited cleanup then fixed the remaining obvious dark-mode mismatches in record status chips, accent-label strength, settings/users stat cards, and the current builder content plus preview panels.",
-        "The current builder shell now sits inside the same non-print luxe family, but print is still intentionally excluded from this reskin."
+        "The current builder shell now sits inside the same non-print luxe family, but print is still intentionally excluded from this reskin.",
+        "A shared authenticated shell now sits under the non-print app too: shell.css, shell.js, and _authenticated_shell.html provide a role-aware sidebar plus top context bar across records, forms, settings, and the builder workspace variant."
       ]
     },
     "notes": [
@@ -105,6 +106,13 @@
       "auth feedback is steadier now too: pending-account login explains that approval is still needed, disabled-account login explains that admin access is needed again, and successful password changes now redirect back to Records with a quiet success banner",
       "visible role gating is now active for Admin and Medtech",
       "clinic profile data and clinic logo upload/remove now exist as the branding base for future print work"
+    ],
+    "authenticated_shell_foundation": [
+      "a shared authenticated shell now exists through app/naic_builder/static/shell.css, app/naic_builder/static/shell.js, and app/naic_builder/templates/_authenticated_shell.html",
+      "authenticated records, forms, settings, and builder pages now sit inside one role-aware product shell",
+      "the shell now provides a left sidebar for stable product navigation and a top contextual bar for page-level actions",
+      "the builder now uses the same product family through a workspace shell variant instead of living outside the app shell",
+      "real login-path smoke already passed for the new shell across records, forms, settings, and builder routes"
     ],
     "engine_foundation": [
       "a persisted generic container/form library tree foundation now exists in the backend",
@@ -347,13 +355,13 @@
   "optional_later_roles": [
     "view_only"
   ],
-  "next_major_build_target": "records_runtime_completion",
+  "next_major_build_target": "template_driven_print_system",
   "next_major_build_scope": [
-    "improve the real record-entry runtime beyond the first server-rendered foundation",
-    "refine the new image-answer flow for real clinic use",
-    "save richer records against exact form_version_id",
-    "render richer block kinds cleanly in records",
-    "improve the new browser-printable result surface"
+    "replace the generic first-pass print renderer with a real template-driven print system",
+    "apply clinic branding, logo, and header rules inside the print layout",
+    "make print layout sensitive to the actual arranged form structure",
+    "decide image sizing and placement rules inside print instead of the builder",
+    "treat non-print UI work as secondary cleanup unless direct issues appear"
   ],
   "source_of_truth": {
     "app_schema": "artifacts/schema/naic_medtech_app_schema.json",

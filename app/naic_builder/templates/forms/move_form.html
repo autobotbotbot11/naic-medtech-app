@@ -1,27 +1,24 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Move Form | {{ app_title }}</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
-  <script src="{{ url_for('static', path='theme.js') }}"></script>
-  <link rel="stylesheet" href="{{ url_for('static', path='new-form.css') }}">
-  <link rel="stylesheet" href="{{ url_for('static', path='theme.css') }}">
-</head>
-<body>
-  <main class="new-form-shell">
-    <header class="new-form-topbar panel">
-      <div class="brand-copy">
-        <p class="eyebrow">Move Form</p>
-        <h1>{{ app_title }}</h1>
-        <p class="panel-copy">Choose where this form should live, or keep it at the top level.</p>
-      </div>
-      <div class="topbar-actions">
-        <a class="ghost-button" href="/forms">Back to Library</a>
-      </div>
-    </header>
+{% extends "_authenticated_shell.html" %}
+{% set shell_active = "forms" %}
 
+{% block html_title %}Move Form | {{ app_title }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', path='new-form.css') }}">
+{% endblock %}
+
+{% block shell_eyebrow %}Forms{% endblock %}
+{% block shell_title %}Move form{% endblock %}
+{% block shell_description %}
+  <p class="panel-copy">Choose where this form should live, or keep it at the top level.</p>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a class="ghost-button" href="/forms">Back to library</a>
+{% endblock %}
+
+{% block content %}
+  <div class="new-form-shell">
     <form class="panel form-flow-card single-flow-card" action="/forms/move" method="post" novalidate>
       <input type="hidden" name="slug" value="{{ form_slug }}">
 
@@ -49,6 +46,5 @@
         <button class="primary-button" type="submit">Move form</button>
       </div>
     </form>
-  </main>
-</body>
-</html>
+  </div>
+{% endblock %}
