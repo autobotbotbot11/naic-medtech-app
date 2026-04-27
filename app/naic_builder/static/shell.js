@@ -1,77 +1,71 @@
 (() => {
   const body = document.body;
-  const sidebar = document.querySelector("[data-shell-sidebar]");
-  const scrim = document.querySelector("[data-shell-drawer-scrim]");
-  const toggles = Array.from(document.querySelectorAll("[data-shell-drawer-toggle]"));
-  const closers = Array.from(document.querySelectorAll("[data-shell-drawer-close]"));
+  const panel = document.querySelector("[data-shell-panel]");
+  const scrim = document.querySelector("[data-shell-panel-scrim]");
+  const toggles = Array.from(document.querySelectorAll("[data-shell-panel-toggle]"));
+  const closers = Array.from(document.querySelectorAll("[data-shell-panel-close]"));
 
-  if (!body || !sidebar || !toggles.length) {
+  if (!body || !panel || !toggles.length) {
     return;
   }
 
-  const media = window.matchMedia("(max-width: 1080px)");
+  const mobile = window.matchMedia("(max-width: 1080px)");
+  const openClass = "shell-panel-open";
 
   const syncState = () => {
-    const isMobile = media.matches;
-    const isOpen = body.classList.contains("shell-nav-open");
+    const isOpen = body.classList.contains(openClass);
 
-    if (!isMobile) {
-      body.classList.remove("shell-nav-open");
-      sidebar.setAttribute("aria-hidden", "false");
-      if (scrim) {
-        scrim.hidden = true;
-      }
-      toggles.forEach((button) => button.setAttribute("aria-expanded", "false"));
-      return;
-    }
+    panel.hidden = !isOpen;
+    panel.toggleAttribute("inert", !isOpen);
+    panel.setAttribute("aria-hidden", isOpen ? "false" : "true");
 
-    sidebar.setAttribute("aria-hidden", isOpen ? "false" : "true");
     if (scrim) {
       scrim.hidden = !isOpen;
     }
-    toggles.forEach((button) => button.setAttribute("aria-expanded", isOpen ? "true" : "false"));
+
+    toggles.forEach((button) => {
+      button.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    });
+
+    if (!mobile.matches) {
+      body.classList.remove("shell-nav-open");
+    }
   };
 
-  const openSidebar = () => {
-    if (!media.matches) {
-      return;
-    }
-    body.classList.add("shell-nav-open");
+  const openPanel = () => {
+    body.classList.add(openClass);
     syncState();
   };
 
-  const closeSidebar = () => {
-    body.classList.remove("shell-nav-open");
+  const closePanel = () => {
+    body.classList.remove(openClass);
     syncState();
   };
 
   toggles.forEach((button) => {
     button.addEventListener("click", () => {
-      if (!media.matches) {
-        return;
-      }
-      if (body.classList.contains("shell-nav-open")) {
-        closeSidebar();
+      if (body.classList.contains(openClass)) {
+        closePanel();
       } else {
-        openSidebar();
+        openPanel();
       }
     });
   });
 
   closers.forEach((button) => {
-    button.addEventListener("click", closeSidebar);
+    button.addEventListener("click", closePanel);
   });
 
   window.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && body.classList.contains("shell-nav-open")) {
-      closeSidebar();
+    if (event.key === "Escape" && body.classList.contains(openClass)) {
+      closePanel();
     }
   });
 
-  if (typeof media.addEventListener === "function") {
-    media.addEventListener("change", syncState);
-  } else if (typeof media.addListener === "function") {
-    media.addListener(syncState);
+  if (typeof mobile.addEventListener === "function") {
+    mobile.addEventListener("change", syncState);
+  } else if (typeof mobile.addListener === "function") {
+    mobile.addListener(syncState);
   }
 
   syncState();

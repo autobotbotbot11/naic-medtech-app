@@ -187,7 +187,7 @@ Current live UI checkpoint:
   - `app/naic_builder/static/theme.js`
 - those assets are now wired into builder, auth, records, forms, and settings templates
 - the current theme control is intentionally simple:
-  - the authenticated shell now carries the primary light/dark toggle in the sidebar footer
+  - the authenticated shell now carries the primary light/dark toggle inside the navigation overlay panel
   - local persistence
   - system-dark fallback on first load
   - the older floating toggle now remains mainly as a fallback on public auth screens
@@ -220,9 +220,14 @@ Current live UI checkpoint:
     - `app/naic_builder/templates/_authenticated_shell.html`
   - authenticated records, forms, settings, and builder screens now sit inside one role-aware product shell
   - the shell now provides:
-    - a left sidebar for stable product navigation
+    - a slim icon rail by default so the main canvas stays wide
+    - a full navigation overlay panel instead of a permanently wide sidebar
     - a top contextual bar for page title and page-level actions
     - a builder workspace variant so the builder keeps a focused tool mode without living outside the product family
+    - a lighter nav treatment too:
+      - the helper-copy under each nav item is gone
+      - primary nav reads through icons plus short labels only
+      - the old large texty `Compact` / `Expand` control is gone
   - route-level smoke for the new shell already passed through a real login path and across the main authenticated routes
 
 ## Next Whole-App Milestone

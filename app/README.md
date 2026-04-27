@@ -47,15 +47,20 @@ The app now starts from a builder-first FastAPI scaffold.
 - the non-print live reskin is now materially in place too:
   - shared non-print theme assets now exist at `app/naic_builder/static/theme.css` and `app/naic_builder/static/theme.js`
   - the live app now has shared light/dark mode plumbing across builder, auth, records, forms, and settings
-  - the authenticated app shell now carries the primary light/dark toggle in the sidebar footer, while the floating toggle remains as a fallback on public auth screens
+  - the authenticated shell now carries the primary light/dark toggle inside the navigation overlay panel, while the floating toggle remains as a fallback on public auth screens
   - a shared authenticated shell foundation now also exists:
     - `app/naic_builder/static/shell.css`
     - `app/naic_builder/static/shell.js`
     - `app/naic_builder/templates/_authenticated_shell.html`
   - authenticated records, forms, settings, and builder screens now sit inside one role-aware shell:
-    - left sidebar for stable product navigation
+    - slim icon rail by default so the main canvas keeps breathing room
+    - full navigation as an overlay panel instead of a permanently wide sidebar
     - top contextual bar for page title and page actions
     - a builder-specific workspace variant instead of forcing builder into a generic page shell
+    - nav stays intentionally light:
+      - no helper paragraphs in primary navigation
+      - icons plus short labels only
+      - the old texty `Compact` / `Expand` pattern is gone
   - print is still intentionally excluded from this theme pass
   - the records-first live reskin is the strongest finished part of the pass:
   - `app/naic_builder/static/records.css` has been rewritten around the new `Clinical Depth Luxe` shell direction
