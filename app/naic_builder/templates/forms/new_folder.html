@@ -20,30 +20,32 @@
 
 {% block content %}
   <div class="new-form-shell">
-    <form class="panel form-flow-card single-flow-card" action="/folders/new" method="post" novalidate>
-      <div class="section-head">
+    <form class="panel single-flow-card utility-flow-card" action="/folders/new" method="post" novalidate>
+      <div class="section-head utility-flow-head">
         <p class="eyebrow">Folder setup</p>
-        <h2>Name and place it</h2>
+        <h2>Create folder</h2>
       </div>
 
       {% if error_message %}
       <div class="inline-error" role="alert">{{ error_message }}</div>
       {% endif %}
 
-      <label class="field-stack">
-        <span>Folder name</span>
-        <input type="text" name="name" placeholder="Example: Rapid Tests" value="{{ folder_name }}" required>
-      </label>
+      <div class="utility-flow-section utility-field-grid">
+        <label class="field-stack">
+          <span>Folder name</span>
+          <input type="text" name="name" placeholder="Example: Rapid Tests" value="{{ folder_name }}" required>
+        </label>
 
-      <label class="field-stack">
-        <span>Place it inside</span>
-        <select name="parent_node_key">
-          <option value="" {% if not selected_parent_key %}selected{% endif %}>Top level</option>
-          {% for container in container_options %}
-          <option value="{{ container.node_key }}" {% if container.node_key == selected_parent_key %}selected{% endif %}>{{ container.folder_path_label }}</option>
-          {% endfor %}
-        </select>
-      </label>
+        <label class="field-stack">
+          <span>Inside</span>
+          <select name="parent_node_key">
+            <option value="" {% if not selected_parent_key %}selected{% endif %}>Top level</option>
+            {% for container in container_options %}
+            <option value="{{ container.node_key }}" {% if container.node_key == selected_parent_key %}selected{% endif %}>{{ container.folder_path_label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
 
       <div class="single-flow-actions">
         <button class="primary-button" type="submit">Create folder</button>

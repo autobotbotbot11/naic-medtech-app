@@ -20,32 +20,33 @@
 
 {% block content %}
   <div class="new-form-shell">
-    <form class="panel form-flow-card single-flow-card" action="/folders/edit" method="post" novalidate>
+    <form class="panel single-flow-card utility-flow-card" action="/folders/edit" method="post" novalidate>
       <input type="hidden" name="node_key" value="{{ folder_node_key }}">
 
-      <div class="section-head">
+      <div class="section-head utility-flow-head">
         <p class="eyebrow">Folder details</p>
         <h2>Update the folder</h2>
-        <p class="panel-copy">Current location: {{ folder_path_label }}</p>
+        <p class="utility-meta">Current location: {{ folder_path_label }}</p>
       </div>
 
       {% if error_message %}
       <div class="inline-error" role="alert">{{ error_message }}</div>
       {% endif %}
 
-      <label class="field-stack">
-        <span>Folder name</span>
-        <input type="text" name="name" placeholder="Example: Rapid Tests" value="{{ folder_name }}" required>
-      </label>
+      <div class="utility-flow-section utility-field-grid">
+        <label class="field-stack">
+          <span>Folder name</span>
+          <input type="text" name="name" placeholder="Example: Rapid Tests" value="{{ folder_name }}" required>
+        </label>
 
-      <label class="field-stack">
-        <span>Inside</span>
-        <input type="text" value="{{ parent_path_label }}" disabled>
-      </label>
+        <label class="field-stack">
+          <span>Inside</span>
+          <input type="text" value="{{ parent_path_label }}" disabled>
+        </label>
+      </div>
 
-      <p class="panel-copy">Delete only works when the folder is empty.</p>
-
-      <div class="single-flow-actions">
+      <div class="single-flow-actions single-flow-actions--split">
+        <p class="danger-note">Delete only works when the folder is empty.</p>
         <button class="ghost-button warn-button" type="submit" name="action" value="delete">Delete folder</button>
         <button class="primary-button" type="submit" name="action" value="save">Save changes</button>
       </div>

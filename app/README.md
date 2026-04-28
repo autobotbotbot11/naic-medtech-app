@@ -194,6 +194,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/folders/new` now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them
 - `/folders/edit` now gives folders a real management path too: they can be renamed, and they can be deleted once empty
 - `/folders/move` and `/forms/move` now give the tree real move flows too, so folders and forms can change parent location without falling back to the old one-level grouped model
+- folder create/edit/move and form move now share a compact utility-card style, so the smaller admin screens stay consistent with the Forms library and guided create flow
 - the first save path can now carry a real `library_parent_node_key`, so new drafts can keep their intended container parent without collapsing back to a one-level folder assumption
 - builder bootstrap and advanced editing no longer expose preset actions while the core flexible engine is being finished
 - the visible surface still keeps a compatibility projection so the UI can stay calm while the engine migrates underneath it

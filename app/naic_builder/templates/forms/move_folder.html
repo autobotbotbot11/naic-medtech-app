@@ -20,28 +20,30 @@
 
 {% block content %}
   <div class="new-form-shell">
-    <form class="panel form-flow-card single-flow-card" action="/folders/move" method="post" novalidate>
+    <form class="panel single-flow-card utility-flow-card" action="/folders/move" method="post" novalidate>
       <input type="hidden" name="node_key" value="{{ folder_node_key }}">
 
-      <div class="section-head">
-        <p class="eyebrow">Current folder</p>
+      <div class="section-head utility-flow-head">
+        <p class="eyebrow">Move folder</p>
         <h2>{{ folder_name }}</h2>
-        <p class="panel-copy">{{ folder_path_label }}</p>
+        <p class="utility-meta">{{ folder_path_label }}</p>
       </div>
 
       {% if error_message %}
       <div class="inline-error" role="alert">{{ error_message }}</div>
       {% endif %}
 
-      <label class="field-stack">
-        <span>Move to</span>
-        <select name="parent_node_key">
-          <option value="" {% if not selected_parent_key %}selected{% endif %}>Top level</option>
-          {% for container in container_options %}
-          <option value="{{ container.node_key }}" {% if container.node_key == selected_parent_key %}selected{% endif %}>{{ container.folder_path_label }}</option>
-          {% endfor %}
-        </select>
-      </label>
+      <div class="utility-flow-section">
+        <label class="field-stack">
+          <span>Move to</span>
+          <select name="parent_node_key">
+            <option value="" {% if not selected_parent_key %}selected{% endif %}>Top level</option>
+            {% for container in container_options %}
+            <option value="{{ container.node_key }}" {% if container.node_key == selected_parent_key %}selected{% endif %}>{{ container.folder_path_label }}</option>
+            {% endfor %}
+          </select>
+        </label>
+      </div>
 
       <div class="single-flow-actions">
         <button class="primary-button" type="submit">Move folder</button>

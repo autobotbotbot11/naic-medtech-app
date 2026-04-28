@@ -245,6 +245,7 @@ Current status:
 - folder and form rows are tighter, with repeated metadata reduced and secondary actions kept behind calm `More` menus
 - `/forms` now has a compact file-browser pass too: object icons, icon-only overflow actions, live result counts, and clearable search make the library feel more direct without changing the tree model
 - `/forms/new` now uses one guided setup card plus a compact summary instead of three separate step panels, keeping the same builder handoff while reducing ceremony
+- folder create/edit/move and form move screens now share the same compact utility-card treatment instead of falling back to older heavy form cards
 
 ### Phase 5
 Builder

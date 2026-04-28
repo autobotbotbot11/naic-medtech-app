@@ -190,6 +190,7 @@
       "/folders/new now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them",
       "/folders/edit now gives folders a real management path too: they can be renamed, and they can be deleted once empty",
       "/folders/move and /forms/move now exist as calm single-purpose move screens, so folders and forms can change parent location inside the real tree without dropping back to the old one-level group model",
+      "folder create/edit/move and form move now share a compact utility-card style, so the smaller admin screens stay consistent with the Forms library and guided create flow",
       "preset support has been deliberately removed from the active product path so the builder can stay focused on the core flow",
       "builder bootstrap no longer includes preset data",
       "advanced layout no longer exposes insert preset or save preset actions",
