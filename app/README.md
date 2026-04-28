@@ -47,7 +47,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the non-print live reskin is now materially in place too:
   - shared non-print theme assets now exist at `app/naic_builder/static/theme.css` and `app/naic_builder/static/theme.js`
   - the live app now has shared light/dark mode plumbing across builder, auth, records, forms, and settings
-  - the authenticated shell now carries the primary light/dark toggle in the top-right global header, while the floating toggle remains as a fallback on public auth screens
+  - the authenticated shell now carries the primary light/dark toggle in the top-right global header, and public auth screens now use the same inline topbar placement too
   - a shared authenticated shell foundation now also exists:
     - `app/naic_builder/static/shell.css`
     - `app/naic_builder/static/shell.js`

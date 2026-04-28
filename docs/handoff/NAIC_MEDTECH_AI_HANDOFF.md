@@ -188,6 +188,7 @@ Current live UI checkpoint:
 - those assets are now wired into builder, auth, records, forms, and settings templates
 - the current theme control is intentionally simple:
   - the authenticated shell now carries the primary light/dark toggle in the top-right global header
+  - public auth screens now use the same inline topbar placement too, so the old floating fallback no longer appears over content
   - local persistence
   - system-dark fallback on first load
   - the older floating toggle now remains mainly as a fallback on public auth screens

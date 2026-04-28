@@ -29,7 +29,7 @@
         "forms",
         "settings"
       ],
-      "current_toggle": "integrated shell light/dark toggle in the top-right global header with local persistence and system fallback; floating fallback remains on public auth screens",
+      "current_toggle": "integrated shell light/dark toggle in the top-right global header with local persistence and system fallback; public auth screens now use the same inline topbar placement and no floating fallback remains",
       "print_excluded": true
     },
     "records_reskin_phase": {

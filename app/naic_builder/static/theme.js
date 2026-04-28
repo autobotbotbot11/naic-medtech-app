@@ -22,7 +22,7 @@
   const getActiveTheme = () => getStoredTheme() || getSystemTheme();
 
   const allToggleButtons = () =>
-    Array.from(document.querySelectorAll("[data-theme-toggle], [data-theme-toggle-mounted]"));
+    Array.from(document.querySelectorAll("[data-theme-toggle]"));
 
   applyTheme(getActiveTheme());
 
@@ -78,22 +78,7 @@
     }
 
     const inlineButtons = document.querySelectorAll("[data-theme-toggle]");
-    if (inlineButtons.length) {
-      inlineButtons.forEach(bindToggle);
-      return;
-    }
-
-    if (document.querySelector("[data-theme-toggle-mounted]")) {
-      refreshToggleCopy();
-      return;
-    }
-
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "theme-toggle-fab";
-    button.dataset.themeToggleMounted = "true";
-    bindToggle(button);
-    document.body.appendChild(button);
+    inlineButtons.forEach(bindToggle);
   };
 
   const syncToSystemIfNeeded = () => {
