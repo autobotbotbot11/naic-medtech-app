@@ -224,7 +224,7 @@ Reason:
 Current status:
 - materially landed for the current non-print pass
 - `/settings/clinic` and `/settings/users` now use lighter local sectioning and tighter object cards instead of wrapping every block in large settings panels
-- `/settings/account` now carries the personal profile foundation: avatar upload/remove, password management, and read-only email/login identity
+- `/settings/account` now carries the personal profile foundation: avatar upload/remove, password management, and read-only email/login identity, now using the same compact utility-card system as the newer account admin screens
 - `/settings/users` now displays uploaded staff avatars when available, with initials fallback
 - `/settings/users/{id}/edit` now exists for admin full-name/role correction and password reset
 - `/settings/users` is now one searchable/filterable directory with status filters, instead of separate pending/active/disabled buckets

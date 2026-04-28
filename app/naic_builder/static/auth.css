@@ -261,6 +261,12 @@
   flex: 0 0 auto;
 }
 
+.settings-utility-head--identity {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-content: start;
+}
+
 .settings-utility-section,
 .settings-utility-actions {
   border-top: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
@@ -321,6 +327,14 @@
 
 .settings-utility-card .user-reset-form .ghost-button {
   width: fit-content;
+}
+
+.account-profile-utility .account-profile-actions {
+  align-items: end;
+}
+
+.account-profile-utility .field-help {
+  margin-top: 10px;
 }
 
 .field-stack,
@@ -961,5 +975,9 @@ html[data-theme="dark"] .role-chip {
   .settings-utility-head {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .settings-utility-head--identity {
+    grid-template-columns: 1fr;
   }
 }

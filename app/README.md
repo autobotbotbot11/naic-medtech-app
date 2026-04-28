@@ -123,6 +123,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - the account/profile foundation has also landed now:
     - `Settings > My account` now shows account identity, password management, and profile photo upload/remove
     - the shell account button and drawer identity use the uploaded profile photo when present, falling back to initials when not
+    - `Settings > My account` now uses the same compact utility-card structure as the newer Settings account admin screens
     - `Settings > Users & access` now reads more like a staff directory with avatar/initial identity on each account card
     - admins can open a dedicated `Manage user` page from the directory to correct full name/role and reset another user's temporary password
     - email and login ID stay read-only in the personal account page so accountability remains anchored to stable account identifiers
