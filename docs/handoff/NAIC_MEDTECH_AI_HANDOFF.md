@@ -105,6 +105,7 @@ What exists now:
 - login at `/login`
 - account request at `/request-account`
 - clinic profile settings at `/settings/clinic`
+- personal account settings at `/settings/account`
 - password change at `/change-password`
 - admin user management at `/settings/users`
 - hybrid account flow:
@@ -121,6 +122,11 @@ What exists now:
   - address
   - contact details
   - upload/remove clinic logo
+- personal account settings now carry the first profile foundation too:
+  - account identity summary
+  - password management
+  - upload/remove own profile photo
+  - shell account avatar with initials fallback
 
 Important:
 - this is not the final print system
@@ -131,6 +137,7 @@ Important:
 - do not replace it with public consumer signup
 - do not introduce heavy enterprise role hierarchy unless the real clinic workflow demands it
 - accountability should continue to rely on immutable internal user ids, while admin-facing management stays readable through full name and email
+- do not let ordinary users freely edit login ID or email from the personal account page unless a later admin-reviewed flow is deliberately added
 
 ## Locked UI Direction
 The product now has a locked visual direction for the next UI work.
@@ -188,6 +195,10 @@ Current live status:
   - admin-only settings remain `Clinic profile` and `Users & access`
   - the drawer footer no longer exposes a `Password` action; it only carries account identity plus `Log out`
   - drawer icons now use one consistent premium-style 24px stroke icon system
+- the account/profile foundation has also landed:
+  - `Settings > My account` now shows profile photo upload/remove, password management, and read-only account identity
+  - the shell account button and drawer identity use the uploaded profile photo when present, with initials fallback
+  - email/login ID remain read-only in the personal account page for accountability
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 
 Chosen mode pair:

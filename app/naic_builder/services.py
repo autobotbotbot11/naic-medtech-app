@@ -15,7 +15,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from .config import CLINIC_UPLOADS_DIR, RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH
+from .config import CLINIC_UPLOADS_DIR, RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH, USER_UPLOADS_DIR
 from .database import Base, engine
 from .models import ClinicProfile, FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
 from .schemas import (
@@ -39,6 +39,7 @@ ALLOWED_IMAGE_CONTENT_TYPES = {
 }
 MAX_RECORD_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_CLINIC_LOGO_BYTES = 5 * 1024 * 1024
+MAX_USER_AVATAR_BYTES = 2 * 1024 * 1024
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -178,6 +179,10 @@ def serialize_user(user: User) -> dict[str, Any]:
         "role": user.role,
         "status": user.status,
         "must_change_password": bool(user.must_change_password),
+        "avatar_path": user.avatar_path,
+        "avatar_original_filename": compact_text(user.avatar_original_filename),
+        "avatar_mime_type": compact_text(user.avatar_mime_type),
+        "has_avatar": bool(compact_text(user.avatar_path)),
         "created_at": user.created_at.astimezone(timezone.utc).isoformat(),
         "updated_at": user.updated_at.astimezone(timezone.utc).isoformat(),
     }
@@ -1231,6 +1236,73 @@ def remove_record_asset(
 ) -> None:
     remove_file_if_present(asset.storage_path)
     session.delete(asset)
+
+
+def save_user_avatar(
+    session: Session,
+    user_id: int,
+    *,
+    avatar_filename: str = "",
+    avatar_content_type: str | None = None,
+    avatar_bytes: bytes | None = None,
+) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+
+    mime_type = compact_text(avatar_content_type)
+    extension = ALLOWED_IMAGE_CONTENT_TYPES.get(mime_type)
+    if extension is None:
+        raise ValueError("Only JPG, PNG, and WebP avatars are allowed.")
+    if not avatar_bytes:
+        raise ValueError("Choose an image before uploading.")
+    if len(avatar_bytes) > MAX_USER_AVATAR_BYTES:
+        raise ValueError("Avatar image must be 2 MB or smaller.")
+
+    old_avatar_path = user.avatar_path
+    old_avatar_name = user.avatar_original_filename
+    old_avatar_type = user.avatar_mime_type
+    USER_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+    new_avatar_path = USER_UPLOADS_DIR / f"user_{user.id}_avatar_{uuid4().hex}{extension}"
+    new_avatar_path.write_bytes(avatar_bytes)
+
+    user.avatar_path = str(new_avatar_path)
+    user.avatar_original_filename = compact_text(avatar_filename) or new_avatar_path.name
+    user.avatar_mime_type = mime_type or None
+
+    try:
+        session.add(user)
+        session.commit()
+    except Exception:
+        session.rollback()
+        remove_file_if_present_under(str(new_avatar_path), stop_dir=USER_UPLOADS_DIR)
+        user.avatar_path = old_avatar_path
+        user.avatar_original_filename = old_avatar_name
+        user.avatar_mime_type = old_avatar_type
+        raise
+
+    if old_avatar_path and old_avatar_path != str(new_avatar_path):
+        remove_file_if_present_under(old_avatar_path, stop_dir=USER_UPLOADS_DIR)
+
+    session.refresh(user)
+    return serialize_user(user)
+
+
+def remove_user_avatar(session: Session, user_id: int) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+
+    old_avatar_path = user.avatar_path
+    user.avatar_path = None
+    user.avatar_original_filename = None
+    user.avatar_mime_type = None
+    session.add(user)
+    session.commit()
+    if old_avatar_path:
+        remove_file_if_present_under(old_avatar_path, stop_dir=USER_UPLOADS_DIR)
+    session.refresh(user)
+    return serialize_user(user)
 
 
 def save_clinic_profile(

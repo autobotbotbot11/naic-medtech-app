@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_content_first_compact_work_surface_and_settings_ia_pass_landed_print_planning_next",
+    "status": "authenticated_shell_content_first_compact_work_surface_settings_ia_and_account_profile_pass_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -60,7 +60,8 @@
         "A follow-up list-page pass then tightened the behavior rule too: list-heavy pages like records, forms, and users now move toward bounded scroll regions and lighter utility rows, while edit/detail pages keep normal page scroll.",
         "A later architecture-improvement pass then made the current records flow more queue-first, reduced the edit/view top chrome into a compact summary shell, lowered action density in the forms library, and removed the separate builder feedback bar in favor of a lighter top app bar status treatment.",
         "The latest compact work-surface pass flattened the builder stage chrome into one command bar, tightened records/forms/users list surfaces, added a searchable form picker for both the new-record modal and /records/new fallback, consolidated user management into one searchable/filterable directory, and hardened global [hidden] display handling in theme.css.",
-        "A Settings IA pass then made Settings visible to every signed-in user, moved password/security into Settings > My account, kept Clinic profile and Users & access admin-only, simplified the drawer footer to account identity plus Log out, and standardized drawer icons into one premium-style 24px stroke system."
+        "A Settings IA pass then made Settings visible to every signed-in user, moved password/security into Settings > My account, kept Clinic profile and Users & access admin-only, simplified the drawer footer to account identity plus Log out, and standardized drawer icons into one premium-style 24px stroke system.",
+        "The account/profile foundation then added profile photo upload/remove under Settings > My account, shell avatar display with initials fallback, and read-only email/login identity so accountability stays anchored to stable account identifiers."
       ]
     },
     "notes": [
@@ -112,6 +113,7 @@
       "/setup now exists as the first-run admin setup screen",
       "/login now exists as the main sign-in screen",
       "/request-account now exists for staff account requests",
+      "/settings/account now exists as the personal account settings screen",
       "/settings/clinic now exists as the clinic profile and branding settings screen",
       "/change-password now exists for first-login and self-service password changes",
       "/settings/users now exists as the first admin user-management screen",
@@ -120,7 +122,9 @@
       "admin-created accounts are forced to change password on first login",
       "auth feedback is steadier now too: pending-account login explains that approval is still needed, disabled-account login explains that admin access is needed again, and successful password changes now redirect back to Records with a quiet success banner",
       "visible role gating is now active for Admin and Medtech",
-      "clinic profile data and clinic logo upload/remove now exist as the branding base for future print work"
+      "clinic profile data and clinic logo upload/remove now exist as the branding base for future print work",
+      "signed-in users can now upload/remove their own profile photo from Settings > My account, and the shell uses it in the account button and drawer identity with initials fallback",
+      "email and login ID remain read-only in the personal account screen so identity changes do not undermine accountability"
     ],
     "authenticated_shell_foundation": [
       "a shared authenticated shell now exists through app/naic_builder/static/shell.css, app/naic_builder/static/shell.js, and app/naic_builder/templates/_authenticated_shell.html",

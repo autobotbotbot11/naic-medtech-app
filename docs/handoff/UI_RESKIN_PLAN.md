@@ -67,6 +67,8 @@ The current live direction is:
   - `Forms` for admin form setup
   - `Settings` for both personal and admin settings
 - do not place account maintenance actions like password change in the drawer footer; they belong inside `Settings > My account`
+- keep personal profile controls inside `Settings > My account`; the drawer should only summarize identity and expose log out
+- keep email/login ID read-only in personal account settings unless a future admin-reviewed identity-change flow is explicitly designed
 - reduce copy density:
   - hub pages should scan fast
   - simple actions should not need paragraph-length explanation
@@ -183,6 +185,7 @@ Current status:
 - `Settings` is now visible for all signed-in users, while `Forms`, `Clinic profile`, and `Users & access` remain admin-only
 - password management now lives in `Settings > My account`; the drawer footer is account identity plus `Log out` only
 - drawer icons now use one consistent premium-style 24px stroke icon system
+- `Settings > My account` now also carries profile photo upload/remove and read-only account identity, and the shell uses the uploaded profile photo with initials fallback
 
 ### Phase 2
 Records-first reskin
@@ -218,6 +221,7 @@ Reason:
 Current status:
 - materially landed for the current non-print pass
 - `/settings/clinic` and `/settings/users` now use lighter local sectioning and tighter object cards instead of wrapping every block in large settings panels
+- `/settings/account` now carries the personal profile foundation: avatar upload/remove, password management, and read-only email/login identity
 - `/settings/users` is now one searchable/filterable directory with status filters, instead of separate pending/active/disabled buckets
 
 ### Phase 4

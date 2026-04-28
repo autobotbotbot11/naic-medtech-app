@@ -80,6 +80,11 @@ def migrate_users_auth_shape(connection) -> None:
     )
     select_role = "role" if "role" in user_columns else "'medtech'"
     select_password_hash = "password_hash" if "password_hash" in user_columns else "NULL"
+    select_avatar_path = "avatar_path" if "avatar_path" in user_columns else "NULL"
+    select_avatar_original_filename = (
+        "avatar_original_filename" if "avatar_original_filename" in user_columns else "NULL"
+    )
+    select_avatar_mime_type = "avatar_mime_type" if "avatar_mime_type" in user_columns else "NULL"
     if "status" in user_columns:
         select_status = "status"
     elif "is_active" in user_columns:
@@ -103,6 +108,9 @@ def migrate_users_auth_shape(connection) -> None:
                 password_hash VARCHAR(255),
                 status VARCHAR(40) NOT NULL,
                 must_change_password BOOLEAN NOT NULL,
+                avatar_path TEXT,
+                avatar_original_filename VARCHAR(255),
+                avatar_mime_type VARCHAR(120),
                 created_at DATETIME NOT NULL,
                 updated_at DATETIME NOT NULL
             )
@@ -119,6 +127,9 @@ def migrate_users_auth_shape(connection) -> None:
                 password_hash,
                 status,
                 must_change_password,
+                avatar_path,
+                avatar_original_filename,
+                avatar_mime_type,
                 created_at,
                 updated_at
             )
@@ -131,6 +142,9 @@ def migrate_users_auth_shape(connection) -> None:
                 {select_password_hash},
                 {select_status},
                 {select_must_change_password},
+                {select_avatar_path},
+                {select_avatar_original_filename},
+                {select_avatar_mime_type},
                 {select_created_at},
                 {select_updated_at}
             FROM users
@@ -182,6 +196,18 @@ def ensure_runtime_schema() -> None:
         )
         if needs_user_auth_rebuild:
             migrate_users_auth_shape(connection)
+            user_columns = {
+                str(row[1])
+                for row in connection.exec_driver_sql("PRAGMA table_info(users)").all()
+            }
+        avatar_columns = {
+            "avatar_path": "TEXT",
+            "avatar_original_filename": "VARCHAR(255)",
+            "avatar_mime_type": "VARCHAR(120)",
+        }
+        for column_name, column_type in avatar_columns.items():
+            if column_name not in user_columns:
+                connection.exec_driver_sql(f"ALTER TABLE users ADD COLUMN {column_name} {column_type}")
 
 
 def get_session() -> Generator[Session, None, None]:

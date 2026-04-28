@@ -17,6 +17,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - first-run setup lives at `/setup`
   - sign-in lives at `/login`
   - account requests live at `/request-account`
+  - personal account settings now live at `/settings/account`
   - clinic profile settings now live at `/settings/clinic`
   - admin user management lives at `/settings/users`
   - password changes live at `/change-password`
@@ -25,6 +26,7 @@ The app now starts from a builder-first FastAPI scaffold.
   - staff can request an account and wait for admin approval
   - admins can also create accounts manually as a fallback
   - admin-created accounts must change password on first login
+  - signed-in users can upload/remove their own profile photo from `Settings > My account`
   - visible roles are still just `Admin` and `Medtech`
 - auth flow polish is steadier now too:
   - pending-account login now explains that the account is still waiting for admin approval
@@ -118,6 +120,10 @@ The app now starts from a builder-first FastAPI scaffold.
     - admin-only settings remain protected under `Clinic profile` and `Users & access`
     - the drawer footer is now only account identity plus `Log out`
     - drawer icons now use one consistent 24px premium-style stroke system instead of mixed ad-hoc paths
+  - the account/profile foundation has also landed now:
+    - `Settings > My account` now shows account identity, password management, and profile photo upload/remove
+    - the shell account button and drawer identity use the uploaded profile photo when present, falling back to initials when not
+    - email and login ID stay read-only in the personal account page so accountability remains anchored to stable account identifiers
 - `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - the records module is now more intent-structured too:
   - `/records` is the `Work` view for drafts and active record entry

@@ -71,6 +71,127 @@
   font-size: 13px;
 }
 
+.account-main {
+  gap: 18px;
+}
+
+.account-profile-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 84%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 90%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 48%);
+}
+
+.account-profile-copy,
+.account-password-form,
+.account-identity-card {
+  display: grid;
+  gap: 14px;
+}
+
+.account-profile-actions {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.account-avatar-form {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+  flex-wrap: wrap;
+}
+
+.account-avatar-form .field-stack {
+  min-width: min(340px, 100%);
+}
+
+.account-avatar-frame {
+  width: 56px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid color-mix(in srgb, var(--line-strong) 78%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 88%, transparent), color-mix(in srgb, var(--surface-elevated) 90%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 16%, transparent), transparent 58%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    var(--shadow-soft);
+  color: var(--text);
+}
+
+.account-avatar-frame--large {
+  width: 92px;
+  height: 92px;
+  border-radius: 28px;
+}
+
+.account-avatar-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.account-avatar-frame span {
+  color: inherit;
+  font-family: var(--font-heading);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.account-avatar-frame--large span {
+  font-size: 36px;
+}
+
+.account-identity-head {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+
+.account-detail-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.account-detail-list div {
+  display: grid;
+  gap: 4px;
+  padding: 12px 0;
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+}
+
+.account-detail-list dt {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.account-detail-list dd {
+  margin: 0;
+  color: var(--text);
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
 .field-stack,
 .stacked-field {
   display: grid;
@@ -489,6 +610,14 @@ html[data-theme="dark"] .logo-frame {
     radial-gradient(circle at top right, rgba(99, 188, 205, 0.06), transparent 46%);
 }
 
+html[data-theme="dark"] .account-profile-card,
+html[data-theme="dark"] .account-avatar-frame {
+  border-color: rgba(223, 240, 245, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    radial-gradient(circle at top right, rgba(195, 160, 108, 0.12), transparent 52%);
+}
+
 html[data-theme="dark"] .settings-nav--open {
   border-bottom-color: rgba(223, 240, 245, 0.08);
 }
@@ -610,6 +739,10 @@ html[data-theme="dark"] .role-chip {
 
 @media (max-width: 900px) {
   .auth-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .account-profile-card {
     grid-template-columns: 1fr;
   }
 

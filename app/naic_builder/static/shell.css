@@ -96,7 +96,8 @@
 }
 
 .app-drawer__brand-mark img,
-.app-global-header__brand img {
+.app-global-header__brand img,
+.app-account-toggle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -187,6 +188,11 @@
   color: var(--shell-text);
 }
 
+.app-account-toggle img {
+  display: block;
+  border-radius: inherit;
+}
+
 .app-drawer__nav {
   display: grid;
   align-content: start;
@@ -257,7 +263,9 @@
 
 .app-drawer__account {
   display: grid;
-  gap: 4px;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
   padding: 14px;
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -266,17 +274,51 @@
     radial-gradient(circle at top right, rgba(99, 188, 205, 0.08), transparent 42%);
 }
 
-.app-drawer__account strong {
+.app-drawer__account-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.025)),
+    radial-gradient(circle at top right, rgba(195, 160, 108, 0.18), transparent 56%);
+  color: var(--shell-text);
+}
+
+.app-drawer__account-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.app-drawer__account-avatar span {
+  color: inherit;
+  font-family: var(--font-heading);
+  font-size: 17px;
+  line-height: 1;
+}
+
+.app-drawer__account-copy {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.app-drawer__account-copy strong {
   color: var(--shell-text);
   font-family: var(--font-display);
   font-size: 15px;
   letter-spacing: -0.02em;
 }
 
-.app-drawer__account span {
+.app-drawer__account-copy span {
   color: var(--shell-muted);
   font-size: 12px;
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .app-drawer__footer-actions {

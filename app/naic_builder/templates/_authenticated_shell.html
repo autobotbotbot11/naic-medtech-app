@@ -40,6 +40,8 @@
   {% set current_user = request.state.current_user or {} %}
   {% set active_nav = shell_active|default('records') %}
   {% set user_initial = ((current_user.get('full_name') or 'U')[:1]) | upper %}
+  {% set user_avatar_version = (current_user.get('updated_at') or '') | urlencode %}
+  {% set user_avatar_url = '/settings/account/avatar?v=' ~ user_avatar_version if current_user.get('has_avatar') else '' %}
 
   <div class="app-frame{% if shell_variant|default('default') == 'workspace' %} app-frame--workspace{% endif %}">
     <div class="app-drawer-scrim" data-shell-drawer-scrim data-shell-drawer-close hidden></div>
@@ -98,13 +100,22 @@
 
       <div class="app-drawer__footer">
         <div class="app-drawer__account">
-          <strong>{{ current_user.get('full_name') or 'Signed in' }}</strong>
-          <span>
-            {{ (current_user.get('role') or 'user') | title }}
-            {% if current_user.get('email') %}
-            - {{ current_user.get('email') }}
+          <div class="app-drawer__account-avatar" aria-hidden="true">
+            {% if user_avatar_url %}
+            <img src="{{ user_avatar_url }}" alt="">
+            {% else %}
+            <span>{{ user_initial }}</span>
             {% endif %}
-          </span>
+          </div>
+          <div class="app-drawer__account-copy">
+            <strong>{{ current_user.get('full_name') or 'Signed in' }}</strong>
+            <span>
+              {{ (current_user.get('role') or 'user') | title }}
+              {% if current_user.get('email') %}
+              - {{ current_user.get('email') }}
+              {% endif %}
+            </span>
+          </div>
         </div>
 
         <div class="app-drawer__footer-actions">
@@ -136,7 +147,11 @@
       <div class="app-global-header__actions">
         <button class="shell-theme-toggle shell-theme-toggle--inline" type="button" data-theme-toggle></button>
         <button class="app-account-toggle" type="button" data-shell-drawer-toggle aria-expanded="false" aria-label="Open account and navigation" title="Open account and navigation">
+          {% if user_avatar_url %}
+          <img src="{{ user_avatar_url }}" alt="">
+          {% else %}
           <span>{{ user_initial }}</span>
+          {% endif %}
         </button>
       </div>
     </header>

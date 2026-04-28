@@ -62,12 +62,14 @@ from .services import (
     request_account,
     RecordCompletionValidationError,
     remove_clinic_logo,
+    remove_user_avatar,
     rename_container,
     serialize_user,
     serialize_record,
     serialize_form,
     serialize_form_location,
     save_clinic_profile,
+    save_user_avatar,
     store_record_image_asset,
     update_user_status,
     approve_user_account,
@@ -149,7 +151,11 @@ class AuthFlowMiddleware(BaseHTTPMiddleware):
                     return await call_next(request)
                 return auth_error_response(path, 401, "Login required.", "/login")
 
-            if session_user.must_change_password and path not in {"/change-password", "/logout", "/api/health"}:
+            password_change_allowed_path = path in {"/change-password", "/logout", "/api/health"}
+            password_change_allowed_path = password_change_allowed_path or (
+                request.method == "GET" and path == "/settings/account/avatar"
+            )
+            if session_user.must_change_password and not password_change_allowed_path:
                 return auth_error_response(
                     path,
                     403,
@@ -1428,7 +1434,67 @@ def settings_account_page(request: Request) -> HTMLResponse:
     success_message = ""
     if request.query_params.get("saved") == "1":
         success_message = "Saved the new password."
+    elif request.query_params.get("avatar_saved") == "1":
+        success_message = "Updated your profile photo."
+    elif request.query_params.get("avatar_removed") == "1":
+        success_message = "Removed your profile photo."
     return render_change_password_page(request, success_message=success_message)
+
+
+@app.post("/settings/account/avatar")
+async def save_settings_account_avatar_page(request: Request, session: Session = Depends(get_session)):
+    user_id = current_user_id(request)
+    if user_id is None:
+        return redirect_for_html("/login")
+
+    form = await request.form()
+    avatar_file = form.get("avatar_file")
+    try:
+        if avatar_file is None or not hasattr(avatar_file, "read") or not getattr(avatar_file, "filename", ""):
+            raise ValueError("Choose an image before uploading.")
+        save_user_avatar(
+            session,
+            user_id,
+            avatar_filename=str(getattr(avatar_file, "filename", "") or ""),
+            avatar_content_type=str(getattr(avatar_file, "content_type", "") or ""),
+            avatar_bytes=await avatar_file.read(),
+        )
+    except KeyError:
+        request.session.pop("user_id", None)
+        return redirect_for_html("/login")
+    except ValueError as exc:
+        return render_change_password_page(request, error_message=str(exc), status_code=422)
+    return RedirectResponse(url="/settings/account?avatar_saved=1", status_code=303)
+
+
+@app.post("/settings/account/avatar/remove")
+def remove_settings_account_avatar_page(request: Request, session: Session = Depends(get_session)):
+    user_id = current_user_id(request)
+    if user_id is None:
+        return redirect_for_html("/login")
+    try:
+        remove_user_avatar(session, user_id)
+    except KeyError:
+        request.session.pop("user_id", None)
+        return redirect_for_html("/login")
+    return RedirectResponse(url="/settings/account?avatar_removed=1", status_code=303)
+
+
+@app.get("/settings/account/avatar")
+def settings_account_avatar_file(request: Request, session: Session = Depends(get_session)) -> FileResponse:
+    user_id = current_user_id(request)
+    if user_id is None:
+        raise HTTPException(status_code=401, detail="Login required.")
+    user = get_user_or_none(session, user_id)
+    if user is None or not user.avatar_path or not Path(user.avatar_path).is_file():
+        raise HTTPException(status_code=404, detail="Profile photo not found.")
+    response = FileResponse(
+        user.avatar_path,
+        media_type=user.avatar_mime_type or None,
+        filename=user.avatar_original_filename or None,
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.get("/settings/clinic", response_class=HTMLResponse)
