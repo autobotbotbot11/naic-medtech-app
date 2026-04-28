@@ -90,12 +90,14 @@ a {
 
 h1,
 h2,
+h3,
 strong {
   font-family: var(--font-heading, "Palatino Linotype", "Book Antiqua", serif);
 }
 
 h1,
-h2 {
+h2,
+h3 {
   margin: 0;
 }
 
@@ -106,6 +108,11 @@ h1 {
 
 h2 {
   font-size: clamp(22px, 2.2vw, 28px);
+}
+
+h3 {
+  font-size: clamp(18px, 1.8vw, 22px);
+  line-height: 1.05;
 }
 
 .panel-copy {
@@ -167,6 +174,26 @@ h2 {
   gap: 16px;
 }
 
+.form-flow-card--compose {
+  gap: 0;
+  overflow: hidden;
+}
+
+.form-flow-card--compose > .section-head {
+  padding: 22px 22px 16px;
+}
+
+.new-form-section {
+  display: grid;
+  gap: 14px;
+  padding: 18px 22px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+}
+
+.section-head--compact {
+  gap: 4px;
+}
+
 .summary-card {
   position: sticky;
   top: 18px;
@@ -176,6 +203,10 @@ h2 {
 
 .field-stack {
   gap: 8px;
+}
+
+.field-stack--wide {
+  max-width: 760px;
 }
 
 .field-stack span,
@@ -209,6 +240,10 @@ select:focus {
 }
 
 .choice-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.start-method-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -370,6 +405,42 @@ select:focus {
   color: var(--danger);
 }
 
+.form-flow-card--compose,
+.summary-card {
+  box-shadow: var(--shadow-soft);
+}
+
+.form-flow-card--compose .choice-pill,
+.form-flow-card--compose .start-card {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 72%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 86%, transparent)
+    );
+  box-shadow: none;
+}
+
+.form-flow-card--compose .choice-pill {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.summary-card .primary-button {
+  width: 100%;
+}
+
+html[data-theme="dark"] .new-form-section {
+  border-top-color: rgba(223, 240, 245, 0.07);
+}
+
+html[data-theme="dark"] .form-flow-card--compose .choice-pill,
+html[data-theme="dark"] .form-flow-card--compose .start-card {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.036), rgba(255, 255, 255, 0.016));
+}
+
 @media (max-width: 980px) {
   .new-form-topbar {
     flex-direction: column;
@@ -382,6 +453,10 @@ select:focus {
 
   .summary-card {
     position: static;
+  }
+
+  .choice-row {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -397,7 +472,16 @@ select:focus {
     padding: 14px;
   }
 
-  .choice-row {
+  .form-flow-card--compose {
+    padding: 0;
+  }
+
+  .form-flow-card--compose > .section-head,
+  .new-form-section {
+    padding: 14px;
+  }
+
+  .start-method-grid {
     grid-template-columns: 1fr;
   }
 }

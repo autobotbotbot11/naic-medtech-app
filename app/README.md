@@ -190,6 +190,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/forms/new` can now also intentionally place a form at the top level instead of forcing every new form into a folder
 - `/forms/new` duplicate choices now use the real tree too, showing full folder paths instead of the older grouped optgroup list
 - `/forms/new` can now create a brand-new folder inside an existing folder, and the first save will resolve that pending nested folder into the real library tree
+- `/forms/new` is visually lighter now too: the old three-step panel stack is now one guided setup card plus a compact summary, while the same hidden builder handoff values stay intact
 - `/folders/new` now exists as a small standalone folder-creation screen, so empty folders can be created directly before any forms exist inside them
 - `/folders/edit` now gives folders a real management path too: they can be renamed, and they can be deleted once empty
 - `/folders/move` and `/forms/move` now give the tree real move flows too, so folders and forms can change parent location without falling back to the old one-level grouped model

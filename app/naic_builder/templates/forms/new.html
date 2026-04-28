@@ -34,122 +34,123 @@
       <input id="parentNodeKeyInput" type="hidden" name="library_parent_node_key" value="{{ default_parent_node_key }}">
       <input id="newContainerNameInput" type="hidden" name="library_new_container_name" value="">
 
-      <section class="panel form-flow-card">
+      <section class="panel form-flow-card form-flow-card--compose">
         <div class="section-head">
-          <p class="eyebrow">Step 1</p>
-          <h2>Name this form</h2>
+          <p class="eyebrow">Form setup</p>
+          <h2>Choose the basics</h2>
         </div>
 
-        <label class="field-stack">
-          <span>Form name</span>
-          <input
-            id="formName"
-            type="text"
-            placeholder="Example: Urinalysis"
-            value="{{ source_form.name ~ ' Copy' if source_form else '' }}"
-            required
-          >
-        </label>
-      </section>
-
-      <section class="panel form-flow-card">
-        <div class="section-head">
-          <p class="eyebrow">Step 2</p>
-          <h2>Where should it live?</h2>
-        </div>
-
-        <div class="choice-row">
-          <label class="choice-pill">
-            <input type="radio" name="location_mode" value="existing" {% if default_location_mode == 'existing' %}checked{% endif %}>
-            <span>Use existing folder</span>
-          </label>
-          <label class="choice-pill">
-            <input type="radio" name="location_mode" value="root" {% if default_location_mode == 'root' %}checked{% endif %}>
-            <span>Keep at top level</span>
-          </label>
-          <label class="choice-pill">
-            <input type="radio" name="location_mode" value="new" {% if default_location_mode == 'new' %}checked{% endif %}>
-            <span>Create new folder</span>
+        <div class="new-form-section">
+          <label class="field-stack field-stack--wide">
+            <span>Form name</span>
+            <input
+              id="formName"
+              type="text"
+              placeholder="Example: Urinalysis"
+              value="{{ source_form.name ~ ' Copy' if source_form else '' }}"
+              required
+            >
           </label>
         </div>
 
-        <div id="existingLocationWrap" class="field-stack">
-          <label class="field-stack">
-            <span>Folder</span>
-            <select id="existingLocationSelect">
-              {% for container in container_options %}
-              <option
-                value="{{ container.node_key }}"
-                data-location-name="{{ container.name }}"
-                data-folder-path-label="{{ container.folder_path_label }}"
-                {% if container.node_key == default_parent_node_key %}selected{% endif %}
-              >{{ container.folder_path_label }}</option>
-              {% endfor %}
-            </select>
-          </label>
+        <div class="new-form-section">
+          <div class="section-head section-head--compact">
+            <p class="eyebrow">Location</p>
+            <h3>Where should it live?</h3>
+          </div>
+
+          <div class="choice-row">
+            <label class="choice-pill">
+              <input type="radio" name="location_mode" value="existing" {% if default_location_mode == 'existing' %}checked{% endif %}>
+              <span>Use existing folder</span>
+            </label>
+            <label class="choice-pill">
+              <input type="radio" name="location_mode" value="root" {% if default_location_mode == 'root' %}checked{% endif %}>
+              <span>Keep at top level</span>
+            </label>
+            <label class="choice-pill">
+              <input type="radio" name="location_mode" value="new" {% if default_location_mode == 'new' %}checked{% endif %}>
+              <span>Create new folder</span>
+            </label>
+          </div>
+
+          <div id="existingLocationWrap" class="field-stack field-stack--wide">
+            <label class="field-stack">
+              <span>Folder</span>
+              <select id="existingLocationSelect">
+                {% for container in container_options %}
+                <option
+                  value="{{ container.node_key }}"
+                  data-location-name="{{ container.name }}"
+                  data-folder-path-label="{{ container.folder_path_label }}"
+                  {% if container.node_key == default_parent_node_key %}selected{% endif %}
+                >{{ container.folder_path_label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
+
+          <div id="newLocationWrap" class="field-stack field-stack--wide hidden" hidden>
+            <label class="field-stack">
+              <span>New folder name</span>
+              <input id="newLocationName" type="text" placeholder="Example: Rapid Tests">
+            </label>
+            <label class="field-stack">
+              <span>Inside</span>
+              <select id="newLocationParentSelect">
+                <option value="" {% if not default_new_folder_parent_key %}selected{% endif %}>Top level</option>
+                {% for container in container_options %}
+                <option
+                  value="{{ container.node_key }}"
+                  data-folder-path-label="{{ container.folder_path_label }}"
+                  {% if container.node_key == default_new_folder_parent_key %}selected{% endif %}
+                >{{ container.folder_path_label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+            <p class="panel-copy">You can move it later.</p>
+          </div>
+          <p id="rootLocationHint" class="panel-copy{% if default_location_mode != 'root' %} hidden{% endif %}" {% if default_location_mode != 'root' %}hidden{% endif %}>
+            This form will stay at the top level.
+          </p>
         </div>
 
-        <div id="newLocationWrap" class="field-stack hidden" hidden>
-          <label class="field-stack">
-            <span>New folder name</span>
-            <input id="newLocationName" type="text" placeholder="Example: Rapid Tests">
-          </label>
-          <label class="field-stack">
-            <span>Inside</span>
-            <select id="newLocationParentSelect">
-              <option value="" {% if not default_new_folder_parent_key %}selected{% endif %}>Top level</option>
-              {% for container in container_options %}
-              <option
-                value="{{ container.node_key }}"
-                data-folder-path-label="{{ container.folder_path_label }}"
-                {% if container.node_key == default_new_folder_parent_key %}selected{% endif %}
-              >{{ container.folder_path_label }}</option>
-              {% endfor %}
-            </select>
-          </label>
-          <p class="panel-copy">You can move it later.</p>
-        </div>
-        <p id="rootLocationHint" class="panel-copy{% if default_location_mode != 'root' %} hidden{% endif %}" {% if default_location_mode != 'root' %}hidden{% endif %}>
-          This form will stay at the top level.
-        </p>
-      </section>
+        <div class="new-form-section">
+          <div class="section-head section-head--compact">
+            <p class="eyebrow">Start</p>
+            <h3>How should it start?</h3>
+          </div>
 
-      <section class="panel form-flow-card">
-        <div class="section-head">
-          <p class="eyebrow">Step 3</p>
-          <h2>How do you want to start?</h2>
-        </div>
+          <div class="start-method-grid">
+            <label class="start-card">
+              <input type="radio" name="start_mode" value="blank" {% if not source_form %}checked{% endif %}>
+              <span class="start-card-eyebrow">Blank</span>
+              <strong>Start empty</strong>
+              <span>Build from scratch.</span>
+            </label>
 
-        <div class="start-method-grid">
-          <label class="start-card">
-            <input type="radio" name="start_mode" value="blank" {% if not source_form %}checked{% endif %}>
-            <span class="start-card-eyebrow">Blank</span>
-            <strong>Start empty</strong>
-            <span>Start from an empty form.</span>
-          </label>
+            <label class="start-card">
+              <input type="radio" name="start_mode" value="duplicate" {% if source_form %}checked{% endif %}>
+              <span class="start-card-eyebrow">Fastest</span>
+              <strong>Copy existing form</strong>
+              <span>Reuse fields and sections.</span>
+            </label>
+          </div>
 
-          <label class="start-card">
-            <input type="radio" name="start_mode" value="duplicate" {% if source_form %}checked{% endif %}>
-            <span class="start-card-eyebrow">Fastest</span>
-            <strong>Copy existing form</strong>
-            <span>Copy a form and edit what changed.</span>
-          </label>
-
-        </div>
-
-        <div id="duplicateSourceWrap" class="field-stack{% if not source_form %} hidden{% endif %}" {% if not source_form %}hidden{% endif %}>
-          <label class="field-stack">
-            <span>Copy from</span>
-            <select id="duplicateSourceSelect">
-              {% for form in duplicate_options %}
-              <option
-                value="{{ form.slug }}"
-                data-form-path-label="{{ form.form_path_label }}"
-                {% if source_form and source_form.slug == form.slug %}selected{% endif %}
-              >{{ form.form_path_label }}</option>
-              {% endfor %}
-            </select>
-          </label>
+          <div id="duplicateSourceWrap" class="field-stack field-stack--wide{% if not source_form %} hidden{% endif %}" {% if not source_form %}hidden{% endif %}>
+            <label class="field-stack">
+              <span>Copy from</span>
+              <select id="duplicateSourceSelect">
+                {% for form in duplicate_options %}
+                <option
+                  value="{{ form.slug }}"
+                  data-form-path-label="{{ form.form_path_label }}"
+                  {% if source_form and source_form.slug == form.slug %}selected{% endif %}
+                >{{ form.form_path_label }}</option>
+                {% endfor %}
+              </select>
+            </label>
+          </div>
         </div>
       </section>
 
@@ -174,7 +175,7 @@
           </div>
         </dl>
 
-        <button class="primary-button" type="submit">Continue to Builder</button>
+        <button class="primary-button" type="submit">Open Builder</button>
       </aside>
     </form>
   </div>

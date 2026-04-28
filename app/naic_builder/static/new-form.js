@@ -82,7 +82,7 @@ function updateSummary() {
   if (locationMode === "new") {
     const parentPath = String(selectedNewLocationParentOption()?.dataset.folderPathLabel || "").trim();
     const newFolderName = String(newLocationNameEl?.value || "").trim();
-    locationName = [parentPath, newFolderName].filter(Boolean).join(" / ");
+    locationName = newFolderName ? [parentPath, newFolderName].filter(Boolean).join(" / ") : "Name a folder";
   } else if (locationMode === "existing") {
     locationName = String(selectedLocationOption()?.dataset.folderPathLabel || selectedLocationOption()?.textContent || "").trim();
   }
