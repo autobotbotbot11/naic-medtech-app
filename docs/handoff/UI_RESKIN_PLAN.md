@@ -228,6 +228,7 @@ Current status:
 - `/settings/users` now displays uploaded staff avatars when available, with initials fallback
 - `/settings/users/{id}/edit` now exists for admin full-name/role correction and password reset
 - `/settings/users` is now one searchable/filterable directory with status filters, instead of separate pending/active/disabled buckets
+- `/settings/users/new` and `/settings/users/{id}/edit` now use the same compact utility-card treatment as the Forms utility screens, so manual account creation and user maintenance no longer fall back to the older heavy auth-panel composition
 
 ### Phase 4
 Forms library and guided creation

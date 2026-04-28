@@ -199,6 +199,130 @@
   border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
 }
 
+.settings-utility-grid {
+  margin-top: 16px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: 16px;
+  align-items: start;
+}
+
+.settings-utility-main {
+  display: grid;
+  gap: 12px;
+}
+
+.settings-utility-card {
+  display: grid;
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 84%, transparent),
+      color-mix(in srgb, var(--panel-strong) 96%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 40%);
+  box-shadow: var(--shadow-soft);
+}
+
+.settings-utility-card--aside {
+  position: sticky;
+  top: 86px;
+}
+
+.settings-utility-head,
+.settings-utility-section,
+.settings-utility-actions {
+  margin: 0;
+  padding: 18px 20px;
+}
+
+.settings-utility-head {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.settings-utility-head > div {
+  min-width: 0;
+}
+
+.settings-utility-head h2,
+.settings-utility-minihead h2 {
+  margin: 0;
+}
+
+.settings-utility-head .status-chip,
+.settings-utility-head .settings-utility-pill {
+  flex: 0 0 auto;
+}
+
+.settings-utility-section,
+.settings-utility-actions {
+  border-top: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+}
+
+.settings-utility-field-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.settings-utility-span {
+  grid-column: 1 / -1;
+}
+
+.settings-utility-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.settings-utility-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border: 1px solid color-mix(in srgb, var(--warm) 34%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--warm) 12%, transparent);
+  color: var(--warm);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.settings-utility-note {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.settings-utility-card .account-detail-list div:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.settings-utility-card .user-reset-form {
+  display: grid;
+  gap: 12px;
+  padding-top: 18px;
+  border-top-color: color-mix(in srgb, var(--line) 86%, transparent);
+}
+
+.settings-utility-card .user-reset-form .ghost-button {
+  width: fit-content;
+}
+
 .field-stack,
 .stacked-field {
   display: grid;
@@ -657,6 +781,25 @@ html[data-theme="dark"] .user-card-avatar {
     radial-gradient(circle at top right, rgba(195, 160, 108, 0.12), transparent 52%);
 }
 
+html[data-theme="dark"] .settings-utility-card {
+  border-color: rgba(223, 240, 245, 0.06);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.07), transparent 36%);
+}
+
+html[data-theme="dark"] .settings-utility-section,
+html[data-theme="dark"] .settings-utility-actions,
+html[data-theme="dark"] .settings-utility-card .user-reset-form {
+  border-top-color: rgba(223, 240, 245, 0.07);
+}
+
+html[data-theme="dark"] .settings-utility-pill {
+  border-color: rgba(195, 160, 108, 0.24);
+  background: rgba(195, 160, 108, 0.1);
+  color: #d7b982;
+}
+
 html[data-theme="dark"] .settings-nav--open {
   border-bottom-color: rgba(223, 240, 245, 0.08);
 }
@@ -781,6 +924,14 @@ html[data-theme="dark"] .role-chip {
     grid-template-columns: 1fr;
   }
 
+  .settings-utility-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-utility-card--aside {
+    position: static;
+  }
+
   .account-profile-card {
     grid-template-columns: 1fr;
   }
@@ -793,5 +944,22 @@ html[data-theme="dark"] .role-chip {
   .settings-meta-row {
     flex-direction: column;
     align-items: start;
+  }
+}
+
+@media (max-width: 700px) {
+  .settings-utility-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-utility-head,
+  .settings-utility-section,
+  .settings-utility-actions {
+    padding: 14px;
+  }
+
+  .settings-utility-head {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

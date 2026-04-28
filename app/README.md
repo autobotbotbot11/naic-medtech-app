@@ -126,6 +126,7 @@ The app now starts from a builder-first FastAPI scaffold.
     - `Settings > Users & access` now reads more like a staff directory with avatar/initial identity on each account card
     - admins can open a dedicated `Manage user` page from the directory to correct full name/role and reset another user's temporary password
     - email and login ID stay read-only in the personal account page so accountability remains anchored to stable account identifiers
+    - `Settings > Create user` and `Manage user` now use compact utility-card layouts too, so manual account fallback and user maintenance match the calmer admin tooling instead of the older heavy auth-panel style
 - `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - the records module is now more intent-structured too:
   - `/records` is the `Work` view for drafts and active record entry

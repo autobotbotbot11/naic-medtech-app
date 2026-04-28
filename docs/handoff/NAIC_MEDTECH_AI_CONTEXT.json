@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_content_first_compact_work_surface_settings_ia_and_account_profile_pass_landed_print_planning_next",
+    "status": "authenticated_shell_content_first_compact_work_surface_settings_ia_account_profile_and_settings_utility_pass_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -61,7 +61,8 @@
         "A later architecture-improvement pass then made the current records flow more queue-first, reduced the edit/view top chrome into a compact summary shell, lowered action density in the forms library, and removed the separate builder feedback bar in favor of a lighter top app bar status treatment.",
         "The latest compact work-surface pass flattened the builder stage chrome into one command bar, tightened records/forms/users list surfaces, added a searchable form picker for both the new-record modal and /records/new fallback, consolidated user management into one searchable/filterable directory, and hardened global [hidden] display handling in theme.css.",
         "A Settings IA pass then made Settings visible to every signed-in user, moved password/security into Settings > My account, kept Clinic profile and Users & access admin-only, simplified the drawer footer to account identity plus Log out, and standardized drawer icons into one premium-style 24px stroke system.",
-        "The account/profile foundation then added profile photo upload/remove under Settings > My account, shell avatar display with initials fallback, read-only email/login identity so accountability stays anchored to stable account identifiers, staff avatar/initial identity inside Users & access, and a dedicated Manage user page for admin full-name/role correction plus password reset."
+        "The account/profile foundation then added profile photo upload/remove under Settings > My account, shell avatar display with initials fallback, read-only email/login identity so accountability stays anchored to stable account identifiers, staff avatar/initial identity inside Users & access, and a dedicated Manage user page for admin full-name/role correction plus password reset.",
+        "The Settings utility follow-up then brought Settings > Create user and Manage user into the same compact utility-card treatment as the Forms utility screens, so manual account fallback and user maintenance no longer fall back to older heavy auth panels."
       ]
     },
     "notes": [
@@ -128,6 +129,7 @@
       "signed-in users can now upload/remove their own profile photo from Settings > My account, and the shell uses it in the account button and drawer identity with initials fallback",
       "Settings > Users & access now displays uploaded staff avatars when available, with initials fallback on account cards",
       "admins can now open /settings/users/{id}/edit from the directory to correct full name/role and reset another user's temporary password",
+      "Settings > Create user and Manage user now share compact utility-card layouts with clearer identity/access sections instead of older heavy auth panels",
       "email and login ID remain read-only in the personal account screen so identity changes do not undermine accountability"
     ],
     "authenticated_shell_foundation": [

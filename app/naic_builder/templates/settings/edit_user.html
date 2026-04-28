@@ -25,8 +25,8 @@
   <div class="auth-shell">
     {% include "settings/_settings_nav.html" %}
 
-    <section class="auth-grid">
-      <section class="panel auth-main user-manage-main">
+    <section class="settings-utility-grid">
+      <div class="settings-utility-main">
         {% if error_message %}
         <div class="banner error">{{ error_message }}</div>
         {% endif %}
@@ -34,38 +34,45 @@
         <div class="banner success">{{ success_message }}</div>
         {% endif %}
 
-        <form method="post" action="/settings/users/{{ target_user.id }}/edit" class="auth-form">
+        <form method="post" action="/settings/users/{{ target_user.id }}/edit" class="panel settings-utility-card">
           <input type="hidden" name="action" value="details">
 
-          <div class="brand-copy">
-            <p class="eyebrow">Account details</p>
-            <h2>{{ target_user.full_name }}</h2>
+          <div class="section-head settings-utility-head">
+            <div>
+              <p class="eyebrow">Account details</p>
+              <h2>{{ target_user.full_name }}</h2>
+            </div>
+            <span class="status-chip" data-status="{{ target_user.status }}">{{ target_user.status | title }}</span>
           </div>
 
-          <label class="field-stack">
-            <span>Full name</span>
-            <input type="text" name="full_name" value="{{ full_name }}" required>
-          </label>
+          <div class="settings-utility-section settings-utility-field-grid">
+            <label class="field-stack">
+              <span>Full name</span>
+              <input type="text" name="full_name" value="{{ full_name }}" autocomplete="name" required>
+            </label>
 
-          <label class="select-stack">
-            <span>Role</span>
-            <select name="role">
-              <option value="medtech" {% if selected_role == 'medtech' %}selected{% endif %}>Medtech</option>
-              <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
-            </select>
-          </label>
+            <label class="select-stack">
+              <span>Role</span>
+              <select name="role">
+                <option value="medtech" {% if selected_role == 'medtech' %}selected{% endif %}>Medtech</option>
+                <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
+              </select>
+            </label>
+          </div>
 
-          <p class="field-help">Email and login ID stay fixed here to preserve accountability.</p>
+          <div class="settings-utility-section">
+            <p class="field-help">Email and login ID stay fixed here to preserve accountability.</p>
+          </div>
 
-          <div class="auth-actions">
+          <div class="settings-utility-actions">
             <button class="primary-button" type="submit">Save changes</button>
             <a class="ghost-button" href="/settings/users">Cancel</a>
           </div>
         </form>
-      </section>
+      </div>
 
-      <aside class="panel auth-side account-identity-card">
-        <div class="account-identity-head">
+      <aside class="panel settings-utility-card settings-utility-card--aside account-identity-card">
+        <div class="section-head settings-utility-head account-identity-head">
           <div class="account-avatar-frame" aria-hidden="true">
             {% if target_avatar_url %}
             <img src="{{ target_avatar_url }}" alt="">
@@ -79,28 +86,30 @@
           </div>
         </div>
 
-        <dl class="account-detail-list">
-          <div>
-            <dt>Status</dt>
-            <dd>{{ target_user.status | title }}</dd>
-          </div>
-          <div>
-            <dt>Login ID</dt>
-            <dd>{{ target_user.login_id }}</dd>
-          </div>
-          {% if target_user.email %}
-          <div>
-            <dt>Email</dt>
-            <dd>{{ target_user.email }}</dd>
-          </div>
-          {% endif %}
-          <div>
-            <dt>Password</dt>
-            <dd>{{ "Change required" if target_user.must_change_password else "Set" }}</dd>
-          </div>
-        </dl>
+        <div class="settings-utility-section">
+          <dl class="account-detail-list">
+            <div>
+              <dt>Status</dt>
+              <dd>{{ target_user.status | title }}</dd>
+            </div>
+            <div>
+              <dt>Login ID</dt>
+              <dd>{{ target_user.login_id }}</dd>
+            </div>
+            {% if target_user.email %}
+            <div>
+              <dt>Email</dt>
+              <dd>{{ target_user.email }}</dd>
+            </div>
+            {% endif %}
+            <div>
+              <dt>Password</dt>
+              <dd>{{ "Change required" if target_user.must_change_password else "Set" }}</dd>
+            </div>
+          </dl>
+        </div>
 
-        <form method="post" action="/settings/users/{{ target_user.id }}/edit" class="auth-form user-reset-form">
+        <form method="post" action="/settings/users/{{ target_user.id }}/edit" class="settings-utility-section user-reset-form">
           <input type="hidden" name="action" value="reset_password">
           <input
             type="text"
@@ -109,7 +118,7 @@
             autocomplete="username"
             hidden
           >
-          <div class="brand-copy">
+          <div class="brand-copy settings-utility-minihead">
             <p class="eyebrow">Access</p>
             <h2>Reset password</h2>
           </div>
