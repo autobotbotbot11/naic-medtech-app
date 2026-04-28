@@ -368,6 +368,10 @@ The app now starts from a builder-first FastAPI scaffold.
   - primary actions like `Edit` and `New form` stay visible
   - secondary actions like copy, move, and folder management now live behind smaller `More` menus instead of staying open on every card
   - the old always-open jump control is now collapsed into a quieter `Jump to top level` affordance
+- the latest `/forms` pass makes the library feel more like a compact file browser:
+  - folder and form rows now use object icons
+  - overflow actions are icon-only with accessible labels
+  - search shows live form/folder counts and exposes a clear action only when needed
 - folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
 - folder cards in `/forms` can now also launch `Edit folder`, so the visible tree flow is no longer create-only
 - folder cards in `/forms` can now also launch `Move`, and form cards can now launch `Move` too, so the visible library flow is no longer limited to browse/create/edit

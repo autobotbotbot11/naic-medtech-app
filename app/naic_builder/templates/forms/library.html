@@ -17,6 +17,24 @@
 {% endblock %}
 
 {% block content %}
+  {% macro library_icon(name) -%}
+    {%- if name == "folder" -%}
+    <svg class="library-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M4.75 7.75a2 2 0 0 1 2-2h3.2l1.7 1.9h5.6a2 2 0 0 1 2 2v6.6a2 2 0 0 1-2 2H6.75a2 2 0 0 1-2-2Z" />
+      <path d="M4.75 9.75h14.5" />
+    </svg>
+    {%- elif name == "form" -%}
+    <svg class="library-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M7.25 4.75h7l2.5 2.5v12H7.25a2 2 0 0 1-2-2V6.75a2 2 0 0 1 2-2Z" />
+      <path d="M14.25 4.75v3h2.5M8.75 11.25h6.5M8.75 14.25h6.5M8.75 17.25h3.5" />
+    </svg>
+    {%- elif name == "more" -%}
+    <svg class="library-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6.75 12h.01M12 12h.01M17.25 12h.01" />
+    </svg>
+    {%- endif -%}
+  {%- endmacro %}
+
   {% macro render_nodes(nodes, path_label='', level=0) %}
     {% for node in nodes if not node.archived %}
       {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
@@ -32,18 +50,21 @@
           {% if level == 0 %}open{% endif %}
         >
           <summary class="tree-folder-summary">
-            <div class="tree-node-copy">
-              <h2 class="tree-node-title">{{ node.name }}</h2>
-              {% if path_label %}
-              <p class="panel-copy tree-node-path">{{ path_label }}</p>
-              {% endif %}
+            <div class="tree-node-main">
+              <span class="tree-node-icon tree-node-icon--folder">{{ library_icon("folder") }}</span>
+              <div class="tree-node-copy">
+                <h2 class="tree-node-title">{{ node.name }}</h2>
+                {% if path_label %}
+                <p class="panel-copy tree-node-path">{{ path_label }}</p>
+                {% endif %}
+              </div>
             </div>
           </summary>
           <div class="tree-node-body">
             <div class="tree-folder-actions">
               <a class="ghost-button" href="/forms/new?parent={{ node.id }}">New form</a>
               <details class="library-card-menu">
-                <summary>More</summary>
+                <summary aria-label="Folder actions" title="Folder actions">{{ library_icon("more") }}</summary>
                 <div class="library-card-menu__list">
                   <a href="/folders/new?parent={{ node.id }}">New folder</a>
                   <a href="/folders/move?node={{ node.id }}">Move</a>
@@ -66,14 +87,17 @@
           data-node-id="{{ node.id }}"
           data-search-text="{{ current_path|lower }}"
         >
-          <div class="form-card-copy">
-            <h3>{{ form_name }}</h3>
-            <p class="panel-copy tree-form-path">{{ path_label or 'Top level' }} - v{{ node.form.current_version_number }}</p>
+          <div class="form-card-copy tree-node-main">
+            <span class="tree-node-icon tree-node-icon--form">{{ library_icon("form") }}</span>
+            <div>
+              <h3>{{ form_name }}</h3>
+              <p class="panel-copy tree-form-path">{{ path_label or 'Top level' }} - v{{ node.form.current_version_number }}</p>
+            </div>
           </div>
           <div class="form-card-actions">
             <a class="primary-button" href="/forms/{{ node.form.slug }}/builder">Edit</a>
             <details class="library-card-menu">
-              <summary>More</summary>
+              <summary aria-label="Form actions" title="Form actions">{{ library_icon("more") }}</summary>
               <div class="library-card-menu__list">
                 <a href="/forms/new?source={{ node.form.slug }}">Copy</a>
                 <a href="/forms/move?slug={{ node.form.slug }}">Move</a>
@@ -87,13 +111,25 @@
 
   <div class="library-shell">
     <section class="library-utility-bar">
-      <label class="search-wrap search-wrap--library">
-        <span>Search forms</span>
-        <input id="librarySearch" type="search" placeholder="Search forms">
-      </label>
+      <div class="library-search-row">
+        <label class="search-wrap search-wrap--library">
+          <span>Find</span>
+          <input id="librarySearch" type="search" placeholder="Search forms or folders">
+        </label>
+        <button id="libraryClearSearch" class="ghost-button library-clear-search" type="button" hidden>Clear</button>
+        <p
+          id="librarySearchStatus"
+          class="library-result-count"
+          data-total-count="{{ library_stats.item_count }}"
+          data-form-count="{{ library_stats.form_count }}"
+          data-folder-count="{{ library_stats.folder_count }}"
+        >
+          {{ library_stats.form_count }} forms - {{ library_stats.folder_count }} folders
+        </p>
+      </div>
       {% if library_tree %}
       <details class="library-quick-jump">
-        <summary>Top level</summary>
+        <summary>Jump</summary>
         <nav class="group-jump-list group-jump-list--inline library-jump-list" aria-label="Jump to top-level forms and folders">
           {% for node in library_tree if not node.archived %}
           {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
@@ -123,6 +159,7 @@
       <div id="emptySearchState" class="empty-state empty-state--plain hidden">
         <h2>No matching forms</h2>
         <p class="panel-copy">Try another search.</p>
+        <button class="ghost-button library-empty-clear" type="button" data-clear-library-search>Clear search</button>
       </div>
     </section>
   </div>

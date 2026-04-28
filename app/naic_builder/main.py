@@ -1083,14 +1083,34 @@ def print_record_page(
 @app.get("/forms", response_class=HTMLResponse)
 def forms_library(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
     library_tree = list_library_tree(session)
+    library_stats = summarize_library_tree(library_tree)
     return templates.TemplateResponse(
         request=request,
         name="forms/library.html",
         context={
             "app_title": APP_TITLE,
             "library_tree": library_tree,
+            "library_stats": library_stats,
         },
     )
+
+
+def summarize_library_tree(nodes: list[dict[str, Any]]) -> dict[str, int]:
+    stats = {"folder_count": 0, "form_count": 0, "item_count": 0}
+
+    def walk(node_list: list[dict[str, Any]]) -> None:
+        for node in node_list:
+            if node.get("archived"):
+                continue
+            if node.get("kind") == "container":
+                stats["folder_count"] += 1
+                walk(node.get("children") or [])
+            elif node.get("kind") == "form" and node.get("form"):
+                stats["form_count"] += 1
+
+    walk(nodes)
+    stats["item_count"] = stats["folder_count"] + stats["form_count"]
+    return stats
 
 
 def render_new_folder_page(

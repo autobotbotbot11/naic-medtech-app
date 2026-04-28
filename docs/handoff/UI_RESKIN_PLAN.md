@@ -243,6 +243,7 @@ Current status:
 - materially landed for the current non-print pass
 - `/forms` now uses a lighter search/browse toolbar and open section flow instead of the earlier browse-sidebar composition
 - folder and form rows are tighter, with repeated metadata reduced and secondary actions kept behind calm `More` menus
+- `/forms` now has a compact file-browser pass too: object icons, icon-only overflow actions, live result counts, and clearable search make the library feel more direct without changing the tree model
 
 ### Phase 5
 Builder

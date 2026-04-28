@@ -172,6 +172,7 @@
       "the library can now show both root-level forms and folders in one calm tree-first browse surface",
       "library search now works against full folder path text instead of only one-level group names",
       "the forms library is lighter now too: primary actions stay visible, secondary actions now live behind smaller More menus, and the top-level jump control is no longer always expanded",
+      "the latest forms library pass makes /forms read more like a compact file browser: folder/form rows use object icons, overflow actions are icon-only with accessible labels, and search now shows live form/folder counts plus a clear action only while filtering",
       "folder cards in /forms can now launch folder-scoped creation directly via new form here and new folder here",
       "folder cards in /forms can now also launch edit folder, so the visible tree flow is no longer create-only",
       "folder cards in /forms can now also launch move, and form cards can now launch move too, so the visible tree flow now supports relocation as well as browse, create, and edit",

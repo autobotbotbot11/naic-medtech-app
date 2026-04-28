@@ -1,8 +1,13 @@
 const searchEl = document.getElementById("librarySearch");
+const clearSearchEl = document.getElementById("libraryClearSearch");
+const searchStatusEl = document.getElementById("librarySearchStatus");
 const libraryRootEl = document.querySelector("[data-library-root]");
 const rootNodes = [...(libraryRootEl?.children || [])].filter((node) => node.dataset?.nodeKind);
+const searchableNodes = [...document.querySelectorAll("[data-node-kind]")];
+const quickJumpEl = document.querySelector(".library-quick-jump");
 const jumpLinks = [...document.querySelectorAll("[data-jump-link]")];
 const emptyStateEl = document.getElementById("emptySearchState");
+const emptyClearEls = [...document.querySelectorAll("[data-clear-library-search]")];
 
 function childNodesOf(node) {
   const childrenWrap = node.querySelector(":scope > .tree-node-body > .tree-children");
@@ -48,11 +53,48 @@ function applyLibraryFilter() {
     link.classList.toggle("hidden", !related || related.classList.contains("hidden"));
   });
 
-  emptyStateEl?.classList.toggle("hidden", visibleRootCount > 0);
+  const visibleNodes = searchableNodes.filter((node) => !node.classList.contains("hidden"));
+  const visibleForms = visibleNodes.filter((node) => node.dataset.nodeKind === "form").length;
+  const visibleFolders = visibleNodes.filter((node) => node.dataset.nodeKind === "container").length;
+  const totalCount = Number(searchStatusEl?.dataset.totalCount || searchableNodes.length);
+  const formCount = Number(searchStatusEl?.dataset.formCount || 0);
+  const folderCount = Number(searchStatusEl?.dataset.folderCount || 0);
+
+  if (searchStatusEl) {
+    searchStatusEl.textContent = query
+      ? `${visibleForms} forms - ${visibleFolders} folders shown`
+      : `${formCount} forms - ${folderCount} folders`;
+    searchStatusEl.hidden = totalCount <= 0;
+  }
+
+  if (clearSearchEl) {
+    clearSearchEl.hidden = !query;
+  }
+
+  if (quickJumpEl) {
+    quickJumpEl.hidden = visibleRootCount <= 0;
+  }
+
+  emptyStateEl?.classList.toggle("hidden", !query || visibleRootCount > 0);
+}
+
+function clearLibrarySearch() {
+  if (!searchEl) {
+    return;
+  }
+
+  searchEl.value = "";
+  applyLibraryFilter();
+  searchEl.focus();
 }
 
 if (searchEl) {
   searchEl.addEventListener("input", applyLibraryFilter);
 }
+
+clearSearchEl?.addEventListener("click", clearLibrarySearch);
+emptyClearEls.forEach((button) => {
+  button.addEventListener("click", clearLibrarySearch);
+});
 
 applyLibraryFilter();
