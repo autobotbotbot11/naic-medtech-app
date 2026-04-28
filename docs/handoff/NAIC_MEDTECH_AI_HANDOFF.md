@@ -142,6 +142,10 @@ Current live status:
 - the non-print app now has a materially landed live reskin pass under that direction
 - the shell architecture is no longer the main UI problem now; the current live correction is at the page-composition level
 - records, forms, and settings are now moving toward a content-first composition model instead of a panel-first one
+- helper-text density is now also part of the active UI cleanup:
+  - obvious screens should scan fast
+  - utility bars should not read like onboarding copy
+  - guidance should stay only where it prevents mistakes or clarifies non-obvious steps
 - dark mode was intentionally pushed first and browser-audited directly against the locked darker sample
 - the strongest finished live surfaces right now are:
   - `Records`
@@ -244,6 +248,9 @@ Current live UI checkpoint:
     - avoid reopening nav architecture unless a real workflow problem appears
     - prefer content-first composition, lighter section structure, and cards only for actual objects
     - let builder stay denser than records, forms, and settings
+    - keep copy direct:
+      - remove helper text from obvious screens and utility strips
+      - only keep guidance when it prevents mistakes, explains limits, or clarifies a non-obvious action
 
 ## Next Whole-App Milestone
 The builder is now at the point where the core direction is effectively done.

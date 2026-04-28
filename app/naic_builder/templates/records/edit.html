@@ -10,9 +10,7 @@
 
 {% block shell_eyebrow %}Records{% endblock %}
 {% block shell_title %}Record entry{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Keep the record calm while editing, then complete it only when the required details are ready.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <a class="page-back-link" href="/records">Back to records</a>
@@ -247,7 +245,7 @@
           <p class="eyebrow">{{ "Ready" if not validation_issues else "Before completing" }}</p>
           <h3>{{ "This draft is ready to complete" if not validation_issues else "Finish these required details" }}</h3>
           <p class="entry-inline-hint">
-            {{ "You can still save as a draft, or complete it now." if not validation_issues else "Drafts can stay flexible, but these details are still needed before completion." }}
+            {{ "You can complete it now or keep it as a draft." if not validation_issues else "These details are still required." }}
           </p>
         </div>
         {% if validation_issues %}
@@ -267,7 +265,7 @@
           <div class="entry-block-head">
             <p class="eyebrow">Record details</p>
             <h2>Header</h2>
-            <p class="entry-inline-hint">Patient name and case number are required before this record can be completed.</p>
+            <p class="entry-inline-hint">Patient name and case number are required before completion.</p>
           </div>
           <div class="record-basics-grid">
             <label class="entry-field">

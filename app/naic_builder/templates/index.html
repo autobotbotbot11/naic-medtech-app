@@ -12,9 +12,7 @@
 
 {% block shell_eyebrow %}Builder{% endblock %}
 {% block shell_title %}Form workspace{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Refine one form at a time while the outline, editor, and live preview stay in step.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <a class="page-back-link" href="/forms">Back to forms</a>
@@ -68,7 +66,6 @@
           <div>
             <p class="eyebrow">Form Library</p>
             <h2>Choose a form</h2>
-            <p class="panel-copy">Open one you already have, or start a new one.</p>
           </div>
           <button id="closeLibraryBtn" class="ghost" type="button">Close Library</button>
         </div>
@@ -87,7 +84,7 @@
         <div class="stage-copy">
           <p class="eyebrow">Builder</p>
           <h2 id="stageTitle">Open a form</h2>
-          <p id="stageDescription" class="panel-copy">Edit one area at a time.</p>
+          <p id="stageDescription" class="panel-copy"></p>
           <div class="stage-signal">
             <strong id="previewCalloutTitle">Live preview</strong>
             <span id="previewCalloutMeta">Open it for a quick check.</span>
@@ -119,7 +116,6 @@
             <div>
               <p class="eyebrow">Live</p>
               <h3>Preview</h3>
-              <p class="panel-copy">Updates while you edit.</p>
             </div>
             <button id="closePreviewBtn" class="ghost mini" type="button">Hide</button>
           </div>

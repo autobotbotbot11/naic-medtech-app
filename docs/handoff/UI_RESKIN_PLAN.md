@@ -45,6 +45,7 @@ The app should feel expensive because it is deliberate, not because it is overlo
 6. The reskin must be token-first and scalable, not page-hack-first.
 7. Do not let the UI collapse into panel-inside-panel composition.
 8. Cards should mostly represent actual objects like records, forms, and users, not every section wrapper.
+9. Do not over-explain obvious screens. Helper text should exist only when it prevents mistakes or clarifies a genuinely non-obvious step.
 
 ## Current Composition Rule
 The shell architecture is no longer the main problem.
@@ -58,6 +59,10 @@ The current live direction is:
   - compact toolbars
   - open sections
   - object cards only where they carry real content
+- reduce copy density:
+  - hub pages should scan fast
+  - simple actions should not need paragraph-length explanation
+  - helper text belongs near constraints, file limits, validation, or ambiguous setup choices
 
 Builder is the controlled exception:
 - it can stay denser

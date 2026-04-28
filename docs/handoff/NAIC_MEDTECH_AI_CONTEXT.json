@@ -64,7 +64,8 @@
       "Dark mode should stay curated and atmospheric, not neon and not pure black.",
       "The live app now has a shared theme foundation plus a browser-audited non-print reskin and consistency pass; these standalone files remain the locked visual north star for future UI work.",
       "Quick light-mode audits were also run across the main non-print screens so the next review should not immediately hit obvious contrast regressions.",
-      "Builder should stay denser than records, forms, and settings; the calmer content-first composition rule is mainly for the everyday non-builder product surfaces."
+      "Builder should stay denser than records, forms, and settings; the calmer content-first composition rule is mainly for the everyday non-builder product surfaces.",
+      "Directness is now part of the live UI rule too: obvious screens should not over-explain themselves, and helper text should remain only where it prevents mistakes or clarifies non-obvious actions."
     ]
   },
   "alignment_lock": [

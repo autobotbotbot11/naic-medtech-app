@@ -10,9 +10,7 @@
 
 {% block shell_eyebrow %}Settings{% endblock %}
 {% block shell_title %}User accounts{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Approve requests, create accounts manually, and keep clinic access organized without a heavy workflow.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block topbar_actions %}
   <a class="primary-button" href="/settings/users/new">Create user</a>
@@ -78,17 +76,14 @@
       <article class="metric-card settings-metric-card">
         <span class="eyebrow">Pending</span>
         <strong>{{ pending_count }}</strong>
-        <p class="panel-copy">Requests waiting for approval.</p>
       </article>
       <article class="metric-card settings-metric-card">
         <span class="eyebrow">Active</span>
         <strong>{{ active_count }}</strong>
-        <p class="panel-copy">Accounts that can sign in now.</p>
       </article>
       <article class="metric-card settings-metric-card">
         <span class="eyebrow">Disabled</span>
         <strong>{{ disabled_count }}</strong>
-        <p class="panel-copy">Accounts currently removed from access.</p>
       </article>
     </div>
 
@@ -106,7 +101,7 @@
           {% else %}
           <div class="empty-state empty-state--plain">
             <h3>No pending requests</h3>
-            <p class="panel-copy">New account requests will appear here.</p>
+            <p class="panel-copy">Requests show up here.</p>
           </div>
           {% endif %}
         </div>
@@ -125,7 +120,7 @@
           {% else %}
           <div class="empty-state empty-state--plain">
             <h3>No active users</h3>
-            <p class="panel-copy">Create or approve one when the clinic is ready.</p>
+            <p class="panel-copy">Create or approve one.</p>
           </div>
           {% endif %}
         </div>
@@ -144,7 +139,7 @@
           {% else %}
           <div class="empty-state empty-state--plain">
             <h3>No disabled users</h3>
-            <p class="panel-copy">Disabled accounts will stay here until reactivated.</p>
+            <p class="panel-copy">Disabled accounts stay here.</p>
           </div>
           {% endif %}
         </div>

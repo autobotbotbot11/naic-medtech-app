@@ -10,9 +10,7 @@
 
 {% block shell_eyebrow %}Settings{% endblock %}
 {% block shell_title %}Create user{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Use this manual fallback if the clinic needs access immediately or the email flow is not available.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <a class="page-back-link" href="/settings/users">Back to users</a>
@@ -76,12 +74,11 @@
         <div class="brand-copy">
           <p class="eyebrow">Manual fallback</p>
           <h2>Still simple</h2>
-          <p class="panel-copy">The account becomes active right away, but the user will be forced to change the temporary password on first login.</p>
+          <p class="panel-copy">The user changes the password on first login.</p>
         </div>
         <ul class="auth-hint-list">
-          <li>Use this when a new medtech needs access right away.</li>
-          <li>If login ID is blank, the system will generate one.</li>
-          <li>The user can sign in with email or login ID after creation.</li>
+          <li>Login ID is optional.</li>
+          <li>The user can sign in with email or login ID.</li>
         </ul>
       </aside>
     </section>

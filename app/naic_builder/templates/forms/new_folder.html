@@ -9,9 +9,7 @@
 
 {% block shell_eyebrow %}Forms{% endblock %}
 {% block shell_title %}Create a folder{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Create an empty folder first when you want the library structure ready before the forms inside it.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <a class="page-back-link" href="/forms">Back to library</a>
@@ -26,7 +24,6 @@
       <div class="section-head">
         <p class="eyebrow">Folder setup</p>
         <h2>Name and place it</h2>
-        <p class="panel-copy">Keep it at the top level, or place it inside an existing folder.</p>
       </div>
 
       {% if error_message %}

@@ -10,9 +10,7 @@
 
 {% block shell_eyebrow %}Records{% endblock %}
 {% block shell_title %}Start a new record{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Choose the form first, then the medtech can enter the result in the next screen.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <a class="page-back-link" href="/records">Back to records</a>
@@ -33,7 +31,7 @@
         <div class="entry-block-head">
           <p class="eyebrow">Start</p>
           <h2>Choose the form and basic details</h2>
-          <p class="entry-inline-hint">Patient name and case number can wait while the record is still a draft, but both are required before completion.</p>
+          <p class="entry-inline-hint">Name and case number are required before completion.</p>
         </div>
         <div class="record-basics-grid">
           <label class="entry-field">
@@ -89,18 +87,15 @@
         <div class="entry-block-head">
           <p class="eyebrow">Draft workflow</p>
           <h2>Calm first step</h2>
-          <p class="entry-inline-hint">Start the draft with the correct form. Patient name and case number can follow, but both are still required before completion.</p>
         </div>
         <div class="record-start-metrics">
           <article class="record-start-metric">
             <p class="eyebrow">Active forms</p>
             <strong>{{ form_choices|length }}</strong>
-            <p class="panel-copy">Published forms ready for medtech entry.</p>
           </article>
           <article class="record-start-metric">
             <p class="eyebrow">Before complete</p>
             <strong>Name + case number</strong>
-            <p class="panel-copy">The record can stay a draft until those details are ready.</p>
           </article>
         </div>
       </aside>

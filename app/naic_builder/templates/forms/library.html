@@ -9,9 +9,7 @@
 
 {% block shell_eyebrow %}Forms{% endblock %}
 {% block shell_title %}Form library{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Choose a form, copy one, or keep the library structure organized before the builder work starts.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block topbar_actions %}
   <a class="ghost-button" href="/folders/new">New folder</a>
@@ -86,8 +84,7 @@
       <div class="app-toolbar__row">
         <div class="app-toolbar__copy">
           <p class="eyebrow">Browse</p>
-          <h2>Search the form library</h2>
-          <p class="panel-copy">Search by form or folder name. Search checks the full path inside the library tree.</p>
+          <h2>Find a form</h2>
         </div>
         <div class="app-toolbar__actions">
           <label class="search-wrap">
@@ -123,14 +120,14 @@
         {% else %}
         <div class="empty-state empty-state--plain">
           <h2>Start with a form</h2>
-          <p class="panel-copy">Your library is empty right now. Create a new form when you are ready.</p>
+          <p class="panel-copy">Create a form to get started.</p>
         </div>
         {% endif %}
       </div>
 
       <div id="emptySearchState" class="empty-state empty-state--plain hidden">
         <h2>No matching forms</h2>
-        <p class="panel-copy">Try a different search or start a new form.</p>
+        <p class="panel-copy">Try another search.</p>
       </div>
     </section>
   </div>

@@ -10,9 +10,7 @@
 
 {% block shell_eyebrow %}Records{% endblock %}
 {% block shell_title %}Records{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Create a record, continue a draft, or review a completed result without leaving the main clinic workspace.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block topbar_actions %}
   <a class="primary-button" href="/records/new">Start new record</a>
@@ -59,24 +57,20 @@
         <article class="metric-card">
           <p class="eyebrow">Drafts</p>
           <strong>{{ draft_count }}</strong>
-          <p class="panel-copy">Records still open for entry.</p>
         </article>
         <article class="metric-card">
           <p class="eyebrow">Completed</p>
           <strong>{{ completed_count }}</strong>
-          <p class="panel-copy">Finished records ready to review or print.</p>
         </article>
         <article class="metric-card">
           <p class="eyebrow">Forms ready</p>
           <strong>{{ form_choices|length }}</strong>
-          <p class="panel-copy">Active form{{ '' if form_choices|length == 1 else 's' }} available for entry.</p>
         </article>
       </div>
 
       <section class="records-search-bar">
         <div class="records-search-bar__copy">
           <p class="eyebrow">Find records</p>
-          <p class="panel-copy">Search by patient, case number, form name, or record key.</p>
         </div>
         <form method="get" action="/records" class="records-search-form records-search-form--compact">
           <label class="records-search-input">

@@ -101,6 +101,10 @@ The app now starts from a builder-first FastAPI scaffold.
       - cards reserved mostly for actual objects like records, forms, and users
     - `/records`, `/forms`, `/settings/clinic`, and `/settings/users` now use that lighter composition direction already
     - builder is intentionally allowed to stay denser than the daily records/forms/settings surfaces because it is a focused workspace tool
+    - copy density is now part of the same rule too:
+      - obvious screens should not over-explain themselves
+      - helper text should stay only where it prevents mistakes or clarifies non-obvious steps
+      - hub pages and simple toolbars should read directly, not like walkthroughs
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

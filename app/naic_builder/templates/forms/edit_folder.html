@@ -9,9 +9,7 @@
 
 {% block shell_eyebrow %}Forms{% endblock %}
 {% block shell_title %}Edit folder{% endblock %}
-{% block shell_description %}
-  <p class="panel-copy">Rename the folder, or remove it once it is empty.</p>
-{% endblock %}
+{% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <a class="page-back-link" href="/forms">Back to library</a>
@@ -45,7 +43,7 @@
         <input type="text" value="{{ parent_path_label }}" disabled>
       </label>
 
-      <p class="panel-copy">Delete works only when the folder is empty.</p>
+      <p class="panel-copy">Delete only works when the folder is empty.</p>
 
       <div class="single-flow-actions">
         <button class="ghost-button warn-button" type="submit" name="action" value="delete">Delete folder</button>
