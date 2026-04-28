@@ -80,25 +80,17 @@
   {% endmacro %}
 
   <div class="library-shell">
-    <section class="app-toolbar library-toolbar">
-      <div class="app-toolbar__row">
-        <div class="app-toolbar__copy">
-          <p class="eyebrow">Browse</p>
-          <h2>Find a form</h2>
-        </div>
-        <div class="app-toolbar__actions">
-          <label class="search-wrap">
-            <span>Find</span>
-            <input id="librarySearch" type="search" placeholder="Search forms">
-          </label>
-        </div>
-      </div>
+    <section class="library-utility-bar">
+      <label class="search-wrap search-wrap--library">
+        <span>Search forms</span>
+        <input id="librarySearch" type="search" placeholder="Search forms">
+      </label>
       {% if library_tree %}
-      <nav class="group-jump-list group-jump-list--inline">
+      <nav class="group-jump-list group-jump-list--inline library-jump-list" aria-label="Jump to top-level forms and folders">
         {% for node in library_tree if not node.archived %}
         {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
         {% set jump_name = node.form.name if node.kind == 'form' and node.form else node.name %}
-        <a href="#{{ node_anchor }}" class="group-jump-link" data-jump-link="{{ node.id }}">
+        <a href="#{{ node_anchor }}" class="group-jump-link library-jump-link" data-jump-link="{{ node.id }}">
           <span>{{ jump_name }}</span>
           <small class="tree-link-kind">{{ 'Form' if node.kind == 'form' else 'Folder' }}</small>
         </a>
@@ -107,14 +99,8 @@
       {% endif %}
     </section>
 
-    <section class="app-section library-section">
-      <div class="app-section__head">
-        <div class="app-section__copy">
-          <p class="eyebrow">Library</p>
-          <h2>Folders and forms</h2>
-        </div>
-      </div>
-      <div class="library-tree" data-library-root>
+    <section class="library-section library-section--flat">
+      <div class="library-tree app-scroll-region app-scroll-region--tree" data-library-root>
         {% if library_tree %}
           {{ render_nodes(library_tree) }}
         {% else %}

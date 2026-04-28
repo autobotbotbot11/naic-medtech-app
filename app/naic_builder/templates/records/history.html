@@ -58,7 +58,7 @@
         </div>
       </div>
 
-      <div class="record-list">
+      <div class="record-list app-scroll-region app-scroll-region--list">
         {% if matching_records %}
           {% for record in matching_records %}
             {{ render_record_card(record, true) }}

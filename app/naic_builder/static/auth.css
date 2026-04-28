@@ -143,6 +143,7 @@
 
 .user-list {
   gap: 12px;
+  align-content: start;
 }
 
 .user-card {

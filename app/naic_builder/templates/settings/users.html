@@ -93,7 +93,7 @@
           <p class="eyebrow">Pending</p>
           <h2>Waiting for approval</h2>
         </div>
-        <div class="user-list">
+        <div class="user-list app-scroll-region app-scroll-region--stacked">
           {% if pending_users %}
             {% for user in pending_users %}
               {{ render_user_card(user, 'pending') }}
@@ -112,7 +112,7 @@
           <p class="eyebrow">Active</p>
           <h2>Working accounts</h2>
         </div>
-        <div class="user-list">
+        <div class="user-list app-scroll-region app-scroll-region--stacked">
           {% if active_users %}
             {% for user in active_users %}
               {{ render_user_card(user, 'active') }}
@@ -131,7 +131,7 @@
           <p class="eyebrow">Disabled</p>
           <h2>Inactive accounts</h2>
         </div>
-        <div class="user-list">
+        <div class="user-list app-scroll-region app-scroll-region--stacked">
           {% if disabled_users %}
             {% for user in disabled_users %}
               {{ render_user_card(user, 'disabled') }}

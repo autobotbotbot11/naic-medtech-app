@@ -185,6 +185,42 @@ input:focus {
   margin-top: 2px;
 }
 
+.library-utility-bar {
+  display: grid;
+  gap: 12px;
+  align-items: start;
+}
+
+.search-wrap--library {
+  min-width: 0;
+  max-width: 420px;
+}
+
+.library-jump-list {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+  scrollbar-gutter: stable;
+}
+
+.library-jump-link {
+  flex: 0 0 auto;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(68, 54, 40, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.72));
+  box-shadow: none;
+  white-space: nowrap;
+}
+
+.library-jump-link small {
+  opacity: 0.8;
+}
+
 .library-sidebar {
   position: sticky;
   top: 18px;
@@ -255,9 +291,14 @@ input:focus {
   gap: 16px;
 }
 
+.library-section--flat {
+  gap: 14px;
+}
+
 .library-tree {
   display: grid;
   gap: 16px;
+  align-content: start;
 }
 
 .tree-folder {

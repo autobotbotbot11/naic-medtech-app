@@ -571,6 +571,26 @@ html[data-theme="dark"] .shell-theme-toggle--inline {
   flex-wrap: wrap;
 }
 
+.app-scroll-region {
+  min-width: 0;
+  padding-right: 6px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+
+.app-scroll-region--list {
+  max-height: min(62vh, 760px);
+}
+
+.app-scroll-region--stacked {
+  max-height: min(36vh, 360px);
+}
+
+.app-scroll-region--tree {
+  max-height: min(68vh, 860px);
+}
+
 .metric-strip {
   display: grid;
   gap: 12px;
@@ -666,6 +686,14 @@ body.shell-drawer-open {
 
   .app-page-header__actions .search-wrap {
     min-width: 100%;
+  }
+
+  .app-scroll-region,
+  .app-scroll-region--list,
+  .app-scroll-region--stacked,
+  .app-scroll-region--tree {
+    max-height: none;
+    padding-right: 0;
   }
 }
 

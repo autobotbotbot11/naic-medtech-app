@@ -56,7 +56,8 @@
         "A follow-up consistency cleanup also normalized auth.css, library.css, new-form.css, and app.css against the shared theme tokens so the live app stops leaking older hardcoded warm-palette surfaces.",
         "Live browser checks were rerun across login, records, forms, new-form, clinic settings, and builder to specifically catch light-mode visibility and cross-mode consistency issues.",
         "The next structural correction then landed at the page-composition level: records, forms, and settings now move toward a content-first model with lighter page headers, compact toolbars, open sections, and cards reserved mostly for actual records, forms, and users instead of every wrapper block.",
-        "The shell architecture is no longer the primary UI question now; future non-print refinement should preserve the current shell and continue reducing visual weight through surface discipline instead of reopening navigation structure again."
+        "The shell architecture is no longer the primary UI question now; future non-print refinement should preserve the current shell and continue reducing visual weight through surface discipline instead of reopening navigation structure again.",
+        "A follow-up list-page pass then tightened the behavior rule too: list-heavy pages like records, forms, and users now move toward bounded scroll regions and lighter utility rows, while edit/detail pages keep normal page scroll."
       ]
     },
     "notes": [

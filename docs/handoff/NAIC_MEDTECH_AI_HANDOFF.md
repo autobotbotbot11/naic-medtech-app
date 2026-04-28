@@ -348,6 +348,10 @@ What the next AI should continue from here:
 - improve the print renderer instead of starting from a blank page
 - keep extending records history/search only as needed; the first calm search/filter pass is already landed
 - when visual work resumes, align it to the locked `Clinical Depth Luxe` light/dark pair instead of exploring a different style family first
+- preserve the current non-print page-behavior rule too:
+  - list-heavy pages should use bounded scroll regions instead of unbounded endless pages
+  - utility rows should stay light and direct, not read like major hero sections
+  - edit and detail pages should stay normal-scroll instead of inheriting nested list containers everywhere
 
 ## Builder Direction Note
 The current builder prototype is not yet considered final for the real client.
