@@ -15,83 +15,35 @@
   {% set current_user = request.state.current_user or {} %}
   {% set active_nav = shell_active|default('records') %}
 
-  <div class="app-scaffold{% if shell_variant|default('default') == 'workspace' %} app-scaffold--workspace{% endif %}">
-    <aside class="app-rail panel" aria-label="Workspace rail">
-      <div class="app-rail__top">
-        <button class="app-rail__toggle" type="button" data-shell-panel-toggle aria-expanded="false" aria-label="Open navigation" title="Open navigation">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M4 5.5h12M4 10h12M4 14.5h12" />
-          </svg>
-        </button>
-        <a class="app-rail__brand" href="/records" aria-label="{{ clinic_profile.get('clinic_name') or app_title }}" title="{{ clinic_profile.get('clinic_name') or app_title }}">
-          {% if clinic_profile.get('has_logo') %}
-          <img src="/settings/clinic/logo" alt="{{ clinic_profile.get('clinic_name') or app_title }}">
-          {% else %}
-          <span>{{ (clinic_profile.get('clinic_name') or 'N')[:1] }}</span>
-          {% endif %}
-        </a>
-      </div>
+  <div class="app-frame{% if shell_variant|default('default') == 'workspace' %} app-frame--workspace{% endif %}">
+    <div class="app-drawer-scrim" data-shell-drawer-scrim data-shell-drawer-close hidden></div>
 
-      <nav class="app-rail__nav" aria-label="Primary">
-        <a class="app-rail__link{% if active_nav == 'records' %} is-active{% endif %}" href="/records" aria-label="Records" title="Records">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M4.5 5.25A1.75 1.75 0 0 1 6.25 3.5h7.5A1.75 1.75 0 0 1 15.5 5.25v9.5a1.75 1.75 0 0 1-1.75 1.75h-7.5A1.75 1.75 0 0 1 4.5 14.75zm2.25 1.5h6.5m-6.5 3.25h6.5m-6.5 3.25h4" />
-          </svg>
-        </a>
-        {% if request.state.is_admin %}
-        <a class="app-rail__link{% if active_nav == 'forms' %} is-active{% endif %}" href="/forms" aria-label="Forms" title="Forms">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M4.75 4.25h10.5v11.5H4.75zm0 3.75h10.5m-5.25-3.75v11.5" />
-          </svg>
-        </a>
-        <a class="app-rail__link{% if active_nav == 'builder' %} is-active{% endif %}" href="/builder" aria-label="Builder" title="Builder">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M4.5 5.5h11m-11 4.5h7m-7 4.5h11M12.25 5.5l2.5 2.5m-2.5 0 2.5-2.5" />
-          </svg>
-        </a>
-        <a class="app-rail__link{% if active_nav == 'settings' %} is-active{% endif %}" href="/settings" aria-label="Settings" title="Settings">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M10 4.25a5.75 5.75 0 1 0 0 11.5 5.75 5.75 0 0 0 0-11.5Zm0 0V2.5m0 15v-1.75M15.75 10h1.75M2.5 10h1.75m11.06-4.06 1.24-1.24M3.69 16.31l1.24-1.24m10.38 1.24-1.24-1.24M3.69 3.69l1.24 1.24" />
-          </svg>
-        </a>
-        {% endif %}
-      </nav>
-
-      <div class="app-rail__bottom">
-        <button class="app-rail__account" type="button" data-shell-panel-toggle aria-expanded="false" aria-label="Open workspace panel" title="Open workspace panel">
-          <span>{{ (current_user.get('full_name') or 'U')[:1] }}</span>
-        </button>
-      </div>
-    </aside>
-
-    <div class="app-drawer-scrim" data-shell-panel-scrim data-shell-panel-close hidden></div>
-
-    <aside class="app-shell-panel panel" data-shell-panel aria-hidden="true" hidden inert>
-      <div class="app-shell-panel__head">
-        <div class="app-shell-panel__brand">
-          <div class="app-shell-panel__brand-mark">
+    <aside class="app-drawer panel" data-shell-drawer aria-hidden="true" hidden inert>
+      <div class="app-drawer__head">
+        <div class="app-drawer__brand">
+          <a class="app-drawer__brand-mark" href="/records" aria-label="{{ clinic_profile.get('clinic_name') or app_title }}">
             {% if clinic_profile.get('has_logo') %}
             <img src="/settings/clinic/logo" alt="{{ clinic_profile.get('clinic_name') or app_title }}">
             {% else %}
             <span>{{ (clinic_profile.get('clinic_name') or 'N')[:1] }}</span>
             {% endif %}
-          </div>
-          <div class="app-shell-panel__brand-copy">
+          </a>
+          <div class="app-drawer__brand-copy">
             <strong>{{ clinic_profile.get('clinic_name') or 'Clinic workspace' }}</strong>
             <span>{{ app_title }}</span>
           </div>
         </div>
 
-        <button class="app-shell-panel__close" type="button" data-shell-panel-close aria-label="Close navigation" title="Close navigation">
+        <button class="app-drawer__close" type="button" data-shell-drawer-close aria-label="Close navigation" title="Close navigation">
           <svg viewBox="0 0 20 20" aria-hidden="true">
             <path d="M5.5 5.5 14.5 14.5M14.5 5.5l-9 9" />
           </svg>
         </button>
       </div>
 
-      <nav class="app-shell-panel__nav" aria-label="Workspace">
-        <a class="app-shell-panel__item{% if active_nav == 'records' %} is-active{% endif %}" href="/records">
-          <span class="app-shell-panel__glyph" aria-hidden="true">
+      <nav class="app-drawer__nav" aria-label="Primary">
+        <a class="app-drawer__item{% if active_nav == 'records' %} is-active{% endif %}" href="/records">
+          <span class="app-drawer__glyph" aria-hidden="true">
             <svg viewBox="0 0 20 20">
               <path d="M4.5 5.25A1.75 1.75 0 0 1 6.25 3.5h7.5A1.75 1.75 0 0 1 15.5 5.25v9.5a1.75 1.75 0 0 1-1.75 1.75h-7.5A1.75 1.75 0 0 1 4.5 14.75zm2.25 1.5h6.5m-6.5 3.25h6.5m-6.5 3.25h4" />
             </svg>
@@ -99,24 +51,16 @@
           <strong>Records</strong>
         </a>
         {% if request.state.is_admin %}
-        <a class="app-shell-panel__item{% if active_nav == 'forms' %} is-active{% endif %}" href="/forms">
-          <span class="app-shell-panel__glyph" aria-hidden="true">
+        <a class="app-drawer__item{% if active_nav == 'forms' %} is-active{% endif %}" href="/forms">
+          <span class="app-drawer__glyph" aria-hidden="true">
             <svg viewBox="0 0 20 20">
               <path d="M4.75 4.25h10.5v11.5H4.75zm0 3.75h10.5m-5.25-3.75v11.5" />
             </svg>
           </span>
           <strong>Forms</strong>
         </a>
-        <a class="app-shell-panel__item{% if active_nav == 'builder' %} is-active{% endif %}" href="/builder">
-          <span class="app-shell-panel__glyph" aria-hidden="true">
-            <svg viewBox="0 0 20 20">
-              <path d="M4.5 5.5h11m-11 4.5h7m-7 4.5h11M12.25 5.5l2.5 2.5m-2.5 0 2.5-2.5" />
-            </svg>
-          </span>
-          <strong>Builder</strong>
-        </a>
-        <a class="app-shell-panel__item{% if active_nav == 'settings' %} is-active{% endif %}" href="/settings">
-          <span class="app-shell-panel__glyph" aria-hidden="true">
+        <a class="app-drawer__item{% if active_nav == 'settings' %} is-active{% endif %}" href="/settings">
+          <span class="app-drawer__glyph" aria-hidden="true">
             <svg viewBox="0 0 20 20">
               <path d="M10 4.25a5.75 5.75 0 1 0 0 11.5 5.75 5.75 0 0 0 0-11.5Zm0 0V2.5m0 15v-1.75M15.75 10h1.75M2.5 10h1.75m11.06-4.06 1.24-1.24M3.69 16.31l1.24-1.24m10.38 1.24-1.24-1.24M3.69 3.69l1.24 1.24" />
             </svg>
@@ -126,10 +70,18 @@
         {% endif %}
       </nav>
 
-      <div class="app-shell-panel__footer">
+      {% if shell_variant|default('default') == 'workspace' and request.state.is_admin %}
+      <div class="app-drawer__workspace-note">
+        <p class="eyebrow">Workspace</p>
+        <p class="panel-copy">Builder is part of the forms workflow and stays outside the main product navigation.</p>
+        <a class="ghost-button" href="/forms">Back to forms</a>
+      </div>
+      {% endif %}
+
+      <div class="app-drawer__footer">
         <button class="shell-theme-toggle" type="button" data-theme-toggle></button>
 
-        <div class="app-shell-panel__account">
+        <div class="app-drawer__account">
           <strong>{{ current_user.get('full_name') or 'Signed in' }}</strong>
           <span>
             {{ (current_user.get('role') or 'user') | title }}
@@ -139,7 +91,7 @@
           </span>
         </div>
 
-        <div class="app-shell-panel__footer-actions">
+        <div class="app-drawer__footer-actions">
           <a class="ghost-button" href="/change-password">Password</a>
           <form method="post" action="/logout" class="inline-action-form">
             <button class="ghost-button" type="submit">Log out</button>
@@ -148,24 +100,35 @@
       </div>
     </aside>
 
-    <main class="app-main">
-      <header class="app-topbar panel">
-        <div class="app-topbar__copy">
-          <div class="app-topbar__lead">
-            <button class="app-nav-toggle" type="button" data-shell-panel-toggle aria-expanded="false">Menu</button>
+    <header class="app-topbar panel">
+      <div class="app-topbar__copy">
+        <div class="app-topbar__lead">
+          <button class="app-menu-toggle" type="button" data-shell-drawer-toggle aria-expanded="false" aria-label="Open navigation" title="Open navigation">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M4 5.5h12M4 10h12M4 14.5h12" />
+            </svg>
+          </button>
+          <a class="app-topbar__brand" href="/records" aria-label="{{ clinic_profile.get('clinic_name') or app_title }}">
+            {% if clinic_profile.get('has_logo') %}
+            <img src="/settings/clinic/logo" alt="{{ clinic_profile.get('clinic_name') or app_title }}">
+            {% else %}
+            <span>{{ (clinic_profile.get('clinic_name') or 'N')[:1] }}</span>
+            {% endif %}
+          </a>
+          <div class="app-topbar__brand-copy">
             <p class="eyebrow">{% block shell_eyebrow %}Workspace{% endblock %}</p>
+            <h1>{% block shell_title %}{{ app_title }}{% endblock %}</h1>
           </div>
-          <h1>{% block shell_title %}{{ app_title }}{% endblock %}</h1>
-          {% block shell_description %}{% endblock %}
         </div>
-        <div class="app-topbar__actions">
-          {% block topbar_actions %}{% endblock %}
-        </div>
-      </header>
+        {% block shell_description %}{% endblock %}
+      </div>
+      <div class="app-topbar__actions">
+        {% block topbar_actions %}{% endblock %}
+      </div>
+    </header>
 
-      <section class="app-main__body{% if shell_variant|default('default') == 'workspace' %} app-main__body--workspace{% endif %}">
-        {% block content %}{% endblock %}
-      </section>
+    <main class="app-canvas{% if shell_variant|default('default') == 'workspace' %} app-canvas--workspace{% endif %}">
+      {% block content %}{% endblock %}
     </main>
   </div>
 

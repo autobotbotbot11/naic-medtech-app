@@ -122,15 +122,16 @@ Current status:
 ### Phase 1.5
 Authenticated product shell
 - add one shared authenticated shell
-- add a slim icon rail
-- add a full navigation overlay panel
-- add top contextual bar
-- keep the builder in the same product family through a workspace variant
+- make the blurred top bar the primary anchor
+- keep global navigation hidden inside a left drawer opened from the top bar
+- keep only the real top-level destinations in global navigation
+- keep the builder in the same product family through a workspace variant instead of a global nav destination
 
 Definition of done:
 - authenticated records, forms, settings, and builder screens all use one product shell
-- the main canvas stays wide because navigation no longer consumes a permanent wide column
+- the main canvas stays wide because global navigation is hidden until needed
 - page-level actions move into the contextual top bar instead of every page inventing its own nav chrome
+- builder stays reachable from the forms workflow without competing as a first-class product area in global navigation
 
 Current status:
 - landed
@@ -139,7 +140,7 @@ Current status:
   - `app/naic_builder/static/shell.js`
   - `app/naic_builder/templates/_authenticated_shell.html`
 - the builder now uses the same family through a workspace shell variant
-- the live shell now uses rail + overlay navigation instead of a permanently wide sidebar
+- the live shell now uses a top-bar-first drawer model instead of a persistent rail or permanently wide sidebar
 
 ### Phase 2
 Records-first reskin
