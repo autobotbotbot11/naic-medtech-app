@@ -319,17 +319,69 @@
   flex: 0 0 auto;
 }
 
+.app-global-header__brand {
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 94%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 92%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 12%, transparent), transparent 56%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.48),
+    0 10px 20px rgba(9, 23, 29, 0.08);
+}
+
+.app-global-header__brand span {
+  color: var(--text);
+}
+
+.app-global-header__brand-copy strong {
+  color: var(--text);
+}
+
+.app-global-header__brand-copy span {
+  color: color-mix(in srgb, var(--muted) 88%, var(--text) 12%);
+}
+
+.app-menu-toggle,
+.app-account-toggle,
+.shell-theme-toggle--inline {
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 92%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 90%, transparent)
+    );
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 10px 20px rgba(9, 23, 29, 0.08);
+}
+
+.app-account-toggle span {
+  color: var(--text);
+}
+
 .shell-theme-toggle--inline {
   width: auto;
   min-width: 0;
   min-height: 42px;
   padding: 10px 14px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--line);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.024));
-  color: var(--shell-text);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 92%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 90%, transparent)
+    );
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 10px 20px rgba(9, 23, 29, 0.08);
 }
 
 .shell-theme-toggle--inline .theme-toggle-fab__meta {
@@ -339,6 +391,41 @@
 .shell-theme-toggle--inline .theme-toggle-fab__label {
   display: inline-flex;
   align-items: center;
+}
+
+.shell-theme-toggle--inline .theme-toggle-fab__label span {
+  color: inherit;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .app-global-header__brand {
+  border-color: rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03)),
+    radial-gradient(circle at top right, rgba(195, 160, 108, 0.22), transparent 54%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] .app-global-header__brand span,
+html[data-theme="dark"] .app-account-toggle span,
+html[data-theme="dark"] .app-global-header__brand-copy strong,
+html[data-theme="dark"] .app-menu-toggle,
+html[data-theme="dark"] .app-account-toggle,
+html[data-theme="dark"] .shell-theme-toggle--inline {
+  color: var(--shell-text);
+}
+
+html[data-theme="dark"] .app-global-header__brand-copy span {
+  color: var(--shell-muted);
+}
+
+html[data-theme="dark"] .app-menu-toggle,
+html[data-theme="dark"] .app-account-toggle,
+html[data-theme="dark"] .shell-theme-toggle--inline {
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.024));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .app-shell-main {

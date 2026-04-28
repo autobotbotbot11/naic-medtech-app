@@ -328,6 +328,48 @@ html[data-theme="dark"] .start-card {
   display: none !important;
 }
 
+.form-flow-card,
+.summary-card,
+.single-flow-card,
+.choice-pill,
+.start-card {
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 84%, transparent),
+      color-mix(in srgb, var(--panel-strong) 96%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 40%);
+  box-shadow: var(--shadow);
+}
+
+input[type="text"],
+select {
+  border-color: var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+input[type="text"]:focus,
+select:focus {
+  border-color: color-mix(in srgb, var(--accent) 54%, transparent);
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
+.choice-pill:has(input:checked),
+.start-card:has(input:checked) {
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
+.inline-error {
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
 @media (max-width: 980px) {
   .new-form-topbar {
     flex-direction: column;

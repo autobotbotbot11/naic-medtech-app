@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_landed_print_planning_next",
+    "status": "authenticated_shell_and_consistency_pass_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -29,7 +29,7 @@
         "forms",
         "settings"
       ],
-      "current_toggle": "integrated shell light/dark toggle in the top-right global header with local persistence and system fallback; public auth screens now use the same inline topbar placement and no floating fallback remains",
+      "current_toggle": "integrated shell light/dark toggle in the top-right global header with local persistence and system fallback; public auth screens use the same inline topbar placement and no floating fallback remains",
       "print_excluded": true
     },
     "records_reskin_phase": {
@@ -52,13 +52,15 @@
         "Direct browser-audited cleanup then fixed the remaining obvious dark-mode mismatches in record status chips, accent-label strength, settings/users stat cards, and the current builder content plus preview panels.",
         "The current builder shell now sits inside the same non-print luxe family, but print is still intentionally excluded from this reskin.",
         "A shared authenticated shell now sits under the non-print app too: shell.css, shell.js, and _authenticated_shell.html provide a thin global-header plus hidden-drawer model, with separate page-local headers across records, forms, settings, and the builder workspace variant.",
-        "The authenticated shell now keeps global navigation hidden in a left drawer opened from the top bar, while the actual page title and actions live in page-local headers so the global chrome stays light."
+        "The authenticated shell now keeps global navigation hidden in a left drawer opened from the top bar, while the actual page title and actions live in page-local headers so the global chrome stays light.",
+        "A follow-up consistency cleanup also normalized auth.css, library.css, new-form.css, and app.css against the shared theme tokens so the live app stops leaking older hardcoded warm-palette surfaces.",
+        "Live browser checks were rerun across login, records, forms, new-form, clinic settings, and builder to specifically catch light-mode visibility and cross-mode consistency issues."
       ]
     },
     "notes": [
       "The preferred feel is premium, modern, calm, and authored rather than generic admin minimalism.",
       "Dark mode should stay curated and atmospheric, not neon and not pure black.",
-      "The live app now has a shared theme foundation plus a browser-audited non-print reskin pass; these standalone files remain the locked visual north star for future UI work.",
+      "The live app now has a shared theme foundation plus a browser-audited non-print reskin and consistency pass; these standalone files remain the locked visual north star for future UI work.",
       "Quick light-mode audits were also run across the main non-print screens so the next review should not immediately hit obvious contrast regressions."
     ]
   },

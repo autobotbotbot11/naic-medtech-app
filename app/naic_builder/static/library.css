@@ -426,6 +426,49 @@ html[data-theme="dark"] .tree-folder-summary::after {
   text-align: center;
 }
 
+.library-sidebar,
+.tree-folder,
+.tree-form-card,
+.form-card,
+.group-jump-link {
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 84%, transparent),
+      color-mix(in srgb, var(--panel-strong) 96%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 40%);
+  box-shadow: var(--shadow);
+}
+
+.tree-folder-nested {
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 82%, transparent),
+      color-mix(in srgb, var(--panel-strong) 94%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 8%, transparent), transparent 42%);
+}
+
+.sidebar-note {
+  border-top-color: var(--line);
+}
+
+.search-wrap input {
+  border-color: var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.search-wrap input:focus {
+  border-color: color-mix(in srgb, var(--accent) 54%, transparent);
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
 .hidden {
   display: none !important;
 }

@@ -83,7 +83,11 @@ The app now starts from a builder-first FastAPI scaffold.
     - forms library, clinic settings, user settings, auth pages, start-new-form, and the current builder shell now share the stronger shell/material treatment
     - native-looking file upload controls were also styled through `theme.css` so clinic logo and image-upload flows no longer break the premium feel
   - quick light-mode audits were also run across the main non-print screens so the first consolidated user review should not hit obvious contrast regressions
-  - the shared authenticated shell rollout itself is now landed too:
+  - a deeper theme-consistency cleanup has now landed too:
+    - `app/naic_builder/static/auth.css`, `app/naic_builder/static/library.css`, `app/naic_builder/static/new-form.css`, and `app/naic_builder/static/app.css` now lean on the shared theme tokens instead of keeping older hardcoded warm-palette assumptions
+    - light/dark component visibility was checked again in a live browser pass across `/login`, `/records`, `/forms`, `/forms/new`, `/settings/clinic`, and `/builder`
+    - this pass specifically targeted the light-mode regressions where some cards, controls, and builder surfaces were still reading like older scaffold CSS instead of the shared `Clinical Depth Luxe` system
+- the shared authenticated shell rollout itself is now landed too:
     - `/records`, `/records/new`, `/records/{id}/edit`, `/records/{id}`
     - `/forms`, `/forms/new`, folder create/edit/move, and form move
     - `/settings/clinic`, `/settings/users`, and `/settings/users/new`

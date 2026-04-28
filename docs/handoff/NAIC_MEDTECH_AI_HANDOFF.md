@@ -158,6 +158,10 @@ Current live status:
   - overly bright `Settings > Users` stat cards in dark mode
   - overly bright builder content/preview panels in dark mode
 - quick light-mode audits were also run across the main non-print screens so the first consolidated review should not hit obvious contrast or raw-browser-control regressions
+- a deeper UI consistency pass has now landed too:
+  - `auth.css`, `library.css`, `new-form.css`, and `app.css` were normalized against the shared theme tokens instead of keeping older hardcoded warm-palette assumptions
+  - live browser checks were rerun across `/login`, `/records`, `/forms`, `/forms/new`, `/settings/clinic`, and `/builder`
+  - this pass specifically targeted light-mode visibility and cross-mode consistency so page-local cards, inputs, tabs, and builder panels stop drifting away from the shared luxe system
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 
 Chosen mode pair:
@@ -186,12 +190,12 @@ Current live UI checkpoint:
   - `app/naic_builder/static/theme.css`
   - `app/naic_builder/static/theme.js`
 - those assets are now wired into builder, auth, records, forms, and settings templates
-- the current theme control is intentionally simple:
-  - the authenticated shell now carries the primary light/dark toggle in the top-right global header
-  - public auth screens now use the same inline topbar placement too, so the old floating fallback no longer appears over content
-  - local persistence
-  - system-dark fallback on first load
-  - the older floating toggle now remains mainly as a fallback on public auth screens
+  - the current theme control is intentionally simple:
+    - the authenticated shell now carries the primary light/dark toggle in the top-right global header
+    - public auth screens now use the same inline topbar placement too
+    - local persistence
+    - system-dark fallback on first load
+    - no floating lower-left fallback remains in the live app path anymore
 - this is only the foundation pass
 - the first records-first live reskin pass has now landed too:
   - `app/naic_builder/static/records.css` has been rewritten toward the locked `Clinical Depth Luxe` direction

@@ -365,6 +365,91 @@ html[data-theme="dark"] .role-chip {
   color: #7fd5df;
 }
 
+.auth-main,
+.auth-side,
+.settings-panel,
+.profile-card,
+.logo-card,
+.user-card,
+.settings-count-card {
+  border-color: var(--line);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 84%, transparent),
+      color-mix(in srgb, var(--panel-strong) 96%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 40%);
+  box-shadow: var(--shadow);
+}
+
+.banner.error {
+  border-color: color-mix(in srgb, var(--danger) 28%, transparent);
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.banner.success {
+  border-color: color-mix(in srgb, var(--success) 28%, transparent);
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.select-stack select,
+.field-stack textarea {
+  border-color: var(--input-border);
+  background: var(--input-bg);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.select-stack select:focus,
+.field-stack textarea:focus {
+  border-color: color-mix(in srgb, var(--accent) 54%, transparent);
+  box-shadow: 0 0 0 4px var(--input-focus-ring);
+}
+
+.status-chip {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--panel-strong) 88%, transparent);
+  color: var(--muted);
+}
+
+.status-chip[data-status="disabled"] {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--line) 62%, transparent);
+  color: color-mix(in srgb, var(--muted) 92%, var(--text) 8%);
+}
+
+.role-chip {
+  background: color-mix(in srgb, var(--accent-soft) 78%, transparent);
+  color: var(--accent);
+}
+
+.settings-tab {
+  border-color: var(--line);
+  background: color-mix(in srgb, var(--surface-elevated) 92%, transparent);
+  color: var(--muted);
+  box-shadow: var(--shadow);
+}
+
+.settings-tab.is-active {
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.logo-frame {
+  border-color: color-mix(in srgb, var(--line-strong) 76%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 94%, transparent),
+      color-mix(in srgb, var(--panel) 90%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 6%, transparent), transparent 52%);
+}
+
 @media (max-width: 900px) {
   .auth-grid {
     grid-template-columns: 1fr;
