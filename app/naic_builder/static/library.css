@@ -181,6 +181,10 @@ input:focus {
   align-items: start;
 }
 
+.library-toolbar {
+  margin-top: 2px;
+}
+
 .library-sidebar {
   position: sticky;
   top: 18px;
@@ -199,6 +203,11 @@ input:focus {
   margin-top: 16px;
   display: grid;
   gap: 10px;
+}
+
+.group-jump-list--inline {
+  margin-top: 0;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .tree-link-kind {
@@ -222,14 +231,15 @@ input:focus {
   justify-content: space-between;
   gap: 12px;
   align-items: center;
-  padding: 11px 12px;
+  padding: 11px 13px;
   border-radius: var(--radius-md);
   border: 1px solid rgba(68, 54, 40, 0.08);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.74)),
-    radial-gradient(circle at top right, rgba(30, 93, 82, 0.04), transparent 48%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.82)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.04), transparent 52%);
   color: var(--text);
   font-weight: 700;
+  box-shadow: var(--shadow-soft);
 }
 
 .group-jump-link.hidden {
@@ -241,6 +251,10 @@ input:focus {
   gap: 16px;
 }
 
+.library-section {
+  gap: 16px;
+}
+
 .library-tree {
   display: grid;
   gap: 16px;
@@ -248,9 +262,11 @@ input:focus {
 
 .tree-folder {
   padding: 18px 20px;
+  border-color: rgba(68, 54, 40, 0.08);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel) 78%, transparent), color-mix(in srgb, var(--panel) 94%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 8%, transparent), transparent 36%);
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 92%, transparent), color-mix(in srgb, var(--surface-elevated) 88%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 4%, transparent), transparent 42%);
+  box-shadow: var(--shadow-soft);
 }
 
 .tree-folder.hidden,
@@ -260,9 +276,10 @@ input:focus {
 
 .tree-folder-nested {
   border-radius: var(--radius-lg);
+  border-color: rgba(68, 54, 40, 0.06);
   background:
-    linear-gradient(180deg, rgba(255, 250, 244, 0.82), rgba(255, 250, 244, 0.7)),
-    radial-gradient(circle at top right, rgba(201, 106, 41, 0.05), transparent 44%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.68), rgba(255, 255, 255, 0.56)),
+    radial-gradient(circle at top right, rgba(201, 106, 41, 0.04), transparent 48%);
   box-shadow: none;
 }
 
@@ -313,7 +330,7 @@ input:focus {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .tree-folder-actions .ghost-button {
@@ -328,8 +345,8 @@ input:focus {
 
 .tree-form-card {
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76)),
-    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 46%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.82)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.04), transparent 48%);
 }
 
 .tree-form-path {
@@ -344,13 +361,15 @@ input:focus {
 
 .form-card {
   display: grid;
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 14px;
   padding: 16px;
   border: 1px solid rgba(68, 54, 40, 0.12);
   border-radius: var(--radius-lg);
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.76)),
-    radial-gradient(circle at top right, rgba(30, 93, 82, 0.05), transparent 46%);
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.82)),
+    radial-gradient(circle at top right, rgba(30, 93, 82, 0.04), transparent 48%);
+  box-shadow: var(--shadow-soft);
 }
 
 .form-card.hidden {
@@ -375,6 +394,10 @@ input:focus {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  align-self: start;
+  min-width: 144px;
 }
 
 .tree-form-card h3,
@@ -419,6 +442,17 @@ html[data-theme="dark"] .tree-folder-nested {
 
 html[data-theme="dark"] .tree-folder-summary::after {
   color: color-mix(in srgb, var(--accent) 86%, #eaf6fa 14%);
+}
+
+@media (max-width: 820px) {
+  .form-card {
+    grid-template-columns: 1fr;
+  }
+
+  .form-card-actions {
+    min-width: 0;
+    justify-content: flex-start;
+  }
 }
 
 .empty-state {

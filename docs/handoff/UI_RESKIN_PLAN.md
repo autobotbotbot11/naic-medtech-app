@@ -43,6 +43,25 @@ The app should feel expensive because it is deliberate, not because it is overlo
 4. Light and dark mode must feel like the same product.
 5. Do not add many theme choices or arbitrary palette switching.
 6. The reskin must be token-first and scalable, not page-hack-first.
+7. Do not let the UI collapse into panel-inside-panel composition.
+8. Cards should mostly represent actual objects like records, forms, and users, not every section wrapper.
+
+## Current Composition Rule
+The shell architecture is no longer the main problem.
+
+The current live direction is:
+- keep the thin global header
+- keep the hidden drawer
+- keep page-local headers
+- shift page composition toward:
+  - lighter page headers
+  - compact toolbars
+  - open sections
+  - object cards only where they carry real content
+
+Builder is the controlled exception:
+- it can stay denser
+- it is a focused tool workspace, not the calmest everyday surface
 
 ## Current Live CSS Reality
 The current live app is split across these surface styles:
@@ -156,6 +175,10 @@ Reason:
 Definition of done:
 - records home and record entry feel like the chosen `Clinical Depth Luxe` direction in both light and dark mode
 
+Current status:
+- partially landed
+- `/records` now uses compact metrics, a lighter search toolbar, open sections, and tighter record cards instead of the older sidebar plus stacked-panel composition
+
 ### Phase 3
 Auth and settings
 - `/login`
@@ -168,6 +191,10 @@ Auth and settings
 Reason:
 - these screens should match the product shell, but they are secondary to the daily medtech runtime
 
+Current status:
+- partially landed
+- `/settings/clinic` and `/settings/users` now use lighter local sectioning and tighter object cards instead of wrapping every block in large settings panels
+
 ### Phase 4
 Forms library and guided creation
 - `/forms`
@@ -177,6 +204,10 @@ Forms library and guided creation
 Reason:
 - these are admin/setup surfaces
 - they should inherit the same system cleanly after records and auth are stable
+
+Current status:
+- partially landed
+- `/forms` now uses a lighter search/browse toolbar and open section flow instead of the earlier browse-sidebar composition
 
 ### Phase 5
 Builder

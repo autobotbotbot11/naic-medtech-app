@@ -14,10 +14,6 @@
 {% endblock %}
 
 {% block topbar_actions %}
-  <label class="search-wrap">
-    <span>Find</span>
-    <input id="librarySearch" type="search" placeholder="Search forms">
-  </label>
   <a class="ghost-button" href="/folders/new">New folder</a>
   <a class="primary-button" href="/forms/new">New form</a>
 {% endblock %}
@@ -86,45 +82,56 @@
   {% endmacro %}
 
   <div class="library-shell">
-    <section class="library-grid">
-      <aside class="panel library-sidebar">
-        <div class="sidebar-head">
+    <section class="app-toolbar library-toolbar">
+      <div class="app-toolbar__row">
+        <div class="app-toolbar__copy">
+          <p class="eyebrow">Browse</p>
+          <h2>Search the form library</h2>
+          <p class="panel-copy">Search by form or folder name. Search checks the full path inside the library tree.</p>
+        </div>
+        <div class="app-toolbar__actions">
+          <label class="search-wrap">
+            <span>Find</span>
+            <input id="librarySearch" type="search" placeholder="Search forms">
+          </label>
+        </div>
+      </div>
+      {% if library_tree %}
+      <nav class="group-jump-list group-jump-list--inline">
+        {% for node in library_tree if not node.archived %}
+        {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
+        {% set jump_name = node.form.name if node.kind == 'form' and node.form else node.name %}
+        <a href="#{{ node_anchor }}" class="group-jump-link" data-jump-link="{{ node.id }}">
+          <span>{{ jump_name }}</span>
+          <small class="tree-link-kind">{{ 'Form' if node.kind == 'form' else 'Folder' }}</small>
+        </a>
+        {% endfor %}
+      </nav>
+      {% endif %}
+    </section>
+
+    <section class="app-section library-section">
+      <div class="app-section__head">
+        <div class="app-section__copy">
           <p class="eyebrow">Library</p>
-          <h2>Browse</h2>
+          <h2>Folders and forms</h2>
         </div>
-        <nav class="group-jump-list">
-          {% for node in library_tree if not node.archived %}
-          {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
-          {% set jump_name = node.form.name if node.kind == 'form' and node.form else node.name %}
-          <a href="#{{ node_anchor }}" class="group-jump-link" data-jump-link="{{ node.id }}">
-            <span>{{ jump_name }}</span>
-            <small class="tree-link-kind">{{ 'Form' if node.kind == 'form' else 'Folder' }}</small>
-          </a>
-          {% endfor %}
-        </nav>
-        <div class="sidebar-note">
-          <p class="eyebrow">Tip</p>
-          <p class="panel-copy">Folders can stay nested. Search checks the full path.</p>
+      </div>
+      <div class="library-tree" data-library-root>
+        {% if library_tree %}
+          {{ render_nodes(library_tree) }}
+        {% else %}
+        <div class="empty-state empty-state--plain">
+          <h2>Start with a form</h2>
+          <p class="panel-copy">Your library is empty right now. Create a new form when you are ready.</p>
         </div>
-      </aside>
+        {% endif %}
+      </div>
 
-      <section class="library-main">
-        <div class="library-tree" data-library-root>
-          {% if library_tree %}
-            {{ render_nodes(library_tree) }}
-          {% else %}
-          <div class="panel empty-state">
-            <h2>Start with a form</h2>
-            <p class="panel-copy">Your library is empty right now. Create a new form when you are ready.</p>
-          </div>
-          {% endif %}
-        </div>
-
-        <div id="emptySearchState" class="panel empty-state hidden">
-          <h2>No matching forms</h2>
-          <p class="panel-copy">Try a different search or start a new form.</p>
-        </div>
-      </section>
+      <div id="emptySearchState" class="empty-state empty-state--plain hidden">
+        <h2>No matching forms</h2>
+        <p class="panel-copy">Try a different search or start a new form.</p>
+      </div>
     </section>
   </div>
 {% endblock %}

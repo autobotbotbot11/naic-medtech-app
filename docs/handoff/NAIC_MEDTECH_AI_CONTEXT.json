@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_and_consistency_pass_landed_print_planning_next",
+    "status": "authenticated_shell_and_content_first_composition_pass_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -54,14 +54,17 @@
         "A shared authenticated shell now sits under the non-print app too: shell.css, shell.js, and _authenticated_shell.html provide a thin global-header plus hidden-drawer model, with separate page-local headers across records, forms, settings, and the builder workspace variant.",
         "The authenticated shell now keeps global navigation hidden in a left drawer opened from the top bar, while the actual page title and actions live in page-local headers so the global chrome stays light.",
         "A follow-up consistency cleanup also normalized auth.css, library.css, new-form.css, and app.css against the shared theme tokens so the live app stops leaking older hardcoded warm-palette surfaces.",
-        "Live browser checks were rerun across login, records, forms, new-form, clinic settings, and builder to specifically catch light-mode visibility and cross-mode consistency issues."
+        "Live browser checks were rerun across login, records, forms, new-form, clinic settings, and builder to specifically catch light-mode visibility and cross-mode consistency issues.",
+        "The next structural correction then landed at the page-composition level: records, forms, and settings now move toward a content-first model with lighter page headers, compact toolbars, open sections, and cards reserved mostly for actual records, forms, and users instead of every wrapper block.",
+        "The shell architecture is no longer the primary UI question now; future non-print refinement should preserve the current shell and continue reducing visual weight through surface discipline instead of reopening navigation structure again."
       ]
     },
     "notes": [
       "The preferred feel is premium, modern, calm, and authored rather than generic admin minimalism.",
       "Dark mode should stay curated and atmospheric, not neon and not pure black.",
       "The live app now has a shared theme foundation plus a browser-audited non-print reskin and consistency pass; these standalone files remain the locked visual north star for future UI work.",
-      "Quick light-mode audits were also run across the main non-print screens so the next review should not immediately hit obvious contrast regressions."
+      "Quick light-mode audits were also run across the main non-print screens so the next review should not immediately hit obvious contrast regressions.",
+      "Builder should stay denser than records, forms, and settings; the calmer content-first composition rule is mainly for the everyday non-builder product surfaces."
     ]
   },
   "alignment_lock": [

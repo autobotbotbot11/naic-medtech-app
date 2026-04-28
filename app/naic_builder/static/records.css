@@ -1,6 +1,6 @@
 .record-shell {
   display: grid;
-  gap: 18px;
+  gap: 22px;
 }
 
 .record-shell .library-topbar {
@@ -81,14 +81,67 @@
   align-items: start;
 }
 
-.records-grid {
+.records-home,
+.records-overview {
   display: grid;
   gap: 18px;
-  grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
-  align-items: start;
 }
 
-.records-sidebar,
+.records-search-bar {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0 2px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+}
+
+.records-search-bar__copy {
+  display: grid;
+  gap: 4px;
+}
+
+.records-search-form--compact {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1.5fr) auto auto;
+  align-items: center;
+}
+
+.records-search-input {
+  display: grid;
+  gap: 6px;
+}
+
+.records-search-input > span {
+  color: color-mix(in srgb, var(--muted) 84%, var(--text) 16%);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.records-search-input input {
+  width: 100%;
+  min-height: 46px;
+  padding: 11px 16px;
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+  border-radius: calc(var(--radius-lg) + 2px);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 88%, transparent), color-mix(in srgb, var(--surface-elevated) 82%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+}
+
+.records-search-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.records-section {
+  gap: 14px;
+}
+
 .records-main,
 .record-header,
 .record-section,
@@ -99,21 +152,6 @@
 .record-meta-card,
 .record-values-panel {
   padding: 22px;
-}
-
-.records-sidebar {
-  position: sticky;
-  top: 18px;
-  display: grid;
-  gap: 18px;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel) 70%, transparent), color-mix(in srgb, var(--panel-strong) 82%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%);
-}
-
-.records-main {
-  display: grid;
-  gap: 18px;
 }
 
 .record-shell > .records-main.panel {
@@ -148,10 +186,6 @@
     radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 12%, transparent), transparent 40%);
 }
 
-.records-sidebar .record-summary-card .eyebrow {
-  color: color-mix(in srgb, var(--accent) 84%, var(--text) 16%);
-}
-
 .sidebar-note .eyebrow,
 .sidebar-head .eyebrow,
 .record-start-metric .eyebrow {
@@ -172,13 +206,6 @@
   letter-spacing: -0.04em;
 }
 
-.sidebar-note {
-  display: grid;
-  gap: 6px;
-  padding-top: 18px;
-  border-top: 1px solid color-mix(in srgb, var(--line) 92%, transparent);
-}
-
 .record-list {
   display: grid;
   gap: 14px;
@@ -186,13 +213,15 @@
 
 .record-card {
   display: grid;
-  gap: 14px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 16px;
   padding: 18px;
   border-radius: var(--radius-xl);
   border: 1px solid color-mix(in srgb, var(--line) 94%, transparent);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 90%, transparent), color-mix(in srgb, var(--panel) 84%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 8%, transparent), transparent 36%);
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 94%, transparent), color-mix(in srgb, var(--surface-elevated) 84%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 5%, transparent), transparent 42%);
+  box-shadow: var(--shadow-soft);
   transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
 }
 
@@ -253,6 +282,13 @@
   gap: 10px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.record-card-actions {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  min-width: 160px;
 }
 
 .record-header {
@@ -501,9 +537,11 @@
   display: grid;
   gap: 16px;
   border-radius: var(--radius-xl);
+  border: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 88%, transparent), color-mix(in srgb, var(--panel) 84%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 34%);
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 90%, transparent), color-mix(in srgb, var(--surface-elevated) 82%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 4%, transparent), transparent 42%);
+  box-shadow: var(--shadow-soft);
 }
 
 .entry-group {
@@ -512,8 +550,8 @@
   border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
   border-radius: var(--radius-xl);
   background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 72%, transparent), color-mix(in srgb, var(--panel) 78%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 9%, transparent), transparent 40%);
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 76%, transparent), color-mix(in srgb, var(--surface-elevated) 72%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 6%, transparent), transparent 46%);
 }
 
 .entry-note {
@@ -692,6 +730,15 @@
   gap: 14px;
 }
 
+.empty-state--plain {
+  display: grid;
+  gap: 8px;
+  padding: 6px 0 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .records-search-row {
   display: grid;
   gap: 14px;
@@ -724,12 +771,6 @@
 
 .record-filter-pill:hover {
   transform: translateY(-1px);
-}
-
-.records-search-form .entry-field {
-  background:
-    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 86%, transparent), color-mix(in srgb, var(--panel) 80%, transparent)),
-    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 5%, transparent), transparent 42%);
 }
 
 .record-value-row {
@@ -979,6 +1020,19 @@ html[data-theme="dark"] .completion-checklist.is-ready {
     flex-direction: column;
   }
 
+  .records-search-form--compact {
+    grid-template-columns: 1fr;
+  }
+
+  .records-search-actions {
+    justify-content: stretch;
+  }
+
+  .records-search-actions .primary-button,
+  .records-search-actions .ghost-button {
+    flex: 1 1 0;
+  }
+
   .records-search-row {
     grid-template-columns: 1fr;
   }
@@ -987,6 +1041,15 @@ html[data-theme="dark"] .completion-checklist.is-ready {
   .record-header-actions,
   .record-card-actions {
     justify-content: stretch;
+  }
+
+  .record-card {
+    grid-template-columns: 1fr;
+  }
+
+  .record-card-actions {
+    min-width: 0;
+    flex-direction: row;
   }
 
   .entry-actions .primary-button,
@@ -1000,7 +1063,6 @@ html[data-theme="dark"] .completion-checklist.is-ready {
 }
 
 @media (max-width: 760px) {
-  .records-sidebar,
   .records-main,
   .record-header,
   .record-section,

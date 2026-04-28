@@ -35,6 +35,7 @@
   --input-bg: rgba(255, 255, 255, 0.92);
   --input-border: rgba(26, 52, 63, 0.18);
   --input-focus-ring: rgba(15, 112, 120, 0.16);
+  --shadow-soft: 0 10px 26px rgba(9, 23, 29, 0.08);
   --shadow: 0 24px 64px rgba(9, 23, 29, 0.12);
   --shadow-strong: 0 30px 80px rgba(6, 18, 23, 0.18);
   --radius-xl: 28px;
@@ -75,6 +76,7 @@ html[data-theme="dark"] {
   --input-bg: rgba(255, 255, 255, 0.04);
   --input-border: rgba(181, 208, 216, 0.16);
   --input-focus-ring: rgba(102, 195, 202, 0.18);
+  --shadow-soft: 0 14px 34px rgba(0, 0, 0, 0.18);
   --shadow: 0 30px 78px rgba(0, 0, 0, 0.34);
   --shadow-strong: 0 36px 96px rgba(0, 0, 0, 0.4);
 }

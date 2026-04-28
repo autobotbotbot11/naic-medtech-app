@@ -87,11 +87,20 @@ The app now starts from a builder-first FastAPI scaffold.
     - `app/naic_builder/static/auth.css`, `app/naic_builder/static/library.css`, `app/naic_builder/static/new-form.css`, and `app/naic_builder/static/app.css` now lean on the shared theme tokens instead of keeping older hardcoded warm-palette assumptions
     - light/dark component visibility was checked again in a live browser pass across `/login`, `/records`, `/forms`, `/forms/new`, `/settings/clinic`, and `/builder`
     - this pass specifically targeted the light-mode regressions where some cards, controls, and builder surfaces were still reading like older scaffold CSS instead of the shared `Clinical Depth Luxe` system
-- the shared authenticated shell rollout itself is now landed too:
+  - the shared authenticated shell rollout itself is now landed too:
     - `/records`, `/records/new`, `/records/{id}/edit`, `/records/{id}`
     - `/forms`, `/forms/new`, folder create/edit/move, and form move
     - `/settings/clinic`, `/settings/users`, and `/settings/users/new`
     - `/builder` now uses the same product family through a workspace shell variant
+  - the next UI correction after the shell has also landed now:
+    - the app is no longer being treated as `panel inside panel inside panel`
+    - records, forms, and settings are moving toward a `content-first` composition model instead:
+      - lighter page headers
+      - compact toolbars
+      - open section structure
+      - cards reserved mostly for actual objects like records, forms, and users
+    - `/records`, `/forms`, `/settings/clinic`, and `/settings/users` now use that lighter composition direction already
+    - builder is intentionally allowed to stay denser than the daily records/forms/settings surfaces because it is a focused workspace tool
 - `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`

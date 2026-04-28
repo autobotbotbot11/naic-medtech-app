@@ -15,18 +15,15 @@
 {% endblock %}
 
 {% block topbar_actions %}
-  <a class="ghost-button" href="/settings/users">Users</a>
   <button class="primary-button" type="submit" form="clinicProfileForm">Save changes</button>
 {% endblock %}
 
 {% block content %}
   <div class="auth-shell">
-    <section class="panel settings-panel">
-      <div class="settings-nav">
-        <a class="settings-tab is-active" href="/settings/clinic">Clinic profile</a>
-        <a class="settings-tab" href="/settings/users">Users</a>
-      </div>
-    </section>
+    <div class="settings-nav settings-nav--open">
+      <a class="settings-tab is-active" href="/settings/clinic">Clinic profile</a>
+      <a class="settings-tab" href="/settings/users">Users</a>
+    </div>
 
     <section class="profile-grid">
       <section class="panel profile-card">

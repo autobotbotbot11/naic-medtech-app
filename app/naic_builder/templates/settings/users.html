@@ -15,7 +15,6 @@
 {% endblock %}
 
 {% block topbar_actions %}
-  <a class="ghost-button" href="/settings/clinic">Clinic profile</a>
   <a class="primary-button" href="/settings/users/new">Create user</a>
 {% endblock %}
 
@@ -63,40 +62,39 @@
   {% endmacro %}
 
   <div class="auth-shell">
-    <section class="panel settings-panel">
-      <div class="settings-nav">
-        <a class="settings-tab" href="/settings/clinic">Clinic profile</a>
-        <a class="settings-tab is-active" href="/settings/users">Users</a>
-      </div>
-    </section>
+    <div class="settings-nav settings-nav--open">
+      <a class="settings-tab" href="/settings/clinic">Clinic profile</a>
+      <a class="settings-tab is-active" href="/settings/users">Users</a>
+    </div>
 
-    <section class="panel settings-panel">
-      {% if error_message %}
-      <div class="banner error">{{ error_message }}</div>
-      {% endif %}
-      {% if success_message %}
-      <div class="banner success">{{ success_message }}</div>
-      {% endif %}
+    {% if error_message %}
+    <div class="banner error">{{ error_message }}</div>
+    {% endif %}
+    {% if success_message %}
+    <div class="banner success">{{ success_message }}</div>
+    {% endif %}
 
-      <div class="settings-count-grid">
-        <article class="settings-count-card">
-          <span class="eyebrow">Pending</span>
-          <strong>{{ pending_count }}</strong>
-        </article>
-        <article class="settings-count-card">
-          <span class="eyebrow">Active</span>
-          <strong>{{ active_count }}</strong>
-        </article>
-        <article class="settings-count-card">
-          <span class="eyebrow">Disabled</span>
-          <strong>{{ disabled_count }}</strong>
-        </article>
-      </div>
-    </section>
+    <div class="metric-strip settings-metric-strip">
+      <article class="metric-card settings-metric-card">
+        <span class="eyebrow">Pending</span>
+        <strong>{{ pending_count }}</strong>
+        <p class="panel-copy">Requests waiting for approval.</p>
+      </article>
+      <article class="metric-card settings-metric-card">
+        <span class="eyebrow">Active</span>
+        <strong>{{ active_count }}</strong>
+        <p class="panel-copy">Accounts that can sign in now.</p>
+      </article>
+      <article class="metric-card settings-metric-card">
+        <span class="eyebrow">Disabled</span>
+        <strong>{{ disabled_count }}</strong>
+        <p class="panel-copy">Accounts currently removed from access.</p>
+      </article>
+    </div>
 
-    <section class="settings-stack">
-      <section class="panel settings-panel">
-        <div class="brand-copy">
+    <section class="app-section-stack settings-stack settings-stack--open">
+      <section class="app-section settings-section">
+        <div class="app-section__copy">
           <p class="eyebrow">Pending</p>
           <h2>Waiting for approval</h2>
         </div>
@@ -106,7 +104,7 @@
               {{ render_user_card(user, 'pending') }}
             {% endfor %}
           {% else %}
-          <div class="panel empty-state">
+          <div class="empty-state empty-state--plain">
             <h3>No pending requests</h3>
             <p class="panel-copy">New account requests will appear here.</p>
           </div>
@@ -114,8 +112,8 @@
         </div>
       </section>
 
-      <section class="panel settings-panel">
-        <div class="brand-copy">
+      <section class="app-section settings-section">
+        <div class="app-section__copy">
           <p class="eyebrow">Active</p>
           <h2>Working accounts</h2>
         </div>
@@ -125,7 +123,7 @@
               {{ render_user_card(user, 'active') }}
             {% endfor %}
           {% else %}
-          <div class="panel empty-state">
+          <div class="empty-state empty-state--plain">
             <h3>No active users</h3>
             <p class="panel-copy">Create or approve one when the clinic is ready.</p>
           </div>
@@ -133,8 +131,8 @@
         </div>
       </section>
 
-      <section class="panel settings-panel">
-        <div class="brand-copy">
+      <section class="app-section settings-section">
+        <div class="app-section__copy">
           <p class="eyebrow">Disabled</p>
           <h2>Inactive accounts</h2>
         </div>
@@ -144,7 +142,7 @@
               {{ render_user_card(user, 'disabled') }}
             {% endfor %}
           {% else %}
-          <div class="panel empty-state">
+          <div class="empty-state empty-state--plain">
             <h3>No disabled users</h3>
             <p class="panel-copy">Disabled accounts will stay here until reactivated.</p>
           </div>

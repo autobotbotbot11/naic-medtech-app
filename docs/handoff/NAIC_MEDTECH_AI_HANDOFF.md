@@ -140,14 +140,12 @@ Chosen design language:
 
 Current live status:
 - the non-print app now has a materially landed live reskin pass under that direction
+- the shell architecture is no longer the main UI problem now; the current live correction is at the page-composition level
+- records, forms, and settings are now moving toward a content-first composition model instead of a panel-first one
 - dark mode was intentionally pushed first and browser-audited directly against the locked darker sample
 - the strongest finished live surfaces right now are:
   - `Records`
-  - `Records > New`
-  - `Records > Edit`
-  - `Records > View`
   - `Forms`
-  - `Forms > New`
   - `Settings > Clinic`
   - `Settings > Users`
   - auth screens
@@ -162,6 +160,12 @@ Current live status:
   - `auth.css`, `library.css`, `new-form.css`, and `app.css` were normalized against the shared theme tokens instead of keeping older hardcoded warm-palette assumptions
   - live browser checks were rerun across `/login`, `/records`, `/forms`, `/forms/new`, `/settings/clinic`, and `/builder`
   - this pass specifically targeted light-mode visibility and cross-mode consistency so page-local cards, inputs, tabs, and builder panels stop drifting away from the shared luxe system
+- a further composition pass has now landed too:
+  - the app is no longer treating every section like a large premium wrapper panel
+  - `/records` now uses compact metrics, a lighter search toolbar, and open content sections instead of a sidebar plus stacked heavy panels
+  - `/forms` now uses a lighter browse/search toolbar and open section flow instead of a persistent browse sidebar
+  - `/settings/clinic` and `/settings/users` now use lighter local sectioning instead of wrapping every block in large settings panels
+  - record, form, and user cards were also tightened to use desktop width better instead of sitting as oversized full-width slabs
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 
 Chosen mode pair:
@@ -235,6 +239,11 @@ Current live UI checkpoint:
       - primary nav reads through short labels only
       - the old large texty `Compact` / `Expand` control is gone
   - route-level smoke for the new shell already passed through a real login path and across the main authenticated routes
+  - current non-print UI rule going forward:
+    - keep the shell
+    - avoid reopening nav architecture unless a real workflow problem appears
+    - prefer content-first composition, lighter section structure, and cards only for actual objects
+    - let builder stay denser than records, forms, and settings
 
 ## Next Whole-App Milestone
 The builder is now at the point where the core direction is effectively done.

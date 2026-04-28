@@ -40,147 +40,135 @@
     <div class="record-card-actions">
       {% if record.status == "draft" %}
       <a class="primary-button" href="/records/{{ record.id }}/edit">Open draft</a>
+      <a class="ghost-button" href="/records/{{ record.id }}">View</a>
       {% else %}
       <a class="primary-button" href="/records/{{ record.id }}">View record</a>
-      {% endif %}
-      <a class="ghost-button" href="/records/{{ record.id }}">View</a>
       <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
+      {% endif %}
     </div>
   </article>
   {% endmacro %}
 
-  <div class="library-shell record-shell">
-    <section class="records-grid">
-      <aside class="panel records-sidebar">
-        <div class="sidebar-head">
-          <p class="eyebrow">Quick view</p>
-          <h2>Today</h2>
-        </div>
-        <div class="summary-grid">
-          <article class="record-summary-card panel">
-            <p class="eyebrow">Drafts</p>
-            <h3>{{ draft_count }}</h3>
-            <p class="panel-copy">Records that can still be opened and finished.</p>
-          </article>
-          <article class="record-summary-card panel">
-            <p class="eyebrow">Completed</p>
-            <h3>{{ completed_count }}</h3>
-            <p class="panel-copy">Recently finished records ready to review or print later.</p>
-          </article>
-        </div>
-        <div class="sidebar-note">
-          <p class="eyebrow">Available forms</p>
-          <p class="panel-copy">{{ form_choices|length }} active form{{ '' if form_choices|length == 1 else 's' }} ready for record entry.</p>
-        </div>
-        <div class="sidebar-note">
+  <div class="library-shell record-shell records-home">
+    {% if success_message %}
+    <div class="success-banner">{{ success_message }}</div>
+    {% endif %}
+
+    <section class="records-overview">
+      <div class="metric-strip">
+        <article class="metric-card">
+          <p class="eyebrow">Drafts</p>
+          <strong>{{ draft_count }}</strong>
+          <p class="panel-copy">Records still open for entry.</p>
+        </article>
+        <article class="metric-card">
+          <p class="eyebrow">Completed</p>
+          <strong>{{ completed_count }}</strong>
+          <p class="panel-copy">Finished records ready to review or print.</p>
+        </article>
+        <article class="metric-card">
+          <p class="eyebrow">Forms ready</p>
+          <strong>{{ form_choices|length }}</strong>
+          <p class="panel-copy">Active form{{ '' if form_choices|length == 1 else 's' }} available for entry.</p>
+        </article>
+      </div>
+
+      <section class="records-search-bar">
+        <div class="records-search-bar__copy">
           <p class="eyebrow">Find records</p>
           <p class="panel-copy">Search by patient, case number, form name, or record key.</p>
         </div>
-      </aside>
-
-      <section class="records-main">
-        {% if success_message %}
-        <div class="success-banner">{{ success_message }}</div>
-        {% endif %}
-        <section class="panel record-values-panel">
-          <div class="record-title-row">
-            <div class="record-header-copy">
-              <p class="eyebrow">Search</p>
-              <h2>Find a past record</h2>
-            </div>
+        <form method="get" action="/records" class="records-search-form records-search-form--compact">
+          <label class="records-search-input">
+            <span>Search</span>
+            <input type="search" name="q" value="{{ search_query }}" placeholder="Patient, case number, form, or record key">
+          </label>
+          <div class="record-filter-pills">
+            <a class="record-filter-pill{% if not status_filter %} is-active{% endif %}" href="/records{% if search_query %}?q={{ search_query | urlencode }}{% endif %}">All</a>
+            <a class="record-filter-pill{% if status_filter == 'draft' %} is-active{% endif %}" href="/records?status=draft{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Drafts</a>
+            <a class="record-filter-pill{% if status_filter == 'completed' %} is-active{% endif %}" href="/records?status=completed{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Completed</a>
           </div>
-          <form method="get" action="/records" class="records-search-form">
-            <div class="records-search-row">
-              <label class="entry-field">
-                <span>Find</span>
-                <input type="search" name="q" value="{{ search_query }}" placeholder="Patient, case number, form, or record key">
-              </label>
-              <div class="record-header-actions">
-                {% if has_filters %}
-                <a class="ghost-button" href="/records">Clear</a>
-                {% endif %}
-                <button class="primary-button" type="submit">Search</button>
-              </div>
-            </div>
-            <div class="record-filter-pills">
-              <a class="record-filter-pill{% if not status_filter %} is-active{% endif %}" href="/records{% if search_query %}?q={{ search_query | urlencode }}{% endif %}">All</a>
-              <a class="record-filter-pill{% if status_filter == 'draft' %} is-active{% endif %}" href="/records?status=draft{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Drafts</a>
-              <a class="record-filter-pill{% if status_filter == 'completed' %} is-active{% endif %}" href="/records?status=completed{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Completed</a>
-            </div>
-          </form>
-        </section>
-
-        {% if has_filters %}
-        <section class="panel record-values-panel">
-          <div class="record-title-row">
-            <div class="record-header-copy">
-              <p class="eyebrow">Results</p>
-              <h2>{{ matching_count }} matching record{{ '' if matching_count == 1 else 's' }}</h2>
-              {% if matching_truncated %}
-              <p class="panel-copy">Showing the 40 most recent matches first.</p>
-              {% endif %}
-            </div>
-          </div>
-          <div class="record-list">
-            {% if matching_records %}
-              {% for record in matching_records %}
-                {{ render_record_card(record) }}
-              {% endfor %}
-            {% else %}
-              <div class="panel empty-state">
-                <h3>No matching records</h3>
-                <p class="panel-copy">Try a different search or switch the status filter.</p>
-              </div>
+          <div class="records-search-actions">
+            {% if has_filters %}
+            <a class="ghost-button" href="/records">Clear</a>
             {% endif %}
+            <button class="primary-button" type="submit">Search</button>
           </div>
-        </section>
-        {% else %}
-        <section class="panel record-values-panel">
-          <div class="record-title-row">
-            <div class="record-header-copy">
-              <p class="eyebrow">Drafts</p>
-              <h2>Continue working</h2>
-            </div>
-            <div class="record-header-actions">
-              <a class="ghost-button" href="/records/new">Choose another form</a>
-            </div>
-          </div>
-          <div class="record-list">
-            {% if recent_drafts %}
-              {% for record in recent_drafts %}
-                {{ render_record_card(record) }}
-              {% endfor %}
-            {% else %}
-              <div class="panel empty-state">
-                <h3>No drafts yet</h3>
-                <p class="panel-copy">Start a new record when you are ready to enter results.</p>
-              </div>
-            {% endif %}
-          </div>
-        </section>
-
-        <section class="panel record-values-panel">
-          <div class="record-title-row">
-            <div class="record-header-copy">
-              <p class="eyebrow">Completed</p>
-              <h2>Recent finished records</h2>
-            </div>
-          </div>
-          <div class="record-list">
-            {% if recent_completed %}
-              {% for record in recent_completed %}
-                {{ render_record_card(record) }}
-              {% endfor %}
-            {% else %}
-              <div class="panel empty-state">
-                <h3>No completed records yet</h3>
-                <p class="panel-copy">Completed records will start showing up here after medtech entry is finished.</p>
-              </div>
-            {% endif %}
-          </div>
-        </section>
-        {% endif %}
+        </form>
       </section>
     </section>
+
+    <div class="app-section-stack">
+      {% if has_filters %}
+      <section class="app-section records-section">
+        <div class="app-section__head">
+          <div class="app-section__copy">
+            <p class="eyebrow">Results</p>
+            <h2>{{ matching_count }} matching record{{ '' if matching_count == 1 else 's' }}</h2>
+            {% if matching_truncated %}
+            <p class="panel-copy">Showing the 40 most recent matches first.</p>
+            {% endif %}
+          </div>
+        </div>
+        <div class="record-list">
+          {% if matching_records %}
+            {% for record in matching_records %}
+              {{ render_record_card(record) }}
+            {% endfor %}
+          {% else %}
+            <div class="empty-state empty-state--plain">
+              <h3>No matching records</h3>
+              <p class="panel-copy">Try a different search or switch the status filter.</p>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+      {% else %}
+      <section class="app-section records-section">
+        <div class="app-section__head">
+          <div class="app-section__copy">
+            <p class="eyebrow">Drafts</p>
+            <h2>Continue working</h2>
+          </div>
+          <div class="app-section__actions">
+            <a class="ghost-button" href="/records/new">Choose another form</a>
+          </div>
+        </div>
+        <div class="record-list">
+          {% if recent_drafts %}
+            {% for record in recent_drafts %}
+              {{ render_record_card(record) }}
+            {% endfor %}
+          {% else %}
+            <div class="empty-state empty-state--plain">
+              <h3>No drafts yet</h3>
+              <p class="panel-copy">Start a new record when you are ready to enter results.</p>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+
+      <section class="app-section records-section">
+        <div class="app-section__head">
+          <div class="app-section__copy">
+            <p class="eyebrow">Completed</p>
+            <h2>Recent finished records</h2>
+          </div>
+        </div>
+        <div class="record-list">
+          {% if recent_completed %}
+            {% for record in recent_completed %}
+              {{ render_record_card(record) }}
+            {% endfor %}
+          {% else %}
+            <div class="empty-state empty-state--plain">
+              <h3>No completed records yet</h3>
+              <p class="panel-copy">Completed records will start showing up here after medtech entry is finished.</p>
+            </div>
+          {% endif %}
+        </div>
+      </section>
+      {% endif %}
+    </div>
   </div>
 {% endblock %}
