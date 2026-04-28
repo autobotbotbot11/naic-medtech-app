@@ -63,6 +63,7 @@ from .services import (
     RecordCompletionValidationError,
     remove_clinic_logo,
     remove_user_avatar,
+    reset_user_password_by_admin,
     rename_container,
     serialize_user,
     serialize_record,
@@ -71,6 +72,7 @@ from .services import (
     save_clinic_profile,
     save_user_avatar,
     store_record_image_asset,
+    update_user_admin_details,
     update_user_status,
     approve_user_account,
     update_record,
@@ -360,6 +362,36 @@ def render_new_user_page(
             "login_id": login_id,
             "selected_role": role,
             "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_manage_user_page(
+    request: Request,
+    session: Session,
+    *,
+    user_id: int,
+    full_name: str = "",
+    role: str = "",
+    error_message: str = "",
+    success_message: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    target_user = get_user_or_none(session, user_id)
+    if target_user is None:
+        raise HTTPException(status_code=404, detail="User not found.")
+    serialized_user = serialize_user(target_user)
+    return templates.TemplateResponse(
+        request=request,
+        name="settings/edit_user.html",
+        context={
+            "app_title": APP_TITLE,
+            "target_user": serialized_user,
+            "full_name": full_name or serialized_user["full_name"],
+            "selected_role": role or serialized_user["role"],
+            "error_message": error_message,
+            "success_message": success_message,
         },
         status_code=status_code,
     )
@@ -1572,6 +1604,101 @@ def settings_clinic_logo_file(session: Session = Depends(get_session)) -> FileRe
 @app.get("/settings/users", response_class=HTMLResponse)
 def settings_users_page(request: Request, session: Session = Depends(get_session)) -> HTMLResponse:
     return render_settings_users_page(request, session)
+
+
+@app.get("/settings/users/{user_id}/edit", response_class=HTMLResponse)
+def settings_manage_user_page(
+    user_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_manage_user_page(request, session, user_id=user_id)
+
+
+@app.post("/settings/users/{user_id}/edit")
+async def update_managed_user_page(
+    user_id: int,
+    request: Request,
+    session: Session = Depends(get_session),
+):
+    body = (await request.body()).decode("utf-8")
+    form_data = parse_qs(body, keep_blank_values=True)
+    action = ((form_data.get("action") or ["details"])[0] or "details").strip().lower()
+
+    if action == "reset_password":
+        temporary_password = (form_data.get("temporary_password") or [""])[0]
+        if current_user_id(request) == user_id:
+            return render_manage_user_page(
+                request,
+                session,
+                user_id=user_id,
+                error_message="Use My account to change your own password.",
+                status_code=422,
+            )
+        try:
+            updated = reset_user_password_by_admin(
+                session,
+                user_id,
+                temporary_password=temporary_password,
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="User not found.") from exc
+        except ValueError as exc:
+            return render_manage_user_page(
+                request,
+                session,
+                user_id=user_id,
+                error_message=str(exc),
+                status_code=422,
+            )
+        return render_manage_user_page(
+            request,
+            session,
+            user_id=user_id,
+            success_message=f"Reset password for {updated['full_name']}. They must change it on next login.",
+        )
+
+    full_name = (form_data.get("full_name") or [""])[0]
+    role = (form_data.get("role") or ["medtech"])[0]
+    try:
+        updated = update_user_admin_details(
+            session,
+            user_id,
+            full_name=full_name,
+            role=role,
+        )
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="User not found.") from exc
+    except ValueError as exc:
+        return render_manage_user_page(
+            request,
+            session,
+            user_id=user_id,
+            full_name=full_name,
+            role=role,
+            error_message=str(exc),
+            status_code=422,
+        )
+    return render_manage_user_page(
+        request,
+        session,
+        user_id=user_id,
+        success_message=f"Saved {updated['full_name']}.",
+    )
+
+
+@app.get("/settings/users/{user_id}/avatar")
+def settings_user_avatar_file(user_id: int, session: Session = Depends(get_session)) -> FileResponse:
+    user = get_user_or_none(session, user_id)
+    if user is None or not user.avatar_path or not Path(user.avatar_path).is_file():
+        raise HTTPException(status_code=404, detail="Profile photo not found.")
+    response = FileResponse(
+        user.avatar_path,
+        media_type=user.avatar_mime_type or None,
+        filename=user.avatar_original_filename or None,
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return response
 
 
 @app.get("/settings/users/new", response_class=HTMLResponse)

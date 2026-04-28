@@ -19,13 +19,23 @@
 
 {% block content %}
   {% macro render_user_card(user, section) %}
+  {% set user_initial = ((user.full_name or user.login_id or 'U')[:1]) | upper %}
+  {% set user_avatar_version = (user.updated_at or '') | urlencode %}
+  {% set user_avatar_url = '/settings/users/' ~ user.id ~ '/avatar?v=' ~ user_avatar_version if user.has_avatar else '' %}
   <article
     class="user-card user-card--compact"
     data-user-card
     data-user-status="{{ user.status }}"
     data-user-search="{{ (user.full_name ~ ' ' ~ (user.email or '') ~ ' ' ~ user.login_id ~ ' ' ~ user.role ~ ' ' ~ user.status)|lower }}"
   >
-    <div class="user-card-head">
+    <div class="user-card-main">
+      <div class="user-card-avatar" aria-hidden="true">
+        {% if user_avatar_url %}
+        <img src="{{ user_avatar_url }}" alt="">
+        {% else %}
+        <span>{{ user_initial }}</span>
+        {% endif %}
+      </div>
       <div class="user-card-copy">
         <div class="settings-meta-row">
           <span class="status-chip" data-status="{{ user.status }}">{{ user.status }}</span>
@@ -38,6 +48,7 @@
     </div>
 
     <div class="user-card-actions">
+      <a class="ghost-button" href="/settings/users/{{ user.id }}/edit">Manage</a>
       {% if section == 'pending' %}
       <form method="post" action="/settings/users/{{ user.id }}/approve" class="inline-action-form settings-meta-row">
         <label class="select-stack">

@@ -127,6 +127,8 @@ What exists now:
   - password management
   - upload/remove own profile photo
   - shell account avatar with initials fallback
+  - avatar/initial identity inside the admin user directory
+  - dedicated admin `Manage user` page for full-name/role correction and password reset
 
 Important:
 - this is not the final print system
@@ -198,6 +200,8 @@ Current live status:
 - the account/profile foundation has also landed:
   - `Settings > My account` now shows profile photo upload/remove, password management, and read-only account identity
   - the shell account button and drawer identity use the uploaded profile photo when present, with initials fallback
+  - `Settings > Users & access` now shows staff avatar/initial identity on account cards
+  - each staff card can open a dedicated `Manage user` page for full-name/role correction and admin password reset
   - email/login ID remain read-only in the personal account page for accountability
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 

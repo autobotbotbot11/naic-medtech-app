@@ -341,6 +341,47 @@ def update_user_status(session: Session, user_id: int, *, status: str) -> dict[s
     return serialize_user(save_user(session, user))
 
 
+def update_user_admin_details(
+    session: Session,
+    user_id: int,
+    *,
+    full_name: str,
+    role: str,
+) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+    resolved_name = compact_text(full_name)
+    if not resolved_name:
+        raise ValueError("Enter the staff member's full name.")
+    next_role = validate_role(role)
+    if (
+        user.role == "admin"
+        and user.status == "active"
+        and next_role != "admin"
+        and count_active_admin_users(session) <= 1
+    ):
+        raise ValueError("Keep at least one active admin account.")
+    user.full_name = resolved_name
+    user.role = next_role
+    return serialize_user(save_user(session, user))
+
+
+def reset_user_password_by_admin(
+    session: Session,
+    user_id: int,
+    *,
+    temporary_password: str,
+) -> dict[str, Any]:
+    user = get_user_or_none(session, user_id)
+    if user is None:
+        raise KeyError(user_id)
+    validate_password_strength(temporary_password)
+    user.password_hash = password_hash_value(temporary_password)
+    user.must_change_password = True
+    return serialize_user(save_user(session, user))
+
+
 def authenticate_user(session: Session, payload: LoginPayload) -> dict[str, Any]:
     user = get_user_by_identifier(session, payload.identifier)
     if user is None:

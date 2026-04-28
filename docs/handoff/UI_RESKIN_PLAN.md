@@ -186,6 +186,8 @@ Current status:
 - password management now lives in `Settings > My account`; the drawer footer is account identity plus `Log out` only
 - drawer icons now use one consistent premium-style 24px stroke icon system
 - `Settings > My account` now also carries profile photo upload/remove and read-only account identity, and the shell uses the uploaded profile photo with initials fallback
+- `Settings > Users & access` now treats account rows like staff identity cards with avatar/initial display instead of text-only admin rows
+- user maintenance now opens a dedicated `Manage user` page instead of stuffing role correction and password reset into the directory row
 
 ### Phase 2
 Records-first reskin
@@ -222,6 +224,8 @@ Current status:
 - materially landed for the current non-print pass
 - `/settings/clinic` and `/settings/users` now use lighter local sectioning and tighter object cards instead of wrapping every block in large settings panels
 - `/settings/account` now carries the personal profile foundation: avatar upload/remove, password management, and read-only email/login identity
+- `/settings/users` now displays uploaded staff avatars when available, with initials fallback
+- `/settings/users/{id}/edit` now exists for admin full-name/role correction and password reset
 - `/settings/users` is now one searchable/filterable directory with status filters, instead of separate pending/active/disabled buckets
 
 ### Phase 4

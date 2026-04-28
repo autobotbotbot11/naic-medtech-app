@@ -94,7 +94,9 @@
 
 .account-profile-copy,
 .account-password-form,
-.account-identity-card {
+.account-identity-card,
+.user-manage-main,
+.user-reset-form {
   display: grid;
   gap: 14px;
 }
@@ -190,6 +192,11 @@
   color: var(--text);
   font-weight: 700;
   overflow-wrap: anywhere;
+}
+
+.user-reset-form {
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
 }
 
 .field-stack,
@@ -349,16 +356,46 @@
   gap: 12px;
 }
 
-.user-card-head {
+.user-card-main {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
   align-items: start;
+  min-width: 0;
+}
+
+.user-card-avatar {
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  flex: 0 0 auto;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--line-strong) 78%, transparent);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 88%, transparent), color-mix(in srgb, var(--surface-elevated) 90%, transparent)),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 16%, transparent), transparent 58%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.24);
+  color: var(--text);
+}
+
+.user-card-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-card-avatar span {
+  color: inherit;
+  font-family: var(--font-heading);
+  font-size: 18px;
+  line-height: 1;
 }
 
 .user-card-copy {
   display: grid;
   gap: 5px;
+  min-width: 0;
 }
 
 .user-card--compact .user-card-copy {
@@ -378,6 +415,7 @@
 .user-card-copy p {
   color: var(--muted);
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .user-card-actions {
@@ -611,7 +649,8 @@ html[data-theme="dark"] .logo-frame {
 }
 
 html[data-theme="dark"] .account-profile-card,
-html[data-theme="dark"] .account-avatar-frame {
+html[data-theme="dark"] .account-avatar-frame,
+html[data-theme="dark"] .user-card-avatar {
   border-color: rgba(223, 240, 245, 0.08);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
@@ -750,7 +789,7 @@ html[data-theme="dark"] .role-chip {
     grid-template-columns: 1fr;
   }
 
-  .user-card-head,
+  .user-card-main,
   .settings-meta-row {
     flex-direction: column;
     align-items: start;

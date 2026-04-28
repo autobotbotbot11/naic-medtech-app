@@ -1,0 +1,130 @@
+{% extends "_authenticated_shell.html" %}
+{% set shell_active = "settings" %}
+{% set settings_active = "users" %}
+{% set target_initial = ((target_user.full_name or target_user.login_id or 'U')[:1]) | upper %}
+{% set target_avatar_version = (target_user.updated_at or '') | urlencode %}
+{% set target_avatar_url = '/settings/users/' ~ target_user.id ~ '/avatar?v=' ~ target_avatar_version if target_user.has_avatar else '' %}
+{% set managing_self = (request.state.current_user or {}).get('id') == target_user.id %}
+
+{% block html_title %}Manage {{ target_user.full_name }} | {{ app_title }}{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{{ url_for('static', path='library.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', path='auth.css') }}">
+{% endblock %}
+
+{% block shell_eyebrow %}Settings{% endblock %}
+{% block shell_title %}Manage user{% endblock %}
+{% block shell_description %}{% endblock %}
+
+{% block page_header_nav %}
+  <a class="page-back-link" href="/settings/users">Back to users</a>
+{% endblock %}
+
+{% block content %}
+  <div class="auth-shell">
+    {% include "settings/_settings_nav.html" %}
+
+    <section class="auth-grid">
+      <section class="panel auth-main user-manage-main">
+        {% if error_message %}
+        <div class="banner error">{{ error_message }}</div>
+        {% endif %}
+        {% if success_message %}
+        <div class="banner success">{{ success_message }}</div>
+        {% endif %}
+
+        <form method="post" action="/settings/users/{{ target_user.id }}/edit" class="auth-form">
+          <input type="hidden" name="action" value="details">
+
+          <div class="brand-copy">
+            <p class="eyebrow">Account details</p>
+            <h2>{{ target_user.full_name }}</h2>
+          </div>
+
+          <label class="field-stack">
+            <span>Full name</span>
+            <input type="text" name="full_name" value="{{ full_name }}" required>
+          </label>
+
+          <label class="select-stack">
+            <span>Role</span>
+            <select name="role">
+              <option value="medtech" {% if selected_role == 'medtech' %}selected{% endif %}>Medtech</option>
+              <option value="admin" {% if selected_role == 'admin' %}selected{% endif %}>Admin</option>
+            </select>
+          </label>
+
+          <p class="field-help">Email and login ID stay fixed here to preserve accountability.</p>
+
+          <div class="auth-actions">
+            <button class="primary-button" type="submit">Save changes</button>
+            <a class="ghost-button" href="/settings/users">Cancel</a>
+          </div>
+        </form>
+      </section>
+
+      <aside class="panel auth-side account-identity-card">
+        <div class="account-identity-head">
+          <div class="account-avatar-frame" aria-hidden="true">
+            {% if target_avatar_url %}
+            <img src="{{ target_avatar_url }}" alt="">
+            {% else %}
+            <span>{{ target_initial }}</span>
+            {% endif %}
+          </div>
+          <div class="brand-copy">
+            <p class="eyebrow">Staff account</p>
+            <h2>{{ target_user.full_name }}</h2>
+          </div>
+        </div>
+
+        <dl class="account-detail-list">
+          <div>
+            <dt>Status</dt>
+            <dd>{{ target_user.status | title }}</dd>
+          </div>
+          <div>
+            <dt>Login ID</dt>
+            <dd>{{ target_user.login_id }}</dd>
+          </div>
+          {% if target_user.email %}
+          <div>
+            <dt>Email</dt>
+            <dd>{{ target_user.email }}</dd>
+          </div>
+          {% endif %}
+          <div>
+            <dt>Password</dt>
+            <dd>{{ "Change required" if target_user.must_change_password else "Set" }}</dd>
+          </div>
+        </dl>
+
+        <form method="post" action="/settings/users/{{ target_user.id }}/edit" class="auth-form user-reset-form">
+          <input type="hidden" name="action" value="reset_password">
+          <input
+            type="text"
+            name="username"
+            value="{{ target_user.email or target_user.login_id }}"
+            autocomplete="username"
+            hidden
+          >
+          <div class="brand-copy">
+            <p class="eyebrow">Access</p>
+            <h2>Reset password</h2>
+          </div>
+
+          {% if managing_self %}
+          <p class="field-help">Use My account to change your own password.</p>
+          {% else %}
+          <label class="field-stack">
+            <span>Temporary password</span>
+            <input type="password" name="temporary_password" autocomplete="new-password" required>
+          </label>
+          <button class="ghost-button" type="submit">Reset password</button>
+          {% endif %}
+        </form>
+      </aside>
+    </section>
+  </div>
+{% endblock %}

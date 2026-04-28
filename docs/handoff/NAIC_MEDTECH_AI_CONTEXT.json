@@ -61,7 +61,7 @@
         "A later architecture-improvement pass then made the current records flow more queue-first, reduced the edit/view top chrome into a compact summary shell, lowered action density in the forms library, and removed the separate builder feedback bar in favor of a lighter top app bar status treatment.",
         "The latest compact work-surface pass flattened the builder stage chrome into one command bar, tightened records/forms/users list surfaces, added a searchable form picker for both the new-record modal and /records/new fallback, consolidated user management into one searchable/filterable directory, and hardened global [hidden] display handling in theme.css.",
         "A Settings IA pass then made Settings visible to every signed-in user, moved password/security into Settings > My account, kept Clinic profile and Users & access admin-only, simplified the drawer footer to account identity plus Log out, and standardized drawer icons into one premium-style 24px stroke system.",
-        "The account/profile foundation then added profile photo upload/remove under Settings > My account, shell avatar display with initials fallback, and read-only email/login identity so accountability stays anchored to stable account identifiers."
+        "The account/profile foundation then added profile photo upload/remove under Settings > My account, shell avatar display with initials fallback, read-only email/login identity so accountability stays anchored to stable account identifiers, staff avatar/initial identity inside Users & access, and a dedicated Manage user page for admin full-name/role correction plus password reset."
       ]
     },
     "notes": [
@@ -124,6 +124,8 @@
       "visible role gating is now active for Admin and Medtech",
       "clinic profile data and clinic logo upload/remove now exist as the branding base for future print work",
       "signed-in users can now upload/remove their own profile photo from Settings > My account, and the shell uses it in the account button and drawer identity with initials fallback",
+      "Settings > Users & access now displays uploaded staff avatars when available, with initials fallback on account cards",
+      "admins can now open /settings/users/{id}/edit from the directory to correct full name/role and reset another user's temporary password",
       "email and login ID remain read-only in the personal account screen so identity changes do not undermine accountability"
     ],
     "authenticated_shell_foundation": [
