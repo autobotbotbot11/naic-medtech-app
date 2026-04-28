@@ -31,6 +31,14 @@
     const next = theme === "dark" ? "light" : "dark";
     button.setAttribute("aria-label", `Switch to ${next} mode`);
     button.setAttribute("title", `Switch to ${next} mode`);
+    if (button.classList.contains("shell-theme-toggle--inline")) {
+      button.innerHTML = `
+        <span class="theme-toggle-fab__label">
+          <span>${next === "dark" ? "Dark" : "Light"}</span>
+        </span>
+      `;
+      return;
+    }
     button.innerHTML = `
       <span class="theme-toggle-fab__label">
         <span class="theme-toggle-fab__meta">Theme</span>

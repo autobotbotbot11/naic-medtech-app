@@ -29,7 +29,7 @@
         "forms",
         "settings"
       ],
-      "current_toggle": "integrated shell light/dark toggle inside the hidden navigation drawer with local persistence and system fallback; floating fallback remains on public auth screens",
+      "current_toggle": "integrated shell light/dark toggle in the top-right global header with local persistence and system fallback; floating fallback remains on public auth screens",
       "print_excluded": true
     },
     "records_reskin_phase": {
@@ -51,8 +51,8 @@
         "Native file upload controls were also styled through theme.css so clinic/logo/image flows do not drop back to default browser chrome.",
         "Direct browser-audited cleanup then fixed the remaining obvious dark-mode mismatches in record status chips, accent-label strength, settings/users stat cards, and the current builder content plus preview panels.",
         "The current builder shell now sits inside the same non-print luxe family, but print is still intentionally excluded from this reskin.",
-        "A shared authenticated shell now sits under the non-print app too: shell.css, shell.js, and _authenticated_shell.html provide a top-bar-first drawer model and top context bar across records, forms, settings, and the builder workspace variant.",
-        "The authenticated shell now keeps global navigation hidden in a left drawer opened from the top bar, so the app can breathe better on desktop without a permanent rail or wide sidebar."
+        "A shared authenticated shell now sits under the non-print app too: shell.css, shell.js, and _authenticated_shell.html provide a thin global-header plus hidden-drawer model, with separate page-local headers across records, forms, settings, and the builder workspace variant.",
+        "The authenticated shell now keeps global navigation hidden in a left drawer opened from the top bar, while the actual page title and actions live in page-local headers so the global chrome stays light."
       ]
     },
     "notes": [
@@ -111,7 +111,7 @@
     "authenticated_shell_foundation": [
       "a shared authenticated shell now exists through app/naic_builder/static/shell.css, app/naic_builder/static/shell.js, and app/naic_builder/templates/_authenticated_shell.html",
       "authenticated records, forms, settings, and builder pages now sit inside one role-aware product shell",
-      "the shell now provides a top-bar-first layout, a hidden left navigation drawer on demand, and a top contextual bar for page-level actions",
+      "the shell now provides a thin global header, a hidden left navigation drawer on demand, and separate page-local headers for page-level actions and back patterns",
       "the nav treatment is intentionally lighter too: helper-copy under nav items is gone, nav uses icons plus short labels, and the old Compact/Expand text control is gone",
       "the builder now uses the same product family through a workspace shell variant instead of living outside the app shell",
       "real login-path smoke already passed for the new shell across records, forms, settings, and builder routes"

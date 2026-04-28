@@ -14,8 +14,11 @@
   <p class="panel-copy">Review the saved entry tied to the exact form version before printing or returning to editing.</p>
 {% endblock %}
 
+{% block page_header_nav %}
+  <a class="page-back-link" href="/records">Back to records</a>
+{% endblock %}
+
 {% block topbar_actions %}
-  <a class="ghost-button" href="/records">Back to records</a>
   <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
   {% if record.status == "draft" %}
   <a class="primary-button" href="/records/{{ record.id }}/edit">Continue editing</a>

@@ -130,7 +130,7 @@ Authenticated product shell
 Definition of done:
 - authenticated records, forms, settings, and builder screens all use one product shell
 - the main canvas stays wide because global navigation is hidden until needed
-- page-level actions move into the contextual top bar instead of every page inventing its own nav chrome
+- the global header stays thin, while page identity, contextual back links, and page actions live in page-local headers
 - builder stays reachable from the forms workflow without competing as a first-class product area in global navigation
 
 Current status:
@@ -140,7 +140,7 @@ Current status:
   - `app/naic_builder/static/shell.js`
   - `app/naic_builder/templates/_authenticated_shell.html`
 - the builder now uses the same family through a workspace shell variant
-- the live shell now uses a top-bar-first drawer model instead of a persistent rail or permanently wide sidebar
+- the live shell now uses a thin global header plus page-local headers, with a hidden top-bar-triggered drawer instead of a persistent rail or permanently wide sidebar
 
 ### Phase 2
 Records-first reskin

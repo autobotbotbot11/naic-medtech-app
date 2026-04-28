@@ -187,7 +187,7 @@ Current live UI checkpoint:
   - `app/naic_builder/static/theme.js`
 - those assets are now wired into builder, auth, records, forms, and settings templates
 - the current theme control is intentionally simple:
-  - the authenticated shell now carries the primary light/dark toggle inside the hidden navigation drawer
+  - the authenticated shell now carries the primary light/dark toggle in the top-right global header
   - local persistence
   - system-dark fallback on first load
   - the older floating toggle now remains mainly as a fallback on public auth screens
@@ -220,9 +220,10 @@ Current live UI checkpoint:
     - `app/naic_builder/templates/_authenticated_shell.html`
   - authenticated records, forms, settings, and builder screens now sit inside one role-aware product shell
   - the shell now provides:
-    - a top-bar-first layout with the blurred header as the main anchor
+    - a thin global header with the blurred chrome kept intentionally light
     - a hidden left navigation drawer opened from the top bar instead of a persistent rail or wide sidebar
     - only the real top-level destinations in global navigation: `Records`, `Forms`, and `Settings`
+    - page-local headers for title, supporting copy, contextual back links, and page actions
     - a builder workspace variant so the builder stays focused without competing as a global navigation peer
     - a lighter nav treatment too:
       - the helper-copy under each nav item is gone

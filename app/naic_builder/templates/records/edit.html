@@ -14,8 +14,11 @@
   <p class="panel-copy">Keep the record calm while editing, then complete it only when the required details are ready.</p>
 {% endblock %}
 
+{% block page_header_nav %}
+  <a class="page-back-link" href="/records">Back to records</a>
+{% endblock %}
+
 {% block topbar_actions %}
-  <a class="ghost-button" href="/records">Back to records</a>
   <a class="ghost-button" href="/records/{{ record.id }}">View</a>
   <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
 {% endblock %}
