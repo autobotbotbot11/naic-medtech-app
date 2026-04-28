@@ -78,6 +78,31 @@ textarea {
   align-items: center;
 }
 
+.builder-command-bar {
+  padding: 12px 14px;
+  border-radius: var(--radius-lg);
+}
+
+.builder-command-bar .brand-block {
+  align-items: center;
+}
+
+.builder-command-bar .draft-summary {
+  min-width: 0;
+}
+
+.builder-command-bar .draft-summary--builder strong {
+  font-size: 17px;
+}
+
+.builder-command-bar .bar-actions {
+  min-width: 0;
+}
+
+.builder-command-bar .action-row {
+  gap: 6px;
+}
+
 .brand-block,
 .bar-actions,
 .action-row,
@@ -160,6 +185,12 @@ textarea {
   border-radius: 999px;
   border: 1px solid rgba(68, 54, 40, 0.1);
   background: rgba(255, 255, 255, 0.64);
+}
+
+.builder-command-bar .builder-status-strip {
+  max-width: min(280px, 28vw);
+  min-height: 32px;
+  padding: 5px 9px;
 }
 
 .eyebrow {
@@ -604,27 +635,27 @@ textarea:focus {
 
 .stage-shell {
   width: min(var(--content-width), 100%);
-  margin: 16px auto 0;
+  margin: 10px auto 0;
   display: grid;
-  gap: 14px;
+  gap: 12px;
 }
 
 .workspace-shell {
   display: grid;
-  gap: 14px;
+  gap: 12px;
   align-items: start;
-  grid-template-columns: minmax(220px, 250px) minmax(0, 1fr);
+  grid-template-columns: minmax(190px, 220px) minmax(0, 1fr);
 }
 
 .workspace-shell.preview-open {
-  grid-template-columns: minmax(220px, 250px) minmax(0, 1fr) minmax(340px, 390px);
+  grid-template-columns: minmax(190px, 220px) minmax(0, 1fr) minmax(320px, 370px);
 }
 
 .stage-head,
 .outline-panel,
 .editor-panel,
 .dev-panel {
-  padding: 16px;
+  padding: 14px;
 }
 
 .stage-head {
@@ -731,13 +762,13 @@ button.subtle[aria-pressed="true"] {
 }
 
 .editor-panel {
-  min-height: calc(100vh - 255px);
+  min-height: calc(100vh - 220px);
 }
 
 .outline-panel {
   align-self: start;
   position: sticky;
-  top: 18px;
+  top: 94px;
 }
 
 .builder-outline {
@@ -831,9 +862,9 @@ button.subtle[aria-pressed="true"] {
   padding: 16px;
   align-self: start;
   position: sticky;
-  top: 18px;
-  height: calc(100vh - 36px);
-  max-height: calc(100vh - 36px);
+  top: 94px;
+  height: calc(100vh - 112px);
+  max-height: calc(100vh - 112px);
   overflow: hidden;
 }
 

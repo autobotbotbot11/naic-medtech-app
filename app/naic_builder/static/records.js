@@ -52,21 +52,77 @@
     });
   };
 
+  const setupRecordFormPickers = (root = document) => {
+    root.querySelectorAll("[data-record-form-picker]").forEach((picker) => {
+      if (picker.dataset.recordFormPickerReady === "true") {
+        return;
+      }
+      picker.dataset.recordFormPickerReady = "true";
+
+      const formSearch = picker.querySelector("[data-record-form-filter]");
+      const formOptions = Array.from(picker.querySelectorAll("[data-record-start-option]"));
+      const formEmpty = picker.querySelector("[data-record-form-empty]");
+
+      if (!formSearch || !formOptions.length) {
+        return;
+      }
+
+      const filterForms = () => {
+        const query = String(formSearch.value || "").trim().toLowerCase();
+        let visibleCount = 0;
+
+        formOptions.forEach((option) => {
+          const searchText = String(option.dataset.searchText || "");
+          const isVisible = !query || searchText.includes(query);
+          option.hidden = !isVisible;
+          if (isVisible) {
+            visibleCount += 1;
+          }
+        });
+
+        if (formEmpty) {
+          formEmpty.hidden = visibleCount !== 0;
+        }
+      };
+
+      formSearch.addEventListener("input", filterForms);
+      filterForms();
+    });
+  };
+
   const setupRecordStartModal = () => {
     const modal = document.querySelector("[data-record-start-modal]");
     if (!modal) {
       return;
     }
 
-    const formSelect = modal.querySelector('select[name="form_slug"]');
+    const formSearch = modal.querySelector("[data-record-form-filter]");
     const dialog = modal.querySelector("[data-record-start-dialog]");
+
+    const filterForms = () => {
+      const query = String(formSearch?.value || "").trim().toLowerCase();
+      let visibleCount = 0;
+
+      formOptions.forEach((option) => {
+        const searchText = String(option.dataset.searchText || "");
+        const isVisible = !query || searchText.includes(query);
+        option.hidden = !isVisible;
+        if (isVisible) {
+          visibleCount += 1;
+        }
+      });
+
+      if (formEmpty) {
+        formEmpty.hidden = visibleCount !== 0;
+      }
+    };
 
     const openModal = () => {
       modal.hidden = false;
       modal.setAttribute("aria-hidden", "false");
       document.body.classList.add("record-start-open");
       window.requestAnimationFrame(() => {
-        formSelect?.focus();
+        formSearch?.focus();
       });
     };
 
@@ -105,5 +161,6 @@
   };
 
   setupDirtyGuards();
+  setupRecordFormPickers();
   setupRecordStartModal();
 })();

@@ -176,6 +176,12 @@ Current live status:
   - record edit and view now start faster through a compact summary shell plus a calmer collapsible `Record info` area instead of a heavier hero/meta stack
   - `/forms` now keeps primary actions visible while secondary actions live behind lighter `More` menus, and the top-level jump control is no longer always expanded
   - the builder chrome is lighter too: the old feedback bar is gone, draft status now lives in the top app bar, and the technical JSON panel starts hidden until advanced work actually needs it
+- the latest compact work-surface pass has now landed too:
+  - the builder no longer has a separate stage-head band; preview, advanced mode, status, new, more, and save now live in the command bar
+  - `/records` uses denser record cards, bounded queue/history lists, and a searchable form picker for both `New record` modal use and the `/records/new` fallback page
+  - `/forms` uses tighter folder/form rows and reduced repeated metadata so it reads more like a calm library than a heavy admin dashboard
+  - `/settings/users` is now one searchable/filterable account directory instead of separate pending/active/disabled buckets
+  - global `[hidden]` display handling is hardened in `theme.css`, fixing empty-state leaks caused by component display styles
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 
 Chosen mode pair:

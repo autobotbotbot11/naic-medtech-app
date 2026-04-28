@@ -105,6 +105,12 @@ The app now starts from a builder-first FastAPI scaffold.
       - obvious screens should not over-explain themselves
       - helper text should stay only where it prevents mistakes or clarifies non-obvious steps
       - hub pages and simple toolbars should read directly, not like walkthroughs
+  - the latest compact work-surface pass has also landed now:
+    - builder stage chrome is flatter: preview and advanced controls now live in the command bar, and the separate stage head is gone
+    - record cards are denser, and the new-record modal plus `/records/new` fallback now use a searchable form picker instead of a large dropdown
+    - forms library rows are tighter, with less repeated metadata and calmer folder/form action density
+    - `/settings/users` is now one searchable/filterable directory instead of separate metric buckets
+    - shared `[hidden]` handling was hardened in `theme.css` so hidden empty states and modal surfaces do not leak through component display styles
 - `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - the records module is now more intent-structured too:
   - `/records` is the `Work` view for drafts and active record entry

@@ -23,7 +23,7 @@
 
 {% block content %}
   <section class="shell">
-    <header class="app-bar panel">
+    <header class="app-bar panel builder-command-bar">
       <div class="brand-block">
         <button id="openLibraryBtn" class="ghost mini" type="button">Library</button>
         <div class="draft-summary draft-summary--builder">
@@ -39,6 +39,8 @@
           <div id="dirtyBadge" class="badge hidden">Changed</div>
         </div>
         <div class="action-row">
+          <button id="openPreviewBtn" class="ghost mini" type="button">Show</button>
+          <button id="toggleAdvancedBtn" class="ghost mini subtle" type="button" aria-pressed="false">Advanced: Off</button>
           <button id="newFormBtn" class="secondary mini" type="button">New</button>
           <details class="action-details topbar-actions">
             <summary aria-label="More actions" title="More actions">...</summary>
@@ -49,6 +51,10 @@
           <button id="saveBtn" class="mini" type="button">Save</button>
         </div>
       </div>
+      <span id="stageTitle" hidden>Open a form</span>
+      <span id="stageDescription" hidden></span>
+      <span id="previewCalloutTitle" hidden>Live preview</span>
+      <span id="previewCalloutMeta" hidden>Open it for a quick check.</span>
     </header>
 
     <div id="drawerScrim" class="drawer-scrim hidden" hidden></div>
@@ -73,28 +79,6 @@
     </aside>
 
     <section class="stage-shell">
-      <section class="stage-head panel">
-        <div class="stage-copy">
-          <p class="eyebrow">Workspace</p>
-          <h2 id="stageTitle">Open a form</h2>
-          <p id="stageDescription" class="panel-copy"></p>
-          <div class="stage-signal">
-            <strong id="previewCalloutTitle">Live preview</strong>
-            <span id="previewCalloutMeta">Open it for a quick check.</span>
-          </div>
-        </div>
-        <div class="stage-toolbar">
-          <div class="stage-toolbar-status">
-            <span class="live-pill">
-              <span class="live-dot"></span>
-              Live
-            </span>
-          </div>
-          <button id="openPreviewBtn" class="ghost mini" type="button">Show</button>
-          <button id="toggleAdvancedBtn" class="ghost mini subtle" type="button" aria-pressed="false">Advanced: Off</button>
-        </div>
-      </section>
-
       <div id="workspaceShell" class="workspace-shell">
         <aside class="panel outline-panel">
           <div id="builderOutline" class="builder-outline"></div>

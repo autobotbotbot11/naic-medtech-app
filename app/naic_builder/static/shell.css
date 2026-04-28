@@ -591,6 +591,10 @@ html[data-theme="dark"] .shell-theme-toggle--inline {
   max-height: min(68vh, 860px);
 }
 
+.app-scroll-region--picker {
+  max-height: min(44vh, 460px);
+}
+
 .metric-strip {
   display: grid;
   gap: 12px;

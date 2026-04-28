@@ -86,6 +86,10 @@ body {
   min-height: 100%;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 body {
   color: var(--text);
   background:
@@ -252,7 +256,7 @@ strong {
 }
 
 .primary-button,
-button:not(.ghost-button):not(.ghost):not(.warn-button):not(.warn-fill):not([data-theme-toggle]) {
+button:not(.ghost-button):not(.ghost):not(.warn-button):not(.warn-fill):not(.user-status-filter):not([data-theme-toggle]) {
   background: linear-gradient(135deg, var(--accent-strong), color-mix(in srgb, var(--accent) 82%, #ffffff 8%));
   color: #f8fffe;
   border: 1px solid color-mix(in srgb, var(--accent) 32%, transparent);
@@ -264,6 +268,7 @@ button:not(.ghost-button):not(.ghost):not(.warn-button):not(.warn-fill):not([dat
 button.ghost,
 button.secondary,
 .settings-tab,
+.user-status-filter,
 .record-filter-pill {
   border-color: var(--line);
   background: rgba(255, 255, 255, 0.35);
@@ -275,6 +280,7 @@ html[data-theme="dark"] .ghost-button,
 html[data-theme="dark"] button.ghost,
 html[data-theme="dark"] button.secondary,
 html[data-theme="dark"] .settings-tab,
+html[data-theme="dark"] .user-status-filter,
 html[data-theme="dark"] .record-filter-pill {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.026));
@@ -284,7 +290,7 @@ html[data-theme="dark"] .record-filter-pill {
 }
 
 html[data-theme="dark"] .primary-button,
-html[data-theme="dark"] button:not(.ghost-button):not(.ghost):not(.warn-button):not(.warn-fill):not([data-theme-toggle]) {
+html[data-theme="dark"] button:not(.ghost-button):not(.ghost):not(.warn-button):not(.warn-fill):not(.user-status-filter):not([data-theme-toggle]) {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 24%),
     linear-gradient(135deg, var(--accent-strong) 0%, #2e7284 100%);

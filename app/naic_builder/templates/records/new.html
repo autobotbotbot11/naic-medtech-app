@@ -35,7 +35,6 @@
         <section class="records-start-cluster">
           <div class="records-start-cluster__head">
             <p class="eyebrow">Recent forms</p>
-            <h3>Start faster</h3>
           </div>
           <div class="records-start-grid">
             {% for form in quick_form_choices %}
@@ -56,29 +55,43 @@
         <section class="records-start-cluster">
           <div class="records-start-cluster__head">
             <p class="eyebrow">All forms</p>
-            <h3>Choose from the library</h3>
           </div>
 
-          <form method="post" action="/records/new" class="records-start-select-form records-start-select-form--page">
-            <input type="hidden" name="return_to" value="new">
-            <label class="records-search-input">
-              <span>Form</span>
-              <select name="form_slug" required>
-                <option value="">Choose a form</option>
-                {% for form in form_choices %}
-                <option value="{{ form.slug }}" {% if form.slug == selected_form_slug %}selected{% endif %}>
-                  {{ form.form_path_label }}
-                </option>
-                {% endfor %}
-              </select>
+          <div data-record-form-picker>
+            <label class="records-search-input records-start-filter">
+              <span>Find form</span>
+              <input type="search" placeholder="Search form or department" data-record-form-filter>
             </label>
-            <div class="records-fallback-actions">
-              <a class="ghost-button" href="/records">Cancel</a>
-              <button class="primary-button" type="submit">Continue</button>
+            <div class="records-start-option-list app-scroll-region app-scroll-region--picker" data-record-form-list>
+              {% for form in form_choices %}
+              <form
+                method="post"
+                action="/records/new"
+                class="record-inline-form"
+                data-record-start-option
+                data-search-text="{{ (form.form_path_label ~ ' ' ~ form.name ~ ' ' ~ form.location_path_label)|lower }}"
+              >
+                <input type="hidden" name="form_slug" value="{{ form.slug }}">
+                <input type="hidden" name="return_to" value="new">
+                <button class="record-form-option" type="submit">
+                  <strong>{{ form.name }}</strong>
+                  <span>{{ form.location_path_label }}</span>
+                </button>
+              </form>
+              {% endfor %}
             </div>
-          </form>
+            <p class="records-start-empty" data-record-form-empty hidden>No matching forms</p>
+          </div>
+
+          <div class="records-fallback-actions">
+            <a class="ghost-button" href="/records">Cancel</a>
+          </div>
         </section>
       </div>
     </section>
   </div>
+{% endblock %}
+
+{% block page_scripts %}
+  <script src="{{ url_for('static', path='records.js') }}" defer></script>
 {% endblock %}

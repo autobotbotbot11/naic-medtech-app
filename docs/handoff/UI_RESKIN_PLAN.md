@@ -191,8 +191,9 @@ Definition of done:
 - records home and record entry feel like the chosen `Clinical Depth Luxe` direction in both light and dark mode
 
 Current status:
-- partially landed
-- `/records` now uses compact metrics, a lighter search toolbar, open sections, and tighter record cards instead of the older sidebar plus stacked-panel composition
+- materially landed for the current non-print pass
+- `/records` is now a queue-first Work surface with compact record cards, bounded list scrolling, and `New record` handled through a searchable picker instead of a ceremony page; `/records/new` keeps the same picker pattern as the fallback route
+- `/records/history` owns completed lookup/search, while `Work` stays focused on active drafts
 
 ### Phase 3
 Auth and settings
@@ -207,8 +208,9 @@ Reason:
 - these screens should match the product shell, but they are secondary to the daily medtech runtime
 
 Current status:
-- partially landed
+- materially landed for the current non-print pass
 - `/settings/clinic` and `/settings/users` now use lighter local sectioning and tighter object cards instead of wrapping every block in large settings panels
+- `/settings/users` is now one searchable/filterable directory with status filters, instead of separate pending/active/disabled buckets
 
 ### Phase 4
 Forms library and guided creation
@@ -221,8 +223,9 @@ Reason:
 - they should inherit the same system cleanly after records and auth are stable
 
 Current status:
-- partially landed
+- materially landed for the current non-print pass
 - `/forms` now uses a lighter search/browse toolbar and open section flow instead of the earlier browse-sidebar composition
+- folder and form rows are tighter, with repeated metadata reduced and secondary actions kept behind calm `More` menus
 
 ### Phase 5
 Builder
@@ -231,6 +234,11 @@ Builder
 Important:
 - builder is more complex and should be reskinned after the calmer shared system already exists
 - do not let builder styling drive the entire product direction again
+
+Current status:
+- active refinement landed for the current non-print pass
+- the separate stage-head band is gone; preview, advanced mode, status, new, more, and save now live in the builder command bar
+- builder can still stay denser than daily records/forms/settings because it is a focused setup workspace
 
 ### Phase 6
 Print

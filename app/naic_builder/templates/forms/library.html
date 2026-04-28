@@ -24,7 +24,7 @@
         {% set current_path = path_label ~ (' / ' if path_label else '') ~ node.name %}
         <details
           id="{{ node_anchor }}"
-          class="tree-folder panel{% if level > 0 %} tree-folder-nested{% endif %}"
+          class="tree-folder tree-folder--compact panel{% if level > 0 %} tree-folder-nested{% endif %}"
           data-node-kind="container"
           data-node-id="{{ node.id }}"
           data-search-text="{{ current_path|lower }}"
@@ -33,7 +33,6 @@
         >
           <summary class="tree-folder-summary">
             <div class="tree-node-copy">
-              <p class="eyebrow">{{ 'Folder' if level == 0 else 'Inside' }}</p>
               <h2 class="tree-node-title">{{ node.name }}</h2>
               {% if path_label %}
               <p class="panel-copy tree-node-path">{{ path_label }}</p>
@@ -62,17 +61,14 @@
         {% set current_path = path_label ~ (' / ' if path_label else '') ~ form_name %}
         <article
           id="{{ node_anchor }}"
-          class="form-card tree-form-card"
+          class="form-card form-card--compact tree-form-card"
           data-node-kind="form"
           data-node-id="{{ node.id }}"
           data-search-text="{{ current_path|lower }}"
         >
           <div class="form-card-copy">
-            <p class="form-card-meta">{{ 'v' ~ node.form.current_version_number }}</p>
             <h3>{{ form_name }}</h3>
-            {% if path_label %}
-            <p class="panel-copy tree-form-path">{{ path_label }}</p>
-            {% endif %}
+            <p class="panel-copy tree-form-path">{{ path_label or 'Top level' }} - v{{ node.form.current_version_number }}</p>
           </div>
           <div class="form-card-actions">
             <a class="primary-button" href="/forms/{{ node.form.slug }}/builder">Edit</a>
@@ -97,7 +93,7 @@
       </label>
       {% if library_tree %}
       <details class="library-quick-jump">
-        <summary>Jump to top level</summary>
+        <summary>Top level</summary>
         <nav class="group-jump-list group-jump-list--inline library-jump-list" aria-label="Jump to top-level forms and folders">
           {% for node in library_tree if not node.archived %}
           {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}

@@ -216,7 +216,7 @@
 
 .records-start-modal__body,
 .records-fallback-stack {
-  gap: 18px;
+  gap: 14px;
 }
 
 .records-start-cluster {
@@ -285,17 +285,17 @@
 
 .records-start-grid {
   display: grid;
-  gap: 12px;
+  gap: 8px;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .record-quick-start-card {
   width: 100%;
   display: grid;
-  gap: 6px;
+  gap: 4px;
   text-align: left;
-  padding: 16px 16px 15px;
-  border-radius: var(--radius-xl);
+  padding: 12px 13px;
+  border-radius: var(--radius-md);
   border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 88%, transparent), color-mix(in srgb, var(--surface-elevated) 80%, transparent)),
@@ -337,6 +337,64 @@
   gap: 12px;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
+}
+
+.records-start-filter {
+  max-width: none;
+}
+
+.records-start-option-list {
+  display: grid;
+  gap: 8px;
+  padding-right: 6px;
+}
+
+.record-inline-form[hidden] {
+  display: none !important;
+}
+
+.record-form-option {
+  width: 100%;
+  min-height: 54px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(160px, 0.55fr);
+  gap: 12px;
+  align-items: center;
+  text-align: left;
+  padding: 11px 13px;
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--line) 90%, transparent);
+  background: color-mix(in srgb, var(--panel-strong) 86%, transparent);
+  color: var(--text);
+  box-shadow: none;
+}
+
+.record-form-option:hover {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line));
+  background: color-mix(in srgb, var(--accent-soft) 42%, var(--panel-strong));
+}
+
+.record-form-option strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.record-form-option span {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.records-start-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
 }
 
 .records-search-bar {
@@ -473,9 +531,9 @@
 .record-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
-  gap: 16px;
-  padding: 18px;
-  border-radius: var(--radius-xl);
+  gap: 14px;
+  padding: 13px 14px;
+  border-radius: var(--radius-lg);
   border: 1px solid color-mix(in srgb, var(--line) 94%, transparent);
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 94%, transparent), color-mix(in srgb, var(--surface-elevated) 84%, transparent)),
@@ -493,22 +551,50 @@
 }
 
 .record-card:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   border-color: color-mix(in srgb, var(--accent) 18%, var(--line));
   box-shadow: 0 22px 52px rgba(9, 23, 29, 0.16);
 }
 
 .record-card-copy h3 {
-  font-size: 24px;
-  line-height: 1;
+  font-size: 19px;
+  line-height: 1.05;
   letter-spacing: -0.03em;
 }
 
 .record-card-meta-line {
   display: flex;
-  gap: 8px;
+  gap: 7px;
   flex-wrap: wrap;
   align-items: center;
+}
+
+.record-inline-meta {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.record-row-details {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.record-row-details span + span::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  margin: 0 10px 2px 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--muted) 48%, transparent);
 }
 
 .record-activity-copy {
@@ -544,10 +630,16 @@
 }
 
 .record-card-actions {
-  flex-direction: column;
-  align-items: stretch;
+  flex-direction: row;
+  align-items: center;
   justify-content: center;
-  min-width: 144px;
+  min-width: 220px;
+}
+
+.record-card-actions .primary-button,
+.record-card-actions .ghost-button {
+  min-height: 38px;
+  padding-block: 8px;
 }
 
 .record-summary-shell {
@@ -1255,6 +1347,17 @@ html[data-theme="dark"] .record-shell .record-audit-item strong {
   color: var(--shell-text);
 }
 
+html[data-theme="dark"] .record-form-option {
+  border-color: rgba(223, 240, 245, 0.07);
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--shell-text);
+}
+
+html[data-theme="dark"] .record-form-option:hover {
+  border-color: rgba(99, 188, 205, 0.24);
+  background: rgba(99, 188, 205, 0.08);
+}
+
 html[data-theme="dark"] .record-shell .eyebrow {
   color: color-mix(in srgb, var(--accent) 92%, #dff1f6 8%);
 }
@@ -1472,6 +1575,8 @@ html[data-theme="dark"] .completion-checklist.is-ready {
   .record-card-actions {
     min-width: 0;
     flex-direction: row;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .entry-actions .primary-button,
@@ -1492,6 +1597,19 @@ html[data-theme="dark"] .completion-checklist.is-ready {
   .records-start-modal__dialog {
     width: calc(100vw - 28px);
     padding: 16px;
+  }
+
+  .record-form-option {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .record-row-details {
+    display: grid;
+    gap: 4px;
+  }
+
+  .record-row-details span + span::before {
+    display: none;
   }
 
   .records-fallback-actions,

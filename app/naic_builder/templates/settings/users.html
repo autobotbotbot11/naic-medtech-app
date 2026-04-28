@@ -18,7 +18,12 @@
 
 {% block content %}
   {% macro render_user_card(user, section) %}
-  <article class="user-card">
+  <article
+    class="user-card user-card--compact"
+    data-user-card
+    data-user-status="{{ user.status }}"
+    data-user-search="{{ (user.full_name ~ ' ' ~ (user.email or '') ~ ' ' ~ user.login_id ~ ' ' ~ user.role ~ ' ' ~ user.status)|lower }}"
+  >
     <div class="user-card-head">
       <div class="user-card-copy">
         <div class="settings-meta-row">
@@ -72,78 +77,42 @@
     <div class="banner success">{{ success_message }}</div>
     {% endif %}
 
-    <div class="metric-strip settings-metric-strip">
-      <article class="metric-card settings-metric-card">
-        <span class="eyebrow">Pending</span>
-        <strong>{{ pending_count }}</strong>
-      </article>
-      <article class="metric-card settings-metric-card">
-        <span class="eyebrow">Active</span>
-        <strong>{{ active_count }}</strong>
-      </article>
-      <article class="metric-card settings-metric-card">
-        <span class="eyebrow">Disabled</span>
-        <strong>{{ disabled_count }}</strong>
-      </article>
-    </div>
+    <section class="user-directory-toolbar">
+      <label class="search-wrap search-wrap--users">
+        <span>Search users</span>
+        <input id="userSearch" type="search" placeholder="Name, email, login ID">
+      </label>
+      <div class="user-status-filters" aria-label="User status filters">
+        <button class="user-status-filter is-active" type="button" data-user-filter="all">All <small>{{ pending_count + active_count + disabled_count }}</small></button>
+        <button class="user-status-filter" type="button" data-user-filter="pending">Pending <small>{{ pending_count }}</small></button>
+        <button class="user-status-filter" type="button" data-user-filter="active">Active <small>{{ active_count }}</small></button>
+        <button class="user-status-filter" type="button" data-user-filter="disabled">Disabled <small>{{ disabled_count }}</small></button>
+      </div>
+    </section>
 
-    <section class="app-section-stack settings-stack settings-stack--open">
-      <section class="app-section settings-section">
-        <div class="app-section__copy">
-          <p class="eyebrow">Pending</p>
-          <h2>Waiting for approval</h2>
+    <section class="app-section settings-section user-directory">
+      <div class="app-section__copy">
+        <p class="eyebrow">Directory</p>
+        <h2>Accounts</h2>
+      </div>
+      <div class="user-list app-scroll-region app-scroll-region--list" data-user-list>
+        {% for user in pending_users %}
+          {{ render_user_card(user, 'pending') }}
+        {% endfor %}
+        {% for user in active_users %}
+          {{ render_user_card(user, 'active') }}
+        {% endfor %}
+        {% for user in disabled_users %}
+          {{ render_user_card(user, 'disabled') }}
+        {% endfor %}
+        <div class="empty-state empty-state--plain" data-user-empty hidden>
+          <h3>No matching users</h3>
         </div>
-        <div class="user-list app-scroll-region app-scroll-region--stacked">
-          {% if pending_users %}
-            {% for user in pending_users %}
-              {{ render_user_card(user, 'pending') }}
-            {% endfor %}
-          {% else %}
-          <div class="empty-state empty-state--plain">
-            <h3>No pending requests</h3>
-            <p class="panel-copy">Requests show up here.</p>
-          </div>
-          {% endif %}
-        </div>
-      </section>
-
-      <section class="app-section settings-section">
-        <div class="app-section__copy">
-          <p class="eyebrow">Active</p>
-          <h2>Working accounts</h2>
-        </div>
-        <div class="user-list app-scroll-region app-scroll-region--stacked">
-          {% if active_users %}
-            {% for user in active_users %}
-              {{ render_user_card(user, 'active') }}
-            {% endfor %}
-          {% else %}
-          <div class="empty-state empty-state--plain">
-            <h3>No active users</h3>
-            <p class="panel-copy">Create or approve one.</p>
-          </div>
-          {% endif %}
-        </div>
-      </section>
-
-      <section class="app-section settings-section">
-        <div class="app-section__copy">
-          <p class="eyebrow">Disabled</p>
-          <h2>Inactive accounts</h2>
-        </div>
-        <div class="user-list app-scroll-region app-scroll-region--stacked">
-          {% if disabled_users %}
-            {% for user in disabled_users %}
-              {{ render_user_card(user, 'disabled') }}
-            {% endfor %}
-          {% else %}
-          <div class="empty-state empty-state--plain">
-            <h3>No disabled users</h3>
-            <p class="panel-copy">Disabled accounts stay here.</p>
-          </div>
-          {% endif %}
-        </div>
-      </section>
+      </div>
     </section>
   </div>
+{% endblock %}
+
+{% block page_scripts %}
+  <script src="{{ url_for('static', path='settings.js') }}" defer></script>
 {% endblock %}
