@@ -44,10 +44,15 @@
           <p class="panel-copy">
             {{ draft_count }} active draft{{ "" if draft_count == 1 else "s" }}
             {% if drafts_truncated %}
-            · showing the 8 most recent first
+            - showing the 8 most recent first
             {% endif %}
           </p>
         </div>
+        {% if drafts_truncated %}
+        <div class="app-section__actions">
+          <a class="ghost-button" href="/records/history?status=draft">View all drafts</a>
+        </div>
+        {% endif %}
       </div>
 
       <div class="record-list app-scroll-region app-scroll-region--list">

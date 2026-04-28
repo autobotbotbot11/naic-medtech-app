@@ -130,6 +130,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - the records module is now more intent-structured too:
   - `/records` is the `Work` view for drafts and active record entry
   - `/records/history` is the `History` view for completed lookup and search
+  - older drafts are now reachable through `/records/history?status=draft`, and Work shows a direct `View all drafts` action once the recent draft list is truncated
   - `New record` is now modal-first from those records views instead of staying as a separate ceremony screen
   - selecting a form now creates the draft and goes straight to `/records/{id}/edit`
   - `/records/new` stays only as the fallback deep-link picker page

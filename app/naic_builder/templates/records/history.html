@@ -41,6 +41,7 @@
           </label>
           <div class="record-filter-pills">
             <a class="record-filter-pill{% if status_filter == 'completed' %} is-active{% endif %}" href="/records/history{% if search_query %}?q={{ search_query | urlencode }}{% endif %}">Completed</a>
+            <a class="record-filter-pill{% if status_filter == 'draft' %} is-active{% endif %}" href="/records/history?status=draft{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">Drafts</a>
             <a class="record-filter-pill{% if status_filter == 'all' %} is-active{% endif %}" href="/records/history?status=all{% if search_query %}&q={{ search_query | urlencode }}{% endif %}">All</a>
           </div>
           <div class="records-search-actions">
@@ -57,7 +58,11 @@
       <div class="app-section__head">
         <div class="app-section__copy">
           <p class="eyebrow">History</p>
+          {% if status_filter == 'draft' %}
+          <h2>{{ matching_count }} draft record{{ '' if matching_count == 1 else 's' }}</h2>
+          {% else %}
           <h2>{{ matching_count }} matching record{{ '' if matching_count == 1 else 's' }}</h2>
+          {% endif %}
           {% if matching_truncated %}
           <p class="panel-copy">Showing the 40 most recent matches first.</p>
           {% endif %}

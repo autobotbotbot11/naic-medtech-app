@@ -182,6 +182,7 @@ Current live status:
 - another architecture-improvement pass has now landed too:
   - `/records` now behaves more like a direct work queue: the metric strip is gone, `Work` and `History` now expose clearer local-nav counts, and the draft queue is the first thing the medtech sees
   - `/records/history` now owns search and completed lookup more explicitly instead of leaving those concerns mixed into the default work surface
+  - older drafts now have a direct lookup path too: `Work` exposes `View all drafts` when the recent draft list is truncated, and `/records/history?status=draft` shows a proper `Drafts` filter
   - record edit and view now start faster through a compact summary shell plus a calmer collapsible `Record info` area instead of a heavier hero/meta stack
   - `/forms` now keeps primary actions visible while secondary actions live behind lighter `More` menus, and the top-level jump control is no longer always expanded
   - the builder chrome is lighter too: the old feedback bar is gone, draft status now lives in the top app bar, and the technical JSON panel starts hidden until advanced work actually needs it
@@ -328,6 +329,7 @@ What exists now:
 - the records module is now split more cleanly by intent:
   - `/records` is the `Work` view for drafts and active entry
   - `/records/history` is the `History` view for completed lookup and search
+  - `/records/history?status=draft` is the lookup path for older drafts outside the recent Work queue
   - `New record` is now modal-first from those views instead of staying as a separate ceremony page
   - choosing a form creates the draft immediately and redirects straight to `/records/{id}/edit`
   - `/records/new` now stays only as the fallback deep-link picker page

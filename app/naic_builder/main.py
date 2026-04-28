@@ -514,10 +514,10 @@ def render_records_history_page(
     status_code: int = 200,
 ) -> HTMLResponse:
     active_status = (status_filter or "completed").strip().lower()
-    if active_status not in {"completed", "all"}:
+    if active_status not in {"completed", "draft", "all"}:
         active_status = "completed"
     query_text = (search_query or "").strip()
-    record_status = None if active_status == "all" else "completed"
+    record_status = None if active_status == "all" else active_status
     matching_records = list_records(
         session,
         status=record_status,
@@ -827,10 +827,8 @@ def records_home(
         if q:
             query["q"] = q
         normalized_status = (status or "").strip().lower()
-        if normalized_status in {"completed", "all"}:
+        if normalized_status in {"completed", "draft", "all"}:
             query["status"] = normalized_status
-        elif normalized_status == "draft":
-            query["status"] = "all"
         history_url = "/records/history"
         if query:
             history_url = f"{history_url}?{urlencode(query)}"

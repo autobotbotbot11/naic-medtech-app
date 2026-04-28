@@ -207,6 +207,7 @@ Current status:
 - materially landed for the current non-print pass
 - `/records` is now a queue-first Work surface with compact record cards, bounded list scrolling, and `New record` handled through a searchable picker instead of a ceremony page; `/records/new` keeps the same picker pattern as the fallback route
 - `/records/history` owns completed lookup/search, while `Work` stays focused on active drafts
+- `Work` now exposes `View all drafts` when recent drafts are truncated, and `/records/history?status=draft` gives draft lookup its own real filter instead of burying older drafts under `All`
 
 ### Phase 3
 Auth and settings
