@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_content_first_and_compact_work_surface_pass_landed_print_planning_next",
+    "status": "authenticated_shell_content_first_compact_work_surface_and_settings_ia_pass_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -59,7 +59,8 @@
         "The shell architecture is no longer the primary UI question now; future non-print refinement should preserve the current shell and continue reducing visual weight through surface discipline instead of reopening navigation structure again.",
         "A follow-up list-page pass then tightened the behavior rule too: list-heavy pages like records, forms, and users now move toward bounded scroll regions and lighter utility rows, while edit/detail pages keep normal page scroll.",
         "A later architecture-improvement pass then made the current records flow more queue-first, reduced the edit/view top chrome into a compact summary shell, lowered action density in the forms library, and removed the separate builder feedback bar in favor of a lighter top app bar status treatment.",
-        "The latest compact work-surface pass flattened the builder stage chrome into one command bar, tightened records/forms/users list surfaces, added a searchable form picker for both the new-record modal and /records/new fallback, consolidated user management into one searchable/filterable directory, and hardened global [hidden] display handling in theme.css."
+        "The latest compact work-surface pass flattened the builder stage chrome into one command bar, tightened records/forms/users list surfaces, added a searchable form picker for both the new-record modal and /records/new fallback, consolidated user management into one searchable/filterable directory, and hardened global [hidden] display handling in theme.css.",
+        "A Settings IA pass then made Settings visible to every signed-in user, moved password/security into Settings > My account, kept Clinic profile and Users & access admin-only, simplified the drawer footer to account identity plus Log out, and standardized drawer icons into one premium-style 24px stroke system."
       ]
     },
     "notes": [

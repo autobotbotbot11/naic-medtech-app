@@ -1,5 +1,6 @@
 {% extends "_authenticated_shell.html" %}
 {% set shell_active = "settings" %}
+{% set settings_active = "users" %}
 
 {% block html_title %}Create User | {{ app_title }}{% endblock %}
 
@@ -21,12 +22,7 @@
 
 {% block content %}
   <div class="auth-shell">
-    <section class="panel settings-panel">
-      <div class="settings-nav">
-        <a class="settings-tab" href="/settings/clinic">Clinic profile</a>
-        <a class="settings-tab is-active" href="/settings/users">Users</a>
-      </div>
-    </section>
+    {% include "settings/_settings_nav.html" %}
 
     <section class="auth-grid">
       <section class="panel auth-main">

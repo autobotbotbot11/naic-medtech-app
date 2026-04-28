@@ -327,7 +327,7 @@
 
 .settings-nav {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   flex-wrap: wrap;
   align-items: center;
 }
@@ -335,6 +335,22 @@
 .settings-nav--open {
   padding-bottom: 2px;
   border-bottom: 1px solid color-mix(in srgb, var(--line) 88%, transparent);
+}
+
+.settings-nav__group {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  margin-inline: 4px 2px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.settings-nav__group:first-child {
+  margin-left: 0;
 }
 
 .settings-tab {

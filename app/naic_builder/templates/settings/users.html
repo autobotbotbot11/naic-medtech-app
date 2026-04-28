@@ -1,5 +1,6 @@
 {% extends "_authenticated_shell.html" %}
 {% set shell_active = "settings" %}
+{% set settings_active = "users" %}
 
 {% block html_title %}Users | {{ app_title }}{% endblock %}
 
@@ -65,10 +66,7 @@
   {% endmacro %}
 
   <div class="auth-shell">
-    <div class="settings-nav settings-nav--open">
-      <a class="settings-tab" href="/settings/clinic">Clinic profile</a>
-      <a class="settings-tab is-active" href="/settings/users">Users</a>
-    </div>
+    {% include "settings/_settings_nav.html" %}
 
     {% if error_message %}
     <div class="banner error">{{ error_message }}</div>

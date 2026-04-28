@@ -100,7 +100,8 @@ PUBLIC_PATHS = {
     "/change-password",
 }
 PUBLIC_PREFIXES = ("/static",)
-ADMIN_PREFIXES = ("/forms", "/folders", "/builder", "/settings", "/api/forms", "/api/builder", "/api/library")
+ADMIN_PREFIXES = ("/forms", "/folders", "/builder", "/api/forms", "/api/builder", "/api/library")
+ADMIN_SETTINGS_PREFIXES = ("/settings/users",)
 
 
 def redirect_for_html(path: str) -> RedirectResponse:
@@ -159,7 +160,11 @@ class AuthFlowMiddleware(BaseHTTPMiddleware):
             if path in {"/login", "/request-account", "/setup"}:
                 return redirect_for_html("/records")
 
-            if any(path.startswith(prefix) for prefix in ADMIN_PREFIXES) and session_user.role != "admin":
+            admin_settings_path = any(path.startswith(prefix) for prefix in ADMIN_SETTINGS_PREFIXES)
+            admin_settings_path = admin_settings_path or (
+                path.startswith("/settings/clinic") and path != "/settings/clinic/logo"
+            )
+            if (any(path.startswith(prefix) for prefix in ADMIN_PREFIXES) or admin_settings_path) and session_user.role != "admin":
                 return auth_error_response(path, 403, "Admin access required.", "/records")
 
         return await call_next(request)
@@ -739,6 +744,7 @@ async def change_password_action(request: Request, session: Session = Depends(ge
         return redirect_for_html("/login")
     body = (await request.body()).decode("utf-8")
     form_data = parse_qs(body, keep_blank_values=True)
+    return_to = ((form_data.get("return_to") or ["records"])[0] or "records").strip().lower()
     payload = PasswordChangePayload(
         current_password=(form_data.get("current_password") or [""])[0],
         new_password=(form_data.get("new_password") or [""])[0],
@@ -759,6 +765,8 @@ async def change_password_action(request: Request, session: Session = Depends(ge
             error_message=str(exc),
             status_code=422,
         )
+    if return_to == "settings" and not bool((request.state.current_user or {}).get("must_change_password")):
+        return redirect_for_html("/settings/account?saved=1")
     return redirect_for_html("/records?password_changed=1")
 
 
@@ -1412,7 +1420,15 @@ async def update_form_location_page(
 
 @app.get("/settings", response_class=HTMLResponse)
 def settings_home() -> RedirectResponse:
-    return redirect_for_html("/settings/clinic")
+    return redirect_for_html("/settings/account")
+
+
+@app.get("/settings/account", response_class=HTMLResponse)
+def settings_account_page(request: Request) -> HTMLResponse:
+    success_message = ""
+    if request.query_params.get("saved") == "1":
+        success_message = "Saved the new password."
+    return render_change_password_page(request, success_message=success_message)
 
 
 @app.get("/settings/clinic", response_class=HTMLResponse)

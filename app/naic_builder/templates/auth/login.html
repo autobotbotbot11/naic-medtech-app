@@ -33,12 +33,12 @@
         <form method="post" action="/login" class="auth-form">
           <label class="field-stack">
             <span>Email or login ID</span>
-            <input type="text" name="identifier" value="{{ identifier }}" placeholder="example@clinic.com or medtech01" required>
+            <input type="text" name="identifier" value="{{ identifier }}" placeholder="example@clinic.com or medtech01" autocomplete="username" required>
           </label>
 
           <label class="field-stack">
             <span>Password</span>
-            <input type="password" name="password" required>
+            <input type="password" name="password" autocomplete="current-password" required>
           </label>
 
           <div class="auth-actions">

@@ -111,6 +111,13 @@ The app now starts from a builder-first FastAPI scaffold.
     - forms library rows are tighter, with less repeated metadata and calmer folder/form action density
     - `/settings/users` is now one searchable/filterable directory instead of separate metric buckets
     - shared `[hidden]` handling was hardened in `theme.css` so hidden empty states and modal surfaces do not leak through component display styles
+  - the Settings information architecture has also been corrected now:
+    - `Settings` is a primary destination for every signed-in user, not only admins
+    - `/settings` now lands on `/settings/account`
+    - password management now lives in `Settings > My account` instead of the drawer footer
+    - admin-only settings remain protected under `Clinic profile` and `Users & access`
+    - the drawer footer is now only account identity plus `Log out`
+    - drawer icons now use one consistent 24px premium-style stroke system instead of mixed ad-hoc paths
 - `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - the records module is now more intent-structured too:
   - `/records` is the `Work` view for drafts and active record entry

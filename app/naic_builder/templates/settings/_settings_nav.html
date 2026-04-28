@@ -1,0 +1,10 @@
+<nav class="settings-nav settings-nav--open" aria-label="Settings sections">
+  <span class="settings-nav__group">Personal</span>
+  <a class="settings-tab{% if settings_active == 'account' %} is-active{% endif %}" href="/settings/account">My account</a>
+
+  {% if request.state.is_admin %}
+  <span class="settings-nav__group">Admin</span>
+  <a class="settings-tab{% if settings_active == 'clinic' %} is-active{% endif %}" href="/settings/clinic">Clinic profile</a>
+  <a class="settings-tab{% if settings_active == 'users' %} is-active{% endif %}" href="/settings/users">Users & access</a>
+  {% endif %}
+</nav>

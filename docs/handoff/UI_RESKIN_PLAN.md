@@ -62,6 +62,11 @@ The current live direction is:
   - object cards only where they carry real content
 - make module-local navigation clearer when it carries real workflow weight:
   - `Records > Work / History` should read like real local navigation, not like weak filter pills
+- keep primary drawer navigation intentionally short:
+  - `Records` for daily work
+  - `Forms` for admin form setup
+  - `Settings` for both personal and admin settings
+- do not place account maintenance actions like password change in the drawer footer; they belong inside `Settings > My account`
 - reduce copy density:
   - hub pages should scan fast
   - simple actions should not need paragraph-length explanation
@@ -175,6 +180,9 @@ Current status:
   - `app/naic_builder/templates/_authenticated_shell.html`
 - the builder now uses the same family through a workspace shell variant
 - the live shell now uses a thin global header plus page-local headers, with a hidden top-bar-triggered drawer instead of a persistent rail or permanently wide sidebar
+- `Settings` is now visible for all signed-in users, while `Forms`, `Clinic profile`, and `Users & access` remain admin-only
+- password management now lives in `Settings > My account`; the drawer footer is account identity plus `Log out` only
+- drawer icons now use one consistent premium-style 24px stroke icon system
 
 ### Phase 2
 Records-first reskin

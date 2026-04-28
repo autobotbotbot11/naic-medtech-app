@@ -37,17 +37,17 @@
 
           <label class="field-stack">
             <span>Admin email</span>
-            <input type="email" name="email" value="{{ email }}" required>
+            <input type="email" name="email" value="{{ email }}" autocomplete="email" required>
           </label>
 
           <label class="field-stack">
             <span>Login ID</span>
-            <input type="text" name="login_id" value="{{ login_id }}" placeholder="Optional">
+            <input type="text" name="login_id" value="{{ login_id }}" placeholder="Optional" autocomplete="username">
           </label>
 
           <label class="field-stack">
             <span>Password</span>
-            <input type="password" name="password" required>
+            <input type="password" name="password" autocomplete="new-password" required>
           </label>
 
           <div class="auth-actions">

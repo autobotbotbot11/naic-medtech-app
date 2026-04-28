@@ -1,3 +1,28 @@
+{% macro shell_icon(name) -%}
+  {%- if name == "menu" -%}
+  <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4.75 6.75h14.5M4.75 12h14.5M4.75 17.25h14.5" />
+  </svg>
+  {%- elif name == "close" -%}
+  <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="m7 7 10 10M17 7 7 17" />
+  </svg>
+  {%- elif name == "records" -%}
+  <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M8.75 4.75h6.5a1.5 1.5 0 0 1 1.5 1.5v.5h.5A2.75 2.75 0 0 1 20 9.5v8A2.75 2.75 0 0 1 17.25 20H6.75A2.75 2.75 0 0 1 4 17.5v-8a2.75 2.75 0 0 1 2.75-2.75h.5v-.5a1.5 1.5 0 0 1 1.5-1.5Z" />
+    <path d="M8.5 11h7M8.5 14h7M8.5 17h4.75" />
+  </svg>
+  {%- elif name == "forms" -%}
+  <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M5.75 4.75h12.5A1.75 1.75 0 0 1 20 6.5v11a1.75 1.75 0 0 1-1.75 1.75H5.75A1.75 1.75 0 0 1 4 17.5v-11a1.75 1.75 0 0 1 1.75-1.75Z" />
+    <path d="M4 9h16M9 4.75v14.5M12 12.25h4.75M12 15.75h3.25" />
+  </svg>
+  {%- elif name == "settings" -%}
+  <svg class="app-icon" viewBox="0 0 24 24" aria-hidden="true">
+    <path d="M4.5 7.25h4.25M13.25 7.25h6.25M10.75 9.75a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM4.5 16.75h6.25M15.25 16.75h4.25M13.25 19.25a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z" />
+  </svg>
+  {%- endif -%}
+{%- endmacro %}
 <!doctype html>
 <html lang="en">
 <head>
@@ -36,39 +61,31 @@
         </div>
 
         <button class="app-drawer__close" type="button" data-shell-drawer-close aria-label="Close navigation" title="Close navigation">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M5.5 5.5 14.5 14.5M14.5 5.5l-9 9" />
-          </svg>
+          {{ shell_icon("close") }}
         </button>
       </div>
 
       <nav class="app-drawer__nav" aria-label="Primary">
         <a class="app-drawer__item{% if active_nav == 'records' %} is-active{% endif %}" href="/records">
           <span class="app-drawer__glyph" aria-hidden="true">
-            <svg viewBox="0 0 20 20">
-              <path d="M4.5 5.25A1.75 1.75 0 0 1 6.25 3.5h7.5A1.75 1.75 0 0 1 15.5 5.25v9.5a1.75 1.75 0 0 1-1.75 1.75h-7.5A1.75 1.75 0 0 1 4.5 14.75zm2.25 1.5h6.5m-6.5 3.25h6.5m-6.5 3.25h4" />
-            </svg>
+            {{ shell_icon("records") }}
           </span>
           <strong>Records</strong>
         </a>
         {% if request.state.is_admin %}
         <a class="app-drawer__item{% if active_nav == 'forms' %} is-active{% endif %}" href="/forms">
           <span class="app-drawer__glyph" aria-hidden="true">
-            <svg viewBox="0 0 20 20">
-              <path d="M4.75 4.25h10.5v11.5H4.75zm0 3.75h10.5m-5.25-3.75v11.5" />
-            </svg>
+            {{ shell_icon("forms") }}
           </span>
           <strong>Forms</strong>
         </a>
+        {% endif %}
         <a class="app-drawer__item{% if active_nav == 'settings' %} is-active{% endif %}" href="/settings">
           <span class="app-drawer__glyph" aria-hidden="true">
-            <svg viewBox="0 0 20 20">
-              <path d="M10 4.25a5.75 5.75 0 1 0 0 11.5 5.75 5.75 0 0 0 0-11.5Zm0 0V2.5m0 15v-1.75M15.75 10h1.75M2.5 10h1.75m11.06-4.06 1.24-1.24M3.69 16.31l1.24-1.24m10.38 1.24-1.24-1.24M3.69 3.69l1.24 1.24" />
-            </svg>
+            {{ shell_icon("settings") }}
           </span>
           <strong>Settings</strong>
         </a>
-        {% endif %}
       </nav>
 
       {% if shell_variant|default('default') == 'workspace' and request.state.is_admin %}
@@ -91,7 +108,6 @@
         </div>
 
         <div class="app-drawer__footer-actions">
-          <a class="ghost-button" href="/change-password">Password</a>
           <form method="post" action="/logout" class="inline-action-form">
             <button class="ghost-button" type="submit">Log out</button>
           </form>
@@ -102,9 +118,7 @@
     <header class="app-global-header panel">
       <div class="app-global-header__lead">
         <button class="app-menu-toggle" type="button" data-shell-drawer-toggle aria-expanded="false" aria-label="Open navigation" title="Open navigation">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M4 5.5h12M4 10h12M4 14.5h12" />
-          </svg>
+          {{ shell_icon("menu") }}
         </button>
         <a class="app-global-header__brand" href="/records" aria-label="{{ clinic_profile.get('clinic_name') or app_title }}">
           {% if clinic_profile.get('has_logo') %}

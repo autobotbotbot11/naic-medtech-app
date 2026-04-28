@@ -182,6 +182,12 @@ Current live status:
   - `/forms` uses tighter folder/form rows and reduced repeated metadata so it reads more like a calm library than a heavy admin dashboard
   - `/settings/users` is now one searchable/filterable account directory instead of separate pending/active/disabled buckets
   - global `[hidden]` display handling is hardened in `theme.css`, fixing empty-state leaks caused by component display styles
+- the Settings IA has now been corrected too:
+  - `Settings` is visible to every signed-in user
+  - `/settings` now routes to `My account`, where password/security lives
+  - admin-only settings remain `Clinic profile` and `Users & access`
+  - the drawer footer no longer exposes a `Password` action; it only carries account identity plus `Log out`
+  - drawer icons now use one consistent premium-style 24px stroke icon system
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 
 Chosen mode pair:
