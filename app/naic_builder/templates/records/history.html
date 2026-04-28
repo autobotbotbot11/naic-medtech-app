@@ -10,13 +10,19 @@
 {% endblock %}
 
 {% block shell_eyebrow %}Records{% endblock %}
-{% block shell_title %}Records{% endblock %}
+{% block shell_title %}History{% endblock %}
 {% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <nav class="records-subnav" aria-label="Records views">
-    <a class="records-subnav-link" href="/records">Work</a>
-    <a class="records-subnav-link is-active" href="/records/history">History</a>
+    <a class="records-subnav-link" href="/records">
+      <span>Work</span>
+      <small>{{ draft_count }}</small>
+    </a>
+    <a class="records-subnav-link is-active" href="/records/history">
+      <span>History</span>
+      <small>{{ completed_count }}</small>
+    </a>
   </nav>
 {% endblock %}
 

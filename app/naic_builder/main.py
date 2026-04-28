@@ -410,6 +410,8 @@ def render_records_work_page(
 ) -> HTMLResponse:
     recent_drafts = list_records(session, status="draft", limit=8)
     recent_completed = list_records(session, status="completed", limit=8)
+    draft_count = count_records(session, status="draft")
+    completed_count = count_records(session, status="completed")
     record_start_context = build_record_start_context(
         session,
         recent_drafts=recent_drafts,
@@ -426,9 +428,10 @@ def render_records_work_page(
             "record_start_open": record_start_open,
             "record_start_error": record_start_error,
             "record_start_selected_slug": record_start_selected_slug,
-            "draft_count": count_records(session, status="draft"),
-            "completed_count": count_records(session, status="completed"),
+            "draft_count": draft_count,
+            "completed_count": completed_count,
             "recent_drafts": recent_drafts,
+            "drafts_truncated": draft_count > len(recent_drafts),
         },
         status_code=status_code,
     )
@@ -484,6 +487,8 @@ def render_records_history_page(
         search=query_text or None,
     )
     record_start_context = build_record_start_context(session)
+    draft_count = count_records(session, status="draft")
+    completed_count = count_records(session, status="completed")
     return templates.TemplateResponse(
         request=request,
         name="records/history.html",
@@ -496,6 +501,8 @@ def render_records_history_page(
             "matching_records": matching_records,
             "matching_count": matching_total_count,
             "matching_truncated": matching_total_count > len(matching_records),
+            "draft_count": draft_count,
+            "completed_count": completed_count,
             "record_start_open": record_start_open,
             "record_start_error": record_start_error,
             "record_start_selected_slug": record_start_selected_slug,

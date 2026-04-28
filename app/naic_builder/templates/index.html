@@ -26,16 +26,17 @@
     <header class="app-bar panel">
       <div class="brand-block">
         <button id="openLibraryBtn" class="ghost mini" type="button">Library</button>
-        <div class="brand-copy">
+        <div class="draft-summary draft-summary--builder">
           <p class="eyebrow">Builder</p>
-          <h2>{{ app_title }}</h2>
+          <strong id="currentFormName">Loading form...</strong>
+          <span id="currentFormMeta">Preparing the builder.</span>
         </div>
       </div>
 
       <div class="bar-actions">
-        <div class="draft-summary">
-          <strong id="currentFormName">Loading form...</strong>
-          <span id="currentFormMeta">Preparing the builder.</span>
+        <div class="builder-status-strip">
+          <span id="statusText">Loading builder...</span>
+          <div id="dirtyBadge" class="badge hidden">Changed</div>
         </div>
         <div class="action-row">
           <button id="newFormBtn" class="secondary mini" type="button">New</button>
@@ -49,14 +50,6 @@
         </div>
       </div>
     </header>
-
-    <section class="feedback-bar panel">
-      <div class="feedback-copy">
-        <span class="feedback-label">Status</span>
-        <span id="statusText">Loading builder...</span>
-      </div>
-      <div id="dirtyBadge" class="badge hidden">Changed</div>
-    </section>
 
     <div id="drawerScrim" class="drawer-scrim hidden" hidden></div>
 
@@ -82,7 +75,7 @@
     <section class="stage-shell">
       <section class="stage-head panel">
         <div class="stage-copy">
-          <p class="eyebrow">Builder</p>
+          <p class="eyebrow">Workspace</p>
           <h2 id="stageTitle">Open a form</h2>
           <p id="stageDescription" class="panel-copy"></p>
           <div class="stage-signal">
@@ -124,7 +117,7 @@
         </aside>
       </div>
 
-      <details class="panel dev-panel">
+      <details class="panel dev-panel" hidden>
         <summary>Technical JSON</summary>
         <pre id="jsonOutput" class="json-output"></pre>
       </details>

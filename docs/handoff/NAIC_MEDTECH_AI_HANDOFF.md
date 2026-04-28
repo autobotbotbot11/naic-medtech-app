@@ -170,6 +170,12 @@ Current live status:
   - `/forms` now uses a lighter browse/search toolbar and open section flow instead of a persistent browse sidebar
   - `/settings/clinic` and `/settings/users` now use lighter local sectioning instead of wrapping every block in large settings panels
   - record, form, and user cards were also tightened to use desktop width better instead of sitting as oversized full-width slabs
+- another architecture-improvement pass has now landed too:
+  - `/records` now behaves more like a direct work queue: the metric strip is gone, `Work` and `History` now expose clearer local-nav counts, and the draft queue is the first thing the medtech sees
+  - `/records/history` now owns search and completed lookup more explicitly instead of leaving those concerns mixed into the default work surface
+  - record edit and view now start faster through a compact summary shell plus a calmer collapsible `Record info` area instead of a heavier hero/meta stack
+  - `/forms` now keeps primary actions visible while secondary actions live behind lighter `More` menus, and the top-level jump control is no longer always expanded
+  - the builder chrome is lighter too: the old feedback bar is gone, draft status now lives in the top app bar, and the technical JSON panel starts hidden until advanced work actually needs it
 - print is still intentionally excluded from the reskin; that work must remain template-driven later instead of being folded into this generic theme pass
 
 Chosen mode pair:
@@ -298,6 +304,10 @@ What exists now:
   - `New record` is now modal-first from those views instead of staying as a separate ceremony page
   - choosing a form creates the draft immediately and redirects straight to `/records/{id}/edit`
   - `/records/new` now stays only as the fallback deep-link picker page
+  - the default records experience is now queue-first too:
+    - the old metric strip is gone
+    - `Work` and `History` now show clearer local-nav counts
+    - completed lookup and search live in `History` instead of staying mixed into the default work screen
 - `/records/{id}/edit` now supports the first basic record-entry flow
 - `/records/{id}` now shows a read-only record view
 - records now surface quiet accountability metadata too:
@@ -317,6 +327,9 @@ What exists now:
   - draft records already show a quiet readiness panel while editing
   - if details are still missing, the panel lists what still blocks `Complete`
   - if the draft is ready, the same panel flips into a calm ready-to-complete state
+- record edit and view now start faster too:
+  - the older heavy record hero/meta stack was replaced by a lighter compact summary shell
+  - deeper audit metadata now lives in a calmer collapsible `Record info` area instead of dominating the top of the page
 - record forms are safer now too:
   - `edit` now shows a quiet dirty-state label instead of leaving save state implicit
   - browser leave protection now warns before a medtech accidentally navigates away with unsaved record changes

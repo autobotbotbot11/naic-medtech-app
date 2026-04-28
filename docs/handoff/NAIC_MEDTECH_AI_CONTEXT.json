@@ -57,7 +57,8 @@
         "Live browser checks were rerun across login, records, forms, new-form, clinic settings, and builder to specifically catch light-mode visibility and cross-mode consistency issues.",
         "The next structural correction then landed at the page-composition level: records, forms, and settings now move toward a content-first model with lighter page headers, compact toolbars, open sections, and cards reserved mostly for actual records, forms, and users instead of every wrapper block.",
         "The shell architecture is no longer the primary UI question now; future non-print refinement should preserve the current shell and continue reducing visual weight through surface discipline instead of reopening navigation structure again.",
-        "A follow-up list-page pass then tightened the behavior rule too: list-heavy pages like records, forms, and users now move toward bounded scroll regions and lighter utility rows, while edit/detail pages keep normal page scroll."
+        "A follow-up list-page pass then tightened the behavior rule too: list-heavy pages like records, forms, and users now move toward bounded scroll regions and lighter utility rows, while edit/detail pages keep normal page scroll.",
+        "A later architecture-improvement pass then made the current records flow more queue-first, reduced the edit/view top chrome into a compact summary shell, lowered action density in the forms library, and removed the separate builder feedback bar in favor of a lighter top app bar status treatment."
       ]
     },
     "notes": [
@@ -88,12 +89,14 @@
       "the normal new-record start path is now modal-first from the records views instead of staying as a separate ceremony page",
       "choosing a form from that records picker creates the draft immediately and redirects straight to /records/{id}/edit",
       "/records/new now stays only as the fallback deep-link picker page",
+      "/records now behaves more directly like a work queue too: the old metric strip is gone, Work and History expose clearer local-nav counts, and completed lookup plus search now live in History instead of the default work screen",
       "/records/{id}/edit now supports the first calm server-rendered record-entry flow",
       "/records/{id} now shows a read-only record view",
       "records now surface quiet accountability metadata too: created by, last updated by, and the latest activity timestamp are visible in the live records flow",
       "record completion is calmer but stricter now too: drafts still stay flexible, but Complete now enforces patient name, case number, and any required field answers from the form design",
       "record-entry polish is calmer now too: ordinary draft saves return with a quiet Saved the draft banner, Sex now uses the same standard select in create and edit, and the image file hint no longer shows the old broken separator artifact",
       "record edit is more self-guiding now too: draft records already show a quiet readiness panel while editing, and that same panel flips between blocked and ready-to-complete states instead of waiting for a failed submit first",
+      "record edit and view now start faster too: the older heavy record hero/meta stack was replaced by a lighter compact summary shell, and deeper audit metadata now lives in a calmer collapsible Record info area instead of dominating the top of the page",
       "record edit is safer now too: it shows a quiet dirty-state label and browser leave protection now warns before accidental navigation away from unsaved changes",
       "record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholders",
       "the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number",
@@ -158,6 +161,7 @@
       "/forms now renders directly from the real persisted container and form tree instead of the older one-level grouped library view",
       "the library can now show both root-level forms and folders in one calm tree-first browse surface",
       "library search now works against full folder path text instead of only one-level group names",
+      "the forms library is lighter now too: primary actions stay visible, secondary actions now live behind smaller More menus, and the top-level jump control is no longer always expanded",
       "folder cards in /forms can now launch folder-scoped creation directly via new form here and new folder here",
       "folder cards in /forms can now also launch edit folder, so the visible tree flow is no longer create-only",
       "folder cards in /forms can now also launch move, and form cards can now launch move too, so the visible tree flow now supports relocation as well as browse, create, and edit",
@@ -312,6 +316,7 @@
       "folder input now suggests existing library folders",
       "save now shows a clearer draft-state spotlight with a simpler optional note field",
       "the top shell now uses a lighter status bar and a more compact workspace header",
+      "the builder chrome is lighter now too: the old feedback bar is gone, draft status now lives in the top app bar with the main actions, and the technical JSON panel starts hidden until advanced-mode work actually needs it",
       "the preview is now read-only and includes sticky quick-jump section navigation",
       "advanced mode now keeps actual top-level ordered-block editing inside the same Content pane",
       "the preview now respects root block order instead of forcing one single ungrouped-fields area before all sections",

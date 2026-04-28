@@ -10,13 +10,19 @@
 {% endblock %}
 
 {% block shell_eyebrow %}Records{% endblock %}
-{% block shell_title %}Records{% endblock %}
+{% block shell_title %}Work queue{% endblock %}
 {% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
   <nav class="records-subnav" aria-label="Records views">
-    <a class="records-subnav-link is-active" href="/records">Work</a>
-    <a class="records-subnav-link" href="/records/history">History</a>
+    <a class="records-subnav-link is-active" href="/records">
+      <span>Work</span>
+      <small>{{ draft_count }}</small>
+    </a>
+    <a class="records-subnav-link" href="/records/history">
+      <span>History</span>
+      <small>{{ completed_count }}</small>
+    </a>
   </nav>
 {% endblock %}
 
@@ -30,29 +36,17 @@
     <div class="success-banner">{{ success_message }}</div>
     {% endif %}
 
-    <section class="metric-strip records-metric-strip">
-      <article class="metric-card">
-        <p class="eyebrow">Drafts</p>
-        <strong>{{ draft_count }}</strong>
-      </article>
-      <article class="metric-card">
-        <p class="eyebrow">Completed</p>
-        <strong>{{ completed_count }}</strong>
-      </article>
-      <article class="metric-card">
-        <p class="eyebrow">Forms ready</p>
-        <strong>{{ form_choices|length }}</strong>
-      </article>
-    </section>
-
     <section class="app-section records-section">
       <div class="app-section__head">
         <div class="app-section__copy">
-          <p class="eyebrow">Work</p>
+          <p class="eyebrow">Drafts</p>
           <h2>Continue drafts</h2>
-        </div>
-        <div class="app-section__actions">
-          <a class="ghost-button" href="/records/new" data-record-start-trigger>Choose form</a>
+          <p class="panel-copy">
+            {{ draft_count }} active draft{{ "" if draft_count == 1 else "s" }}
+            {% if drafts_truncated %}
+            · showing the 8 most recent first
+            {% endif %}
+          </p>
         </div>
       </div>
 

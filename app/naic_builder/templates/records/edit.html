@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block shell_eyebrow %}Records{% endblock %}
-{% block shell_title %}Record entry{% endblock %}
+{% block shell_title %}Edit record{% endblock %}
 {% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
@@ -181,55 +181,43 @@
   {% set updated_by = record["updated_by"] or record["created_by"] %}
 
   <div class="library-shell record-shell">
-    <section class="panel record-header">
-      <div class="record-title-row">
-        <div class="record-header-copy">
-          <div class="record-card-meta-line">
-            <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
-            <p class="form-card-meta">{{ record.form_name }}</p>
-          </div>
-          <h1>{{ record.patient_name or "Record draft" }}</h1>
-          <p class="panel-copy">{{ record.form_path_label }}</p>
+    <section class="panel record-summary-shell">
+      <div class="record-summary-main">
+        <div class="record-card-meta-line">
+          <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
+          <p class="form-card-meta">{{ record.form_name }}</p>
         </div>
+        <h2>{{ record.patient_name or record.form_name }}</h2>
+        <p class="panel-copy">{{ record.form_path_label }}</p>
       </div>
 
-      <div class="record-meta-grid">
-        <article class="record-meta-card">
-          <span>Case number</span>
-          <strong>{{ record.case_number or "Not set yet" }}</strong>
-        </article>
-        <article class="record-meta-card">
-          <span>Age</span>
-          <strong>{{ record.patient_age or "Not set yet" }}</strong>
-        </article>
-        <article class="record-meta-card">
-          <span>Sex</span>
-          <strong>{{ record.patient_sex or "Not set yet" }}</strong>
-        </article>
-        <article class="record-meta-card">
-          <span>Version</span>
-          <strong>Form v{{ record.form_version_number }}</strong>
-        </article>
-        <article class="record-meta-card">
-          <span>Record key</span>
-          <strong>{{ record.record_key }}</strong>
-        </article>
+      <div class="record-summary-pills">
+        <span class="record-meta-pill"><strong>Case</strong>{{ record.case_number or "Not set yet" }}</span>
+        <span class="record-meta-pill"><strong>Age</strong>{{ record.patient_age or "Not set yet" }}</span>
+        <span class="record-meta-pill"><strong>Sex</strong>{{ record.patient_sex or "Not set yet" }}</span>
+        <span class="record-meta-pill"><strong>Version</strong>Form v{{ record.form_version_number }}</span>
       </div>
 
-      <div class="record-audit-strip">
-        <article class="record-audit-item">
-          <span>Created by</span>
-          <strong>{{ created_by.full_name if created_by else "Unknown" }}</strong>
-          {% if created_by and created_by.email %}
-          <p>{{ created_by.email }}</p>
-          {% endif %}
-        </article>
-        <article class="record-audit-item">
-          <span>Last updated by</span>
-          <strong>{{ updated_by.full_name if updated_by else "Unknown" }}</strong>
-          <p>{{ record.updated_at_label or "Not saved yet" }}</p>
-        </article>
-      </div>
+      <details class="record-meta-details">
+        <summary>Record info</summary>
+        <div class="record-meta-details__body">
+          <p class="panel-copy">Record key: {{ record.record_key }}</p>
+          <div class="record-audit-strip">
+            <article class="record-audit-item">
+              <span>Created by</span>
+              <strong>{{ created_by.full_name if created_by else "Unknown" }}</strong>
+              {% if created_by and created_by.email %}
+              <p>{{ created_by.email }}</p>
+              {% endif %}
+            </article>
+            <article class="record-audit-item">
+              <span>Last updated by</span>
+              <strong>{{ updated_by.full_name if updated_by else "Unknown" }}</strong>
+              <p>{{ record.updated_at_label or "Not saved yet" }}</p>
+            </article>
+          </div>
+        </div>
+      </details>
     </section>
 
     <section class="panel records-main">
@@ -244,9 +232,6 @@
         <div class="entry-block-head">
           <p class="eyebrow">{{ "Ready" if not validation_issues else "Before completing" }}</p>
           <h3>{{ "This draft is ready to complete" if not validation_issues else "Finish these required details" }}</h3>
-          <p class="entry-inline-hint">
-            {{ "You can complete it now or keep it as a draft." if not validation_issues else "These details are still required." }}
-          </p>
         </div>
         {% if validation_issues %}
         <ul class="completion-issues">
@@ -264,8 +249,7 @@
         <section class="panel record-section">
           <div class="entry-block-head">
             <p class="eyebrow">Record details</p>
-            <h2>Header</h2>
-            <p class="entry-inline-hint">Patient name and case number are required before completion.</p>
+            <h2>Patient details</h2>
           </div>
           <div class="record-basics-grid">
             <label class="entry-field">

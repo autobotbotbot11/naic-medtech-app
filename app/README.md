@@ -112,6 +112,10 @@ The app now starts from a builder-first FastAPI scaffold.
   - `New record` is now modal-first from those records views instead of staying as a separate ceremony screen
   - selecting a form now creates the draft and goes straight to `/records/{id}/edit`
   - `/records/new` stays only as the fallback deep-link picker page
+  - the records flow is lighter now too:
+    - `/records` now behaves more like a direct work queue instead of mixing metrics, search, history, and start-state ceremony on one default screen
+    - the old metric strip is gone, `Work` and `History` now expose clearer local-nav counts, and the draft queue is the first thing the medtech sees
+    - `/records/history` now owns completed lookup and search more explicitly instead of leaving those concerns mixed into the default work screen
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
 - the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, image fields now support a first real upload/replace/remove flow during record entry, and `/records/{id}/print` now provides the first browser-printable result renderer
@@ -132,6 +136,9 @@ The app now starts from a builder-first FastAPI scaffold.
   - draft records already show a quiet readiness panel while editing
   - when details are still missing, the panel lists what still blocks `Complete`
   - when the draft is ready, the panel flips into a calm ready-to-complete state instead of waiting for a failed submit
+- record edit and view start faster now too:
+  - the older heavy hero/meta stack was replaced by a lighter compact summary shell
+  - patient/result work now starts sooner because deeper audit metadata moved into a calmer collapsible `Record info` area
 - record forms are safer now too:
   - `new` and `edit` now have a quiet dirty-state label instead of leaving save state implicit
   - browser leave protection now warns before a medtech accidentally navigates away with unsaved record changes
@@ -296,6 +303,10 @@ The app now starts from a builder-first FastAPI scaffold.
 - `Form details` and `Save` now use narrower calmer guided surfaces
 - the folder field suggests existing library folders while editing form details
 - the top shell now uses a lighter status bar and a more compact workspace header
+- the builder chrome is lighter now too:
+  - the old separate feedback bar is gone
+  - draft status now lives inside the top app bar with the main actions
+  - the technical JSON panel now starts hidden until advanced-mode work actually needs it
 - the live preview is now read-only and includes sticky quick-jump section navigation
 - the left outline and library wording now use calmer non-technical labels like `Basics`, `Content`, `Location`, and `Edit`
 - the builder basics flow is clearer too: it now says `Name` and `Location`, and top-level forms read as `Top level` instead of the old `Unassigned`
@@ -331,6 +342,10 @@ The app now starts from a builder-first FastAPI scaffold.
 - `/forms` now renders directly from the real persisted `container | form` tree instead of the older one-level grouped library view
 - the library can now show both root-level forms and folders in one calm tree-first browse surface
 - library search now works against the full folder path text instead of only one-level group labels
+- the forms library is lighter now too:
+  - primary actions like `Edit` and `New form` stay visible
+  - secondary actions like copy, move, and folder management now live behind smaller `More` menus instead of staying open on every card
+  - the old always-open jump control is now collapsed into a quieter `Jump to top level` affordance
 - folder cards in `/forms` can now launch folder-scoped creation directly via `New form here` and `New folder here`
 - folder cards in `/forms` can now also launch `Edit folder`, so the visible tree flow is no longer create-only
 - folder cards in `/forms` can now also launch `Move`, and form cards can now launch `Move` too, so the visible library flow is no longer limited to browse/create/edit

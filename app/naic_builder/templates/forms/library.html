@@ -43,9 +43,14 @@
           <div class="tree-node-body">
             <div class="tree-folder-actions">
               <a class="ghost-button" href="/forms/new?parent={{ node.id }}">New form</a>
-              <a class="ghost-button" href="/folders/new?parent={{ node.id }}">New folder</a>
-              <a class="ghost-button" href="/folders/move?node={{ node.id }}">Move</a>
-              <a class="ghost-button" href="/folders/edit?node={{ node.id }}">Manage folder</a>
+              <details class="library-card-menu">
+                <summary>More</summary>
+                <div class="library-card-menu__list">
+                  <a href="/folders/new?parent={{ node.id }}">New folder</a>
+                  <a href="/folders/move?node={{ node.id }}">Move</a>
+                  <a href="/folders/edit?node={{ node.id }}">Manage folder</a>
+                </div>
+              </details>
             </div>
             <div class="tree-children">
               {{ render_nodes(node.children, current_path, level + 1) }}
@@ -70,9 +75,14 @@
             {% endif %}
           </div>
           <div class="form-card-actions">
-            <a class="ghost-button" href="/forms/new?source={{ node.form.slug }}">Copy</a>
-            <a class="ghost-button" href="/forms/move?slug={{ node.form.slug }}">Move</a>
             <a class="primary-button" href="/forms/{{ node.form.slug }}/builder">Edit</a>
+            <details class="library-card-menu">
+              <summary>More</summary>
+              <div class="library-card-menu__list">
+                <a href="/forms/new?source={{ node.form.slug }}">Copy</a>
+                <a href="/forms/move?slug={{ node.form.slug }}">Move</a>
+              </div>
+            </details>
           </div>
         </article>
       {% endif %}
@@ -86,16 +96,19 @@
         <input id="librarySearch" type="search" placeholder="Search forms">
       </label>
       {% if library_tree %}
-      <nav class="group-jump-list group-jump-list--inline library-jump-list" aria-label="Jump to top-level forms and folders">
-        {% for node in library_tree if not node.archived %}
-        {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
-        {% set jump_name = node.form.name if node.kind == 'form' and node.form else node.name %}
-        <a href="#{{ node_anchor }}" class="group-jump-link library-jump-link" data-jump-link="{{ node.id }}">
-          <span>{{ jump_name }}</span>
-          <small class="tree-link-kind">{{ 'Form' if node.kind == 'form' else 'Folder' }}</small>
-        </a>
-        {% endfor %}
-      </nav>
+      <details class="library-quick-jump">
+        <summary>Jump to top level</summary>
+        <nav class="group-jump-list group-jump-list--inline library-jump-list" aria-label="Jump to top-level forms and folders">
+          {% for node in library_tree if not node.archived %}
+          {% set node_anchor = 'node-' ~ (node.id | replace(':', '-')) %}
+          {% set jump_name = node.form.name if node.kind == 'form' and node.form else node.name %}
+          <a href="#{{ node_anchor }}" class="group-jump-link library-jump-link" data-jump-link="{{ node.id }}">
+            <span>{{ jump_name }}</span>
+            <small class="tree-link-kind">{{ 'Form' if node.kind == 'form' else 'Folder' }}</small>
+          </a>
+          {% endfor %}
+        </nav>
+      </details>
       {% endif %}
     </section>
 

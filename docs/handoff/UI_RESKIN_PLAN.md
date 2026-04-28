@@ -54,11 +54,14 @@ The current live direction is:
 - keep the thin global header
 - keep the hidden drawer
 - keep page-local headers
+- keep list-heavy pages bounded, but do not force nested scroll containers onto detail/edit pages
 - shift page composition toward:
   - lighter page headers
   - compact toolbars
   - open sections
   - object cards only where they carry real content
+- make module-local navigation clearer when it carries real workflow weight:
+  - `Records > Work / History` should read like real local navigation, not like weak filter pills
 - reduce copy density:
   - hub pages should scan fast
   - simple actions should not need paragraph-length explanation
@@ -78,16 +81,23 @@ The current live app is split across these surface styles:
 - `app/naic_builder/static/print.css`
 
 Current reality:
-- these files still carry the older warm builder-era palette directly inside each stylesheet
-- repeated color and surface values exist across files
-- this is workable for a functional prototype, but it is not the right base for a scalable reskin
+- shared theme and shell assets are already landed now:
+  - `app/naic_builder/static/theme.css`
+  - `app/naic_builder/static/theme.js`
+  - `app/naic_builder/static/shell.css`
+  - `app/naic_builder/static/shell.js`
+- the app is no longer purely in the old warm builder-era palette, but some older surface assumptions still exist inside the feature stylesheets
+- repeated surface and spacing assumptions still exist across files even though the token layer is now shared
+- the reskin is materially live already; current work is refinement and composition cleanup, not the initial light/dark plumbing anymore
 
 ## Recommended Technical Direction
 The reskin should start by introducing a shared theme layer instead of repainting every stylesheet independently.
 
-Recommended new shared assets:
+Shared assets that now exist:
 - `app/naic_builder/static/theme.css`
 - `app/naic_builder/static/theme.js`
+- `app/naic_builder/static/shell.css`
+- `app/naic_builder/static/shell.js`
 
 ### `theme.css`
 Should define the global design tokens for both light and dark mode:

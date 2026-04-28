@@ -187,13 +187,32 @@ input:focus {
 
 .library-utility-bar {
   display: grid;
-  gap: 12px;
+  gap: 10px;
   align-items: start;
 }
 
 .search-wrap--library {
   min-width: 0;
   max-width: 420px;
+}
+
+.library-quick-jump {
+  display: grid;
+  gap: 10px;
+}
+
+.library-quick-jump summary {
+  cursor: pointer;
+  list-style: none;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.library-quick-jump summary::-webkit-details-marker {
+  display: none;
 }
 
 .library-jump-list {
@@ -371,12 +390,67 @@ input:focus {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 12px;
 }
 
 .tree-folder-actions .ghost-button {
   min-height: 36px;
   padding: 7px 12px;
+}
+
+.library-card-menu {
+  position: relative;
+}
+
+.library-card-menu summary {
+  list-style: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(68, 54, 40, 0.12);
+  background: transparent;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.library-card-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.library-card-menu__list {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 3;
+  min-width: 164px;
+  display: grid;
+  gap: 4px;
+  padding: 8px;
+  border: 1px solid rgba(68, 54, 40, 0.12);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--panel-strong) 96%, transparent);
+  box-shadow: var(--shadow-soft);
+}
+
+.library-card-menu__list a {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.library-card-menu__list a:hover {
+  background: color-mix(in srgb, var(--accent-soft) 64%, transparent);
 }
 
 .tree-children {
@@ -457,7 +531,9 @@ html[data-theme="dark"] .group-jump-link,
 html[data-theme="dark"] .form-card,
 html[data-theme="dark"] .tree-form-card,
 html[data-theme="dark"] .tree-folder,
-html[data-theme="dark"] .tree-folder-nested {
+html[data-theme="dark"] .tree-folder-nested,
+html[data-theme="dark"] .library-card-menu summary,
+html[data-theme="dark"] .library-card-menu__list {
   border-color: rgba(223, 240, 245, 0.06);
 }
 
@@ -479,6 +555,21 @@ html[data-theme="dark"] .tree-folder-nested {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.014)),
     radial-gradient(circle at top right, rgba(195, 160, 108, 0.06), transparent 42%);
+}
+
+html[data-theme="dark"] .library-card-menu summary,
+html[data-theme="dark"] .library-quick-jump summary,
+html[data-theme="dark"] .library-card-menu__list a {
+  color: var(--shell-text);
+}
+
+html[data-theme="dark"] .library-card-menu__list {
+  background:
+    linear-gradient(180deg, rgba(16, 29, 35, 0.96), rgba(16, 29, 35, 0.92));
+}
+
+html[data-theme="dark"] .library-card-menu__list a:hover {
+  background: rgba(99, 188, 205, 0.1);
 }
 
 html[data-theme="dark"] .tree-folder-summary::after {
