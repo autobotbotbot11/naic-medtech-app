@@ -1,0 +1,35 @@
+{% macro render_record_card(record, from_history=false) -%}
+{% set activity_user = record.updated_by or record.created_by %}
+{% set view_href = '/records/' ~ record.id %}
+{% set edit_href = '/records/' ~ record.id ~ '/edit' %}
+{% if from_history %}
+  {% set view_href = view_href ~ '?from=history' %}
+  {% set edit_href = edit_href ~ '?from=history' %}
+{% endif %}
+<article class="record-card">
+  <div class="record-card-copy">
+    <div class="record-card-meta-line">
+      <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
+      <p class="form-card-meta">{{ record.form_name }}</p>
+    </div>
+    <h3>{{ record.patient_name or "Unnamed patient" }}</h3>
+    <p class="panel-copy">{{ record.form_path_label }}</p>
+    <p class="panel-copy">Case: {{ record.case_number or "Not set yet" }}</p>
+    <p class="record-activity-copy">
+      {{ "Completed" if record.completed_at_label else "Updated" }} {{ record.completed_at_label or record.updated_at_label }}
+      {% if activity_user %}
+        - {{ activity_user.full_name }}
+      {% endif %}
+    </p>
+  </div>
+  <div class="record-card-actions">
+    {% if record.status == "draft" %}
+    <a class="primary-button" href="{{ edit_href }}">Open draft</a>
+    <a class="ghost-button" href="{{ view_href }}">View</a>
+    {% else %}
+    <a class="primary-button" href="{{ view_href }}">View record</a>
+    <a class="ghost-button" href="/records/{{ record.id }}/print" target="_blank" rel="noopener">Print</a>
+    {% endif %}
+  </div>
+</article>
+{%- endmacro %}

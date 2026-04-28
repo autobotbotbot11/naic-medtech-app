@@ -218,7 +218,7 @@ Current live UI checkpoint:
   - another follow-up pass also pushed dark-mode typography and button styling closer to the locked darker sample, so the records experience is no longer relying on the old font/button feel
   - a live browser-audited records follow-up then pushed actual structure too:
     - `/records` now groups top-shell utility actions more intentionally and gives search a more authored workspace shape
-    - `/records/new` now uses a split start layout with a workflow side card instead of one plain scaffold form block
+    - the record-start flow now lives more directly in the records hub instead of depending on a full separate ceremony page
   - light mode should not be the current judging baseline until the darker luxe direction is considered strong enough
   - a broader live pass has now started on the other non-print surfaces too:
     - `library.css`, `auth.css`, and `new-form.css` were pushed into the same luxe family
@@ -292,9 +292,12 @@ What exists now:
   - successful password changes now redirect straight back to `Records` with a quiet success banner
 - visible role gating is now active for `Admin` and `Medtech`
 - clinic profile data and logo upload/remove now exist as the base for future branded output work
-- `/records` is now the calm daily landing screen
-- `/records` now has a first usable history layer too: medtech can search by patient, case number, form name, or record key and filter between draft and completed records on the same screen
-- `/records/new` starts a draft from a chosen form
+- the records module is now split more cleanly by intent:
+  - `/records` is the `Work` view for drafts and active entry
+  - `/records/history` is the `History` view for completed lookup and search
+  - `New record` is now modal-first from those views instead of staying as a separate ceremony page
+  - choosing a form creates the draft immediately and redirects straight to `/records/{id}/edit`
+  - `/records/new` now stays only as the fallback deep-link picker page
 - `/records/{id}/edit` now supports the first basic record-entry flow
 - `/records/{id}` now shows a read-only record view
 - records now surface quiet accountability metadata too:
@@ -315,7 +318,7 @@ What exists now:
   - if details are still missing, the panel lists what still blocks `Complete`
   - if the draft is ready, the same panel flips into a calm ready-to-complete state
 - record forms are safer now too:
-  - `new` and `edit` now show a quiet dirty-state label instead of leaving save state implicit
+  - `edit` now shows a quiet dirty-state label instead of leaving save state implicit
   - browser leave protection now warns before a medtech accidentally navigates away with unsaved record changes
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
 - the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
@@ -392,7 +395,7 @@ The first real screen from the newer builder direction now exists.
 
 What is implemented:
 - `/` now redirects to `/records`
-- `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first small-clinic records runtime
+- `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first small-clinic records runtime
 - records are now stored separately from form design and point to a frozen `form_version_id`
 - the first records API surface now exists:
   - `/api/records/bootstrap`

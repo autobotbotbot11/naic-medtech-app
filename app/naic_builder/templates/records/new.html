@@ -9,100 +9,76 @@
 {% endblock %}
 
 {% block shell_eyebrow %}Records{% endblock %}
-{% block shell_title %}Start a new record{% endblock %}
+{% block shell_title %}Records{% endblock %}
 {% block shell_description %}{% endblock %}
 
 {% block page_header_nav %}
-  <a class="page-back-link" href="/records">Back to records</a>
-{% endblock %}
-
-{% block topbar_actions %}
+  <a class="page-back-link" href="/records">Back to work</a>
 {% endblock %}
 
 {% block content %}
-  <div class="library-shell record-shell">
-    <section class="record-start-layout">
-      <section class="panel records-main">
+  <div class="library-shell record-shell records-fallback">
+    <section class="app-section records-fallback-section">
+      <div class="app-section__head">
+        <div class="app-section__copy">
+          <p class="eyebrow">New record</p>
+          <h2>Choose a form</h2>
+        </div>
+      </div>
+
       {% if error_message %}
       <div class="error-banner">{{ error_message }}</div>
       {% endif %}
 
-      <form method="post" action="/records/new" class="record-entry-form" data-dirty-guard>
-        <div class="entry-block-head">
-          <p class="eyebrow">Start</p>
-          <h2>Choose the form and basic details</h2>
-          <p class="entry-inline-hint">Name and case number are required before completion.</p>
-        </div>
-        <div class="record-basics-grid">
-          <label class="entry-field">
-            <span>Form</span>
-            <select name="form_slug" required>
-              <option value="">Choose a form</option>
-              {% for form in form_choices %}
-              <option value="{{ form.slug }}" {% if form.slug == selected_form_slug %}selected{% endif %}>
-                {{ form.form_path_label }}
-              </option>
-              {% endfor %}
-            </select>
-          </label>
+      <div class="records-fallback-stack">
+        {% if quick_form_choices %}
+        <section class="records-start-cluster">
+          <div class="records-start-cluster__head">
+            <p class="eyebrow">Recent forms</p>
+            <h3>Start faster</h3>
+          </div>
+          <div class="records-start-grid">
+            {% for form in quick_form_choices %}
+            <form method="post" action="/records/new" class="record-inline-form">
+              <input type="hidden" name="form_slug" value="{{ form.slug }}">
+              <input type="hidden" name="return_to" value="new">
+              <button class="record-quick-start-card" type="submit">
+                <span class="record-quick-start-card__eyebrow">Recent</span>
+                <strong>{{ form.name }}</strong>
+                <span>{{ form.location_path_label }}</span>
+              </button>
+            </form>
+            {% endfor %}
+          </div>
+        </section>
+        {% endif %}
 
-          <label class="entry-field">
-            <span>Patient name</span>
-            <input type="text" name="patient_name" value="{{ patient_name }}" placeholder="Optional for now">
-          </label>
+        <section class="records-start-cluster">
+          <div class="records-start-cluster__head">
+            <p class="eyebrow">All forms</p>
+            <h3>Choose from the library</h3>
+          </div>
 
-          <label class="entry-field">
-            <span>Age</span>
-            <input type="text" name="patient_age" value="{{ patient_age }}" placeholder="Optional">
-          </label>
-
-          <label class="entry-field">
-            <span>Sex</span>
-            <select name="patient_sex">
-              <option value=""></option>
-              {% if patient_sex and patient_sex not in ['Male', 'Female', 'Other'] %}
-              <option value="{{ patient_sex }}" selected>{{ patient_sex }}</option>
-              {% endif %}
-              <option value="Male" {% if patient_sex == 'Male' %}selected{% endif %}>Male</option>
-              <option value="Female" {% if patient_sex == 'Female' %}selected{% endif %}>Female</option>
-              <option value="Other" {% if patient_sex == 'Other' %}selected{% endif %}>Other</option>
-            </select>
-          </label>
-
-          <label class="entry-field">
-            <span>Case number</span>
-            <input type="text" name="case_number" value="{{ case_number }}" placeholder="Optional for now">
-          </label>
-        </div>
-
-        <div class="entry-actions">
-          <p class="entry-save-state" data-dirty-state>All changes saved.</p>
-          <a class="ghost-button" href="/records">Cancel</a>
-          <button class="primary-button" type="submit">Create draft</button>
-        </div>
-      </form>
-      </section>
-
-      <aside class="panel record-start-side">
-        <div class="entry-block-head">
-          <p class="eyebrow">Draft workflow</p>
-          <h2>Calm first step</h2>
-        </div>
-        <div class="record-start-metrics">
-          <article class="record-start-metric">
-            <p class="eyebrow">Active forms</p>
-            <strong>{{ form_choices|length }}</strong>
-          </article>
-          <article class="record-start-metric">
-            <p class="eyebrow">Before complete</p>
-            <strong>Name + case number</strong>
-          </article>
-        </div>
-      </aside>
+          <form method="post" action="/records/new" class="records-start-select-form records-start-select-form--page">
+            <input type="hidden" name="return_to" value="new">
+            <label class="records-search-input">
+              <span>Form</span>
+              <select name="form_slug" required>
+                <option value="">Choose a form</option>
+                {% for form in form_choices %}
+                <option value="{{ form.slug }}" {% if form.slug == selected_form_slug %}selected{% endif %}>
+                  {{ form.form_path_label }}
+                </option>
+                {% endfor %}
+              </select>
+            </label>
+            <div class="records-fallback-actions">
+              <a class="ghost-button" href="/records">Cancel</a>
+              <button class="primary-button" type="submit">Continue</button>
+            </div>
+          </form>
+        </section>
+      </div>
     </section>
   </div>
-{% endblock %}
-
-{% block page_scripts %}
-  <script src="{{ url_for('static', path='records.js') }}" defer></script>
 {% endblock %}

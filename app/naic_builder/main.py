@@ -3,7 +3,7 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
-from urllib.parse import parse_qs
+from urllib.parse import parse_qs, urlencode
 
 from fastapi import Depends, FastAPI, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
@@ -354,57 +354,83 @@ def render_new_user_page(
     )
 
 
-def render_records_home_page(
+def build_record_start_context(
+    session: Session,
+    *,
+    form_choices: list[dict[str, Any]] | None = None,
+    recent_drafts: list[dict[str, Any]] | None = None,
+    recent_completed: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    resolved_form_choices = form_choices if form_choices is not None else list_form_choices(session)
+    resolved_recent_drafts = recent_drafts if recent_drafts is not None else list_records(session, status="draft", limit=8)
+    resolved_recent_completed = (
+        recent_completed if recent_completed is not None else list_records(session, status="completed", limit=8)
+    )
+
+    quick_form_choices: list[dict[str, Any]] = []
+    seen_quick_slugs: set[str] = set()
+    for record in [*resolved_recent_drafts, *resolved_recent_completed]:
+        form_slug = str(record.get("form_slug") or "").strip()
+        if not form_slug or form_slug in seen_quick_slugs:
+            continue
+        matching_choice = next((choice for choice in resolved_form_choices if choice["slug"] == form_slug), None)
+        if matching_choice is None:
+            continue
+        quick_form_choices.append(matching_choice)
+        seen_quick_slugs.add(form_slug)
+        if len(quick_form_choices) >= 6:
+            break
+
+    if len(quick_form_choices) < 6:
+        for choice in resolved_form_choices:
+            if choice["slug"] in seen_quick_slugs:
+                continue
+            quick_form_choices.append(choice)
+            seen_quick_slugs.add(choice["slug"])
+            if len(quick_form_choices) >= 6:
+                break
+
+    return {
+        "form_choices": resolved_form_choices,
+        "quick_form_choices": quick_form_choices,
+        "recent_drafts": resolved_recent_drafts,
+        "recent_completed": resolved_recent_completed,
+    }
+
+
+def render_records_work_page(
     request: Request,
     session: Session,
     *,
-    search_query: str = "",
-    status_filter: str = "",
     success_message: str = "",
+    record_start_open: bool = False,
+    record_start_error: str = "",
+    record_start_selected_slug: str = "",
+    status_code: int = 200,
 ) -> HTMLResponse:
-    active_status = (status_filter or "").strip().lower()
-    if active_status not in {"", "draft", "completed"}:
-        active_status = ""
-    query_text = (search_query or "").strip()
-    has_filters = bool(query_text or active_status)
-    matching_records = (
-        list_records(
-            session,
-            status=active_status or None,
-            search=query_text or None,
-            limit=40,
-        )
-        if has_filters
-        else []
-    )
-    matching_total_count = (
-        count_records(
-            session,
-            status=active_status or None,
-            search=query_text or None,
-        )
-        if has_filters
-        else 0
+    recent_drafts = list_records(session, status="draft", limit=8)
+    recent_completed = list_records(session, status="completed", limit=8)
+    record_start_context = build_record_start_context(
+        session,
+        recent_drafts=recent_drafts,
+        recent_completed=recent_completed,
     )
     return templates.TemplateResponse(
         request=request,
         name="records/home.html",
         context={
             "app_title": APP_TITLE,
-            "form_choices": list_form_choices(session),
+            **record_start_context,
+            "records_mode": "work",
             "success_message": success_message,
-            "search_query": query_text,
-            "status_filter": active_status,
-            "has_filters": has_filters,
-            "matching_records": matching_records,
-            "matching_count": matching_total_count,
-            "matching_shown_count": len(matching_records),
-            "matching_truncated": matching_total_count > len(matching_records),
+            "record_start_open": record_start_open,
+            "record_start_error": record_start_error,
+            "record_start_selected_slug": record_start_selected_slug,
             "draft_count": count_records(session, status="draft"),
             "completed_count": count_records(session, status="completed"),
-            "recent_drafts": list_records(session, status="draft", limit=8),
-            "recent_completed": list_records(session, status="completed", limit=8),
+            "recent_drafts": recent_drafts,
         },
+        status_code=status_code,
     )
 
 
@@ -413,25 +439,66 @@ def render_new_record_page(
     session: Session,
     *,
     selected_form_slug: str = "",
-    patient_name: str = "",
-    patient_age: str = "",
-    patient_sex: str = "",
-    case_number: str = "",
     error_message: str = "",
     status_code: int = 200,
 ) -> HTMLResponse:
+    record_start_context = build_record_start_context(session)
     return templates.TemplateResponse(
         request=request,
         name="records/new.html",
         context={
             "app_title": APP_TITLE,
-            "form_choices": list_form_choices(session),
+            **record_start_context,
             "selected_form_slug": selected_form_slug,
-            "patient_name": patient_name,
-            "patient_age": patient_age,
-            "patient_sex": patient_sex,
-            "case_number": case_number,
             "error_message": error_message,
+        },
+        status_code=status_code,
+    )
+
+
+def render_records_history_page(
+    request: Request,
+    session: Session,
+    *,
+    search_query: str = "",
+    status_filter: str = "completed",
+    record_start_open: bool = False,
+    record_start_error: str = "",
+    record_start_selected_slug: str = "",
+    status_code: int = 200,
+) -> HTMLResponse:
+    active_status = (status_filter or "completed").strip().lower()
+    if active_status not in {"completed", "all"}:
+        active_status = "completed"
+    query_text = (search_query or "").strip()
+    record_status = None if active_status == "all" else "completed"
+    matching_records = list_records(
+        session,
+        status=record_status,
+        search=query_text or None,
+        limit=40,
+    )
+    matching_total_count = count_records(
+        session,
+        status=record_status,
+        search=query_text or None,
+    )
+    record_start_context = build_record_start_context(session)
+    return templates.TemplateResponse(
+        request=request,
+        name="records/history.html",
+        context={
+            "app_title": APP_TITLE,
+            **record_start_context,
+            "records_mode": "history",
+            "search_query": query_text,
+            "status_filter": active_status,
+            "matching_records": matching_records,
+            "matching_count": matching_total_count,
+            "matching_truncated": matching_total_count > len(matching_records),
+            "record_start_open": record_start_open,
+            "record_start_error": record_start_error,
+            "record_start_selected_slug": record_start_selected_slug,
         },
         status_code=status_code,
     )
@@ -464,6 +531,7 @@ def render_record_edit_page(
             values=current_record_values(record),
         )
 
+    back_to_history = request.query_params.get("from") == "history"
     return templates.TemplateResponse(
         request=request,
         name="records/edit.html",
@@ -473,6 +541,8 @@ def render_record_edit_page(
             "error_message": error_message,
             "success_message": resolved_success_message,
             "validation_issues": resolved_validation_issues,
+            "back_href": "/records/history" if back_to_history else "/records",
+            "back_label": "Back to history" if back_to_history else "Back to records",
         },
         status_code=status_code,
     )
@@ -488,12 +558,15 @@ def render_record_view_page(
     if record is None:
         raise HTTPException(status_code=404, detail="Record not found.")
 
+    back_to_history = request.query_params.get("from") == "history"
     return templates.TemplateResponse(
         request=request,
         name="records/view.html",
         context={
             "app_title": APP_TITLE,
             "record": serialize_record(record, include_entry_schema=True),
+            "back_href": "/records/history" if back_to_history else "/records",
+            "back_label": "Back to history" if back_to_history else "Back to records",
         },
     )
 
@@ -696,11 +769,23 @@ def records_home(
     password_changed: str = "",
     session: Session = Depends(get_session),
 ) -> HTMLResponse:
-    return render_records_home_page(
+    if q or status:
+        query: dict[str, str] = {}
+        if q:
+            query["q"] = q
+        normalized_status = (status or "").strip().lower()
+        if normalized_status in {"completed", "all"}:
+            query["status"] = normalized_status
+        elif normalized_status == "draft":
+            query["status"] = "all"
+        history_url = "/records/history"
+        if query:
+            history_url = f"{history_url}?{urlencode(query)}"
+        return redirect_for_html(history_url)
+
+    return render_records_work_page(
         request,
         session,
-        search_query=q,
-        status_filter=status,
         success_message="Password updated." if password_changed == "1" else "",
     )
 
@@ -710,6 +795,21 @@ def start_new_record_page(request: Request, session: Session = Depends(get_sessi
     return render_new_record_page(request, session)
 
 
+@app.get("/records/history", response_class=HTMLResponse)
+def records_history_page(
+    request: Request,
+    q: str = "",
+    status: str = "completed",
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    return render_records_history_page(
+        request,
+        session,
+        search_query=q,
+        status_filter=status,
+    )
+
+
 @app.post("/records/new")
 async def create_record_page(
     request: Request,
@@ -717,25 +817,40 @@ async def create_record_page(
 ):
     body = (await request.body()).decode("utf-8")
     form_data = parse_qs(body, keep_blank_values=True)
+    return_to = ((form_data.get("return_to") or ["work"])[0] or "work").strip().lower()
+    return_query = ((form_data.get("return_query") or [""])[0] or "").strip()
+    return_status = ((form_data.get("return_status") or ["completed"])[0] or "completed").strip().lower()
     payload = RecordCreatePayload(
         form_slug=(form_data.get("form_slug") or [""])[0],
-        patient_name=(form_data.get("patient_name") or [""])[0],
-        patient_age=(form_data.get("patient_age") or [""])[0],
-        patient_sex=(form_data.get("patient_sex") or [""])[0],
-        case_number=(form_data.get("case_number") or [""])[0],
     )
     try:
         created = create_record(session, payload, actor_user_id=current_user_id(request))
     except ValueError as exc:
-        return render_new_record_page(
+        if return_to == "history":
+            return render_records_history_page(
+                request,
+                session,
+                search_query=return_query,
+                status_filter=return_status,
+                record_start_open=True,
+                record_start_selected_slug=payload.form_slug,
+                record_start_error=str(exc),
+                status_code=422,
+            )
+        if return_to == "new":
+            return render_new_record_page(
+                request,
+                session,
+                selected_form_slug=payload.form_slug,
+                error_message=str(exc),
+                status_code=422,
+            )
+        return render_records_work_page(
             request,
             session,
-            selected_form_slug=payload.form_slug,
-            patient_name=payload.patient_name or "",
-            patient_age=payload.patient_age or "",
-            patient_sex=payload.patient_sex or "",
-            case_number=payload.case_number or "",
-            error_message=str(exc),
+            record_start_open=True,
+            record_start_selected_slug=payload.form_slug,
+            record_start_error=str(exc),
             status_code=422,
         )
     return RedirectResponse(url=f"/records/{created['id']}/edit", status_code=303)
@@ -760,6 +875,7 @@ async def update_record_page(
     form_data = parse_qs(body, keep_blank_values=True)
     action = ((form_data.get("action") or ["draft"])[0] or "draft").strip().lower()
     payload = record_update_payload_from_form_data(form_data)
+    current_query = request.url.query
 
     try:
         if action == "complete":
@@ -770,7 +886,10 @@ async def update_record_page(
                 preserve_asset_fields=True,
                 actor_user_id=current_user_id(request),
             )
-            return RedirectResponse(url=f"/records/{completed['id']}", status_code=303)
+            redirect_url = f"/records/{completed['id']}"
+            if current_query:
+                redirect_url = f"{redirect_url}?{current_query}"
+            return RedirectResponse(url=redirect_url, status_code=303)
 
         update_record(
             session,
@@ -799,7 +918,10 @@ async def update_record_page(
             status_code=422,
         )
 
-    return RedirectResponse(url=f"/records/{record_id}/edit?saved=1", status_code=303)
+    redirect_url = f"/records/{record_id}/edit?saved=1"
+    if current_query:
+        redirect_url = f"/records/{record_id}/edit?{current_query}&saved=1"
+    return RedirectResponse(url=redirect_url, status_code=303)
 
 
 @app.post("/records/{record_id}/assets")
@@ -835,7 +957,10 @@ async def upload_record_asset_page(
             status_code=422,
         )
 
-    return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+    redirect_url = f"/records/{record_id}/edit"
+    if request.url.query:
+        redirect_url = f"{redirect_url}?{request.url.query}"
+    return RedirectResponse(url=redirect_url, status_code=303)
 
 
 @app.post("/records/{record_id}/assets/{asset_id}/remove")
@@ -857,7 +982,10 @@ def remove_record_asset_page(
             error_message=str(exc),
             status_code=422,
         )
-    return RedirectResponse(url=f"/records/{record_id}/edit", status_code=303)
+    redirect_url = f"/records/{record_id}/edit"
+    if request.url.query:
+        redirect_url = f"{redirect_url}?{request.url.query}"
+    return RedirectResponse(url=redirect_url, status_code=303)
 
 
 @app.get("/records/{record_id}/assets/{asset_id}/file")

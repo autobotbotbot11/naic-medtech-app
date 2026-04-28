@@ -73,10 +73,10 @@ The app now starts from a builder-first FastAPI scaffold.
   - the `dark mode first` push was then carried through the broader live screens:
     - darker-mode materials, glass depth, card treatment, and shell atmosphere were pushed closer to the locked `Clinical Depth Luxe Darker` sample
     - dark-mode typography and button treatment were also pushed closer to the sample, so the records flow now inherits more of the intended luxe feel instead of only darker colors
-    - a live browser-audited follow-up then pushed actual records structure too, especially on `/records` and `/records/new`:
+    - a live browser-audited follow-up then pushed actual records structure too, especially around the `Records` hub and the record-start flow:
       - the top shell actions are now grouped more intentionally instead of reading like one flat pill bar
       - the records search area now reads more like a real workspace search surface
-      - the new-record page now uses a two-column start layout with a companion workflow card instead of one plain scaffold form block
+      - the record-start flow now lives more directly in the records hub instead of staying as a full separate ceremony page
     - browser-audited cleanup also corrected the remaining dark mismatches in status chips, accent labels, `Settings > Users`, and the builder workspace panels
   - the non-record screens now also follow the same live luxe family:
     - `app/naic_builder/static/library.css`, `app/naic_builder/static/auth.css`, and `app/naic_builder/static/new-form.css` now follow the same luxe family instead of the older warm scaffold grammar
@@ -88,7 +88,7 @@ The app now starts from a builder-first FastAPI scaffold.
     - light/dark component visibility was checked again in a live browser pass across `/login`, `/records`, `/forms`, `/forms/new`, `/settings/clinic`, and `/builder`
     - this pass specifically targeted the light-mode regressions where some cards, controls, and builder surfaces were still reading like older scaffold CSS instead of the shared `Clinical Depth Luxe` system
   - the shared authenticated shell rollout itself is now landed too:
-    - `/records`, `/records/new`, `/records/{id}/edit`, `/records/{id}`
+    - `/records`, `/records/{id}/edit`, `/records/{id}`
     - `/forms`, `/forms/new`, folder create/edit/move, and form move
     - `/settings/clinic`, `/settings/users`, and `/settings/users/new`
     - `/builder` now uses the same product family through a workspace shell variant
@@ -105,7 +105,13 @@ The app now starts from a builder-first FastAPI scaffold.
       - obvious screens should not over-explain themselves
       - helper text should stay only where it prevents mistakes or clarifies non-obvious steps
       - hub pages and simple toolbars should read directly, not like walkthroughs
-- `/records`, `/records/new`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
+- `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
+- the records module is now more intent-structured too:
+  - `/records` is the `Work` view for drafts and active record entry
+  - `/records/history` is the `History` view for completed lookup and search
+  - `New record` is now modal-first from those records views instead of staying as a separate ceremony screen
+  - selecting a form now creates the draft and goes straight to `/records/{id}/edit`
+  - `/records/new` stays only as the fallback deep-link picker page
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
 - the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, image fields now support a first real upload/replace/remove flow during record entry, and `/records/{id}/print` now provides the first browser-printable result renderer
@@ -372,4 +378,4 @@ python tools/scripts/reset_builder_runtime_db.py
 ```
 
 ## Important note
-This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The records home now also has a first usable history layer: search plus draft/completed filtering live in the same calm screen instead of staying buried in API-only plumbing. Utility blocks are less fake now too: note text, divider captions, and sample tables already render in record entry, record view, and print instead of falling back to generic placeholders. The record header is more clinic-ready too: new/edit/view/print now all carry simple patient metadata like age and sex without turning the workflow into a heavy enterprise chart, and the edit flow now gives quiet draft-save feedback plus a proactive ready-or-blocked completion signal instead of staying silent until a failed submit. Record forms are safer now too: `new` and `edit` expose a calm save-state label and warn before accidental navigation away from unsaved changes. The UI direction is now also more concrete: future live app styling should follow the standalone `Clinical Depth Luxe` light mode plus the darker `Clinical Depth Luxe Darker` mode instead of inventing a new theme direction from zero. The next whole-app work should keep extending record entry, richer block rendering, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.
+This scaffold started builder-first, and the app now has a first calm `Records Runtime` foundation for a small clinic workflow. The real daily user is the medtech, while the builder should remain the quieter admin/setup tool in the background. The records module is now split more cleanly by intent too: `/records` handles draft work, `/records/history` handles completed lookup and search, and the normal new-record start path is modal-first instead of burning a separate ceremony screen. Utility blocks are less fake now too: note text, divider captions, and sample tables already render in record entry, record view, and print instead of falling back to generic placeholders. The record header is more clinic-ready too: new/edit/view/print now all carry simple patient metadata like age and sex without turning the workflow into a heavy enterprise chart, and the edit flow now gives quiet draft-save feedback plus a proactive ready-or-blocked completion signal instead of staying silent until a failed submit. Record forms are safer now too: `edit` exposes a calm save-state label and warns before accidental navigation away from unsaved changes. The UI direction is now also more concrete: future live app styling should follow the standalone `Clinical Depth Luxe` light mode plus the darker `Clinical Depth Luxe Darker` mode instead of inventing a new theme direction from zero. The next whole-app work should keep extending record entry, richer block rendering, and print output instead of drifting back into builder sprawl. Do not default to enterprise approval chains or heavy role hierarchies unless the actual clinic workflow proves they are needed.
