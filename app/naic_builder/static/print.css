@@ -628,7 +628,7 @@ body {
   padding-block: 10px;
 }
 
-@media (max-width: 760px) {
+@media screen and (max-width: 760px) {
   body {
     padding: 12px;
   }
@@ -846,6 +846,10 @@ body {
     padding: 5px 7px;
   }
 
+  .print-field-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .print-grid-cell-head strong {
     font-size: 9.5px;
   }
@@ -883,18 +887,26 @@ body {
   }
 
   .print-footer {
-    gap: 24px;
-    margin-top: 12px;
-    padding-top: 8px;
+    gap: 18px;
+    margin-top: 6px;
+    padding-top: 4px;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .print-signature {
+    gap: 3px;
   }
 
   .print-signature span {
-    min-height: 14px;
-    font-size: 10px;
+    min-height: 9px;
+    font-size: 9px;
+    line-height: 1.1;
   }
 
   .print-signature strong {
-    font-size: 8.5px;
+    font-size: 7.5px;
+    line-height: 1.1;
   }
 
   .print-density-comfortable .print-body {

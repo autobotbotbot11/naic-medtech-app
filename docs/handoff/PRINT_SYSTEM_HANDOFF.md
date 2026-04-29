@@ -18,7 +18,7 @@ Printing is a high-importance feature because this is the result document the cl
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, footer/signatory configuration, compact real-form result layout, and actual-record print smoke coverage are implemented.
+The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, footer/signatory configuration, compact real-form result layout, actual-record print smoke coverage, and repeatable browser PDF page-count QA are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -39,7 +39,8 @@ Implemented:
 - A first real-form fit audit improved the current sample set from 5 `long` forms to 0 `long` forms; remaining estimate status is 15 `likely` and 3 `tight`.
 - The remaining tight forms, OGTT, Semen, and Serology, were exported through Chromium PDF QA as one A4 page each after the generic print spacing pass.
 - A clinic-like stress pass with longer patient names, case numbers, requesting physician, medtech/pathologist names, remarks, and release fields still exported OGTT, Semen, and Serology as one A4 page each.
-- Actual `/records/{id}/print` smoke now passes for all 18 current forms by creating temporary completed records, checking the real route, and cleaning the QA records after the run.
+- Actual `/records/{id}/print` smoke now passes for all 18 current forms by creating temporary completed records and checking the real route; the QA script snapshots/restores the runtime DB by default so the smoke run does not leave QA rows behind.
+- Browser PDF QA now generates A4 PDFs from real `/records/{id}/print` pages through Playwright, checks the resulting PDF page counts, restores the runtime DB by default, and currently passes all 18 forms as one-page A4 PDFs.
 
 Code paths:
 - `app/naic_builder/static/app.js`
@@ -84,7 +85,15 @@ Code paths:
 - `tools/scripts/print_record_qa.py`
   - repeatable smoke for actual `/records/{id}/print`
   - creates temporary completed records with stress values
-  - validates the real print route and cleans up records by default
+  - validates the real print route and restores the runtime DB by default
+  - `--keep-records` intentionally skips DB restore when QA records should be inspected manually
+- `tools/scripts/print_pdf_qa.py`
+  - repeatable Chromium/Playwright PDF QA for actual `/records/{id}/print`
+  - creates temporary completed records with stress values
+  - launches a temporary local server, signs a session cookie, exports A4 PDFs, and checks page counts
+  - refreshes ignored artifacts and `report.json` under `output/print-qa/`
+  - restores the runtime DB by default unless `--keep-records` is used
+  - current `--all` run passes all 18 forms at one A4 page each
 
 ## Config Shapes
 `record_identity` lives under `block_schema.meta.record_identity`.
@@ -248,7 +257,8 @@ Phase 2F actual-record print smoke is now landed:
 - `/records/{id}/print` now receives `document.fit_estimate`.
 - The real record print toolbar shows an estimated fit badge.
 - `tools/scripts/print_record_qa.py --all` passes across all current 18 forms.
-- The script uses temporary completed records and deletes them by default.
+- The script uses temporary completed records and restores the runtime DB by default; use `--keep-records` only for manual inspection.
+- `tools/scripts/print_pdf_qa.py --all` generates real A4 PDFs through Playwright, fails when any generated PDF exceeds the configured page limit, and currently passes all 18 forms as one-page A4 PDFs.
 
 Next print QA should focus on:
 - real clinic device/browser behavior

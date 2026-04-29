@@ -50,7 +50,7 @@
       {% elif kind == "field" %}
       {% set block_value = values.get(block.id, "") %}
       {% set image_asset = asset_by_field.get(block.id) %}
-      <label class="entry-field">
+      <label class="entry-field{% if props.data_type == 'image' %} entry-field--image{% endif %}">
         <div class="entry-field-head">
           <span>{{ block.name }}</span>
           <div class="entry-field-meta">
@@ -180,7 +180,7 @@
   {% set created_by = record["created_by"] %}
   {% set updated_by = record["updated_by"] or record["created_by"] %}
 
-  <div class="library-shell record-shell">
+  <div class="library-shell record-shell record-shell--entry">
     <section class="panel record-summary-shell">
       <div class="record-summary-main">
         <div class="record-card-meta-line">
@@ -218,7 +218,7 @@
       </details>
     </section>
 
-    <section class="panel records-main">
+    <section class="panel records-main record-entry-panel">
       {% if error_message %}
       <div class="error-banner">{{ error_message }}</div>
       {% endif %}

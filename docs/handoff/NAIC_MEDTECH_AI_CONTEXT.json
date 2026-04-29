@@ -428,7 +428,8 @@
       "first automated real-form fit audit after compact grid: 15 likely, 3 tight, 0 long across the current 18-form sample set",
       "Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass",
       "clinic-like stress PDF QA confirmed OGTT, Semen, and Serology still export as one A4 page with longer patient names, case numbers, requesting physician, medtech/pathologist names, remarks, and release fields",
-      "actual /records/{id}/print smoke now passes across all current 18 forms using temporary completed records that are cleaned up by default",
+      "actual /records/{id}/print smoke now passes across all current 18 forms using temporary completed records; the QA script snapshots/restores the runtime DB by default",
+      "browser PDF QA now exists at tools/scripts/print_pdf_qa.py and checks real Playwright-generated A4 PDF page counts while restoring the runtime DB by default; current --all run passes all 18 forms as one-page A4 PDFs",
       "real record print pages now receive document.fit_estimate and show the estimated fit badge in the toolbar",
       "/records/{id}/print applies print_config",
       "existing Semen sample verified as one A4 portrait page"

@@ -3,6 +3,17 @@
   gap: 22px;
 }
 
+.record-shell--entry {
+  width: min(880px, 100%);
+  margin-inline: auto;
+  gap: 14px;
+}
+
+.app-canvas > .record-shell.record-shell--entry {
+  width: min(880px, 100%);
+  margin-inline: auto;
+}
+
 .record-shell .library-topbar {
   padding: 24px 26px;
 }
@@ -861,7 +872,7 @@
 
 .record-entry-form {
   display: grid;
-  gap: 18px;
+  gap: 14px;
 }
 
 .record-entry-form > .entry-block-head {
@@ -873,6 +884,14 @@
 .entry-stack,
 .record-value-grid {
   display: grid;
+  gap: 14px;
+}
+
+.record-shell--entry .entry-stack {
+  gap: 10px;
+}
+
+.record-shell--entry .record-entry-form > .entry-stack {
   gap: 14px;
 }
 
@@ -892,13 +911,24 @@
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
+.record-shell--entry .entry-field {
+  gap: 6px;
+  padding: 10px 11px;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 82%, transparent), color-mix(in srgb, var(--panel) 78%, transparent));
+  box-shadow: none;
+}
+
 .entry-field > span,
+.entry-field-head > span,
 .entry-block-head h3,
 .entry-block-head h4 {
   font-weight: 700;
 }
 
-.entry-field > span {
+.entry-field > span,
+.entry-field-head > span {
   color: color-mix(in srgb, var(--muted) 84%, var(--text) 16%);
   font-size: 11px;
   font-weight: 800;
@@ -911,6 +941,11 @@
   justify-content: space-between;
   gap: 12px;
   align-items: start;
+}
+
+.record-shell--entry .entry-field-head {
+  gap: 8px;
+  align-items: center;
 }
 
 .entry-field-meta {
@@ -935,6 +970,23 @@
 .entry-field select,
 .entry-field textarea {
   margin-top: 2px;
+}
+
+.record-shell--entry .entry-field input,
+.record-shell--entry .entry-field select,
+.record-shell--entry .entry-field textarea {
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+.record-shell--entry .entry-field input[type="text"],
+.record-shell--entry .entry-field input[type="number"],
+.record-shell--entry .entry-field input[type="date"],
+.record-shell--entry .entry-field input[type="time"],
+.record-shell--entry .entry-field input[type="datetime-local"],
+.record-shell--entry .entry-field select,
+.record-shell--entry .entry-field textarea {
+  margin-top: 0;
 }
 
 .entry-chip {
@@ -963,6 +1015,11 @@
   line-height: 1.5;
 }
 
+.record-shell--entry .entry-inline-hint {
+  font-size: 11px;
+  line-height: 1.35;
+}
+
 .entry-block-head {
   gap: 5px;
 }
@@ -989,6 +1046,69 @@
   box-shadow: var(--shadow-soft);
 }
 
+.record-shell--entry .record-summary-shell,
+.record-shell--entry .record-entry-panel {
+  border-radius: var(--radius-xl);
+}
+
+.record-shell--entry .record-summary-shell {
+  padding: 14px 16px;
+}
+
+.record-shell--entry .record-summary-main {
+  gap: 5px;
+}
+
+.record-shell--entry .record-summary-main h2 {
+  font-size: clamp(1.65rem, 3vw, 2.35rem);
+  line-height: 0.98;
+}
+
+.record-shell--entry .record-summary-pills {
+  gap: 7px;
+}
+
+.record-shell--entry .record-meta-pill {
+  min-height: 30px;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.record-shell--entry .record-entry-panel {
+  padding: 16px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 84%, transparent), color-mix(in srgb, var(--panel) 78%, transparent));
+}
+
+.record-shell--entry .record-section,
+.record-shell--entry .entry-group {
+  gap: 10px;
+  padding: 13px;
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+.record-shell--entry .record-section > .entry-stack,
+.record-shell--entry .entry-group > .entry-stack {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+}
+
+.record-shell--entry .record-section > .entry-stack > .record-section,
+.record-shell--entry .record-section > .entry-stack > .entry-group,
+.record-shell--entry .record-section > .entry-stack > .entry-note,
+.record-shell--entry .record-section > .entry-stack > .entry-divider-block,
+.record-shell--entry .record-section > .entry-stack > .entry-table-block,
+.record-shell--entry .record-section > .entry-stack > .entry-field--image,
+.record-shell--entry .entry-group > .entry-stack > .record-section,
+.record-shell--entry .entry-group > .entry-stack > .entry-group,
+.record-shell--entry .entry-group > .entry-stack > .entry-note,
+.record-shell--entry .entry-group > .entry-stack > .entry-divider-block,
+.record-shell--entry .entry-group > .entry-stack > .entry-table-block,
+.record-shell--entry .entry-group > .entry-stack > .entry-field--image {
+  grid-column: 1 / -1;
+}
+
 .entry-group {
   display: grid;
   gap: 12px;
@@ -997,6 +1117,20 @@
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 76%, transparent), color-mix(in srgb, var(--surface-elevated) 72%, transparent)),
     radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 6%, transparent), transparent 46%);
+}
+
+.record-shell--entry .entry-block-head {
+  gap: 3px;
+}
+
+.record-shell--entry .entry-block-head .eyebrow {
+  font-size: 10px;
+}
+
+.record-shell--entry .entry-block-head h3,
+.record-shell--entry .entry-block-head h4 {
+  font-size: 1.02rem;
+  line-height: 1.15;
 }
 
 .entry-note {
@@ -1157,6 +1291,10 @@
   align-items: center;
   justify-content: flex-end;
   padding-top: 2px;
+}
+
+.record-shell--entry .entry-actions {
+  padding-top: 4px;
 }
 
 .entry-save-state {
@@ -1653,5 +1791,18 @@ html[data-theme="dark"] .completion-checklist.is-ready {
 
   .record-summary-card h3 {
     font-size: 2.4rem;
+  }
+
+  .record-shell--entry {
+    width: 100%;
+  }
+
+  .record-shell--entry .record-section > .entry-stack,
+  .record-shell--entry .entry-group > .entry-stack {
+    grid-template-columns: 1fr;
+  }
+
+  .record-shell--entry .entry-actions {
+    padding-top: 2px;
   }
 }

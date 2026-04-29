@@ -319,7 +319,8 @@ Current implementation checkpoint:
 - compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid, reducing current long-form estimates to 0 long forms in the automated audit
 - Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass
 - clinic-like stress PDF QA confirmed those same tight forms still export as one A4 page with longer names/remarks/signatory-style values
-- actual `/records/{id}/print` smoke now passes across all current forms using temporary completed records, and real record print pages now show the estimated fit badge too
+- actual `/records/{id}/print` smoke now passes across all current forms using temporary completed records; the QA script snapshots/restores the runtime DB by default, and real record print pages now show the estimated fit badge too
+- browser PDF QA now exists at `tools/scripts/print_pdf_qa.py`; it creates temporary completed records, launches a temporary local server, exports A4 PDFs through Playwright, checks page counts, refreshes artifacts under `output/print-qa/`, restores the runtime DB by default, and currently passes all 18 forms as one-page A4 PDFs
 - `/records/{id}/print` now reads form-version print config
 - the existing Semen sample was verified as a one-page A4 portrait export
 
