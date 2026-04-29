@@ -52,7 +52,7 @@
       {% elif kind == "field" %}
       {% set block_value = values.get(block.id) %}
       {% set image_asset = asset_by_field.get(block.id) %}
-      <article class="record-value-row">
+      <article class="record-value-row{% if props.data_type == 'image' %} record-value-row--image{% endif %}">
         <div class="entry-field-head">
           <span>{{ block.name }}</span>
           {% if props.unit_hint %}
@@ -129,7 +129,7 @@
   {% set created_by = record["created_by"] %}
   {% set updated_by = record["updated_by"] or record["created_by"] %}
 
-  <div class="library-shell record-shell">
+  <div class="library-shell record-shell record-shell--entry record-shell--view">
     <section class="panel record-summary-shell">
       <div class="record-summary-main">
         <div class="record-card-meta-line">

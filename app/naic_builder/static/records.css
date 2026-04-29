@@ -1094,6 +1094,12 @@
   align-items: start;
 }
 
+.record-shell--view .record-value-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 10px;
+}
+
 .record-shell--entry .record-section > .entry-stack > .record-section,
 .record-shell--entry .record-section > .entry-stack > .entry-group,
 .record-shell--entry .record-section > .entry-stack > .entry-note,
@@ -1106,6 +1112,15 @@
 .record-shell--entry .entry-group > .entry-stack > .entry-divider-block,
 .record-shell--entry .entry-group > .entry-stack > .entry-table-block,
 .record-shell--entry .entry-group > .entry-stack > .entry-field--image {
+  grid-column: 1 / -1;
+}
+
+.record-shell--view .record-value-grid > .record-section,
+.record-shell--view .record-value-grid > .entry-group,
+.record-shell--view .record-value-grid > .entry-note,
+.record-shell--view .record-value-grid > .entry-divider-block,
+.record-shell--view .record-value-grid > .entry-table-block,
+.record-shell--view .record-value-grid > .record-value-row--image {
   grid-column: 1 / -1;
 }
 
@@ -1365,6 +1380,21 @@
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 82%, transparent), color-mix(in srgb, var(--panel) 78%, transparent)),
     radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 6%, transparent), transparent 38%);
+}
+
+.record-shell--view .record-values-panel {
+  padding: 16px;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 84%, transparent), color-mix(in srgb, var(--panel) 78%, transparent));
+}
+
+.record-shell--view .record-value-row {
+  gap: 6px;
+  padding: 10px 11px;
+  border-radius: var(--radius-lg);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 82%, transparent), color-mix(in srgb, var(--panel) 78%, transparent));
+  box-shadow: none;
 }
 
 .record-value-answer {
@@ -1798,7 +1828,8 @@ html[data-theme="dark"] .completion-checklist.is-ready {
   }
 
   .record-shell--entry .record-section > .entry-stack,
-  .record-shell--entry .entry-group > .entry-stack {
+  .record-shell--entry .entry-group > .entry-stack,
+  .record-shell--view .record-value-grid {
     grid-template-columns: 1fr;
   }
 
