@@ -319,6 +319,7 @@ Current implementation checkpoint:
 - compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid, reducing current long-form estimates to 0 long forms in the automated audit
 - Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass
 - clinic-like stress PDF QA confirmed those same tight forms still export as one A4 page with longer names/remarks/signatory-style values
+- actual `/records/{id}/print` smoke now passes across all current forms using temporary completed records, and real record print pages now show the estimated fit badge too
 - `/records/{id}/print` now reads form-version print config
 - the existing Semen sample was verified as a one-page A4 portrait export
 

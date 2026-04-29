@@ -18,7 +18,7 @@ Printing is a high-importance feature because this is the result document the cl
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, footer/signatory configuration, and compact real-form result layout are implemented.
+The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, footer/signatory configuration, compact real-form result layout, and actual-record print smoke coverage are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -39,6 +39,7 @@ Implemented:
 - A first real-form fit audit improved the current sample set from 5 `long` forms to 0 `long` forms; remaining estimate status is 15 `likely` and 3 `tight`.
 - The remaining tight forms, OGTT, Semen, and Serology, were exported through Chromium PDF QA as one A4 page each after the generic print spacing pass.
 - A clinic-like stress pass with longer patient names, case numbers, requesting physician, medtech/pathologist names, remarks, and release fields still exported OGTT, Semen, and Serology as one A4 page each.
+- Actual `/records/{id}/print` smoke now passes for all 18 current forms by creating temporary completed records, checking the real route, and cleaning the QA records after the run.
 
 Code paths:
 - `app/naic_builder/static/app.js`
@@ -70,6 +71,7 @@ Code paths:
   - dynamic signatory footer rendering
 - `app/naic_builder/templates/records/print.html`
   - applies `document.print_config`
+  - shows the same estimated fit badge used by builder preview
   - renders configurable summary items
   - supports show/hide clinic logo, clinic info, status, and signatures
 - `app/naic_builder/templates/forms/print_preview.html`
@@ -79,6 +81,10 @@ Code paths:
   - print density handling
   - no-logo clinic header handling
   - builder-preview fit badge styling
+- `tools/scripts/print_record_qa.py`
+  - repeatable smoke for actual `/records/{id}/print`
+  - creates temporary completed records with stress values
+  - validates the real print route and cleans up records by default
 
 ## Config Shapes
 `record_identity` lives under `block_schema.meta.record_identity`.
@@ -237,6 +243,12 @@ Phase 2E browser/PDF QA is now landed:
 - Text-presence checks confirmed expected key sections/signatories were still present.
 - Clinic-like stress PDF export confirmed those same forms still fit one A4 page with longer names and remarks.
 - A generic print spacing pass landed: tighter print page margins, compact section headers, no repeated `Section` eyebrow in print mode, tighter meta/body/footer spacing.
+
+Phase 2F actual-record print smoke is now landed:
+- `/records/{id}/print` now receives `document.fit_estimate`.
+- The real record print toolbar shows an estimated fit badge.
+- `tools/scripts/print_record_qa.py --all` passes across all current 18 forms.
+- The script uses temporary completed records and deletes them by default.
 
 Next print QA should focus on:
 - real clinic device/browser behavior

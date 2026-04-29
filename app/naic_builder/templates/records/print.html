@@ -10,12 +10,17 @@
 <body class="print-density-{{ document.print_config.density }}" style="--accent: {{ document.print_config.accent_color }}">
   {% from "records/_print_document.html" import render_print_page %}
   {% set record_meta = document["record"] or {} %}
+  {% set fit = document.fit_estimate or {} %}
 
   <main class="print-shell">
     <div class="print-toolbar">
       <div class="print-toolbar-copy">
         <p class="print-eyebrow">Print preview</p>
-        <p>{{ document.form_name }}</p>
+        <p>{{ document.form_name }} · {{ document.record_key }}</p>
+      </div>
+      <div class="print-fit-badge" data-fit="{{ fit.status or 'likely' }}">
+        <strong>{{ fit.label or "Estimated fit" }}</strong>
+        <span>{{ fit.detail or "Use browser print preview for final confirmation." }}</span>
       </div>
       <div class="print-toolbar-actions">
         <a class="print-link" href="/records/{{ record_meta['id'] }}">Back</a>

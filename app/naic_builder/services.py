@@ -2780,7 +2780,7 @@ def build_record_print_document(
     )
     prepared_by_name = compact_text(updated_by.get("full_name")) or ""
 
-    return {
+    document = {
         "record": serialized,
         "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
         "print_config": print_config,
@@ -2823,6 +2823,8 @@ def build_record_print_document(
             print_config=print_config,
         ),
     }
+    document["fit_estimate"] = estimate_print_page_fit(document)
+    return document
 
 
 def serialize_record(
