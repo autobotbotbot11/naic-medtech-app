@@ -18,7 +18,7 @@ Printing is a high-importance feature because this is the result document the cl
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, and footer/signatory configuration are implemented.
+The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, footer/signatory configuration, and compact real-form result layout are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -35,6 +35,8 @@ Implemented:
 - The builder print preview shows an estimated one-page fit signal: likely, tight, or long.
 - Controlled result-body options now exist for hiding empty fields, section headings, group headings, image size, and table density.
 - Footer/signatory configuration now supports per-side role labels plus blank, prepared-by, manual-name, or field-sourced signature names.
+- Compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid when useful.
+- A first real-form fit audit improved the current sample set from 5 `long` forms to 0 `long` forms; remaining estimate status is 15 `likely` and 3 `tight`.
 - The existing Semen sample was verified to export as one A4 portrait page.
 
 Code paths:
@@ -44,6 +46,7 @@ Code paths:
   - print config helpers
   - summary row editor
   - result-body controls
+  - result-layout control
   - signatory label/source controls
   - embedded builder print preview iframe and refresh flow
   - required-field toggle handling
@@ -58,6 +61,7 @@ Code paths:
   - `build_record_print_document`
   - `build_form_print_preview_document`
   - controlled print body rendering through `build_print_items`
+  - compact field-run grouping for print output
   - sample-data generation and estimated page-fit scoring
   - required-field completion validation
 - `app/naic_builder/templates/records/_print_document.html`
@@ -108,6 +112,7 @@ Current shape:
   "show_group_titles": true,
   "image_size": "medium",
   "table_density": "compact",
+  "result_layout": "compact_grid",
   "signature_left_label": "Medical Technologist",
   "signature_left_source": "prepared_by",
   "signature_left_name": "",
@@ -164,6 +169,7 @@ The builder Print pane currently supports:
 - hide/show group headings
 - image size: small, medium, or large
 - table density: compact or comfortable
+- result layout: compact grid or rows
 - signatory role labels
 - signatory name source: blank, prepared by, manual name, or form field
 
@@ -183,7 +189,8 @@ Use those patterns as reference only. The new app should produce a better, clean
 ## Known Limits
 - One-page output cannot be guaranteed for arbitrarily long forms.
 - The builder page-fit signal is an estimate only. Browser print preview remains the final confirmation.
-- The previous verified one-page case is the existing Semen sample; rerun real-device checks after body layout options land.
+- The previous verified one-page case is the existing Semen sample; rerun real-device checks after compact result-grid layout and real clinic data are reviewed.
+- Current automated fit audit after compact grid: 15 likely, 3 tight, 0 long across the current 18-form sample set.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
 - Empty-field hiding affects result body rows only; summary rows still show configured summary information.
 - Footer/signatory layout is intentionally constrained to the current two-column signature footer.
@@ -216,6 +223,17 @@ Phase 2E should test real forms next:
 - Blood Chemistry
 - forms with image fields
 - long forms that may exceed one page
+
+Phase 2E initial compacting pass is now landed:
+- default `result_layout` is `compact_grid`
+- ordinary consecutive scalar fields are grouped into a compact two-column print grid
+- image fields stay as full-width rows
+- the current automated audit has no remaining `long` estimates
+
+Next print QA should focus on:
+- browser print preview / PDF output for the 3 `tight` forms: OGTT, Semen, and Serology
+- real clinic device/browser behavior
+- whether actual clinic data needs per-form overrides from compact grid back to rows
 
 Later, consider server-side PDF generation only if browser print is not reliable enough for the clinic's actual devices and workflow.
 

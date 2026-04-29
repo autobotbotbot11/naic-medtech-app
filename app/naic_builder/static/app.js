@@ -265,6 +265,11 @@ function normalizePrintTableDensity(value) {
   return text === "comfortable" ? "comfortable" : "compact";
 }
 
+function normalizePrintResultLayout(value) {
+  const text = compactText(value).toLowerCase();
+  return text === "rows" ? "rows" : "compact_grid";
+}
+
 function normalizePrintSignatureSource(value, fallback = "blank") {
   const text = compactText(value).toLowerCase();
   return PRINT_SIGNATURE_SOURCES.some((option) => option.id === text) ? text : fallback;
@@ -346,6 +351,7 @@ function getDraftPrintConfig(draft = state.draft) {
       show_group_titles: true,
       image_size: "medium",
       table_density: "compact",
+      result_layout: "compact_grid",
       signature_left_label: "Medical Technologist",
       signature_left_source: "prepared_by",
       signature_left_name: "",
@@ -373,6 +379,7 @@ function getDraftPrintConfig(draft = state.draft) {
   config.show_group_titles = normalizePrintBoolean(config.show_group_titles, true);
   config.image_size = normalizePrintImageSize(config.image_size);
   config.table_density = normalizePrintTableDensity(config.table_density);
+  config.result_layout = normalizePrintResultLayout(config.result_layout);
   config.signature_left_label = compactText(config.signature_left_label) || "Medical Technologist";
   config.signature_left_source = normalizePrintSignatureSource(config.signature_left_source, "prepared_by");
   config.signature_left_name = compactText(config.signature_left_name);
@@ -398,6 +405,8 @@ function setDraftPrintConfigValue(key, value, draft = state.draft) {
     config.image_size = normalizePrintImageSize(value);
   } else if (key === "table_density") {
     config.table_density = normalizePrintTableDensity(value);
+  } else if (key === "result_layout") {
+    config.result_layout = normalizePrintResultLayout(value);
   } else if (key === "signature_left_source") {
     config.signature_left_source = normalizePrintSignatureSource(value, "prepared_by");
   } else if (key === "signature_right_source") {
@@ -2604,6 +2613,13 @@ function renderPrintCard() {
                 <select data-bind="print_config.table_density">
                   <option value="compact"${config.table_density === "compact" ? " selected" : ""}>Compact</option>
                   <option value="comfortable"${config.table_density === "comfortable" ? " selected" : ""}>Comfortable</option>
+                </select>
+              </label>
+              <label>
+                <span>Result layout</span>
+                <select data-bind="print_config.result_layout">
+                  <option value="compact_grid"${config.result_layout === "compact_grid" ? " selected" : ""}>Compact grid</option>
+                  <option value="rows"${config.result_layout === "rows" ? " selected" : ""}>Rows</option>
                 </select>
               </label>
             </div>

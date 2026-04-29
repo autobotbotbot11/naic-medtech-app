@@ -122,6 +122,11 @@ def normalize_print_table_density(value: Any) -> str:
     return density if density in {"compact", "comfortable"} else "compact"
 
 
+def normalize_print_result_layout(value: Any) -> str:
+    layout = compact_text(value).lower()
+    return layout if layout in {"rows", "compact_grid"} else "compact_grid"
+
+
 def normalize_print_signature_source(value: Any, *, default: str = "blank") -> str:
     source = compact_text(value).lower()
     fallback = default if default in PRINT_SIGNATURE_SOURCES else "blank"
@@ -183,6 +188,7 @@ def normalize_print_config(raw_config: Any) -> dict[str, Any]:
         "show_group_titles": normalize_boolean_setting(config.get("show_group_titles"), default=True),
         "image_size": normalize_print_image_size(config.get("image_size")),
         "table_density": normalize_print_table_density(config.get("table_density")),
+        "result_layout": normalize_print_result_layout(config.get("result_layout")),
         "signature_left_label": compact_text(config.get("signature_left_label")) or "Medical Technologist",
         "signature_left_source": normalize_print_signature_source(config.get("signature_left_source"), default="prepared_by"),
         "signature_left_name": compact_text(config.get("signature_left_name")),
@@ -2270,6 +2276,38 @@ def build_print_field_item(
     }
 
 
+def is_compact_grid_field_item(item: dict[str, Any]) -> bool:
+    if compact_text(item.get("kind")) != "field":
+        return False
+    display = item.get("display") if isinstance(item.get("display"), dict) else {}
+    return compact_text(display.get("kind")) != "image"
+
+
+def compact_print_field_runs(items: list[dict[str, Any]], print_config: dict[str, Any]) -> list[dict[str, Any]]:
+    if normalize_print_result_layout(print_config.get("result_layout")) != "compact_grid":
+        return items
+
+    compacted: list[dict[str, Any]] = []
+    run: list[dict[str, Any]] = []
+
+    def flush_run() -> None:
+        nonlocal run
+        if len(run) >= 4:
+            compacted.append({"kind": "field_grid", "items": run})
+        else:
+            compacted.extend(run)
+        run = []
+
+    for item in items:
+        if is_compact_grid_field_item(item):
+            run.append(item)
+            continue
+        flush_run()
+        compacted.append(item)
+    flush_run()
+    return compacted
+
+
 def build_print_items(
     blocks: list[dict[str, Any]],
     values: dict[str, Any],
@@ -2373,7 +2411,7 @@ def build_print_items(
             )
             continue
 
-    return items
+    return compact_print_field_runs(items, config)
 
 
 def build_print_summary_items(
@@ -2558,6 +2596,15 @@ def print_item_fit_units(items: list[dict[str, Any]]) -> float:
                 units += 0.25
             if display.get("kind") == "image" and not display.get("is_empty"):
                 units += 5.0
+        elif kind == "field_grid":
+            fields = normalize_items(item.get("items"))
+            row_count = max(1, (len(fields) + 1) // 2)
+            reference_count = sum(
+                1
+                for field in fields
+                if isinstance(field, dict) and compact_text(field.get("reference_text"))
+            )
+            units += 0.45 + (row_count * 0.95) + (reference_count * 0.15)
         elif kind == "table":
             try:
                 sample_rows = int(item.get("sample_rows") or 3)

@@ -376,6 +376,73 @@ body {
   border-top: 0;
 }
 
+.print-field-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border: 1px solid var(--line);
+  border-top: 0;
+}
+
+.print-items > .print-field-grid:first-child,
+.print-body > .print-field-grid:first-child,
+.print-section > .print-items > .print-field-grid:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.print-group .print-field-grid:first-child {
+  border-top: 0;
+}
+
+.print-grid-cell {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 7px 9px;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.print-grid-cell:nth-child(-n + 2) {
+  border-top: 0;
+}
+
+.print-grid-cell:nth-child(odd) {
+  border-left: 0;
+}
+
+.print-grid-cell-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  align-items: baseline;
+  min-width: 0;
+}
+
+.print-grid-cell-head strong {
+  min-width: 0;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.print-grid-cell-head span {
+  flex: none;
+  color: var(--muted);
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.print-grid-cell-result {
+  min-width: 0;
+}
+
+.print-grid-cell small {
+  color: var(--muted);
+  font-size: 8.5px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
 .print-body > .print-section,
 .print-body > .print-group,
 .print-body > .print-table-block,
@@ -597,6 +664,24 @@ body {
     gap: 5px;
   }
 
+  .print-field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .print-grid-cell,
+  .print-grid-cell:nth-child(-n + 2),
+  .print-grid-cell:nth-child(odd) {
+    border-left: 0;
+  }
+
+  .print-grid-cell:first-child {
+    border-top: 0;
+  }
+
+  .print-grid-cell:nth-child(n + 2) {
+    border-top: 1px solid var(--line);
+  }
+
   .print-row-unit {
     text-align: left;
   }
@@ -745,6 +830,20 @@ body {
     grid-template-columns: minmax(0, 1.08fr) minmax(124px, 1fr) minmax(44px, 0.28fr);
     gap: 7px;
     padding: 5px 7px;
+  }
+
+  .print-grid-cell {
+    gap: 3px;
+    padding: 5px 7px;
+  }
+
+  .print-grid-cell-head strong {
+    font-size: 9.5px;
+  }
+
+  .print-grid-cell-head span,
+  .print-grid-cell small {
+    font-size: 8px;
   }
 
   .print-body > .print-section,

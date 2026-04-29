@@ -1,3 +1,21 @@
+{% macro render_print_field_answer(item) %}
+  {% set display = item["display"] or {} %}
+  {% if display.kind == "image" %}
+    {% if display.image_url %}
+    <img class="print-image print-image--{{ item.image_size or 'medium' }}" src="{{ display.image_url }}" alt="{{ item.name }}">
+    {% if display.filename %}
+    <span class="print-image-meta">{{ display.filename }}</span>
+    {% endif %}
+    {% else %}
+    <span class="print-answer is-empty">No image uploaded.</span>
+    {% endif %}
+  {% elif display.text %}
+  <span class="print-answer{% if item.is_abnormal %} is-abnormal{% endif %}">{{ display.text }}</span>
+  {% else %}
+  <span class="print-answer is-empty">No value recorded.</span>
+  {% endif %}
+{% endmacro %}
+
 {% macro render_print_items(items) %}
   {% for item in items %}
     {% if item.kind == "section" %}
@@ -25,8 +43,27 @@
         {{ render_print_items(child_items) }}
       </div>
     </section>
+    {% elif item.kind == "field_grid" %}
+    {% set grid_items = item["items"] or [] %}
+    <div class="print-field-grid">
+      {% for field in grid_items %}
+      <article class="print-grid-cell">
+        <div class="print-grid-cell-head">
+          <strong>{{ field.name }}</strong>
+          {% if field.unit_hint %}
+          <span>{{ field.unit_hint }}</span>
+          {% endif %}
+        </div>
+        <div class="print-grid-cell-result">
+          {{ render_print_field_answer(field) }}
+        </div>
+        {% if field.reference_text %}
+        <small class="{% if field.is_abnormal %}is-abnormal{% endif %}">Reference: {{ field.reference_text }}</small>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
     {% elif item.kind == "field" %}
-    {% set display = item["display"] or {} %}
     <article class="print-row">
       <div class="print-row-name">
         <strong>{{ item.name }}</strong>
@@ -36,20 +73,7 @@
       </div>
 
       <div class="print-row-result">
-        {% if display.kind == "image" %}
-          {% if display.image_url %}
-          <img class="print-image print-image--{{ item.image_size or 'medium' }}" src="{{ display.image_url }}" alt="{{ item.name }}">
-          {% if display.filename %}
-          <span class="print-image-meta">{{ display.filename }}</span>
-          {% endif %}
-          {% else %}
-          <span class="print-answer is-empty">No image uploaded.</span>
-          {% endif %}
-        {% elif display.text %}
-        <span class="print-answer{% if item.is_abnormal %} is-abnormal{% endif %}">{{ display.text }}</span>
-        {% else %}
-        <span class="print-answer is-empty">No value recorded.</span>
-        {% endif %}
+        {{ render_print_field_answer(item) }}
       </div>
 
       <div class="print-row-unit">
