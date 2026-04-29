@@ -46,6 +46,17 @@ const DEFAULT_PRINT_SUMMARY_ITEMS = [
   { id: "summary_issued", label: "Issued", source: "issued_at", field_id: "" },
   { id: "summary_version", label: "Form version", source: "form_version", field_id: "" },
 ];
+const DEFAULT_PATIENT_INFO_FIELDS = [
+  { key: "name", name: "Name", dataType: "text", required: true },
+  { key: "age", name: "Age", dataType: "text", required: false },
+  { key: "sex", name: "Sex", dataType: "text", required: false },
+  { key: "date_or_datetime", name: "Date / Date-Time", dataType: "datetime", required: false },
+  { key: "requesting_physician", name: "Requesting Physician", dataType: "text", required: false },
+  { key: "room", name: "Room", dataType: "text", required: false },
+  { key: "case_number", name: "Case Number", dataType: "text", required: true },
+  { key: "medical_technologist", name: "Medical Technologist", dataType: "text", required: false },
+  { key: "pathologist", name: "Pathologist", dataType: "text", required: false },
+];
 
 const initialFormSlug = document.body?.dataset?.initialFormSlug || "";
 const initialBuilderMode = document.body?.dataset?.initialBuilderMode || "";
@@ -1582,6 +1593,45 @@ function makeBlankTable() {
   };
 }
 
+function makeDefaultPatientInfoBlock() {
+  const children = DEFAULT_PATIENT_INFO_FIELDS.map((field, index) => {
+    const props = {
+      key: field.key,
+      order: index + 1,
+      control: "input",
+      data_type: field.dataType,
+      unit_hint: "",
+      reference_text: "",
+      normal_min: "",
+      normal_max: "",
+      notes: [],
+      options: [],
+    };
+    if (field.required) {
+      props.required = true;
+    }
+    return {
+      id: freshBlockId("field", `patient_${field.key}`),
+      kind: "field",
+      name: field.name,
+      props,
+      children: [],
+    };
+  });
+
+  return {
+    id: freshBlockId("field_group", "patient_information"),
+    kind: "field_group",
+    name: "Patient Information",
+    props: {
+      key: "patient_information",
+      order: 1,
+      notes: [],
+    },
+    children,
+  };
+}
+
 function makeBlankBlock(kind) {
   if (kind === "section") {
     return makeBlankSection();
@@ -1625,6 +1675,9 @@ function freshBlockId(kind, key) {
 function makeBlankForm(config = {}) {
   const formName = String(config.name || "").trim() || "Untitled Form";
   const locationName = String(config.locationName || "").trim();
+  const patientInfoBlock = makeDefaultPatientInfoBlock();
+  const patientNameField = patientInfoBlock.children.find((field) => getNodeProps(field).key === "name");
+  const caseNumberField = patientInfoBlock.children.find((field) => getNodeProps(field).key === "case_number");
 
   const draft = {
     slug: null,
@@ -1643,8 +1696,17 @@ function makeBlankForm(config = {}) {
       meta: {
         form_key: slugify(formName),
         form_order: 1,
+        default_patient_info_materialized: true,
+        record_identity: {
+          primary_field_id: patientNameField?.id || "",
+          secondary_field_id: caseNumberField?.id || "",
+          searchable_field_ids: [
+            patientNameField?.id || "",
+            caseNumberField?.id || "",
+          ].filter(Boolean),
+        },
       },
-      blocks: [],
+      blocks: [patientInfoBlock],
     },
   };
   syncDraftLocationState(draft);

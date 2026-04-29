@@ -55,6 +55,13 @@ DEFAULT_PRINT_SUMMARY_ITEMS = [
     {"id": "summary_issued", "label": "Issued", "source": "issued_at", "field_id": ""},
     {"id": "summary_version", "label": "Form version", "source": "form_version", "field_id": ""},
 ]
+DEFAULT_LAB_REQUEST_FIELD_SET_ID = "default_lab_request"
+DEFAULT_PATIENT_INFO_MATERIALIZED_META_KEY = "default_patient_info_materialized"
+PATIENT_INFO_GROUP_KEY = "patient_information"
+PATIENT_INFO_GROUP_NAME = "Patient Information"
+PATIENT_INFO_PRIMARY_KEY = "name"
+PATIENT_INFO_SECONDARY_KEY = "case_number"
+PATIENT_INFO_REQUIRED_KEYS = {PATIENT_INFO_PRIMARY_KEY, PATIENT_INFO_SECONDARY_KEY}
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -583,6 +590,8 @@ def normalize_field(field: dict[str, Any], parent_id: str, order: int, used_keys
 
     normalized["control"] = control
     normalized["data_type"] = data_type
+    if bool(field.get("required")):
+        normalized["required"] = True
 
     unit_hint = compact_text(field.get("unit_hint"))
     if unit_hint:
@@ -634,6 +643,80 @@ def normalize_section(section: dict[str, Any], form_id: str, order: int, used_ke
         normalized["source"] = source
 
     return normalized
+
+
+def reference_common_field_set(field_set_id: str) -> dict[str, Any]:
+    target_id = compact_text(field_set_id)
+    for field_set in normalize_items(load_reference_schema().get("common_field_sets")):
+        if isinstance(field_set, dict) and compact_text(field_set.get("id")) == target_id:
+            return field_set
+    return {}
+
+
+def default_patient_info_legacy_group() -> dict[str, Any]:
+    field_set = reference_common_field_set(DEFAULT_LAB_REQUEST_FIELD_SET_ID)
+    fields: list[dict[str, Any]] = []
+
+    for raw_field in normalize_items(field_set.get("fields")):
+        if not isinstance(raw_field, dict):
+            continue
+        key = compact_text(raw_field.get("key"))
+        name = compact_text(raw_field.get("name"))
+        if not key or not name:
+            continue
+
+        data_type = compact_text(raw_field.get("data_type")) or "text"
+        if key == "date_or_datetime":
+            data_type = "datetime"
+
+        field: dict[str, Any] = {
+            "key": key,
+            "name": name,
+            "kind": "field",
+            "control": compact_text(raw_field.get("control")) or "input",
+            "data_type": data_type,
+            "source": {
+                "common_field_set_id": DEFAULT_LAB_REQUEST_FIELD_SET_ID,
+                "common_field_id": compact_text(raw_field.get("id")),
+            },
+        }
+        if key in PATIENT_INFO_REQUIRED_KEYS:
+            field["required"] = True
+        fields.append(field)
+
+    return {
+        "key": PATIENT_INFO_GROUP_KEY,
+        "name": PATIENT_INFO_GROUP_NAME,
+        "kind": "field_group",
+        "source": {"common_field_set_id": DEFAULT_LAB_REQUEST_FIELD_SET_ID},
+        "fields": fields,
+    }
+
+
+def legacy_schema_has_default_patient_info(raw_schema: dict[str, Any]) -> bool:
+    for field in normalize_items(raw_schema.get("fields")):
+        if not isinstance(field, dict):
+            continue
+        if compact_text(field.get("key")) == PATIENT_INFO_GROUP_KEY:
+            return True
+        if compact_text(field.get("name")).lower() == PATIENT_INFO_GROUP_NAME.lower():
+            return True
+    return False
+
+
+def materialize_default_patient_info_fields(raw_schema: dict[str, Any]) -> dict[str, Any]:
+    schema = raw_schema if isinstance(raw_schema, dict) else {}
+    if compact_text(schema.get("common_field_set_id")) != DEFAULT_LAB_REQUEST_FIELD_SET_ID:
+        return schema
+    if legacy_schema_has_default_patient_info(schema):
+        return schema
+
+    materialized = json.loads(json.dumps(schema))
+    materialized["fields"] = [
+        default_patient_info_legacy_group(),
+        *normalize_items(materialized.get("fields")),
+    ]
+    return materialized
 
 
 def legacy_field_to_block(field: dict[str, Any]) -> dict[str, Any]:
@@ -742,6 +825,7 @@ def legacy_section_to_block(section: dict[str, Any]) -> dict[str, Any]:
 
 
 def build_block_schema_from_legacy_storage(raw_schema: dict[str, Any]) -> dict[str, Any]:
+    raw_schema = materialize_default_patient_info_fields(raw_schema)
     meta: dict[str, Any] = {
         "form_id": compact_text(raw_schema.get("id")),
         "form_key": compact_text(raw_schema.get("key")),
@@ -769,12 +853,115 @@ def build_block_schema_from_legacy_storage(raw_schema: dict[str, Any]) -> dict[s
         ],
     ]
 
-    return {
+    block_schema = {
         "schema_version": 1,
         "source_kind": LEGACY_BLOCK_SCHEMA_SOURCE,
         "meta": meta,
         "blocks": blocks,
     }
+    if block_schema_has_default_patient_info(block_schema):
+        meta[DEFAULT_PATIENT_INFO_MATERIALIZED_META_KEY] = True
+        block_schema["meta"] = meta
+    ensure_default_patient_info_identity(block_schema)
+    return block_schema
+
+
+def default_patient_info_field_id(form_id: str, field_key: str) -> str:
+    return f"{compact_text(form_id)}.{PATIENT_INFO_GROUP_KEY}.{field_key}"
+
+
+def block_schema_has_default_patient_info(block_schema: dict[str, Any]) -> bool:
+    for block in normalize_items(block_schema.get("blocks")):
+        if not isinstance(block, dict):
+            continue
+        props = block.get("props") if isinstance(block.get("props"), dict) else {}
+        if compact_text(props.get("key")) == PATIENT_INFO_GROUP_KEY:
+            return True
+        if compact_text(block.get("name")).lower() == PATIENT_INFO_GROUP_NAME.lower():
+            return True
+    return False
+
+
+def build_default_patient_info_block(form_id: str) -> dict[str, Any]:
+    field_group = normalize_field(default_patient_info_legacy_group(), form_id, 1, set())
+    return legacy_field_to_block(field_group)
+
+
+def resequence_top_level_block_orders(blocks: list[dict[str, Any]]) -> None:
+    for index, block in enumerate(blocks, start=1):
+        if not isinstance(block, dict):
+            continue
+        props = block.get("props") if isinstance(block.get("props"), dict) else {}
+        props["order"] = index
+        block["props"] = props
+
+
+def ensure_default_patient_info_identity(block_schema: dict[str, Any]) -> bool:
+    meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+    form_id = compact_text(meta.get("form_id"))
+    if not form_id or not block_schema_has_default_patient_info(block_schema):
+        return False
+
+    name_field_id = default_patient_info_field_id(form_id, PATIENT_INFO_PRIMARY_KEY)
+    case_field_id = default_patient_info_field_id(form_id, PATIENT_INFO_SECONDARY_KEY)
+    identity = normalize_record_identity_config(meta.get("record_identity"))
+    changed = False
+
+    if not identity["primary_field_id"]:
+        identity["primary_field_id"] = name_field_id
+        changed = True
+    if not identity["secondary_field_id"]:
+        identity["secondary_field_id"] = case_field_id
+        changed = True
+
+    searchable_ids = list(identity["searchable_field_ids"])
+    for field_id in [name_field_id, case_field_id]:
+        if field_id and field_id not in searchable_ids:
+            searchable_ids.append(field_id)
+            changed = True
+    if searchable_ids != identity["searchable_field_ids"]:
+        identity["searchable_field_ids"] = searchable_ids
+        changed = True
+
+    if changed or meta.get("record_identity") != identity:
+        meta["record_identity"] = identity
+        block_schema["meta"] = meta
+        return True
+    return False
+
+
+def ensure_default_patient_info_block_schema(block_schema: dict[str, Any]) -> bool:
+    if not isinstance(block_schema, dict):
+        return False
+
+    meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+    form_id = compact_text(meta.get("form_id"))
+    if not form_id:
+        return False
+
+    changed = False
+    blocks = normalize_items(block_schema.get("blocks"))
+    has_patient_info = block_schema_has_default_patient_info(block_schema)
+    was_materialized = bool(meta.get(DEFAULT_PATIENT_INFO_MATERIALIZED_META_KEY))
+
+    if not has_patient_info and was_materialized:
+        return False
+
+    if not has_patient_info:
+        blocks = [build_default_patient_info_block(form_id), *blocks]
+        block_schema["blocks"] = blocks
+        has_patient_info = True
+        changed = True
+
+    if has_patient_info and meta.get(DEFAULT_PATIENT_INFO_MATERIALIZED_META_KEY) is not True:
+        meta[DEFAULT_PATIENT_INFO_MATERIALIZED_META_KEY] = True
+        block_schema["meta"] = meta
+        changed = True
+
+    if has_patient_info:
+        resequence_top_level_block_orders(blocks)
+        changed = ensure_default_patient_info_identity(block_schema) or changed
+    return changed
 
 
 def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: int, used_keys: set[str]) -> dict[str, Any]:
@@ -819,6 +1006,8 @@ def block_field_to_legacy_field(block: dict[str, Any], parent_id: str, order: in
 
     raw_field["control"] = control
     raw_field["data_type"] = data_type
+    if bool(props.get("required")):
+        raw_field["required"] = True
 
     unit_hint = compact_text(props.get("unit_hint"))
     if unit_hint:
@@ -1163,7 +1352,7 @@ def build_legacy_storage_payload(
     name: str,
     form_order: int,
 ) -> dict[str, Any]:
-    raw_schema = raw_schema if isinstance(raw_schema, dict) else {}
+    raw_schema = materialize_default_patient_info_fields(raw_schema if isinstance(raw_schema, dict) else {})
     form_id = stable_form_schema_id(slug)
     field_used: set[str] = set()
     section_used: set[str] = set()
@@ -3459,6 +3648,61 @@ def ensure_reference_seed(session: Session) -> None:
         session.rollback()
         if session.scalar(select(FormDefinition.id).limit(1)) is None:
             raise
+
+
+def ensure_default_patient_info_fields(session: Session) -> int:
+    definitions = session.scalars(
+        select(FormDefinition)
+        .options(
+            selectinload(FormDefinition.versions),
+            selectinload(FormDefinition.library_node),
+        )
+    ).all()
+    migrated_count = 0
+
+    for definition in definitions:
+        version = current_version(definition)
+        if version is None:
+            continue
+
+        block_schema, _ = load_block_storage_document(version)
+        if not ensure_default_patient_info_block_schema(block_schema):
+            continue
+
+        legacy_storage_schema = load_legacy_storage_document(version)
+        form_order = int(
+            legacy_storage_schema.get("order")
+            or (definition.library_node.node_order if definition.library_node is not None else 1)
+            or 1
+        )
+        legacy_storage_schema, stored_block_schema = build_form_version_storage_documents(
+            block_schema,
+            slug=definition.slug,
+            name=definition.name,
+            form_order=form_order,
+        )
+
+        for existing_version in definition.versions:
+            existing_version.is_current = False
+
+        next_version = max((existing_version.version_number for existing_version in definition.versions), default=0) + 1
+        session.add(
+            build_form_version_record(
+                form_id=definition.id,
+                version_number=next_version,
+                summary="Added default patient information fields.",
+                legacy_storage_schema=legacy_storage_schema,
+                block_storage_schema=stored_block_schema,
+                source="system",
+                is_current=True,
+            )
+        )
+        definition.updated_at = utc_now()
+        migrated_count += 1
+
+    if migrated_count:
+        session.commit()
+    return migrated_count
 
 
 def ensure_form_version_storage_documents(session: Session) -> None:

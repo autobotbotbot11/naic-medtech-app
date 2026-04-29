@@ -12,7 +12,12 @@ if str(APP_DIR) not in sys.path:
 
 from naic_builder.config import DB_PATH
 from naic_builder.database import SessionLocal, ensure_runtime_schema
-from naic_builder.services import ensure_block_schema_storage, ensure_library_tree, ensure_reference_seed
+from naic_builder.services import (
+    ensure_default_patient_info_fields,
+    ensure_form_version_storage_documents,
+    ensure_library_tree,
+    ensure_reference_seed,
+)
 
 
 def main() -> None:
@@ -22,7 +27,8 @@ def main() -> None:
     ensure_runtime_schema()
     with SessionLocal() as session:
         ensure_reference_seed(session)
-        ensure_block_schema_storage(session)
+        ensure_form_version_storage_documents(session)
+        ensure_default_patient_info_fields(session)
         ensure_library_tree(session)
 
     print(f"Reset runtime DB at: {DB_PATH}")

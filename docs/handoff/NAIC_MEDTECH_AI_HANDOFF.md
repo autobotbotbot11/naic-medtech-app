@@ -311,6 +311,7 @@ Current implementation checkpoint:
 - completion validates builder-marked required fields
 - generic record identity config lives at `block_schema.meta.record_identity`
 - print config lives at `block_schema.meta.print_config`
+- current forms now have a normal editable `Patient Information` builder group based on the original `default_lab_request` fields, with Name and Case Number marked required and wired as record identity/search hints
 - `/records/{id}/print` now reads form-version print config
 - the existing Semen sample was verified as a one-page A4 portrait export
 
@@ -359,7 +360,7 @@ What exists now:
   - when it was last saved or completed
 - record completion now has the first trust guards too:
   - drafts remain flexible
-  - `Complete` requires patient name and case number
+  - `Complete` requires the form's required patient identity fields, such as Name and Case Number
   - `Complete` also enforces form-design-required field answers
   - the edit screen now shows a quiet completion checklist when something is missing
 - record-entry polish is calmer now too:
@@ -377,7 +378,7 @@ What exists now:
   - `edit` now shows a quiet dirty-state label instead of leaving save state implicit
   - browser leave protection now warns before a medtech accidentally navigates away with unsaved record changes
 - record entry, record view, and print now render utility blocks more honestly too: note text, divider captions, and sample tables no longer fall back to generic placeholder cards
-- the record header is more clinic-ready too: new, edit, view, and print now all carry simple patient metadata like age and sex in addition to patient name and case number
+- the record header is more clinic-ready too: new, edit, view, and print resolve generic record identity/search hints from builder fields instead of relying on a hardcoded patient panel
 - records are stored separately from forms and point to a frozen `form_version_id`
 - the first records API surface now exists:
   - `/api/records/bootstrap`
@@ -928,7 +929,7 @@ Important product clarifications:
 - do not copy the old landscape layout
 - do not hardcode a patient-info zone into the engine
 - do not assume the app knows the clinic's workflow semantics
-- let users create their own patient-info section and required fields inside the form builder
+- keep patient-info as a normal editable builder-owned section; current forms already start from the original default lab-request fields
 - keep print settings configurable per form version through the builder `Print` pane
 
 The detailed print handoff is in:

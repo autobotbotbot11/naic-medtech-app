@@ -25,6 +25,8 @@ Implemented:
 - Completing a record validates configured required fields.
 - Form versions can store generic record identity config at `block_schema.meta.record_identity`.
 - Form versions can store print config at `block_schema.meta.print_config`.
+- Default lab-request fields from the original source are now materialized as a normal `Patient Information` builder group, not as a hardcoded record-entry panel.
+- Existing current forms have new current versions with `Patient Information` first, while old records remain attached to their frozen older form versions.
 - The builder now has a `Print` pane/tab.
 - Print config is normalized on backend save/read.
 - `/records/{id}/print` reads the saved form version's print config.
@@ -32,6 +34,7 @@ Implemented:
 
 Code paths:
 - `app/naic_builder/static/app.js`
+  - new blank forms start with an editable/removable `Patient Information` group
   - builder `Print` pane
   - print config helpers
   - summary row editor
@@ -39,6 +42,7 @@ Code paths:
 - `app/naic_builder/static/app.css`
   - builder print-tab and summary editor styling
 - `app/naic_builder/services.py`
+  - default patient-info materialization/backfill helpers
   - `normalize_record_identity_config`
   - `normalize_print_config`
   - `build_print_summary_items`

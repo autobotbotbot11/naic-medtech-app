@@ -416,6 +416,7 @@
       "field-level required toggle in the builder",
       "completion validation for builder-marked required fields",
       "generic record_identity config at block_schema.meta.record_identity",
+      "current forms now carry a normal editable Patient Information builder group from the original default_lab_request fields, with Name and Case Number required and wired into record identity/search",
       "print_config at block_schema.meta.print_config",
       "builder Print pane for accent color, density, show/hide controls, and configurable summary rows",
       "backend print_config normalization and print summary resolution",
