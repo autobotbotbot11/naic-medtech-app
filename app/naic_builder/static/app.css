@@ -2202,12 +2202,15 @@ textarea:focus,
 /* Builder stabilization: tokenized surfaces, lighter hierarchy, safer responsive flow. */
 .shell {
   --builder-sticky-top: 102px;
+  --builder-workspace-width: var(--content-width);
 }
 
 .shell .builder-command-bar.app-bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 12px;
+  width: min(var(--builder-workspace-width), 100%);
+  margin-inline: auto;
   align-items: center;
   overflow: visible;
   border-color: color-mix(in srgb, var(--line) 92%, transparent);
