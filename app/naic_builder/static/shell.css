@@ -352,6 +352,10 @@
   backdrop-filter: blur(18px);
 }
 
+.app-frame--workspace .app-global-header {
+  position: static;
+}
+
 .app-global-header__lead,
 .app-global-header__actions {
   display: flex;

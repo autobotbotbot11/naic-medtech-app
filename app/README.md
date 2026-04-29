@@ -134,6 +134,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - non-print UI foundation checkpoint:
   - current status is ready for consolidated user review
   - future non-print work should now be treated as bug/polish from actual use instead of another shell/workflow architecture pass
+  - the builder stabilization pass is also done now: preview is opt-in, command actions are grouped, builder row hierarchy is calmer, light/dark contrast bugs in builder menus/preview/status surfaces were cleaned up, and the workspace header no longer overlays builder content while scrolling
   - the next major planned product block remains the print/template system
 - `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - the records module is now more intent-structured too:

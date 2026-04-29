@@ -107,6 +107,7 @@ Latest completed cleanup:
 - `/records/history` now keeps search and status filters inside the History section header
 - history search preserves the active Completed/Drafts/All filter
 - recent browser QA covered key protected routes for horizontal overflow and obvious server/error pages
+- the builder stabilization pass is now landed: builder-specific light/dark surfaces are tokenized, organizer rows no longer inherit primary button styling, preview opens on demand instead of by default, and the workspace header no longer sticks over builder content
 
 ## Recommended Technical Direction
 The reskin should start by introducing a shared theme layer instead of repainting every stylesheet independently.

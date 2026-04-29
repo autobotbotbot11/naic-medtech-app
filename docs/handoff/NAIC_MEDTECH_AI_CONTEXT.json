@@ -67,7 +67,8 @@
         "The Settings utility follow-up then brought Settings > Create user and Manage user into the same compact utility-card treatment as the Forms utility screens, so manual account fallback and user maintenance no longer fall back to older heavy auth panels.",
         "The public auth follow-up then moved /login, /request-account, and /setup to the same compact utility-card language too, replacing the older heavy auth panel plus long helper-list composition with one direct form card and one compact facts card.",
         "Settings > Users & access now keeps search and status filters inside the Accounts directory header, so the staff list reads as one directory surface instead of a separate toolbar plus list.",
-        "/records/history now keeps search and status filters inside the History section header, so lookup reads as one history surface and search preserves the active Completed/Drafts/All filter."
+        "/records/history now keeps search and status filters inside the History section header, so lookup reads as one history surface and search preserves the active Completed/Drafts/All filter.",
+        "The builder stabilization pass is now landed too: builder-specific light/dark surfaces are tokenized, organizer rows no longer inherit primary button styling, preview is opt-in instead of open by default, command actions are grouped, and the workspace header no longer sticks over builder content while scrolling."
       ]
     },
     "notes": [

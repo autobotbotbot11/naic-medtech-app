@@ -7,7 +7,7 @@
   dirty: false,
   ui: {
     libraryOpen: false,
-    previewOpen: true,
+    previewOpen: false,
     advancedMode: false,
     focusPane: "setup",
     setupOpen: true,
@@ -889,7 +889,7 @@ function syncShellState() {
   drawerScrimEl.classList.toggle("hidden", !state.ui.libraryOpen);
   document.body.classList.toggle("drawer-open", state.ui.libraryOpen);
   if (openPreviewBtnEl) {
-    openPreviewBtnEl.textContent = previewVisible ? "Hide" : "Show";
+    openPreviewBtnEl.textContent = previewVisible ? "Hide" : "Preview";
   }
   renderPreviewCallout();
 }
@@ -897,8 +897,10 @@ function syncShellState() {
 function syncAdvancedModeUi() {
   if (toggleAdvancedBtnEl) {
     const enabled = state.ui.advancedMode;
-    toggleAdvancedBtnEl.textContent = `Advanced: ${enabled ? "On" : "Off"}`;
+    toggleAdvancedBtnEl.textContent = "Advanced";
     toggleAdvancedBtnEl.setAttribute("aria-pressed", String(enabled));
+    toggleAdvancedBtnEl.setAttribute("aria-label", `Advanced options ${enabled ? "on" : "off"}`);
+    toggleAdvancedBtnEl.title = `Advanced options ${enabled ? "on" : "off"}`;
   }
 
   if (devPanelEl) {
@@ -3562,25 +3564,14 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-document.addEventListener("click", (event) => {
-  const target = event.target;
-  if (!(target instanceof Element)) {
-    return;
-  }
-
-  const previewToggleButton = target.closest("#openPreviewBtn, #closePreviewBtn");
-  if (!previewToggleButton) {
-    return;
-  }
-
-  if (previewToggleButton.id === "closePreviewBtn") {
-    state.ui.previewOpen = false;
-    renderShellSummary();
-    syncShellState();
-    return;
-  }
-
+openPreviewBtnEl?.addEventListener("click", () => {
   togglePreview();
+});
+
+closePreviewBtnEl?.addEventListener("click", () => {
+  state.ui.previewOpen = false;
+  renderShellSummary();
+  syncShellState();
 });
 
 window.addEventListener("beforeunload", (event) => {

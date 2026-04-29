@@ -33,14 +33,16 @@
         </div>
       </div>
 
-      <div class="bar-actions">
-        <div class="builder-status-strip">
+      <div class="bar-actions builder-command-actions">
+        <div class="builder-status-strip" role="status" aria-live="polite">
           <span id="statusText">Loading builder...</span>
           <div id="dirtyBadge" class="badge hidden">Changed</div>
         </div>
-        <div class="action-row">
-          <button id="openPreviewBtn" class="ghost mini" type="button">Show</button>
-          <button id="toggleAdvancedBtn" class="ghost mini subtle" type="button" aria-pressed="false">Advanced: Off</button>
+        <div class="action-row builder-view-actions" aria-label="Builder view controls">
+          <button id="openPreviewBtn" class="ghost mini" type="button">Preview</button>
+          <button id="toggleAdvancedBtn" class="ghost mini subtle" type="button" aria-pressed="false" aria-label="Advanced options off" title="Advanced options">Advanced</button>
+        </div>
+        <div class="action-row builder-file-actions" aria-label="Builder file actions">
           <button id="newFormBtn" class="secondary mini" type="button">New</button>
           <details class="action-details topbar-actions">
             <summary aria-label="More actions" title="More actions">...</summary>

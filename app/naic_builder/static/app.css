@@ -139,7 +139,7 @@ textarea {
 }
 
 .draft-summary--builder strong {
-  font-family: "Palatino Linotype", "Book Antiqua", serif;
+  font-family: var(--font-heading, "Palatino Linotype", "Book Antiqua", serif);
   font-size: 20px;
   letter-spacing: -0.03em;
 }
@@ -2196,5 +2196,556 @@ textarea:focus,
 
   .confirm-dialog-actions button {
     flex: 1 1 0;
+  }
+}
+
+/* Builder stabilization: tokenized surfaces, lighter hierarchy, safer responsive flow. */
+.shell {
+  --builder-sticky-top: 102px;
+}
+
+.shell .builder-command-bar.app-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+  overflow: visible;
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 90%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 92%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 6%, transparent), transparent 42%);
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+}
+
+.shell .builder-command-bar.app-bar::before {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.18), transparent 42%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--warm) 7%, transparent), transparent 28%);
+}
+
+.shell .builder-command-bar.app-bar .eyebrow,
+.shell .builder-command-bar.app-bar .draft-summary span {
+  color: color-mix(in srgb, var(--muted) 90%, var(--text) 10%);
+}
+
+.shell .builder-command-bar.app-bar .draft-summary strong {
+  color: var(--text);
+}
+
+.shell .builder-command-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.shell .builder-status-strip {
+  max-width: min(320px, 30vw);
+  min-height: 34px;
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+  background: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+.shell .builder-status-strip #statusText {
+  min-width: 0;
+  overflow: hidden;
+  color: color-mix(in srgb, var(--muted) 70%, var(--text) 30%);
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shell .builder-status-strip #statusText[data-tone="error"] {
+  color: var(--danger);
+}
+
+.shell .builder-status-strip .badge {
+  border: 1px solid color-mix(in srgb, var(--warm) 28%, transparent);
+  background: var(--warm-soft);
+  color: var(--warm);
+}
+
+.shell .builder-view-actions,
+.shell .builder-file-actions {
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--line) 82%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel) 58%, transparent);
+}
+
+.shell .builder-command-bar.app-bar .ghost,
+.shell .builder-command-bar.app-bar .secondary,
+.shell .builder-command-bar.app-bar .action-details summary {
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+  color: color-mix(in srgb, var(--text) 82%, var(--accent) 18%);
+  box-shadow: none;
+}
+
+.shell .builder-command-bar.app-bar button.subtle[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 76%, transparent);
+  color: var(--accent);
+}
+
+.shell .builder-command-bar.app-bar #saveBtn:disabled {
+  border: 1px solid color-mix(in srgb, var(--line) 92%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+  color: color-mix(in srgb, var(--muted) 82%, var(--text) 18%);
+  opacity: 1;
+  box-shadow: none;
+}
+
+.shell .stage-shell {
+  gap: 10px;
+}
+
+.shell .workspace-shell {
+  gap: 10px;
+  grid-template-columns: minmax(174px, 208px) minmax(0, 1fr);
+}
+
+.shell .workspace-shell.preview-open {
+  grid-template-columns: minmax(174px, 208px) minmax(0, 1fr) minmax(292px, 338px);
+}
+
+.shell .outline-panel,
+.shell .editor-panel,
+.shell .preview-panel {
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel) 88%, transparent),
+      color-mix(in srgb, var(--panel-strong) 92%, transparent)
+    );
+  box-shadow: var(--shadow-soft);
+}
+
+.shell .outline-panel,
+.shell .preview-panel {
+  top: var(--builder-sticky-top);
+}
+
+.shell .editor-card,
+.shell .section-card,
+.shell .item-card,
+.shell .preview-card,
+.shell .option-focus-card,
+.shell .preview-section {
+  scroll-margin-top: calc(var(--builder-sticky-top) + 18px);
+}
+
+.shell .editor-card,
+.shell .section-card,
+.shell .item-card,
+.shell .preview-card,
+.shell .option-focus-card {
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 78%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 88%, transparent)
+    );
+  box-shadow: 0 12px 26px rgba(9, 23, 29, 0.06);
+}
+
+.shell .section-card,
+.shell .item-card {
+  background: color-mix(in srgb, var(--surface-elevated) 86%, transparent);
+  box-shadow: none;
+}
+
+.shell .section-card.is-open,
+.shell .item-card.is-open {
+  border-color: color-mix(in srgb, var(--accent) 24%, var(--line) 76%);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 80%, transparent),
+      color-mix(in srgb, var(--accent-soft) 28%, var(--surface-elevated) 72%)
+    );
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--accent) 8%, transparent);
+}
+
+.shell .item-card.group-card {
+  border-color: color-mix(in srgb, var(--warm) 24%, var(--line) 76%);
+  background: color-mix(in srgb, var(--warm-soft) 22%, var(--surface-elevated) 78%);
+}
+
+.shell .item-card.utility-card {
+  border-color: color-mix(in srgb, var(--line) 92%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 82%, transparent);
+}
+
+.shell .outline-item,
+.shell .outline-subitem,
+.shell .section-organizer-item,
+.shell .item-organizer-item,
+.shell .option-organizer-item {
+  border-color: color-mix(in srgb, var(--line) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 76%, transparent);
+  box-shadow: none;
+}
+
+.shell .outline-item.active,
+.shell .outline-subitem.active,
+.shell .section-organizer-item.active,
+.shell .item-organizer-item.active,
+.shell .option-organizer-item.active {
+  border-color: color-mix(in srgb, var(--accent) 32%, transparent);
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent-soft) 76%, transparent), color-mix(in srgb, var(--surface-elevated) 82%, transparent));
+  box-shadow:
+    inset 3px 0 0 var(--accent),
+    0 10px 20px color-mix(in srgb, var(--accent) 9%, transparent);
+}
+
+.shell .outline-item.active strong,
+.shell .outline-subitem.active strong,
+.shell .section-organizer-item.active strong,
+.shell .item-organizer-item.active strong,
+.shell .option-organizer-item.active strong {
+  color: var(--text);
+}
+
+.shell .drag-handle,
+.shell .action-details summary {
+  border-color: color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 78%, transparent);
+  color: color-mix(in srgb, var(--muted) 76%, var(--text) 24%);
+}
+
+.shell .section-card:not(.is-open) .drag-handle,
+.shell .section-card:not(.is-open) .action-details summary,
+.shell .item-card:not(.is-open) .drag-handle,
+.shell .item-card:not(.is-open) .action-details summary {
+  opacity: 0.46;
+}
+
+.shell .section-card:hover .drag-handle,
+.shell .section-card:hover .action-details summary,
+.shell .section-card:focus-within .drag-handle,
+.shell .section-card:focus-within .action-details summary,
+.shell .section-card.is-open .drag-handle,
+.shell .section-card.is-open .action-details summary,
+.shell .item-card:hover .drag-handle,
+.shell .item-card:hover .action-details summary,
+.shell .item-card:focus-within .drag-handle,
+.shell .item-card:focus-within .action-details summary,
+.shell .item-card.is-open .drag-handle,
+.shell .item-card.is-open .action-details summary {
+  border-color: color-mix(in srgb, var(--line-strong) 74%, transparent);
+  background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+  opacity: 1;
+}
+
+.shell .action-menu,
+.shell .help-popover {
+  border-color: color-mix(in srgb, var(--line) 94%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 96%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 96%, transparent)
+    );
+  color: var(--text);
+  box-shadow: var(--shadow-soft);
+}
+
+.shell .action-menu button.ghost {
+  justify-content: flex-start;
+  border-color: transparent;
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+
+.shell .action-menu button.ghost:hover,
+.shell .action-menu button.ghost:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 72%, transparent);
+  color: var(--accent);
+}
+
+.shell .action-menu button.warn {
+  color: var(--danger);
+}
+
+.shell .preview-panel {
+  gap: 12px;
+}
+
+.shell .preview-card {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.shell .preview-index {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--panel) 96%, transparent),
+    color-mix(in srgb, var(--panel) 72%, transparent),
+    transparent
+  );
+}
+
+.shell .preview-index-chip {
+  border-color: color-mix(in srgb, var(--line) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 74%, transparent);
+  color: color-mix(in srgb, var(--muted) 82%, var(--text) 18%);
+}
+
+.shell .preview-index-chip:hover,
+.shell .preview-index-chip:focus-visible,
+.shell .preview-index-chip.active,
+.shell .preview-index-chip[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+  background: color-mix(in srgb, var(--accent-soft) 82%, transparent);
+  color: var(--accent);
+}
+
+.shell .preview-paper {
+  gap: 12px;
+  border-color: color-mix(in srgb, var(--line) 86%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 80%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 78%, transparent)
+    );
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+
+.shell .preview-section {
+  border-color: color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--surface-elevated) 74%, transparent);
+}
+
+.shell .preview-section-head h4 {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.shell .preview-group {
+  border-color: color-mix(in srgb, var(--warm) 22%, var(--line) 78%);
+  background: color-mix(in srgb, var(--warm-soft) 22%, var(--surface-elevated) 78%);
+}
+
+.shell .preview-group-title,
+.shell .preview-table-title,
+.shell .preview-note-title {
+  color: var(--accent);
+}
+
+.shell .preview-field {
+  border-color: color-mix(in srgb, var(--line) 86%, transparent);
+  background: color-mix(in srgb, var(--panel-strong) 64%, transparent);
+}
+
+.shell .preview-field > span {
+  color: color-mix(in srgb, var(--muted) 88%, var(--text) 12%);
+}
+
+.shell .preview-field input,
+.shell .preview-field select,
+.shell .preview-image-upload {
+  border-color: color-mix(in srgb, var(--input-border) 92%, transparent);
+  background: color-mix(in srgb, var(--input-bg) 88%, var(--bg-soft) 12%);
+  color: var(--text);
+}
+
+.shell .preview-image-upload span,
+.shell .preview-hint,
+.shell .preview-divider-caption {
+  color: color-mix(in srgb, var(--muted) 92%, var(--text) 8%);
+}
+
+html[data-theme="dark"] .shell .builder-command-bar.app-bar,
+html[data-theme="dark"] .shell .outline-panel,
+html[data-theme="dark"] .shell .editor-panel,
+html[data-theme="dark"] .shell .preview-panel {
+  border-color: rgba(181, 208, 216, 0.1);
+  background:
+    linear-gradient(180deg, rgba(22, 39, 45, 0.9), rgba(14, 26, 31, 0.92)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.06), transparent 42%);
+  box-shadow: 0 24px 50px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="dark"] .shell .builder-command-bar.app-bar .ghost,
+html[data-theme="dark"] .shell .builder-command-bar.app-bar .secondary,
+html[data-theme="dark"] .shell .builder-command-bar.app-bar .action-details summary,
+html[data-theme="dark"] .shell .builder-view-actions,
+html[data-theme="dark"] .shell .builder-file-actions,
+html[data-theme="dark"] .shell .builder-status-strip {
+  border-color: rgba(181, 208, 216, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .shell .builder-status-strip #statusText {
+  color: color-mix(in srgb, var(--muted) 68%, var(--text) 32%);
+}
+
+html[data-theme="dark"] .shell .builder-status-strip #statusText[data-tone="error"] {
+  color: var(--danger);
+}
+
+html[data-theme="dark"] .shell .builder-command-bar.app-bar #saveBtn:disabled {
+  border-color: rgba(181, 208, 216, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: color-mix(in srgb, var(--muted) 80%, var(--text) 20%);
+}
+
+html[data-theme="dark"] .shell .action-menu,
+html[data-theme="dark"] .shell .help-popover {
+  border-color: rgba(181, 208, 216, 0.12);
+  background:
+    linear-gradient(180deg, rgba(24, 42, 49, 0.98), rgba(15, 28, 33, 0.98));
+  color: var(--text);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.34);
+}
+
+html[data-theme="dark"] .shell .action-menu button.ghost {
+  color: var(--text);
+}
+
+html[data-theme="dark"] .shell .preview-section,
+html[data-theme="dark"] .shell .preview-field,
+html[data-theme="dark"] .shell .preview-paper,
+html[data-theme="dark"] .shell .preview-group {
+  border-color: rgba(181, 208, 216, 0.1);
+  background:
+    linear-gradient(180deg, rgba(23, 40, 46, 0.74), rgba(16, 29, 35, 0.78));
+  color: var(--text);
+}
+
+html[data-theme="dark"] .shell .preview-index {
+  background: linear-gradient(180deg, rgba(9, 18, 22, 0.96), rgba(9, 18, 22, 0.78), transparent);
+}
+
+html[data-theme="dark"] .shell .preview-field input,
+html[data-theme="dark"] .shell .preview-field select,
+html[data-theme="dark"] .shell .preview-image-upload {
+  border-color: rgba(181, 208, 216, 0.12);
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .shell .section-card,
+html[data-theme="dark"] .shell .item-card,
+html[data-theme="dark"] .shell .option-focus-card,
+html[data-theme="dark"] .shell .section-organizer-item,
+html[data-theme="dark"] .shell .item-organizer-item,
+html[data-theme="dark"] .shell .option-organizer-item,
+html[data-theme="dark"] .shell .outline-item,
+html[data-theme="dark"] .shell .outline-subitem {
+  border-color: rgba(181, 208, 216, 0.1);
+  background: rgba(255, 255, 255, 0.035);
+}
+
+html[data-theme="dark"] .shell .section-card.is-open,
+html[data-theme="dark"] .shell .item-card.is-open,
+html[data-theme="dark"] .shell .outline-item.active,
+html[data-theme="dark"] .shell .outline-subitem.active,
+html[data-theme="dark"] .shell .section-organizer-item.active,
+html[data-theme="dark"] .shell .item-organizer-item.active,
+html[data-theme="dark"] .shell .option-organizer-item.active {
+  border-color: rgba(99, 188, 205, 0.22);
+  background:
+    linear-gradient(90deg, rgba(99, 188, 205, 0.13), rgba(255, 255, 255, 0.04));
+}
+
+@media (max-width: 1180px) {
+  .shell .builder-command-bar.app-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .builder-command-actions {
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .shell .workspace-shell,
+  .shell .workspace-shell.preview-open {
+    grid-template-columns: 1fr;
+  }
+
+  .shell .outline-panel,
+  .shell .preview-panel {
+    position: static;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 860px) {
+  .shell {
+    --builder-sticky-top: 82px;
+  }
+
+  .shell .builder-command-bar.app-bar {
+    padding: 12px;
+  }
+
+  .shell .builder-command-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .shell .builder-status-strip {
+    width: 100%;
+    max-width: none;
+    order: 3;
+  }
+
+  .shell .builder-view-actions,
+  .shell .builder-file-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .shell .builder-view-actions > button,
+  .shell .builder-file-actions > button,
+  .shell .builder-file-actions > .action-details {
+    flex: 1 1 0;
+  }
+
+  .shell .builder-file-actions > .action-details summary {
+    width: 100%;
+  }
+
+  .shell .editor-panel {
+    order: 1;
+  }
+
+  .shell .outline-panel {
+    order: 2;
+  }
+
+  .shell .preview-panel {
+    order: 3;
+  }
+
+  .shell .preview-index {
+    position: static;
+  }
+
+  .shell .preview-grid {
+    grid-template-columns: 1fr;
   }
 }
