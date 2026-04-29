@@ -115,6 +115,10 @@ body {
   min-width: 0;
 }
 
+.print-clinic-brand.no-logo {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .print-logo,
 .print-logo-placeholder {
   width: 64px;
@@ -492,6 +496,22 @@ body {
   text-transform: uppercase;
 }
 
+.print-density-comfortable .print-body {
+  margin-top: 18px;
+}
+
+.print-density-comfortable .print-body > .print-section,
+.print-density-comfortable .print-body > .print-group,
+.print-density-comfortable .print-body > .print-table-block,
+.print-density-comfortable .print-body > .print-note,
+.print-density-comfortable .print-body > .print-divider-block {
+  margin-top: 16px;
+}
+
+.print-density-comfortable .print-row {
+  padding-block: 10px;
+}
+
 @media (max-width: 760px) {
   body {
     padding: 12px;
@@ -570,6 +590,10 @@ body {
   .print-clinic-brand {
     grid-template-columns: 48px minmax(0, 1fr);
     gap: 10px;
+  }
+
+  .print-clinic-brand.no-logo {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .print-logo,
@@ -708,5 +732,21 @@ body {
 
   .print-signature strong {
     font-size: 8.5px;
+  }
+
+  .print-density-comfortable .print-body {
+    margin-top: 12px;
+  }
+
+  .print-density-comfortable .print-row {
+    padding-block: 6px;
+  }
+
+  .print-density-comfortable .print-body > .print-section,
+  .print-density-comfortable .print-body > .print-group,
+  .print-density-comfortable .print-body > .print-table-block,
+  .print-density-comfortable .print-body > .print-note,
+  .print-density-comfortable .print-body > .print-divider-block {
+    margin-top: 10px;
   }
 }

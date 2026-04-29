@@ -12,7 +12,7 @@ The app has two big functional directions:
 Staff fills up examination forms inside the app, saves records, and uses structured data instead of manually encoding results into scattered templates.
 
 2. Output
-The app should eventually generate patient-facing printable results. Legacy print templates exist and can be used as visual guidance, but they are not the strict source of truth.
+The app should generate patient-facing printable results. The first browser-print and form-version print configuration foundation now exists, and `docs/handoff/PRINT_SYSTEM_HANDOFF.md` is the active print continuation guide. Legacy print templates exist and can be used as visual guidance, but they are not the strict source of truth.
 
 ## Most Important Product Decision
 The app must not be built as a fixed set of hardcoded forms.
@@ -31,8 +31,13 @@ not as a:
 
 `lab app with hardcoded forms`
 
-## Phase 1 Priority
-Phase 1 must focus on the `Exam/Form Builder`.
+Current status snapshot:
+- the builder and records foundations have landed
+- the current active product area is patient-facing print configuration
+- print should continue from the builder-driven `record_identity` and `print_config` model
+
+## Historical Phase 1 Priority
+Phase 1 focused on the `Exam/Form Builder`.
 
 Phase 1 should enable:
 - creating an exam/form definition
@@ -64,7 +69,7 @@ That changes the product strategy in an important way:
 - the builder is an admin/setup tool, not the center of the daily workflow
 
 Current locked assumption:
-- most day-to-day usage should happen in a future `Records` or data-entry runtime
+- most day-to-day usage should happen in `Records` or data-entry runtime
 - most users should not need to touch the builder
 - the visible workflow should stay extremely simple and obvious
 
@@ -287,28 +292,37 @@ Current live UI checkpoint:
       - only keep guidance when it prevents mistakes, explains limits, or clarifies a non-obvious action
 
 ## Next Whole-App Milestone
-The builder is now at the point where the core direction is effectively done.
+The next major milestone is still the patient-facing print system, but it has now moved from planning into implementation.
 
-That means the next major milestone for the whole app should now be:
+Active print handoff:
+- `docs/handoff/PRINT_SYSTEM_HANDOFF.md`
 
-`Template-driven print system`
+Current print direction:
+- output should be compact and patient-facing
+- target one page when the form content allows it
+- use A4 portrait, not the old landscape template shape
+- make header/accent color configurable per examination/form
+- keep print configuration inside the form builder as a separate `Print` pane/tab
+- keep patient info generic and user-configured, not hardcoded by the app
+- use a constrained template/configuration approach instead of a freeform Canva-style editor
 
-This is the future screen/module where the clinic will:
-- reuse the saved `Record + form_version_id`
-- apply the real clinic print template and branding rules
-- place logo, patient header, result body, images, and footer intentionally
-- stop relying on the current generic first-pass browser print renderer
+Current implementation checkpoint:
+- field-level `required` settings are available in the builder
+- completion validates builder-marked required fields
+- generic record identity config lives at `block_schema.meta.record_identity`
+- print config lives at `block_schema.meta.print_config`
+- `/records/{id}/print` now reads form-version print config
+- the existing Semen sample was verified as a one-page A4 portrait export
 
-Recommended product priority from this checkpoint:
-1. real template-driven print architecture
-2. branded clinic header and logo handling inside print
-3. arrangement-sensitive result layout rules
-4. image sizing and print placement rules
-5. only then smaller non-print polish passes if direct issues remain
+Recommended next product priority:
+1. add builder-side print preview with sample data
+2. add page-fit warning or confidence indicator
+3. add controlled result-body print options such as hide empty fields, section title behavior, image sizing, and table density
+4. add stronger footer/signatory configuration
+5. test across real forms and long-form edge cases
 
 Do not reopen major builder growth now that its core direction is done.
-Do not keep stretching the generic print renderer now that the shared product shell is in place.
-The right next move is the real clinic-facing print system.
+Do not restart print from a blank architecture. Continue from the current builder-driven print config model.
 
 ## Records Runtime Foundation Status
 The first `Records Runtime` foundation has now landed in the app.
@@ -896,18 +910,29 @@ Its child fields are:
 The `references/print-templates` folder contains `.dotx` templates that show the clinic's current print style.
 
 Observed recurring print pattern:
-- hospital branding/header
+- clinic branding/header
 - patient info block
-- exam title / department title
+- exam title or department title
 - result table or structured result sections
 - medtech/pathologist footer
+- distinct header/accent colors per examination
 
 These templates are useful for:
 - understanding print tone
 - understanding result-document hierarchy
-- guiding future PDF/print output styling
+- guiding future print output styling
 
 They are not the strict implementation source.
+
+Important product clarifications:
+- do not copy the old landscape layout
+- do not hardcode a patient-info zone into the engine
+- do not assume the app knows the clinic's workflow semantics
+- let users create their own patient-info section and required fields inside the form builder
+- keep print settings configurable per form version through the builder `Print` pane
+
+The detailed print handoff is in:
+- `docs/handoff/PRINT_SYSTEM_HANDOFF.md`
 
 ## Known Conservative Areas
 Some fields in the schema were intentionally left conservative because the workbook did not give enough reliable signal to force a stricter type.
@@ -924,16 +949,18 @@ These should be treated as safe defaults, not as final product truth.
 ## What Another AI Should Do First
 When continuing implementation, the next AI should:
 
-1. Read `artifacts/schema/naic_medtech_app_schema.json`
-2. Read `docs/handoff/BUILDER_V2_PLAN.md`
-3. Treat the app as schema-driven
-4. Build the exam/form builder first
-5. Avoid hardcoding individual lab forms
-6. Keep output/print generation as a separate later-capable layer
+1. Read `docs/handoff/NAIC_MEDTECH_AI_CONTEXT.json`
+2. Read `docs/handoff/PRINT_SYSTEM_HANDOFF.md`
+3. Skim `docs/handoff/BUILDER_V2_PLAN.md` and `docs/handoff/FLEXIBLE_BUILDER_FOUNDATION.md`
+4. Treat the app as schema-driven and form-version-driven
+5. Continue the existing builder-driven print config model
+6. Avoid hardcoding individual lab forms, patient-info zones, or old template layouts
 
 ## What Another AI Should Avoid
 - Do not build one screen per exam.
 - Do not treat legacy `.dotx` templates as the source of truth.
+- Do not copy the old landscape print layout.
+- Do not hardcode patient-info fields or zones; keep them user-configurable.
 - Do not make the first version depend on programmer-only form changes.
 - Do not assume accounts/admin features are the current main milestone.
 

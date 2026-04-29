@@ -40,6 +40,21 @@ ALLOWED_IMAGE_CONTENT_TYPES = {
 MAX_RECORD_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_CLINIC_LOGO_BYTES = 5 * 1024 * 1024
 MAX_USER_AVATAR_BYTES = 2 * 1024 * 1024
+DEFAULT_PRINT_ACCENT_COLOR = "#1e5d52"
+PRINT_SUMMARY_SOURCES = {
+    "field",
+    "primary_identity",
+    "secondary_identity",
+    "record_key",
+    "issued_at",
+    "form_version",
+}
+DEFAULT_PRINT_SUMMARY_ITEMS = [
+    {"id": "summary_primary", "label": "Record", "source": "primary_identity", "field_id": ""},
+    {"id": "summary_secondary", "label": "Detail", "source": "secondary_identity", "field_id": ""},
+    {"id": "summary_issued", "label": "Issued", "source": "issued_at", "field_id": ""},
+    {"id": "summary_version", "label": "Form version", "source": "form_version", "field_id": ""},
+]
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -77,6 +92,70 @@ def validate_role(value: Any) -> str:
 def validate_user_status(value: Any) -> str:
     status = compact_text(value).lower()
     return status if status in {"pending", "active", "disabled"} else "pending"
+
+
+def normalize_print_accent_color(value: Any) -> str:
+    text = compact_text(value)
+    return text.lower() if re.fullmatch(r"#[0-9a-fA-F]{6}", text) else DEFAULT_PRINT_ACCENT_COLOR
+
+
+def normalize_print_density(value: Any) -> str:
+    density = compact_text(value).lower()
+    return density if density in {"compact", "comfortable"} else "compact"
+
+
+def normalize_boolean_setting(value: Any, *, default: bool = True) -> bool:
+    if value in (None, ""):
+        return default
+    if isinstance(value, str):
+        return compact_text(value).lower() not in {"0", "false", "no", "off"}
+    return bool(value)
+
+
+def default_print_summary_label(source: str) -> str:
+    return {
+        "primary_identity": "Record",
+        "secondary_identity": "Detail",
+        "record_key": "Record key",
+        "issued_at": "Issued",
+        "form_version": "Form version",
+        "field": "Field",
+    }.get(source, "Field")
+
+
+def normalize_print_summary_item(item: Any, index: int) -> dict[str, str]:
+    raw_item = item if isinstance(item, dict) else {}
+    source = compact_text(raw_item.get("source")).lower()
+    if source not in PRINT_SUMMARY_SOURCES:
+        source = "field"
+    field_id = compact_text(raw_item.get("field_id")) if source == "field" else ""
+    label = compact_text(raw_item.get("label")) or default_print_summary_label(source)
+    return {
+        "id": compact_text(raw_item.get("id")) or f"summary_{index + 1}",
+        "label": label,
+        "source": source,
+        "field_id": field_id,
+    }
+
+
+def normalize_print_config(raw_config: Any) -> dict[str, Any]:
+    config = raw_config if isinstance(raw_config, dict) else {}
+    summary_items = [
+        normalize_print_summary_item(item, index)
+        for index, item in enumerate(normalize_items(config.get("summary_items")))
+    ]
+    if not summary_items:
+        summary_items = [dict(item) for item in DEFAULT_PRINT_SUMMARY_ITEMS]
+
+    return {
+        "accent_color": normalize_print_accent_color(config.get("accent_color")),
+        "density": normalize_print_density(config.get("density")),
+        "show_logo": normalize_boolean_setting(config.get("show_logo"), default=True),
+        "show_clinic_info": normalize_boolean_setting(config.get("show_clinic_info"), default=True),
+        "show_status": normalize_boolean_setting(config.get("show_status"), default=True),
+        "show_signatures": normalize_boolean_setting(config.get("show_signatures"), default=True),
+        "summary_items": summary_items,
+    }
 
 
 def password_hash_value(password: str) -> str:
@@ -976,6 +1055,12 @@ def normalize_active_block_storage_schema(block_schema: dict[str, Any]) -> bool:
             changed = True
     elif "record_identity" in meta:
         meta.pop("record_identity", None)
+        block_schema["meta"] = meta
+        changed = True
+
+    normalized_print_config = normalize_print_config(meta.get("print_config"))
+    if meta.get("print_config") != normalized_print_config:
+        meta["print_config"] = normalized_print_config
         block_schema["meta"] = meta
         changed = True
 
@@ -2046,6 +2131,53 @@ def build_print_items(
     return items
 
 
+def build_print_summary_items(
+    print_config: dict[str, Any],
+    serialized: dict[str, Any],
+    values: dict[str, Any],
+    *,
+    issued_at_label: str,
+) -> list[dict[str, str]]:
+    entry_schema = serialized.get("entry_schema") if isinstance(serialized.get("entry_schema"), dict) else {}
+    identity = serialized.get("record_identity") if isinstance(serialized.get("record_identity"), dict) else {}
+    fields = record_field_lookup(entry_schema)
+    summary_items: list[dict[str, str]] = []
+
+    for item in normalize_items(print_config.get("summary_items")):
+        if not isinstance(item, dict):
+            continue
+        source = compact_text(item.get("source")).lower()
+        label = compact_text(item.get("label")) or default_print_summary_label(source)
+        value = ""
+
+        if source == "field":
+            field_id = compact_text(item.get("field_id"))
+            field = fields.get(field_id)
+            if not compact_text(item.get("label")) and field:
+                label = compact_text(field.get("name")) or "Field"
+            value = record_value_display_text(values.get(field_id))
+        elif source == "primary_identity":
+            label = compact_text(item.get("label")) or compact_text(identity.get("primary_label")) or "Record"
+            value = compact_text(identity.get("primary_value"))
+        elif source == "secondary_identity":
+            label = compact_text(item.get("label")) or compact_text(identity.get("secondary_label")) or "Detail"
+            value = compact_text(identity.get("secondary_value"))
+        elif source == "record_key":
+            value = compact_text(serialized.get("record_key"))
+        elif source == "issued_at":
+            value = issued_at_label
+        elif source == "form_version":
+            value = f"v{serialized['form_version_number']}"
+
+        if source in {"primary_identity", "secondary_identity"} and not value:
+            continue
+        summary_items.append({"label": label, "value": value or "Not set yet"})
+
+    if not summary_items:
+        summary_items.append({"label": "Record", "value": compact_text(serialized.get("record_key"))})
+    return summary_items
+
+
 def build_record_print_document(
     record: Record,
     *,
@@ -2063,34 +2195,19 @@ def build_record_print_document(
         or serialized.get("created_at_label")
         or ""
     )
-    identity = serialized.get("record_identity") if isinstance(serialized.get("record_identity"), dict) else {}
-    summary_items: list[dict[str, str]] = []
-    if compact_text(identity.get("primary_value")):
-        summary_items.append(
-            {
-                "label": compact_text(identity.get("primary_label")) or "Record",
-                "value": compact_text(identity.get("primary_value")),
-            }
-        )
-    if compact_text(identity.get("secondary_value")):
-        summary_items.append(
-            {
-                "label": compact_text(identity.get("secondary_label")) or "Detail",
-                "value": compact_text(identity.get("secondary_value")),
-            }
-        )
-    if not summary_items:
-        summary_items.append({"label": "Record", "value": serialized["record_key"]})
-    summary_items.extend(
-        [
-            {"label": "Issued", "value": issued_at_label or "Not set yet"},
-            {"label": "Form version", "value": f"v{serialized['form_version_number']}"},
-        ]
+    meta = entry_schema.get("meta") if isinstance(entry_schema.get("meta"), dict) else {}
+    print_config = normalize_print_config(meta.get("print_config"))
+    summary_items = build_print_summary_items(
+        print_config,
+        serialized,
+        values,
+        issued_at_label=issued_at_label or "Not set yet",
     )
 
     return {
         "record": serialized,
         "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
+        "print_config": print_config,
         "template": {
             "id": "clinic_lab_result_v1",
             "name": "Clinic lab result",

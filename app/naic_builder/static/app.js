@@ -31,6 +31,21 @@ const INPUT_TYPES = [
   { id: "datetime", label: "Date & time", control: "input", dataType: "datetime" },
 ];
 const ACTIVE_BLOCK_SCHEMA_SOURCE = "builder_blocks_v1";
+const DEFAULT_PRINT_ACCENT_COLOR = "#1e5d52";
+const PRINT_SUMMARY_SOURCES = [
+  { id: "field", label: "Field" },
+  { id: "primary_identity", label: "Primary label" },
+  { id: "secondary_identity", label: "Secondary label" },
+  { id: "record_key", label: "Record key" },
+  { id: "issued_at", label: "Issued" },
+  { id: "form_version", label: "Form version" },
+];
+const DEFAULT_PRINT_SUMMARY_ITEMS = [
+  { id: "summary_primary", label: "Record", source: "primary_identity", field_id: "" },
+  { id: "summary_secondary", label: "Detail", source: "secondary_identity", field_id: "" },
+  { id: "summary_issued", label: "Issued", source: "issued_at", field_id: "" },
+  { id: "summary_version", label: "Form version", source: "form_version", field_id: "" },
+];
 
 const initialFormSlug = document.body?.dataset?.initialFormSlug || "";
 const initialBuilderMode = document.body?.dataset?.initialBuilderMode || "";
@@ -207,6 +222,180 @@ function setDraftRecordIdentityValue(key, value, draft = state.draft) {
   }
 }
 
+function normalizePrintAccentColor(value) {
+  const text = compactText(value);
+  return /^#[0-9a-fA-F]{6}$/.test(text) ? text.toLowerCase() : DEFAULT_PRINT_ACCENT_COLOR;
+}
+
+function normalizePrintDensity(value) {
+  const text = compactText(value).toLowerCase();
+  return text === "comfortable" ? "comfortable" : "compact";
+}
+
+function normalizePrintBoolean(value, fallback = true) {
+  if (value === undefined || value === null || value === "") {
+    return fallback;
+  }
+  if (typeof value === "string") {
+    return !["0", "false", "no", "off"].includes(value.trim().toLowerCase());
+  }
+  return Boolean(value);
+}
+
+function printSummarySourceLabel(source) {
+  return PRINT_SUMMARY_SOURCES.find((item) => item.id === source)?.label || "Field";
+}
+
+function defaultPrintSummaryLabel(source, fieldId = "") {
+  if (source === "primary_identity") {
+    return "Record";
+  }
+  if (source === "secondary_identity") {
+    return "Detail";
+  }
+  if (source === "record_key") {
+    return "Record key";
+  }
+  if (source === "issued_at") {
+    return "Issued";
+  }
+  if (source === "form_version") {
+    return "Form version";
+  }
+  const field = collectIdentityFieldOptions().find((item) => item.id === fieldId);
+  return field?.label || "Field";
+}
+
+function makePrintSummaryItem(source = "field") {
+  return {
+    id: `summary_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+    label: defaultPrintSummaryLabel(source),
+    source,
+    field_id: "",
+  };
+}
+
+function normalizePrintSummaryItem(item, index) {
+  const rawItem = item && typeof item === "object" ? item : {};
+  const source = PRINT_SUMMARY_SOURCES.some((option) => option.id === rawItem.source)
+    ? rawItem.source
+    : "field";
+  const fieldId = compactText(rawItem.field_id);
+  return {
+    id: compactText(rawItem.id) || `summary_${index + 1}`,
+    label: compactText(rawItem.label) || defaultPrintSummaryLabel(source, fieldId),
+    source,
+    field_id: source === "field" ? fieldId : "",
+  };
+}
+
+function normalizePrintSummaryItems(items) {
+  const normalized = normalizeArray(items).map(normalizePrintSummaryItem);
+  return normalized.length ? normalized : deepClone(DEFAULT_PRINT_SUMMARY_ITEMS);
+}
+
+function getDraftPrintConfig(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return {
+      accent_color: DEFAULT_PRINT_ACCENT_COLOR,
+      density: "compact",
+      show_logo: true,
+      show_clinic_info: true,
+      show_status: true,
+      show_signatures: true,
+      summary_items: deepClone(DEFAULT_PRINT_SUMMARY_ITEMS),
+    };
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  if (!meta.print_config || typeof meta.print_config !== "object") {
+    meta.print_config = {};
+  }
+  const config = meta.print_config;
+  config.accent_color = normalizePrintAccentColor(config.accent_color);
+  config.density = normalizePrintDensity(config.density);
+  config.show_logo = normalizePrintBoolean(config.show_logo, true);
+  config.show_clinic_info = normalizePrintBoolean(config.show_clinic_info, true);
+  config.show_status = normalizePrintBoolean(config.show_status, true);
+  config.show_signatures = normalizePrintBoolean(config.show_signatures, true);
+  config.summary_items = normalizePrintSummaryItems(config.summary_items);
+  return config;
+}
+
+function setDraftPrintConfigValue(key, value, draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return;
+  }
+  const config = getDraftPrintConfig(draft);
+  if (key === "accent_color") {
+    config.accent_color = normalizePrintAccentColor(value);
+  } else if (key === "density") {
+    config.density = normalizePrintDensity(value);
+  } else if (["show_logo", "show_clinic_info", "show_status", "show_signatures"].includes(key)) {
+    config[key] = Boolean(value);
+  }
+}
+
+function getDraftPrintSummaryItem(itemId) {
+  const config = getDraftPrintConfig(state.draft);
+  return config.summary_items.find((item) => item.id === itemId);
+}
+
+function updateDraftPrintSummaryItem(itemId, key, value) {
+  const item = getDraftPrintSummaryItem(itemId);
+  if (!item) {
+    return;
+  }
+  if (key === "source") {
+    const previousDefault = defaultPrintSummaryLabel(item.source, item.field_id);
+    const nextSource = PRINT_SUMMARY_SOURCES.some((option) => option.id === value) ? value : "field";
+    item.source = nextSource;
+    if (nextSource !== "field") {
+      item.field_id = "";
+    }
+    if (!compactText(item.label) || item.label === previousDefault) {
+      item.label = defaultPrintSummaryLabel(nextSource, item.field_id);
+    }
+    return;
+  }
+  if (key === "field_id") {
+    item.field_id = compactText(value);
+    if (!compactText(item.label) || item.label === "Field") {
+      item.label = defaultPrintSummaryLabel(item.source, item.field_id);
+    }
+    return;
+  }
+  if (key === "label") {
+    item.label = compactText(value);
+  }
+}
+
+function addDraftPrintSummaryItem() {
+  const config = getDraftPrintConfig(state.draft);
+  config.summary_items.push(makePrintSummaryItem("field"));
+}
+
+function removeDraftPrintSummaryItem(itemId) {
+  const config = getDraftPrintConfig(state.draft);
+  config.summary_items = config.summary_items.filter((item) => item.id !== itemId);
+  if (!config.summary_items.length) {
+    config.summary_items = deepClone(DEFAULT_PRINT_SUMMARY_ITEMS);
+  }
+}
+
+function moveDraftPrintSummaryItem(itemId, direction) {
+  const config = getDraftPrintConfig(state.draft);
+  const index = config.summary_items.findIndex((item) => item.id === itemId);
+  if (index === -1) {
+    return;
+  }
+  const nextIndex = direction === "up" ? index - 1 : index + 1;
+  if (nextIndex < 0 || nextIndex >= config.summary_items.length) {
+    return;
+  }
+  const [item] = config.summary_items.splice(index, 1);
+  config.summary_items.splice(nextIndex, 0, item);
+}
+
 function ensureDraftBlockState(draft) {
   if (!draft || typeof draft !== "object") {
     return draft;
@@ -290,6 +479,8 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
   if (!identity.primary_field_id && !identity.secondary_field_id && !identity.searchable_field_ids.length) {
     delete meta.record_identity;
   }
+
+  getDraftPrintConfig(draft);
 }
 
 function syncDraftBlockState() {
@@ -1252,6 +1443,12 @@ function setBoundValue(target, bind, rawValue) {
     return;
   }
 
+  if (target === state.draft && bind.startsWith("print_config.")) {
+    setDraftPrintConfigValue(bind.replace("print_config.", ""), rawValue);
+    syncRootMetaToBlockSchema();
+    return;
+  }
+
   if (isStoredBlockNode(target)) {
     const props = getNodeProps(target);
     if (bind === "name") {
@@ -1781,7 +1978,7 @@ function defaultFocusPane() {
 
 function syncFocusPane() {
   const focus = String(state.ui.focusPane || "");
-  const valid = new Set(["setup", "content", "save"]);
+  const valid = new Set(["setup", "content", "print", "save"]);
   if (!valid.has(focus)) {
     state.ui.focusPane = defaultFocusPane();
   }
@@ -1829,6 +2026,9 @@ function renderOutline() {
         ` : `
           <div class="outline-empty">No content yet.</div>
         `}
+        <button class="outline-item ${focusPane === "print" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="print">
+          <span>Print</span>
+        </button>
         <button class="outline-item ${focusPane === "save" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="save">
           <span>Save</span>
         </button>
@@ -1851,13 +2051,15 @@ function renderEditor() {
     formEditorEl.innerHTML = renderFormSetupCard({ focusMode: true });
   } else if (focusPane === "content") {
     formEditorEl.innerHTML = renderContentCard();
+  } else if (focusPane === "print") {
+    formEditorEl.innerHTML = renderPrintCard({ focusMode: true });
   } else if (focusPane === "save") {
     formEditorEl.innerHTML = renderSaveCard({ focusMode: true });
   } else {
     formEditorEl.innerHTML = renderContentCard();
   }
 
-  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-save");
+  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-print", "pane-save");
   formEditorEl.classList.add(`pane-${focusPane}`);
 
   setupSortableCollections();
@@ -1912,6 +2114,148 @@ function renderRecordIdentitySettings() {
           </div>
         </div>
       ` : '<div class="empty-state">Add fields in Content first.</div>'}
+    </section>
+  `;
+}
+
+function renderPrintSummarySourceOptions(selectedSource) {
+  return PRINT_SUMMARY_SOURCES.map((source) => `
+    <option value="${escapeHtml(source.id)}"${selectedSource === source.id ? " selected" : ""}>${escapeHtml(source.label)}</option>
+  `).join("");
+}
+
+function renderPrintSummaryFieldOptions(fields, selectedFieldId) {
+  return [
+    '<option value="">Not set</option>',
+    ...fields.map((field) => `
+      <option value="${escapeHtml(field.id)}"${selectedFieldId === field.id ? " selected" : ""}>${escapeHtml(field.pathLabel)}</option>
+    `),
+  ].join("");
+}
+
+function renderPrintSummaryRow(item, index, fields, totalCount) {
+  const fieldSelectDisabled = item.source !== "field" ? " disabled" : "";
+  return `
+    <div class="print-summary-row">
+      <div class="print-summary-row__order">
+        <button class="ghost mini" type="button" data-action="move-print-summary" data-id="${escapeHtml(item.id)}" data-direction="up" ${index === 0 ? "disabled" : ""}>Up</button>
+        <button class="ghost mini" type="button" data-action="move-print-summary" data-id="${escapeHtml(item.id)}" data-direction="down" ${index === totalCount - 1 ? "disabled" : ""}>Down</button>
+      </div>
+      <label>
+        <span>Label</span>
+        <input data-action="print-summary-label" data-id="${escapeHtml(item.id)}" value="${escapeHtml(item.label)}">
+      </label>
+      <label>
+        <span>Source</span>
+        <select data-action="print-summary-source" data-id="${escapeHtml(item.id)}">
+          ${renderPrintSummarySourceOptions(item.source)}
+        </select>
+      </label>
+      <label>
+        <span>Field</span>
+        <select data-action="print-summary-field" data-id="${escapeHtml(item.id)}"${fieldSelectDisabled}>
+          ${renderPrintSummaryFieldOptions(fields, item.field_id)}
+        </select>
+      </label>
+      <button class="ghost mini danger" type="button" data-action="remove-print-summary" data-id="${escapeHtml(item.id)}">Remove</button>
+    </div>
+  `;
+}
+
+function renderPrintSummaryPreview(config) {
+  const rows = config.summary_items.map((item) => {
+    const sourceLabel = item.source === "field"
+      ? defaultPrintSummaryLabel(item.source, item.field_id)
+      : printSummarySourceLabel(item.source);
+    return `
+      <div>
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${escapeHtml(sourceLabel)}</strong>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div class="print-mini-preview" style="--preview-accent: ${escapeHtml(config.accent_color)}">
+      <div class="print-mini-preview__head">
+        <span></span>
+        <strong>${escapeHtml(state.draft.name || "Untitled Form")}</strong>
+      </div>
+      <div class="print-mini-preview__meta">
+        ${rows}
+      </div>
+    </div>
+  `;
+}
+
+function renderPrintCard() {
+  const fields = collectIdentityFieldOptions();
+  const config = getDraftPrintConfig(state.draft);
+  const summaryItems = normalizePrintSummaryItems(config.summary_items);
+  config.summary_items = summaryItems;
+  return `
+    <section class="editor-card print-config-card">
+      <div class="card-head">
+        <div>
+          <p class="eyebrow">Print</p>
+          <div class="card-title-row">
+            <h3 class="card-title">Print</h3>
+            ${renderHelpPopover("Print help", "Configure the printed result for this form version.")}
+          </div>
+        </div>
+        <div class="editor-spotlight-meta">
+          <span class="chip">A4 portrait</span>
+        </div>
+      </div>
+
+      <div class="print-config-layout">
+        <div class="print-config-controls">
+          <div class="setup-grid">
+            <label>
+              <span>Header color</span>
+              <input class="print-color-input" type="color" data-action="print-config-color" data-key="accent_color" value="${escapeHtml(config.accent_color)}">
+            </label>
+            <label>
+              <span>Density</span>
+              <select data-bind="print_config.density">
+                <option value="compact"${config.density === "compact" ? " selected" : ""}>Compact</option>
+                <option value="comfortable"${config.density === "comfortable" ? " selected" : ""}>Comfortable</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="print-toggle-grid">
+            <label class="identity-check">
+              <input type="checkbox" data-action="print-config-toggle" data-key="show_logo" ${config.show_logo ? "checked" : ""}>
+              <span>Logo</span>
+            </label>
+            <label class="identity-check">
+              <input type="checkbox" data-action="print-config-toggle" data-key="show_clinic_info" ${config.show_clinic_info ? "checked" : ""}>
+              <span>Clinic details</span>
+            </label>
+            <label class="identity-check">
+              <input type="checkbox" data-action="print-config-toggle" data-key="show_status" ${config.show_status ? "checked" : ""}>
+              <span>Status</span>
+            </label>
+            <label class="identity-check">
+              <input type="checkbox" data-action="print-config-toggle" data-key="show_signatures" ${config.show_signatures ? "checked" : ""}>
+              <span>Signatures</span>
+            </label>
+          </div>
+
+          <section class="print-summary-editor">
+            <div class="reference-editor-head print-summary-head">
+              <span class="reference-range-title">Summary area</span>
+              <button class="ghost mini" type="button" data-action="add-print-summary">Add row</button>
+            </div>
+            <div class="print-summary-list">
+              ${summaryItems.map((item, index) => renderPrintSummaryRow(item, index, fields, summaryItems.length)).join("")}
+            </div>
+          </section>
+        </div>
+
+        ${renderPrintSummaryPreview(config)}
+      </div>
     </section>
   `;
 }
@@ -3326,7 +3670,7 @@ function handleRootInput(event) {
     }
   }
 
-  touch({ source: "blocks" });
+  touch({ source: "blocks", full: bind.startsWith("print_config.") });
 }
 
 function handleOptionInput(event) {
@@ -3471,6 +3815,24 @@ async function handleEditorClick(event) {
     await confirmDeleteOption(path, Number(actionTarget.dataset.index));
     return;
   }
+  if (action === "add-print-summary") {
+    addDraftPrintSummaryItem();
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "remove-print-summary") {
+    removeDraftPrintSummaryItem(compactText(actionTarget.dataset.id));
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "move-print-summary") {
+    moveDraftPrintSummaryItem(compactText(actionTarget.dataset.id), compactText(actionTarget.dataset.direction));
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
   if (action === "save-draft") {
     void saveDraft().catch((error) => {
       console.error(error);
@@ -3503,6 +3865,30 @@ function handleEditorChange(event) {
       nextIds.delete(fieldId);
     }
     setDraftRecordIdentityValue("searchable_field_ids", [...nextIds]);
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (event.target.dataset.action === "print-config-toggle") {
+    setDraftPrintConfigValue(compactText(event.target.dataset.key), event.target.checked);
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (event.target.dataset.action === "print-config-color") {
+    setDraftPrintConfigValue(compactText(event.target.dataset.key), event.target.value);
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (event.target.dataset.action === "print-summary-source") {
+    updateDraftPrintSummaryItem(compactText(event.target.dataset.id), "source", event.target.value);
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (event.target.dataset.action === "print-summary-field") {
+    updateDraftPrintSummaryItem(compactText(event.target.dataset.id), "field_id", event.target.value);
     syncRootMetaToBlockSchema();
     touch({ full: true, source: "blocks" });
     return;
@@ -3588,6 +3974,12 @@ formEditorEl.addEventListener("input", (event) => {
     handleOptionInput(event);
     return;
   }
+  if (event.target.dataset.action === "print-summary-label") {
+    updateDraftPrintSummaryItem(compactText(event.target.dataset.id), "label", event.target.value);
+    syncRootMetaToBlockSchema();
+    touch({ source: "blocks" });
+    return;
+  }
   if (event.target.matches("input, textarea")) {
     handleRootInput(event);
   }
@@ -3597,7 +3989,7 @@ formEditorEl.addEventListener("change", (event) => {
     handleOptionInput(event);
     return;
   }
-  if (event.target.matches("select, input[type='checkbox']")) {
+  if (event.target.matches("select, input[type='checkbox'], input[type='color']")) {
     handleEditorChange(event);
   }
 });

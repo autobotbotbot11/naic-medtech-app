@@ -7,10 +7,11 @@
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e5d52'/%3E%3Cpath d='M9 16h14M16 9v14' stroke='%23fffdf9' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="{{ url_for('static', path='print.css') }}">
 </head>
-<body>
+<body class="print-density-{{ document.print_config.density }}" style="--accent: {{ document.print_config.accent_color }}">
   {% set doc_items = document["items"] or [] %}
   {% set record_meta = document["record"] or {} %}
   {% set clinic = document["clinic"] or {} %}
+  {% set print_config = document["print_config"] or {} %}
   {% macro render_items(items) %}
     {% for item in items %}
       {% if item.kind == "section" %}
@@ -125,12 +126,16 @@
 
     <section class="print-page">
       <header class="print-document-header">
-        <div class="print-clinic-brand">
+        {% if print_config.show_logo or print_config.show_clinic_info %}
+        <div class="print-clinic-brand{% if not print_config.show_logo %} no-logo{% endif %}">
+          {% if print_config.show_logo %}
           {% if clinic.logo_url %}
           <img class="print-logo" src="{{ clinic.logo_url }}" alt="{{ clinic.name }}">
           {% else %}
           <div class="print-logo-placeholder">{{ clinic.name[:2] | upper }}</div>
           {% endif %}
+          {% endif %}
+          {% if print_config.show_clinic_info %}
           <div class="print-clinic-copy">
             <strong>{{ clinic.name }}</strong>
             {% if clinic.address %}
@@ -140,7 +145,11 @@
             <span>{{ clinic.contact_line }}</span>
             {% endif %}
           </div>
+          {% endif %}
         </div>
+        {% else %}
+        <div></div>
+        {% endif %}
 
         <div class="print-document-mark">
           <span>Laboratory Result</span>
@@ -154,7 +163,9 @@
           <h1 class="print-title">{{ document.form_name }}</h1>
           <p class="print-path">{{ document.form_path_label }}</p>
         </div>
+        {% if print_config.show_status %}
         <span class="print-status" data-status="{{ document.status }}">{{ document.status }}</span>
+        {% endif %}
       </section>
 
       <section class="print-meta-grid" aria-label="Record details">
@@ -170,6 +181,7 @@
         {{ render_items(doc_items) }}
       </section>
 
+      {% if print_config.show_signatures %}
       <footer class="print-footer">
         <div class="print-signature">
           <span>{{ document.prepared_by_name or "" }}</span>
@@ -180,6 +192,7 @@
           <strong>Pathologist</strong>
         </div>
       </footer>
+      {% endif %}
     </section>
   </main>
 </body>

@@ -64,7 +64,11 @@ Used for inserting reusable bundles of blocks.
 Used for storing actual patient/result data entered from a form version.
 
 ### 5. Output layer
-Used later for printable patient-facing results.
+Used for printable patient-facing results.
+
+The first print configuration foundation now exists through form-version metadata:
+- `block_schema.meta.record_identity`
+- `block_schema.meta.print_config`
 
 Important:
 - organization is not the form layout
@@ -305,6 +309,16 @@ The output layer defines:
 - how the patient-facing document is rendered
 
 Legacy `.dotx` files remain layout inspiration only.
+
+Current product direction:
+- print configuration belongs inside the form builder as a separate `Print` pane/tab
+- print configuration is saved per form version under `block_schema.meta.print_config`
+- generic record identity is saved under `block_schema.meta.record_identity`
+- required fields are ordinary field-level builder props
+- patient info is not a hardcoded engine concept; users create and configure those fields themselves
+- use constrained print-template controls instead of a full freeform canvas
+
+See `docs/handoff/PRINT_SYSTEM_HANDOFF.md` for the current print decisions and implementation state.
 
 ## Simple UX Rule
 The engine should be highly flexible.
