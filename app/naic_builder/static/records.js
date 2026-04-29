@@ -28,6 +28,27 @@
       form.addEventListener("input", markDirty);
       form.addEventListener("change", markDirty);
 
+      form.addEventListener("keydown", (event) => {
+        const key = String(event.key || "").toLowerCase();
+        const isSaveShortcut = (event.ctrlKey || event.metaKey) && key === "s";
+        if (!isSaveShortcut) {
+          return;
+        }
+
+        const saveButton = form.querySelector("[data-save-draft]");
+        if (!saveButton) {
+          return;
+        }
+
+        event.preventDefault();
+        allowUnload = true;
+        if (statusEl) {
+          statusEl.textContent = "Saving...";
+          statusEl.classList.remove("is-dirty");
+        }
+        saveButton.click();
+      });
+
       form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((button) => {
         button.addEventListener("click", () => {
           allowUnload = true;
@@ -50,6 +71,42 @@
         event.returnValue = "";
       });
     });
+  };
+
+  const isRequiredFieldEmpty = (field) => {
+    const hasExistingImage = Boolean(field.querySelector(".entry-image-preview"));
+    const fileInput = field.querySelector('input[type="file"]');
+    if (fileInput) {
+      return !hasExistingImage && !fileInput.files?.length;
+    }
+
+    const control = field.querySelector("input, select, textarea");
+    if (!control) {
+      return false;
+    }
+
+    return String(control.value || "").trim() === "";
+  };
+
+  const setupRequiredFieldAttention = () => {
+    const errorBanner = document.querySelector(".error-banner");
+    if (!errorBanner) {
+      return;
+    }
+
+    const requiredFields = Array.from(document.querySelectorAll("[data-required-field]"));
+    const firstMissingField = requiredFields.find(isRequiredFieldEmpty);
+    if (!firstMissingField) {
+      return;
+    }
+
+    firstMissingField.classList.add("entry-field--attention");
+    firstMissingField.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    const focusTarget = firstMissingField.querySelector("input, select, textarea");
+    window.setTimeout(() => {
+      focusTarget?.focus({ preventScroll: true });
+    }, 220);
   };
 
   const setupRecordFormPickers = (root = document) => {
@@ -99,24 +156,6 @@
     const formSearch = modal.querySelector("[data-record-form-filter]");
     const dialog = modal.querySelector("[data-record-start-dialog]");
 
-    const filterForms = () => {
-      const query = String(formSearch?.value || "").trim().toLowerCase();
-      let visibleCount = 0;
-
-      formOptions.forEach((option) => {
-        const searchText = String(option.dataset.searchText || "");
-        const isVisible = !query || searchText.includes(query);
-        option.hidden = !isVisible;
-        if (isVisible) {
-          visibleCount += 1;
-        }
-      });
-
-      if (formEmpty) {
-        formEmpty.hidden = visibleCount !== 0;
-      }
-    };
-
     const openModal = () => {
       modal.hidden = false;
       modal.setAttribute("aria-hidden", "false");
@@ -161,6 +200,7 @@
   };
 
   setupDirtyGuards();
+  setupRequiredFieldAttention();
   setupRecordFormPickers();
   setupRecordStartModal();
 })();

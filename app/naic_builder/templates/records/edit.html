@@ -28,7 +28,7 @@
       {% set props = block.props or {} %}
       {% set utility_content = (props.content or "") | trim %}
       {% if kind == "section" %}
-      <section class="panel record-section">
+      <section class="panel record-section" id="entry-block-{{ block.id }}">
         <div class="entry-block-head">
           <p class="eyebrow">Section</p>
           <h3>{{ block.name }}</h3>
@@ -38,7 +38,7 @@
         </div>
       </section>
       {% elif kind == "field_group" %}
-      <section class="entry-group">
+      <section class="entry-group" id="entry-block-{{ block.id }}">
         <div class="entry-block-head">
           <p class="eyebrow">Group</p>
           <h4>{{ block.name }}</h4>
@@ -50,7 +50,10 @@
       {% elif kind == "field" %}
       {% set block_value = values.get(block.id, "") %}
       {% set image_asset = asset_by_field.get(block.id) %}
-      <label class="entry-field{% if props.data_type == 'image' %} entry-field--image{% endif %}">
+      <label
+        class="entry-field{% if props.data_type == 'image' %} entry-field--image{% endif %}"
+        {% if props.required %}data-required-field{% endif %}
+      >
         <div class="entry-field-head">
           <span>{{ block.name }}</span>
           <div class="entry-field-meta">
@@ -179,6 +182,12 @@
   {% set asset_by_field = record["asset_by_field_id"] or {} %}
   {% set created_by = record["created_by"] %}
   {% set updated_by = record["updated_by"] or record["created_by"] %}
+  {% set jump_nav = namespace(count=0) %}
+  {% for block in entry_schema["blocks"] or [] %}
+    {% if block.kind in ["section", "field_group"] %}
+      {% set jump_nav.count = jump_nav.count + 1 %}
+    {% endif %}
+  {% endfor %}
 
   <div class="library-shell record-shell record-shell--entry">
     <section class="panel record-summary-shell">
@@ -244,13 +253,23 @@
       {% endif %}
 
       <form method="post" action="/records/{{ record.id }}/edit" class="record-entry-form" data-dirty-guard>
+        {% if jump_nav.count > 1 %}
+        <nav class="record-section-jumps" aria-label="Record sections">
+          {% for block in entry_schema["blocks"] or [] %}
+            {% if block.kind in ["section", "field_group"] %}
+            <a href="#entry-block-{{ block.id }}">{{ block.name }}</a>
+            {% endif %}
+          {% endfor %}
+        </nav>
+        {% endif %}
+
         <div class="entry-stack">
           {{ render_blocks(entry_schema["blocks"] or [], record_values, asset_by_field, record["id"]) }}
         </div>
 
         <div class="entry-actions">
           <p class="entry-save-state" data-dirty-state>All changes saved.</p>
-          <button class="ghost-button" type="submit" name="action" value="draft">Save draft</button>
+          <button class="ghost-button" type="submit" name="action" value="draft" data-save-draft>Save draft</button>
           <button class="primary-button" type="submit" name="action" value="complete">Complete</button>
         </div>
       </form>
