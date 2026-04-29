@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Builder Print Preview | {{ document.form_name }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', path='print.css') }}">
+</head>
+<body class="print-density-{{ document.print_config.density }} print-preview-embedded" style="--accent: {{ document.print_config.accent_color }}">
+  {% from "records/_print_document.html" import render_print_page %}
+  {% set fit = document.fit_estimate or {} %}
+  <main class="print-shell">
+    <div class="print-toolbar">
+      <div class="print-toolbar-copy">
+        <p class="print-eyebrow">Builder print preview</p>
+        <p>Sample data only. Save the form to apply this print setup to future records.</p>
+      </div>
+      <div class="print-fit-badge" data-fit="{{ fit.status or 'likely' }}">
+        <strong>{{ fit.label or "Estimated fit" }}</strong>
+        <span>{{ fit.detail or "Use browser print preview for final confirmation." }}</span>
+      </div>
+    </div>
+
+    {{ render_print_page(document) }}
+  </main>
+</body>
+</html>

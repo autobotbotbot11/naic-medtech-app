@@ -11,7 +11,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_content_first_compact_work_surface_public_auth_settings_ia_account_profile_clinic_profile_and_settings_utility_pass_landed_print_configuration_phase_2a_landed_next_preview",
+    "status": "authenticated_shell_content_first_compact_work_surface_public_auth_settings_ia_account_profile_clinic_profile_and_settings_utility_pass_landed_print_configuration_phase_2b_preview_confidence_landed",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -420,6 +420,8 @@
       "print_config at block_schema.meta.print_config",
       "builder Print pane for accent color, density, show/hide controls, and configurable summary rows",
       "backend print_config normalization and print summary resolution",
+      "builder-side print preview generated from the unsaved draft with sample data and an estimated one-page fit signal",
+      "shared print-page macro used by builder preview and /records/{id}/print",
       "/records/{id}/print applies print_config",
       "existing Semen sample verified as one A4 portrait page"
     ],
@@ -429,12 +431,10 @@
       "summary rows support field/system sources but no advanced conditional expressions yet",
       "current output is browser-print based, not a dedicated server-side PDF engine"
     ],
-    "next_recommended_phase": "phase_2b_builder_print_preview_and_fit_confidence"
+    "next_recommended_phase": "phase_2c_controlled_result_body_options"
   },
-  "next_major_build_target": "print_template_configuration_phase_2b",
+  "next_major_build_target": "print_template_configuration_phase_2c",
   "next_major_build_scope": [
-    "add builder-side print preview using sample data and the same print_config used by /records/{id}/print",
-    "add a page-fit warning or confidence indicator for the one-page target",
     "add controlled result-body options such as hide empty fields, section-title behavior, image sizing, and table density",
     "add stronger footer and signatory configuration",
     "test print output across real forms and long-form edge cases",

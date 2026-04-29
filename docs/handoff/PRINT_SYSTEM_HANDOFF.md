@@ -18,7 +18,7 @@ Printing is a high-importance feature because this is the result document the cl
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation is implemented.
+The first print configuration foundation and builder-side preview confidence pass are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -30,6 +30,9 @@ Implemented:
 - The builder now has a `Print` pane/tab.
 - Print config is normalized on backend save/read.
 - `/records/{id}/print` reads the saved form version's print config.
+- The builder `Print` pane can generate a backend-built sample print preview from the current unsaved draft.
+- Builder print preview and `/records/{id}/print` share the same print document macro and backend print config normalization path.
+- The builder print preview shows an estimated one-page fit signal: likely, tight, or long.
 - The existing Semen sample was verified to export as one A4 portrait page.
 
 Code paths:
@@ -38,24 +41,32 @@ Code paths:
   - builder `Print` pane
   - print config helpers
   - summary row editor
+  - embedded builder print preview iframe and refresh flow
   - required-field toggle handling
 - `app/naic_builder/static/app.css`
-  - builder print-tab and summary editor styling
+  - builder print-tab, summary editor, and embedded preview styling
 - `app/naic_builder/services.py`
   - default patient-info materialization/backfill helpers
   - `normalize_record_identity_config`
   - `normalize_print_config`
   - `build_print_summary_items`
   - `build_record_print_document`
+  - `build_form_print_preview_document`
+  - sample-data generation and estimated page-fit scoring
   - required-field completion validation
+- `app/naic_builder/templates/records/_print_document.html`
+  - shared print-page macro used by real record print and builder preview
 - `app/naic_builder/templates/records/print.html`
   - applies `document.print_config`
   - renders configurable summary items
   - supports show/hide clinic logo, clinic info, status, and signatures
+- `app/naic_builder/templates/forms/print_preview.html`
+  - builder iframe document using sample data and the shared print-page macro
 - `app/naic_builder/static/print.css`
   - compact print layout
   - print density handling
   - no-logo clinic header handling
+  - builder-preview fit badge styling
 
 ## Config Shapes
 `record_identity` lives under `block_schema.meta.record_identity`.
@@ -120,6 +131,8 @@ The builder Print pane currently supports:
 - show/hide signatures
 - configurable summary rows
 - summary rows sourced from ordinary fields or system values
+- sample print preview generated from the current unsaved builder draft
+- estimated one-page fit warning
 
 This is intentionally a constrained editor. It should stay easier than a design canvas.
 
@@ -136,20 +149,21 @@ Use those patterns as reference only. The new app should produce a better, clean
 
 ## Known Limits
 - One-page output cannot be guaranteed for arbitrarily long forms.
-- The current verified one-page case is the existing Semen sample.
+- The builder page-fit signal is an estimate only. Browser print preview remains the final confirmation.
+- The previous verified one-page case is the existing Semen sample; rerun real-device checks after body layout options land.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
 - Existing records point to frozen form versions. New print config applies naturally to records created from newer saved form versions unless old versions are intentionally migrated.
 - Clinic data and logo come from Settings > Clinic profile.
 - This is not yet a full PDF generation engine. The current implementation is browser-print based.
 
 ## Recommended Next Work
-Phase 2B should focus on confidence before adding more knobs:
-- add a real print preview inside the builder using sample data
-- show an estimated page-fit indicator or warning
-- make it obvious that changes are saved into the next form version
-- verify the preview and `/records/{id}/print` use the same config
+Phase 2B is now landed:
+- real print preview inside the builder using sample data
+- estimated page-fit indicator or warning
+- visible copy that preview changes are saved into the next form version
+- shared print macro and backend config normalization between builder preview and `/records/{id}/print`
 
-Phase 2C should add controlled result-body layout options:
+Phase 2C should add controlled result-body layout options next:
 - hide empty fields
 - choose whether section titles appear
 - allow section/result body accent behavior if needed

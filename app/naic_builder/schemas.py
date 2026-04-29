@@ -23,6 +23,20 @@ class FormSavePayload(BaseModel):
         return self
 
 
+class PrintPreviewPayload(BaseModel):
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
+
+    name: str = ""
+    location_name: str | None = None
+    form_schema: dict[str, Any] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def require_block_schema(self) -> "PrintPreviewPayload":
+        if self.form_schema and "blocks" not in self.form_schema:
+            raise ValueError("form_schema must use the block-based builder shape.")
+        return self
+
+
 class RecordCreatePayload(BaseModel):
     model_config = ConfigDict(extra="ignore")
 

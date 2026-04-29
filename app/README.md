@@ -152,6 +152,7 @@ The app now starts from a builder-first FastAPI scaffold.
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
 - the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, image fields now support a first real upload/replace/remove flow during record entry, and `/records/{id}/print` now provides the first browser-printable result renderer
+- the builder `Print` pane now generates a backend-built sample print preview from the current unsaved draft, with an estimated one-page fit signal and the same shared print-page macro used by `/records/{id}/print`
 - records are more accountable now too:
   - create/update/complete actions keep the acting user id
   - record cards now show the latest activity user and time

@@ -16,6 +16,12 @@
     activeItemPath: null,
     activeOptionToken: null,
     activePreviewSectionId: null,
+    printPreview: {
+      status: "idle",
+      html: "",
+      signature: "",
+      error: "",
+    },
   },
 };
 
@@ -405,6 +411,107 @@ function moveDraftPrintSummaryItem(itemId, direction) {
   }
   const [item] = config.summary_items.splice(index, 1);
   config.summary_items.splice(nextIndex, 0, item);
+}
+
+function currentPrintPreviewSignature() {
+  if (!state.draft) {
+    return "";
+  }
+  return JSON.stringify({
+    name: state.draft.name || "",
+    location_name: displayLocationName(state.draft),
+    form_schema: state.draft.block_schema || {},
+  });
+}
+
+function printPreviewIsCurrent() {
+  return Boolean(
+    state.draft &&
+    state.ui.printPreview.html &&
+    state.ui.printPreview.signature &&
+    state.ui.printPreview.signature === currentPrintPreviewSignature()
+  );
+}
+
+function printPreviewStatusCopy() {
+  const preview = state.ui.printPreview;
+  if (preview.status === "loading") {
+    return "Generating preview...";
+  }
+  if (preview.status === "error") {
+    return "Preview failed";
+  }
+  if (!preview.html) {
+    return "No preview generated yet";
+  }
+  if (!printPreviewIsCurrent()) {
+    return "Preview needs update";
+  }
+  return "Preview is current";
+}
+
+function resetPrintPreview() {
+  state.ui.printPreview = {
+    status: "idle",
+    html: "",
+    signature: "",
+    error: "",
+  };
+}
+
+function syncPrintPreviewFrame() {
+  const frame = document.getElementById("printPreviewFrame");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  const html = state.ui.printPreview.html || "";
+  if (frame.srcdoc !== html) {
+    frame.srcdoc = html;
+  }
+}
+
+async function refreshPrintPreview() {
+  if (!state.draft) {
+    return;
+  }
+
+  syncDraftKeys();
+  const signature = currentPrintPreviewSignature();
+  state.ui.printPreview.status = "loading";
+  state.ui.printPreview.error = "";
+  renderAll();
+
+  const payload = {
+    name: state.draft.name || "Untitled Form",
+    location_name: displayLocationName(state.draft),
+    form_schema: state.draft.block_schema,
+  };
+
+  try {
+    const response = await fetch("/api/forms/print-preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    const html = await response.text();
+    if (!response.ok) {
+      throw new Error(html || `Preview failed: ${response.status}`);
+    }
+    state.ui.printPreview = {
+      status: "loaded",
+      html,
+      signature,
+      error: "",
+    };
+    setStatus("Print preview updated");
+  } catch (error) {
+    console.error(error);
+    state.ui.printPreview.status = "error";
+    state.ui.printPreview.error = error.message || "Unable to build print preview.";
+    setStatus(`Print preview failed: ${state.ui.printPreview.error}`, true);
+  } finally {
+    renderAll();
+  }
 }
 
 function ensureDraftBlockState(draft) {
@@ -1860,6 +1967,7 @@ async function loadForm(slug) {
   state.loadedForm = ensureDraftBlockState(deepClone(form));
   state.draft = ensureDraftBlockState(deepClone(form));
   state.baselineDraft = ensureDraftBlockState(deepClone(form));
+  resetPrintPreview();
   resetEditorPanels();
   setDirty(false);
   state.ui.libraryOpen = false;
@@ -1872,6 +1980,7 @@ function startNewForm(config = {}) {
   state.loadedForm = null;
   state.draft = ensureDraftBlockState(makeBlankForm(config));
   state.baselineDraft = ensureDraftBlockState(deepClone(state.draft));
+  resetPrintPreview();
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
@@ -1910,6 +2019,7 @@ function duplicateCurrentForm(overrides = {}) {
   state.loadedForm = null;
   state.draft = ensureDraftBlockState(copy);
   state.baselineDraft = ensureDraftBlockState(deepClone(copy));
+  resetPrintPreview();
   resetEditorPanels();
   setDirty(true);
   state.ui.libraryOpen = false;
@@ -2125,6 +2235,7 @@ function renderEditor() {
   formEditorEl.classList.add(`pane-${focusPane}`);
 
   setupSortableCollections();
+  syncPrintPreviewFrame();
 }
 
 function renderRecordIdentitySettings() {
@@ -2250,6 +2361,40 @@ function renderPrintSummaryPreview(config) {
   `;
 }
 
+function renderPrintPreviewPanel() {
+  const preview = state.ui.printPreview;
+  const statusCopy = printPreviewStatusCopy();
+  const isLoading = preview.status === "loading";
+  const hasHtml = Boolean(preview.html);
+  const isCurrent = printPreviewIsCurrent();
+  const tone = preview.status === "error" ? "error" : (!hasHtml || isCurrent ? "normal" : "stale");
+  return `
+    <section class="print-live-preview" data-state="${escapeHtml(tone)}">
+      <div class="print-live-preview__head">
+        <div>
+          <p class="eyebrow">Preview</p>
+          <h4>Sample print output</h4>
+          <span>${escapeHtml(statusCopy)}</span>
+        </div>
+        <button class="secondary mini" type="button" data-action="refresh-print-preview" ${isLoading ? "disabled" : ""}>
+          ${isLoading ? "Updating" : (hasHtml ? "Update" : "Generate")}
+        </button>
+      </div>
+      ${preview.error ? `<div class="error-banner">${escapeHtml(preview.error)}</div>` : ""}
+      ${hasHtml ? `
+        <div class="print-preview-frame-shell${isCurrent ? "" : " is-stale"}">
+          <iframe id="printPreviewFrame" title="Builder print preview"></iframe>
+        </div>
+      ` : `
+        <div class="print-preview-empty">
+          <strong>No preview yet</strong>
+          <span>Generate a sample A4 result using the current unsaved builder draft.</span>
+        </div>
+      `}
+    </section>
+  `;
+}
+
 function renderPrintCard() {
   const fields = collectIdentityFieldOptions();
   const config = getDraftPrintConfig(state.draft);
@@ -2318,6 +2463,8 @@ function renderPrintCard() {
 
         ${renderPrintSummaryPreview(config)}
       </div>
+
+      ${renderPrintPreviewPanel()}
     </section>
   `;
 }
@@ -3893,6 +4040,10 @@ async function handleEditorClick(event) {
     moveDraftPrintSummaryItem(compactText(actionTarget.dataset.id), compactText(actionTarget.dataset.direction));
     syncRootMetaToBlockSchema();
     touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "refresh-print-preview") {
+    void refreshPrintPreview();
     return;
   }
   if (action === "save-draft") {

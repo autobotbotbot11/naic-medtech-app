@@ -2356,7 +2356,7 @@ def build_print_summary_items(
         elif source == "issued_at":
             value = issued_at_label
         elif source == "form_version":
-            value = f"v{serialized['form_version_number']}"
+            value = compact_text(serialized.get("form_version_label")) or f"v{serialized['form_version_number']}"
 
         if source in {"primary_identity", "secondary_identity"} and not value:
             continue
@@ -2365,6 +2365,235 @@ def build_print_summary_items(
     if not summary_items:
         summary_items.append({"label": "Record", "value": compact_text(serialized.get("record_key"))})
     return summary_items
+
+
+def sample_print_value_for_field(block: dict[str, Any]) -> Any:
+    props = block.get("props") if isinstance(block.get("props"), dict) else {}
+    key = compact_text(props.get("key")).lower()
+    name = compact_text(block.get("name")).lower()
+    label = f"{key} {name}"
+    data_type = compact_text(props.get("data_type")).lower()
+    control = compact_text(props.get("control")).lower()
+
+    if data_type == "image":
+        return ""
+    if "case" in label and "number" in label:
+        return "NAIC-2026-0001"
+    if key == "name" or name == "name" or "patient name" in label:
+        return "Juan Dela Cruz"
+    if "age" in label:
+        return "34"
+    if "sex" in label or "gender" in label:
+        return "Male"
+    if "date" in label and "time" in label:
+        return "2026-04-29 09:30"
+    if "date" in label:
+        return "2026-04-29"
+    if "time" in label:
+        return "09:30"
+    if "requesting" in label and "physician" in label:
+        return "Dr. Reyes"
+    if "room" in label:
+        return "OPD"
+    if "medical technologist" in label or "medtech" in label:
+        return "Sample Medtech"
+    if "pathologist" in label:
+        return "Sample Pathologist"
+
+    if control == "select":
+        options = [
+            option
+            for option in normalize_items(props.get("options"))
+            if isinstance(option, dict) and compact_text(option.get("name"))
+        ]
+        normal_option = next((option for option in options if bool(option.get("is_normal"))), None)
+        selected_option = normal_option or (options[0] if options else None)
+        return compact_text(selected_option.get("name")) if selected_option else "Sample option"
+
+    if data_type == "number":
+        normal_min = compact_text(props.get("normal_min"))
+        normal_max = compact_text(props.get("normal_max"))
+        if normal_min and normal_max:
+            min_value = parse_numeric_answer(normal_min)
+            max_value = parse_numeric_answer(normal_max)
+            if min_value is not None and max_value is not None:
+                return f"{((min_value + max_value) / 2):g}"
+        return normal_min or normal_max or "1.0"
+
+    return "Sample value"
+
+
+def build_sample_print_values(blocks: list[dict[str, Any]]) -> dict[str, Any]:
+    values: dict[str, Any] = {}
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        kind = compact_text(block.get("kind"))
+        if kind == "field":
+            block_id = compact_text(block.get("id"))
+            if block_id:
+                values[block_id] = sample_print_value_for_field(block)
+            continue
+        values.update(build_sample_print_values(normalize_items(block.get("children"))))
+    return values
+
+
+def print_item_fit_units(items: list[dict[str, Any]]) -> float:
+    units = 0.0
+    for item in normalize_items(items):
+        if not isinstance(item, dict):
+            continue
+        kind = compact_text(item.get("kind"))
+        if kind == "section":
+            units += 1.7 + print_item_fit_units(normalize_items(item.get("items")))
+        elif kind == "group":
+            units += 1.25 + print_item_fit_units(normalize_items(item.get("items")))
+        elif kind == "field":
+            display = item.get("display") if isinstance(item.get("display"), dict) else {}
+            units += 1.15
+            if compact_text(item.get("reference_text")):
+                units += 0.25
+            if display.get("kind") == "image" and not display.get("is_empty"):
+                units += 5.0
+        elif kind == "table":
+            try:
+                sample_rows = int(item.get("sample_rows") or 3)
+            except (TypeError, ValueError):
+                sample_rows = 3
+            units += 1.4 + (max(1, min(sample_rows, 6)) * 0.65)
+        elif kind in {"note", "divider"}:
+            units += 0.8
+    return units
+
+
+def estimate_print_page_fit(document: dict[str, Any]) -> dict[str, Any]:
+    print_config = document.get("print_config") if isinstance(document.get("print_config"), dict) else {}
+    density = normalize_print_density(print_config.get("density"))
+    summary_count = len(normalize_items(document.get("summary_items")))
+    base_units = 8.5
+    if normalize_boolean_setting(print_config.get("show_logo"), default=True):
+        base_units += 1.2
+    if normalize_boolean_setting(print_config.get("show_clinic_info"), default=True):
+        base_units += 1.0
+    if normalize_boolean_setting(print_config.get("show_signatures"), default=True):
+        base_units += 3.0
+    base_units += max(1, (summary_count + 2) // 3) * 2.2
+
+    density_factor = 1.14 if density == "comfortable" else 1.0
+    estimated_units = (base_units + print_item_fit_units(normalize_items(document.get("items")))) * density_factor
+    limit_units = 52.0
+    if estimated_units <= limit_units * 0.82:
+        status = "likely"
+        label = "Likely fits one page"
+        detail = "The current sample looks safely within the A4 target."
+    elif estimated_units <= limit_units:
+        status = "tight"
+        label = "May be tight"
+        detail = "This should be checked in browser print preview before release."
+    else:
+        status = "long"
+        label = "Likely exceeds one page"
+        detail = "Consider compact density, fewer summary rows, or hiding optional output later."
+
+    return {
+        "status": status,
+        "label": label,
+        "detail": detail,
+        "estimated_units": round(estimated_units, 1),
+        "limit_units": limit_units,
+    }
+
+
+def build_form_print_preview_document(
+    *,
+    form_name: str,
+    form_path_label: str = "",
+    block_schema: dict[str, Any],
+    clinic_profile: dict[str, Any] | None = None,
+    clinic_logo_url: str = "",
+) -> dict[str, Any]:
+    entry_schema = json.loads(json.dumps(block_schema if isinstance(block_schema, dict) else {}))
+    if not entry_schema:
+        entry_schema = {
+            "schema_version": 1,
+            "source_kind": ACTIVE_BLOCK_SCHEMA_SOURCE,
+            "meta": {},
+            "blocks": [],
+        }
+    normalize_active_block_storage_schema(entry_schema)
+
+    values = build_sample_print_values(normalize_items(entry_schema.get("blocks")))
+    identity = resolve_record_identity(
+        entry_schema,
+        values,
+        fallback_primary="Juan Dela Cruz",
+        fallback_secondary="NAIC-2026-0001",
+    )
+    meta = entry_schema.get("meta") if isinstance(entry_schema.get("meta"), dict) else {}
+    print_config = normalize_print_config(meta.get("print_config"))
+    normalized_form_name = compact_text(form_name) or "Untitled Form"
+    normalized_path = compact_text(form_path_label) or "Builder preview"
+    serialized = {
+        "id": 0,
+        "record_key": "PREVIEW-0001",
+        "entry_schema": entry_schema,
+        "values": values,
+        "asset_by_field_id": {},
+        "record_identity": identity,
+        "status": "draft",
+        "form_name": normalized_form_name,
+        "form_path_label": normalized_path,
+        "form_version_number": "draft",
+        "form_version_label": "Draft preview",
+        "created_at_label": "Preview sample",
+        "updated_at_label": "Preview sample",
+        "completed_at_label": "",
+    }
+    summary_items = build_print_summary_items(
+        print_config,
+        serialized,
+        values,
+        issued_at_label="Preview sample",
+    )
+    document = {
+        "record": serialized,
+        "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
+        "print_config": print_config,
+        "template": {
+            "id": "clinic_lab_result_v1",
+            "name": "Clinic lab result",
+            "page_size": "A4",
+        },
+        "title": normalized_form_name,
+        "status": "draft",
+        "display_title": compact_text(identity.get("primary_value")) or normalized_form_name,
+        "display_subtitle": compact_text(identity.get("secondary_value")),
+        "display_subtitle_label": compact_text(identity.get("secondary_label")),
+        "summary_items": summary_items,
+        "patient_name": compact_text(identity.get("primary_value")),
+        "patient_age": "",
+        "patient_sex": "",
+        "case_number": compact_text(identity.get("secondary_value")),
+        "form_name": normalized_form_name,
+        "form_path_label": normalized_path,
+        "form_version_number": "draft",
+        "record_key": "PREVIEW-0001",
+        "created_at": "",
+        "updated_at": "",
+        "created_at_label": "Preview sample",
+        "updated_at_label": "Preview sample",
+        "completed_at_label": "",
+        "issued_at_label": "Preview sample",
+        "prepared_by_name": "Sample Medtech",
+        "items": build_print_items(
+            normalize_items(entry_schema.get("blocks")),
+            values,
+            {},
+            record_id=0,
+        ),
+    }
+    document["fit_estimate"] = estimate_print_page_fit(document)
+    return document
 
 
 def build_record_print_document(

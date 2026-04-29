@@ -21,6 +21,7 @@ from .schemas import (
     FormSavePayload,
     LoginPayload,
     PasswordChangePayload,
+    PrintPreviewPayload,
     RecordCreatePayload,
     RecordUpdatePayload,
     SetupAdminPayload,
@@ -28,6 +29,7 @@ from .schemas import (
 )
 from .services import (
     authenticate_user,
+    build_form_print_preview_document,
     build_record_print_document,
     change_user_password,
     count_records,
@@ -1956,6 +1958,30 @@ def builder_bootstrap(session: Session = Depends(get_session)) -> dict[str, Any]
 @app.get("/api/library/tree")
 def library_tree(session: Session = Depends(get_session)) -> dict[str, Any]:
     return {"nodes": list_library_tree(session)}
+
+
+@app.post("/api/forms/print-preview", response_class=HTMLResponse)
+def form_print_preview(
+    request: Request,
+    payload: PrintPreviewPayload,
+    session: Session = Depends(get_session),
+) -> HTMLResponse:
+    clinic_profile = get_clinic_profile(session)
+    clinic_logo_url = "/settings/clinic/logo" if clinic_profile.get("has_logo") else ""
+    return templates.TemplateResponse(
+        request=request,
+        name="forms/print_preview.html",
+        context={
+            "app_title": APP_TITLE,
+            "document": build_form_print_preview_document(
+                form_name=payload.name,
+                form_path_label=payload.location_name or "Builder preview",
+                block_schema=payload.form_schema,
+                clinic_profile=clinic_profile,
+                clinic_logo_url=clinic_logo_url,
+            ),
+        },
+    )
 
 
 @app.get("/api/forms/{slug}")
