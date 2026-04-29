@@ -142,18 +142,20 @@
   padding-top: 6px;
 }
 
-.records-history-toolbar {
-  gap: 0;
-  padding: 0;
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+.records-history-head {
+  align-items: start;
+}
+
+.records-history-controls {
+  display: grid;
+  justify-content: end;
+  width: min(820px, 100%);
 }
 
 .records-search-form--history {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) auto auto;
-  gap: 12px;
+  grid-template-columns: minmax(220px, 340px) auto auto;
+  gap: 10px;
   align-items: end;
   width: 100%;
 }
@@ -1541,6 +1543,15 @@ html[data-theme="dark"] .completion-checklist.is-ready {
 
   .records-search-form--history {
     grid-template-columns: 1fr;
+  }
+
+  .records-history-head {
+    align-items: stretch;
+  }
+
+  .records-history-controls {
+    justify-content: stretch;
+    width: 100%;
   }
 
   .records-start-panel__head,

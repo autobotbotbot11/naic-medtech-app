@@ -97,6 +97,17 @@ Current reality:
 - repeated surface and spacing assumptions still exist across files even though the token layer is now shared
 - the reskin is materially live already; current work is refinement and composition cleanup, not the initial light/dark plumbing anymore
 
+## Non-Print Readiness Checkpoint
+Status:
+- ready for consolidated user review
+- remaining non-print work should be treated as bug/polish from real use, not another architecture pass
+- the next major planned product block is still `Phase 6 Print`
+
+Latest completed cleanup:
+- `/records/history` now keeps search and status filters inside the History section header
+- history search preserves the active Completed/Drafts/All filter
+- recent browser QA covered key protected routes for horizontal overflow and obvious server/error pages
+
 ## Recommended Technical Direction
 The reskin should start by introducing a shared theme layer instead of repainting every stylesheet independently.
 
@@ -208,6 +219,7 @@ Current status:
 - `/records` is now a queue-first Work surface with compact record cards, bounded list scrolling, and `New record` handled through a searchable picker instead of a ceremony page; `/records/new` keeps the same picker pattern as the fallback route
 - `/records/history` owns completed lookup/search, while `Work` stays focused on active drafts
 - `Work` now exposes `View all drafts` when recent drafts are truncated, and `/records/history?status=draft` gives draft lookup its own real filter instead of burying older drafts under `All`
+- `/records/history` now keeps search and status filters inside the History section header, so lookup reads as one history surface and search preserves the active Completed/Drafts/All filter
 
 ### Phase 3
 Auth and settings

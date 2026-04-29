@@ -131,6 +131,10 @@ The app now starts from a builder-first FastAPI scaffold.
     - admins can open a dedicated `Manage user` page from the directory to correct full name/role and reset another user's temporary password
     - email and login ID stay read-only in the personal account page so accountability remains anchored to stable account identifiers
     - `Settings > Create user` and `Manage user` now use compact utility-card layouts too, so manual account fallback and user maintenance match the calmer admin tooling instead of the older heavy auth-panel style
+- non-print UI foundation checkpoint:
+  - current status is ready for consolidated user review
+  - future non-print work should now be treated as bug/polish from actual use instead of another shell/workflow architecture pass
+  - the next major planned product block remains the print/template system
 - `/records`, `/records/{id}/edit`, and `/records/{id}` now exist as the first calm record-entry flow for medtech use
 - the records module is now more intent-structured too:
   - `/records` is the `Work` view for drafts and active record entry
@@ -143,6 +147,7 @@ The app now starts from a builder-first FastAPI scaffold.
     - `/records` now behaves more like a direct work queue instead of mixing metrics, search, history, and start-state ceremony on one default screen
     - the old metric strip is gone, `Work` and `History` now expose clearer local-nav counts, and the draft queue is the first thing the medtech sees
     - `/records/history` now owns completed lookup and search more explicitly instead of leaving those concerns mixed into the default work screen
+    - `/records/history` now keeps search and status filters inside the History section header, and search preserves the active Completed/Drafts/All filter
 - records are now stored against a frozen `form_version_id`, so actual filled-up data stays separate from form design/versioning
 - the first records API surface now exists too: `/api/records/bootstrap`, `/api/records`, `/api/records/{id}`, and `/api/records/{id}/complete`
 - the current records runtime supports the first basic draft/save/complete flow for ordinary scalar fields, image fields now support a first real upload/replace/remove flow during record entry, and `/records/{id}/print` now provides the first browser-printable result renderer

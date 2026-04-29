@@ -66,7 +66,8 @@
         "Settings > Clinic profile now uses that same compact utility-card system for clinic identity, contact details, logo upload, and brand preview, keeping the future print-branding base cleaner without starting the heavy print-template work yet.",
         "The Settings utility follow-up then brought Settings > Create user and Manage user into the same compact utility-card treatment as the Forms utility screens, so manual account fallback and user maintenance no longer fall back to older heavy auth panels.",
         "The public auth follow-up then moved /login, /request-account, and /setup to the same compact utility-card language too, replacing the older heavy auth panel plus long helper-list composition with one direct form card and one compact facts card.",
-        "Settings > Users & access now keeps search and status filters inside the Accounts directory header, so the staff list reads as one directory surface instead of a separate toolbar plus list."
+        "Settings > Users & access now keeps search and status filters inside the Accounts directory header, so the staff list reads as one directory surface instead of a separate toolbar plus list.",
+        "/records/history now keeps search and status filters inside the History section header, so lookup reads as one history surface and search preserves the active Completed/Drafts/All filter."
       ]
     },
     "notes": [
@@ -75,7 +76,8 @@
       "The live app now has a shared theme foundation plus a browser-audited non-print reskin and consistency pass; these standalone files remain the locked visual north star for future UI work.",
       "Quick light-mode audits were also run across the main non-print screens so the next review should not immediately hit obvious contrast regressions.",
       "Builder should stay denser than records, forms, and settings; the calmer content-first composition rule is mainly for the everyday non-builder product surfaces.",
-      "Directness is now part of the live UI rule too: obvious screens should not over-explain themselves, and helper text should remain only where it prevents mistakes or clarifies non-obvious actions."
+      "Directness is now part of the live UI rule too: obvious screens should not over-explain themselves, and helper text should remain only where it prevents mistakes or clarifies non-obvious actions.",
+      "The non-print UI foundation is now ready for consolidated user review; future non-print work should be treated as bug/polish from real use, while the next major planned product block remains print/template work."
     ]
   },
   "alignment_lock": [
@@ -100,6 +102,7 @@
       "/records/new now stays only as the fallback deep-link picker page",
       "/records now behaves more directly like a work queue too: the old metric strip is gone, Work and History expose clearer local-nav counts, and completed lookup plus search now live in History instead of the default work screen",
       "when the Work queue truncates recent drafts, it now exposes a direct View all drafts action into the History Drafts filter",
+      "/records/history now keeps search and status filters inside the History section header, and search preserves the active Completed/Drafts/All filter",
       "/records/{id}/edit now supports the first calm server-rendered record-entry flow",
       "/records/{id} now shows a read-only record view",
       "records now surface quiet accountability metadata too: created by, last updated by, and the latest activity timestamp are visible in the live records flow",
