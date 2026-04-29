@@ -893,6 +893,16 @@ def normalize_active_block_storage_node(node: dict[str, Any]) -> bool:
             props.pop("field_type", None)
             changed = True
 
+        if compact_text(node.get("kind")) == "field":
+            required = bool(props.get("required"))
+            if required:
+                if props.get("required") is not True:
+                    props["required"] = True
+                    changed = True
+            elif "required" in props:
+                props.pop("required", None)
+                changed = True
+
         reference_text = compact_text(props.get("reference_text") or props.get("normal_value"))
         if reference_text:
             if props.get("reference_text") != reference_text:
@@ -949,6 +959,24 @@ def normalize_active_block_storage_schema(block_schema: dict[str, Any]) -> bool:
     blocks = normalize_items(block_schema.get("blocks"))
     if block_schema.get("blocks") != blocks:
         block_schema["blocks"] = blocks
+        changed = True
+
+    meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+    normalized_identity = normalize_record_identity_config(meta.get("record_identity"))
+    if any(
+        [
+            normalized_identity["primary_field_id"],
+            normalized_identity["secondary_field_id"],
+            normalized_identity["searchable_field_ids"],
+        ]
+    ):
+        if meta.get("record_identity") != normalized_identity:
+            meta["record_identity"] = normalized_identity
+            block_schema["meta"] = meta
+            changed = True
+    elif "record_identity" in meta:
+        meta.pop("record_identity", None)
+        block_schema["meta"] = meta
         changed = True
 
     for block in blocks:
@@ -1193,31 +1221,31 @@ def normalize_record_values(raw_values: Any) -> dict[str, Any]:
 def normalize_record_indexed_meta(
     raw_meta: Any,
     *,
-    patient_name: str,
-    patient_age: str,
-    patient_sex: str,
-    case_number: str,
+    patient_name: str | None,
+    patient_age: str | None,
+    patient_sex: str | None,
+    case_number: str | None,
 ) -> dict[str, Any]:
     normalized = dict(raw_meta) if isinstance(raw_meta, dict) else {}
 
-    if patient_name:
-        normalized["patient_name"] = patient_name
-    else:
+    if patient_name is not None and compact_text(patient_name):
+        normalized["patient_name"] = compact_text(patient_name)
+    elif patient_name is not None:
         normalized.pop("patient_name", None)
 
-    if patient_age:
-        normalized["patient_age"] = patient_age
-    else:
+    if patient_age is not None and compact_text(patient_age):
+        normalized["patient_age"] = compact_text(patient_age)
+    elif patient_age is not None:
         normalized.pop("patient_age", None)
 
-    if patient_sex:
-        normalized["patient_sex"] = patient_sex
-    else:
+    if patient_sex is not None and compact_text(patient_sex):
+        normalized["patient_sex"] = compact_text(patient_sex)
+    elif patient_sex is not None:
         normalized.pop("patient_sex", None)
 
-    if case_number:
-        normalized["case_number"] = case_number
-    else:
+    if case_number is not None and compact_text(case_number):
+        normalized["case_number"] = compact_text(case_number)
+    elif case_number is not None:
         normalized.pop("case_number", None)
 
     return normalized
@@ -1468,6 +1496,164 @@ def current_record_values(record: Record) -> dict[str, Any]:
     return normalize_record_values(load_json_object(record.values_json))
 
 
+def iter_record_field_blocks(
+    blocks: list[dict[str, Any]],
+    *,
+    parents: list[str] | None = None,
+):
+    parent_names = parents or []
+    for block in blocks:
+        if not isinstance(block, dict):
+            continue
+        kind = compact_text(block.get("kind"))
+        block_name = compact_text(block.get("name"))
+        if kind in {"section", "field_group"}:
+            next_parent_names = [*parent_names, block_name] if block_name else parent_names
+            yield from iter_record_field_blocks(
+                normalize_items(block.get("children")),
+                parents=next_parent_names,
+            )
+            continue
+        if kind == "field":
+            block_id = compact_text(block.get("id"))
+            if not block_id:
+                continue
+            yield {
+                "id": block_id,
+                "name": block_name or "Untitled field",
+                "path_label": " / ".join([*parent_names, block_name]) if parent_names else block_name,
+                "block": block,
+            }
+
+
+def record_field_lookup(block_schema: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {
+        field["id"]: field
+        for field in iter_record_field_blocks(normalize_items(block_schema.get("blocks")))
+    }
+
+
+def normalize_record_identity_config(raw_config: Any) -> dict[str, Any]:
+    config = raw_config if isinstance(raw_config, dict) else {}
+    primary_field_id = compact_text(config.get("primary_field_id"))
+    secondary_field_id = compact_text(config.get("secondary_field_id"))
+    searchable_field_ids = []
+    for field_id in normalize_items(config.get("searchable_field_ids")):
+        normalized = compact_text(field_id)
+        if normalized and normalized not in searchable_field_ids:
+            searchable_field_ids.append(normalized)
+
+    return {
+        "primary_field_id": primary_field_id,
+        "secondary_field_id": secondary_field_id,
+        "searchable_field_ids": searchable_field_ids,
+    }
+
+
+def record_value_display_text(value: Any) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, dict):
+        if value.get("kind") == "image" and value.get("asset_id"):
+            return "Image uploaded"
+        return " ".join(
+            part
+            for part in (record_value_display_text(item) for item in value.values())
+            if part
+        )
+    if isinstance(value, list):
+        return " ".join(
+            part
+            for part in (record_value_display_text(item) for item in value)
+            if part
+        )
+    return compact_text(value)
+
+
+def resolve_record_identity(
+    block_schema: dict[str, Any],
+    values: dict[str, Any],
+    *,
+    fallback_primary: str = "",
+    fallback_secondary: str = "",
+) -> dict[str, Any]:
+    meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+    config = normalize_record_identity_config(meta.get("record_identity"))
+    fields = record_field_lookup(block_schema)
+
+    primary_field = fields.get(config["primary_field_id"])
+    secondary_field = fields.get(config["secondary_field_id"])
+    primary_value = record_value_display_text(values.get(config["primary_field_id"]))
+    secondary_value = record_value_display_text(values.get(config["secondary_field_id"]))
+
+    searchable_items: list[dict[str, str]] = []
+    search_field_ids = list(config["searchable_field_ids"])
+    for field_id in [config["primary_field_id"], config["secondary_field_id"]]:
+        if field_id and field_id not in search_field_ids:
+            search_field_ids.append(field_id)
+
+    for field_id in search_field_ids:
+        field = fields.get(field_id)
+        value = record_value_display_text(values.get(field_id))
+        if not field or not value:
+            continue
+        searchable_items.append(
+            {
+                "field_id": field_id,
+                "label": compact_text(field.get("name")) or "Field",
+                "value": value,
+            }
+        )
+
+    fallback_primary_value = compact_text(fallback_primary)
+    fallback_secondary_value = compact_text(fallback_secondary)
+    search_parts: list[str] = []
+    for part in [primary_value, secondary_value, *[item["value"] for item in searchable_items]]:
+        text = compact_text(part)
+        if text and text not in search_parts:
+            search_parts.append(text)
+
+    return {
+        "primary_field_id": config["primary_field_id"],
+        "primary_label": compact_text(primary_field.get("name")) if primary_field else "",
+        "primary_value": primary_value or fallback_primary_value,
+        "secondary_field_id": config["secondary_field_id"],
+        "secondary_label": compact_text(secondary_field.get("name")) if secondary_field else "",
+        "secondary_value": secondary_value or fallback_secondary_value,
+        "searchable_fields": searchable_items,
+        "search_text": " ".join(search_parts),
+    }
+
+
+def build_record_indexed_meta(
+    raw_meta: Any,
+    form_version: FormVersion,
+    values: dict[str, Any],
+    *,
+    patient_name: str | None,
+    patient_age: str | None,
+    patient_sex: str | None,
+    case_number: str | None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    block_schema, _ = load_block_storage_document(form_version)
+    normalized = normalize_record_indexed_meta(
+        raw_meta,
+        patient_name=patient_name,
+        patient_age=patient_age,
+        patient_sex=patient_sex,
+        case_number=case_number,
+    )
+    identity = resolve_record_identity(
+        block_schema,
+        values,
+        fallback_primary=compact_text(patient_name) or compact_text(normalized.get("patient_name")),
+        fallback_secondary=compact_text(case_number) or compact_text(normalized.get("case_number")),
+    )
+    normalized["record_identity"] = identity
+    normalized["record_search_text"] = identity["search_text"]
+    return normalized, identity
+
+
 def next_record_key(session: Session, form_slug: str) -> str:
     base = f"rec_{slugify(form_slug or 'record')}"
     while True:
@@ -1573,16 +1759,9 @@ def collect_required_record_field_issues(
 def list_record_completion_issues(
     record: Record,
     *,
-    patient_name: str,
-    case_number: str,
     values: dict[str, Any],
 ) -> list[str]:
     issues: list[str] = []
-    if not patient_name:
-        issues.append("Add the patient name.")
-    if not case_number:
-        issues.append("Add the case number.")
-
     block_schema, _ = load_block_storage_document(record.form_version)
     issues.extend(
         collect_required_record_field_issues(
@@ -1596,14 +1775,10 @@ def list_record_completion_issues(
 def validate_record_completion(
     record: Record,
     *,
-    patient_name: str,
-    case_number: str,
     values: dict[str, Any],
 ) -> None:
     issues = list_record_completion_issues(
         record,
-        patient_name=patient_name,
-        case_number=case_number,
         values=values,
     )
     if issues:
@@ -1740,6 +1915,28 @@ def build_print_table_sample_rows(props: dict[str, Any]) -> int:
     return max(1, min(sample_rows or 3, 6))
 
 
+def build_print_clinic_profile(
+    clinic_profile: dict[str, Any] | None,
+    *,
+    logo_url: str = "",
+) -> dict[str, Any]:
+    profile = clinic_profile if isinstance(clinic_profile, dict) else {}
+    name = compact_text(profile.get("clinic_name")) or "NAIC Medtech"
+    address = compact_text(profile.get("address"))
+    contact_number = compact_text(profile.get("contact_number"))
+    contact_email = compact_text(profile.get("contact_email"))
+    contact_parts = [part for part in [contact_number, contact_email] if part]
+
+    return {
+        "name": name,
+        "address": address,
+        "contact_number": contact_number,
+        "contact_email": contact_email,
+        "contact_line": " | ".join(contact_parts),
+        "logo_url": compact_text(logo_url) if bool(profile.get("has_logo")) else "",
+    }
+
+
 def build_print_field_item(
     block: dict[str, Any],
     values: dict[str, Any],
@@ -1849,16 +2046,62 @@ def build_print_items(
     return items
 
 
-def build_record_print_document(record: Record) -> dict[str, Any]:
+def build_record_print_document(
+    record: Record,
+    *,
+    clinic_profile: dict[str, Any] | None = None,
+    clinic_logo_url: str = "",
+) -> dict[str, Any]:
     serialized = serialize_record(record, include_entry_schema=True)
     entry_schema = serialized.get("entry_schema") or {}
     values = serialized.get("values") or {}
     asset_by_field = serialized.get("asset_by_field_id") or {}
+    updated_by = serialized.get("updated_by") or serialized.get("created_by") or {}
+    issued_at_label = (
+        serialized.get("completed_at_label")
+        or serialized.get("updated_at_label")
+        or serialized.get("created_at_label")
+        or ""
+    )
+    identity = serialized.get("record_identity") if isinstance(serialized.get("record_identity"), dict) else {}
+    summary_items: list[dict[str, str]] = []
+    if compact_text(identity.get("primary_value")):
+        summary_items.append(
+            {
+                "label": compact_text(identity.get("primary_label")) or "Record",
+                "value": compact_text(identity.get("primary_value")),
+            }
+        )
+    if compact_text(identity.get("secondary_value")):
+        summary_items.append(
+            {
+                "label": compact_text(identity.get("secondary_label")) or "Detail",
+                "value": compact_text(identity.get("secondary_value")),
+            }
+        )
+    if not summary_items:
+        summary_items.append({"label": "Record", "value": serialized["record_key"]})
+    summary_items.extend(
+        [
+            {"label": "Issued", "value": issued_at_label or "Not set yet"},
+            {"label": "Form version", "value": f"v{serialized['form_version_number']}"},
+        ]
+    )
 
     return {
         "record": serialized,
+        "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
+        "template": {
+            "id": "clinic_lab_result_v1",
+            "name": "Clinic lab result",
+            "page_size": "A4",
+        },
         "title": serialized["form_name"],
         "status": serialized["status"],
+        "display_title": serialized["display_title"],
+        "display_subtitle": serialized["display_subtitle"],
+        "display_subtitle_label": serialized["display_subtitle_label"],
+        "summary_items": summary_items,
         "patient_name": serialized["patient_name"] or "",
         "patient_age": serialized["patient_age"] or "",
         "patient_sex": serialized["patient_sex"] or "",
@@ -1869,6 +2112,11 @@ def build_record_print_document(record: Record) -> dict[str, Any]:
         "record_key": serialized["record_key"],
         "created_at": serialized["created_at"],
         "updated_at": serialized["updated_at"],
+        "created_at_label": serialized.get("created_at_label") or "",
+        "updated_at_label": serialized.get("updated_at_label") or "",
+        "completed_at_label": serialized.get("completed_at_label") or "",
+        "issued_at_label": issued_at_label,
+        "prepared_by_name": compact_text(updated_by.get("full_name")) or "",
         "items": build_print_items(
             normalize_items(entry_schema.get("blocks")),
             values,
@@ -1886,6 +2134,37 @@ def serialize_record(
 ) -> dict[str, Any]:
     location = serialize_form_location(record.form)
     indexed_meta = load_json_object(record.indexed_meta_json)
+    stored_values = normalize_record_values(load_json_object(record.values_json))
+    stored_identity = indexed_meta.get("record_identity") if isinstance(indexed_meta.get("record_identity"), dict) else {}
+    if stored_identity:
+        identity = resolve_record_identity(
+            {"meta": {"record_identity": stored_identity}, "blocks": []},
+            stored_values,
+            fallback_primary=compact_text(stored_identity.get("primary_value")) or compact_text(record.patient_name),
+            fallback_secondary=compact_text(stored_identity.get("secondary_value")) or compact_text(record.case_number),
+        )
+        identity.update(
+            {
+                "primary_label": compact_text(stored_identity.get("primary_label")),
+                "primary_value": compact_text(stored_identity.get("primary_value")) or compact_text(record.patient_name),
+                "secondary_label": compact_text(stored_identity.get("secondary_label")),
+                "secondary_value": compact_text(stored_identity.get("secondary_value")) or compact_text(record.case_number),
+                "searchable_fields": normalize_items(stored_identity.get("searchable_fields")),
+                "search_text": compact_text(stored_identity.get("search_text")),
+            }
+        )
+    else:
+        block_schema_for_identity, _ = load_block_storage_document(record.form_version)
+        identity = resolve_record_identity(
+            block_schema_for_identity,
+            stored_values,
+            fallback_primary=compact_text(record.patient_name),
+            fallback_secondary=compact_text(record.case_number),
+        )
+
+    display_title = compact_text(identity.get("primary_value")) or compact_text(record.patient_name) or compact_text(record.form.name) or "Untitled record"
+    display_subtitle = compact_text(identity.get("secondary_value")) or compact_text(record.case_number) or record.record_key
+    display_subtitle_label = compact_text(identity.get("secondary_label")) or ("Record" if display_subtitle == record.record_key else "Secondary")
     asset_by_field_id = {
         compact_text(asset.field_block_id): serialize_record_asset(asset)
         for asset in record.assets
@@ -1899,6 +2178,10 @@ def serialize_record(
         "patient_age": compact_text(indexed_meta.get("patient_age")) or None,
         "patient_sex": compact_text(indexed_meta.get("patient_sex")) or None,
         "case_number": record.case_number,
+        "display_title": display_title,
+        "display_subtitle": display_subtitle,
+        "display_subtitle_label": display_subtitle_label,
+        "record_identity": identity,
         "form_slug": record.form.slug,
         "form_name": record.form.name,
         "form_path_label": form_path_label_for_record(record),
@@ -1920,7 +2203,7 @@ def serialize_record(
         "indexed_meta": indexed_meta,
     }
     if include_values:
-        payload["values"] = normalize_record_values(load_json_object(record.values_json))
+        payload["values"] = stored_values
     if include_entry_schema:
         block_schema, _ = load_block_storage_document(record.form_version)
         payload["entry_schema"] = block_schema
@@ -1969,6 +2252,8 @@ def apply_record_filters(
                 Record.patient_name.ilike(search_pattern),
                 Record.case_number.ilike(search_pattern),
                 Record.record_key.ilike(search_pattern),
+                Record.indexed_meta_json.ilike(search_pattern),
+                Record.values_json.ilike(search_pattern),
                 FormDefinition.name.ilike(search_pattern),
             )
         )
@@ -2022,8 +2307,11 @@ def create_record(
     patient_age = compact_text(payload.patient_age)
     patient_sex = compact_text(payload.patient_sex)
     case_number = compact_text(payload.case_number)
-    indexed_meta = normalize_record_indexed_meta(
+    normalized_values = normalize_record_values(payload.values)
+    indexed_meta, identity = build_record_indexed_meta(
         payload.indexed_meta,
+        version,
+        normalized_values,
         patient_name=patient_name,
         patient_age=patient_age,
         patient_sex=patient_sex,
@@ -2035,9 +2323,9 @@ def create_record(
         form_id=definition.id,
         form_version_id=version.id,
         status="draft",
-        patient_name=patient_name or None,
-        case_number=case_number or None,
-        values_json=json.dumps(normalize_record_values(payload.values), ensure_ascii=False),
+        patient_name=identity["primary_value"] or patient_name or None,
+        case_number=identity["secondary_value"] or case_number or None,
+        values_json=json.dumps(normalized_values, ensure_ascii=False),
         indexed_meta_json=json.dumps(indexed_meta, ensure_ascii=False),
         created_by_user_id=actor_user_id,
         updated_by_user_id=actor_user_id,
@@ -2066,31 +2354,29 @@ def update_record(
     if record.status == "completed":
         raise ValueError("Completed records are read-only.")
 
-    patient_name = compact_text(payload.patient_name)
-    patient_age = compact_text(payload.patient_age)
-    patient_sex = compact_text(payload.patient_sex)
-    case_number = compact_text(payload.case_number)
-    indexed_meta = normalize_record_indexed_meta(
-        payload.indexed_meta,
+    existing_meta = load_json_object(record.indexed_meta_json)
+    patient_name = compact_text(payload.patient_name) if payload.patient_name is not None else compact_text(record.patient_name)
+    patient_age = compact_text(payload.patient_age) if payload.patient_age is not None else compact_text(existing_meta.get("patient_age"))
+    patient_sex = compact_text(payload.patient_sex) if payload.patient_sex is not None else compact_text(existing_meta.get("patient_sex"))
+    case_number = compact_text(payload.case_number) if payload.case_number is not None else compact_text(record.case_number)
+    normalized_values = normalize_record_values(payload.values)
+    if preserve_asset_fields:
+        normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
+    indexed_meta, identity = build_record_indexed_meta(
+        {
+            **existing_meta,
+            **(payload.indexed_meta if isinstance(payload.indexed_meta, dict) else {}),
+        },
+        record.form_version,
+        normalized_values,
         patient_name=patient_name,
         patient_age=patient_age,
         patient_sex=patient_sex,
         case_number=case_number,
     )
 
-    normalized_values = normalize_record_values(payload.values)
-    if preserve_asset_fields:
-        normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
-
-    validate_record_completion(
-        record,
-        patient_name=patient_name,
-        case_number=case_number,
-        values=normalized_values,
-    )
-
-    record.patient_name = patient_name or None
-    record.case_number = case_number or None
+    record.patient_name = identity["primary_value"] or patient_name or None
+    record.case_number = identity["secondary_value"] or case_number or None
     record.values_json = json.dumps(normalized_values, ensure_ascii=False)
     record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
     record.updated_by_user_id = actor_user_id
@@ -2117,31 +2403,34 @@ def complete_record(
     if record.status == "completed":
         raise ValueError("This record is already completed.")
 
-    patient_name = compact_text(payload.patient_name)
-    patient_age = compact_text(payload.patient_age)
-    patient_sex = compact_text(payload.patient_sex)
-    case_number = compact_text(payload.case_number)
-    indexed_meta = normalize_record_indexed_meta(
-        payload.indexed_meta,
+    existing_meta = load_json_object(record.indexed_meta_json)
+    patient_name = compact_text(payload.patient_name) if payload.patient_name is not None else compact_text(record.patient_name)
+    patient_age = compact_text(payload.patient_age) if payload.patient_age is not None else compact_text(existing_meta.get("patient_age"))
+    patient_sex = compact_text(payload.patient_sex) if payload.patient_sex is not None else compact_text(existing_meta.get("patient_sex"))
+    case_number = compact_text(payload.case_number) if payload.case_number is not None else compact_text(record.case_number)
+    normalized_values = normalize_record_values(payload.values)
+    if preserve_asset_fields:
+        normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
+    indexed_meta, identity = build_record_indexed_meta(
+        {
+            **existing_meta,
+            **(payload.indexed_meta if isinstance(payload.indexed_meta, dict) else {}),
+        },
+        record.form_version,
+        normalized_values,
         patient_name=patient_name,
         patient_age=patient_age,
         patient_sex=patient_sex,
         case_number=case_number,
     )
 
-    normalized_values = normalize_record_values(payload.values)
-    if preserve_asset_fields:
-        normalized_values = preserve_existing_asset_values(current_record_values(record), normalized_values)
-
     validate_record_completion(
         record,
-        patient_name=patient_name,
-        case_number=case_number,
         values=normalized_values,
     )
 
-    record.patient_name = patient_name or None
-    record.case_number = case_number or None
+    record.patient_name = identity["primary_value"] or patient_name or None
+    record.case_number = identity["secondary_value"] or case_number or None
     record.values_json = json.dumps(normalized_values, ensure_ascii=False)
     record.indexed_meta_json = json.dumps(indexed_meta, ensure_ascii=False)
     record.status = "completed"

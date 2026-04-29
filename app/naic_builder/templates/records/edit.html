@@ -187,14 +187,12 @@
           <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
           <p class="form-card-meta">{{ record.form_name }}</p>
         </div>
-        <h2>{{ record.patient_name or record.form_name }}</h2>
+        <h2>{{ record.display_title }}</h2>
         <p class="panel-copy">{{ record.form_path_label }}</p>
       </div>
 
       <div class="record-summary-pills">
-        <span class="record-meta-pill"><strong>Case</strong>{{ record.case_number or "Not set yet" }}</span>
-        <span class="record-meta-pill"><strong>Age</strong>{{ record.patient_age or "Not set yet" }}</span>
-        <span class="record-meta-pill"><strong>Sex</strong>{{ record.patient_sex or "Not set yet" }}</span>
+        <span class="record-meta-pill"><strong>{{ record.display_subtitle_label }}</strong>{{ record.display_subtitle or "Not set yet" }}</span>
         <span class="record-meta-pill"><strong>Version</strong>Form v{{ record.form_version_number }}</span>
       </div>
 
@@ -240,45 +238,12 @@
           {% endfor %}
         </ul>
         {% else %}
-        <p class="completion-ready-copy">Patient details and required field answers are already in place.</p>
+        <p class="completion-ready-copy">Required field answers are already in place.</p>
         {% endif %}
       </section>
       {% endif %}
 
       <form method="post" action="/records/{{ record.id }}/edit" class="record-entry-form" data-dirty-guard>
-        <section class="panel record-section">
-          <div class="entry-block-head">
-            <p class="eyebrow">Record details</p>
-            <h2>Patient details</h2>
-          </div>
-          <div class="record-basics-grid">
-            <label class="entry-field">
-              <span>Patient name</span>
-              <input type="text" name="patient_name" value="{{ record.patient_name or '' }}">
-            </label>
-            <label class="entry-field">
-              <span>Age</span>
-              <input type="text" name="patient_age" value="{{ record.patient_age or '' }}">
-            </label>
-            <label class="entry-field">
-              <span>Sex</span>
-              <select name="patient_sex">
-                <option value=""></option>
-                {% if record.patient_sex and record.patient_sex not in ['Male', 'Female', 'Other'] %}
-                <option value="{{ record.patient_sex }}" selected>{{ record.patient_sex }}</option>
-                {% endif %}
-                <option value="Male" {% if record.patient_sex == 'Male' %}selected{% endif %}>Male</option>
-                <option value="Female" {% if record.patient_sex == 'Female' %}selected{% endif %}>Female</option>
-                <option value="Other" {% if record.patient_sex == 'Other' %}selected{% endif %}>Other</option>
-              </select>
-            </label>
-            <label class="entry-field">
-              <span>Case number</span>
-              <input type="text" name="case_number" value="{{ record.case_number or '' }}">
-            </label>
-          </div>
-        </section>
-
         <div class="entry-stack">
           {{ render_blocks(entry_schema["blocks"] or [], record_values, asset_by_field, record["id"]) }}
         </div>

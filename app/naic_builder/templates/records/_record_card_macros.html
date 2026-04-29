@@ -6,14 +6,14 @@
   {% set view_href = view_href ~ '?from=history' %}
   {% set edit_href = edit_href ~ '?from=history' %}
 {% endif %}
-<article class="record-card record-card--compact{% if not record.patient_name %} is-unnamed{% endif %}">
+<article class="record-card record-card--compact{% if not record.record_identity.primary_value %} is-unnamed{% endif %}">
   <div class="record-card-copy">
     <div class="record-card-meta-line">
       <span class="record-status-chip" data-status="{{ record.status }}">{{ record.status }}</span>
       <p class="form-card-meta">{{ record.form_name }}</p>
-      <span class="record-inline-meta">Case: {{ record.case_number or "Not set" }}</span>
+      <span class="record-inline-meta">{{ record.display_subtitle_label }}: {{ record.display_subtitle or "Not set" }}</span>
     </div>
-    <h3>{{ record.patient_name or "Unnamed patient" }}</h3>
+    <h3>{{ record.display_title }}</h3>
     <div class="record-row-details">
       <span>{{ record.form_path_label }}</span>
       <span>

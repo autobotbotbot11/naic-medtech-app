@@ -166,6 +166,47 @@ function setDraftFormNotes(value, draft = state.draft) {
   }
 }
 
+function getDraftRecordIdentity(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return {
+      primary_field_id: "",
+      secondary_field_id: "",
+      searchable_field_ids: [],
+    };
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  if (!meta.record_identity || typeof meta.record_identity !== "object") {
+    meta.record_identity = {};
+  }
+  const identity = meta.record_identity;
+  identity.primary_field_id = compactText(identity.primary_field_id);
+  identity.secondary_field_id = compactText(identity.secondary_field_id);
+  identity.searchable_field_ids = normalizeArray(identity.searchable_field_ids)
+    .map((fieldId) => compactText(fieldId))
+    .filter(Boolean)
+    .filter((fieldId, index, all) => all.indexOf(fieldId) === index);
+  return identity;
+}
+
+function setDraftRecordIdentityValue(key, value, draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return;
+  }
+  const identity = getDraftRecordIdentity(draft);
+  if (key === "searchable_field_ids") {
+    identity.searchable_field_ids = normalizeArray(value)
+      .map((fieldId) => compactText(fieldId))
+      .filter(Boolean)
+      .filter((fieldId, index, all) => all.indexOf(fieldId) === index);
+  } else {
+    identity[key] = compactText(value);
+  }
+  if (!identity.primary_field_id && !identity.secondary_field_id && !identity.searchable_field_ids.length) {
+    const meta = ensureBlockSchemaMeta(draft);
+    delete meta.record_identity;
+  }
+}
+
 function ensureDraftBlockState(draft) {
   if (!draft || typeof draft !== "object") {
     return draft;
@@ -243,6 +284,11 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
 
   if (!(meta.source && typeof meta.source === "object")) {
     delete meta.source;
+  }
+
+  const identity = getDraftRecordIdentity(draft);
+  if (!identity.primary_field_id && !identity.secondary_field_id && !identity.searchable_field_ids.length) {
+    delete meta.record_identity;
   }
 }
 
@@ -399,6 +445,11 @@ function normalizeLiveBlockNode(node) {
   }
 
   if (blockKind(node) === "field") {
+    if (props.required) {
+      props.required = true;
+    } else {
+      delete props.required;
+    }
     normalizeInputOptions(node, { allowLegacyLabel: true });
   }
 
@@ -417,6 +468,34 @@ function topLevelSectionEntries() {
   return topLevelBlocks()
     .map((node, index) => ({ node, path: ["block_schema", "blocks", index] }))
     .filter((entry) => entry.node?.kind === "section");
+}
+
+function collectIdentityFieldOptions(blocks = topLevelBlocks(), parentNames = []) {
+  const options = [];
+  normalizeArray(blocks).forEach((node) => {
+    if (!isStoredBlockNode(node)) {
+      return;
+    }
+    const kind = blockKind(node);
+    const nodeName = compactText(node.name);
+    if (kind === "section" || kind === "field_group") {
+      options.push(...collectIdentityFieldOptions(
+        getNodeChildren(node),
+        nodeName ? [...parentNames, nodeName] : parentNames
+      ));
+      return;
+    }
+    if (kind !== "field") {
+      return;
+    }
+    const fieldName = nodeName || "Untitled field";
+    options.push({
+      id: compactText(node.id),
+      label: fieldName,
+      pathLabel: [...parentNames, fieldName].filter(Boolean).join(" / ") || fieldName,
+    });
+  });
+  return options.filter((option) => option.id);
 }
 
 function topLevelContentEntries() {
@@ -1167,6 +1246,12 @@ function setBoundValue(target, bind, rawValue) {
     return;
   }
 
+  if (target === state.draft && bind.startsWith("record_identity.")) {
+    setDraftRecordIdentityValue(bind.replace("record_identity.", ""), rawValue);
+    syncRootMetaToBlockSchema();
+    return;
+  }
+
   if (isStoredBlockNode(target)) {
     const props = getNodeProps(target);
     if (bind === "name") {
@@ -1778,6 +1863,59 @@ function renderEditor() {
   setupSortableCollections();
 }
 
+function renderRecordIdentitySettings() {
+  const fields = collectIdentityFieldOptions();
+  const identity = getDraftRecordIdentity(state.draft);
+  const searchableIds = new Set(identity.searchable_field_ids);
+  const fieldOptions = [
+    '<option value="">Not set</option>',
+    ...fields.map((field) => `
+      <option value="${escapeHtml(field.id)}"${identity.primary_field_id === field.id ? " selected" : ""}>${escapeHtml(field.pathLabel)}</option>
+    `),
+  ].join("");
+  const secondaryOptions = [
+    '<option value="">Not set</option>',
+    ...fields.map((field) => `
+      <option value="${escapeHtml(field.id)}"${identity.secondary_field_id === field.id ? " selected" : ""}>${escapeHtml(field.pathLabel)}</option>
+    `),
+  ].join("");
+
+  return `
+    <section class="identity-editor">
+      <div class="reference-editor-head">
+        <span class="reference-range-title">Record labels</span>
+      </div>
+      ${fields.length ? `
+        <div class="inline-grid identity-grid">
+          <label>
+            <span>Primary</span>
+            <select data-bind="record_identity.primary_field_id">
+              ${fieldOptions}
+            </select>
+          </label>
+          <label>
+            <span>Secondary</span>
+            <select data-bind="record_identity.secondary_field_id">
+              ${secondaryOptions}
+            </select>
+          </label>
+        </div>
+        <div class="identity-search-list">
+          <span>Search fields</span>
+          <div>
+            ${fields.map((field) => `
+              <label class="identity-check">
+                <input type="checkbox" data-action="identity-search-field" data-field-id="${escapeHtml(field.id)}" ${searchableIds.has(field.id) ? "checked" : ""}>
+                <span>${escapeHtml(field.pathLabel)}</span>
+              </label>
+            `).join("")}
+          </div>
+        </div>
+      ` : '<div class="empty-state">Add fields in Content first.</div>'}
+    </section>
+  `;
+}
+
 function renderFormSetupCard(options = {}) {
   const focusMode = Boolean(options.focusMode);
   const setupOpen = focusMode ? true : state.ui.setupOpen;
@@ -1823,6 +1961,7 @@ function renderFormSetupCard(options = {}) {
           </label>
         </div>
         ${renderLocationSuggestions()}
+        ${renderRecordIdentitySettings()}
         ${state.ui.advancedMode ? `
           <details class="advanced">
             <summary>Advanced</summary>
@@ -2471,6 +2610,13 @@ function renderItemCard(item, path, options = {}) {
                 </label>
               `}
           </div>
+
+          ${isGroup ? "" : `
+            <label class="field-required-toggle">
+              <span>Required before completion</span>
+              <input type="checkbox" data-action="field-required" data-path="${encodePath(path)}" ${getNodeProps(item).required ? "checked" : ""}>
+            </label>
+          `}
 
           ${isGroup ? "" : inputType === "image" ? `
             <section class="reference-editor image-answer-editor">
@@ -3334,6 +3480,33 @@ async function handleEditorClick(event) {
 }
 
 function handleEditorChange(event) {
+  if (event.target.dataset.action === "field-required") {
+    const field = getNodeByPath(decodePath(event.target.dataset.path));
+    if (isStoredBlockNode(field)) {
+      const props = getNodeProps(field);
+      if (event.target.checked) {
+        props.required = true;
+      } else {
+        delete props.required;
+      }
+      touch({ full: true, source: "blocks" });
+    }
+    return;
+  }
+  if (event.target.dataset.action === "identity-search-field") {
+    const fieldId = compactText(event.target.dataset.fieldId);
+    const identity = getDraftRecordIdentity(state.draft);
+    const nextIds = new Set(identity.searchable_field_ids);
+    if (event.target.checked) {
+      nextIds.add(fieldId);
+    } else {
+      nextIds.delete(fieldId);
+    }
+    setDraftRecordIdentityValue("searchable_field_ids", [...nextIds]);
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
   if (event.target.dataset.action === "item-input-type") {
     const field = getNodeByPath(decodePath(event.target.dataset.path));
     applyInputType(field, event.target.value);
@@ -3424,7 +3597,7 @@ formEditorEl.addEventListener("change", (event) => {
     handleOptionInput(event);
     return;
   }
-  if (event.target.matches("select")) {
+  if (event.target.matches("select, input[type='checkbox']")) {
     handleEditorChange(event);
   }
 });

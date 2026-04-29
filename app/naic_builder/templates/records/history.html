@@ -55,7 +55,7 @@
             {% endif %}
             <label class="records-search-input">
               <span>Search</span>
-              <input type="search" name="q" value="{{ search_query }}" placeholder="Patient, case, form, key">
+              <input type="search" name="q" value="{{ search_query }}" placeholder="Record, form, key, or value">
             </label>
             <div class="record-filter-pills">
               <a class="record-filter-pill{% if status_filter == 'completed' %} is-active{% endif %}" href="/records/history{% if search_query %}?q={{ search_query | urlencode }}{% endif %}">Completed</a>

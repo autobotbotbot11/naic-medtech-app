@@ -576,8 +576,6 @@ def render_record_edit_page(
     if record.status == "draft" and not resolved_validation_issues:
         resolved_validation_issues = list_record_completion_issues(
             record,
-            patient_name=record.patient_name or "",
-            case_number=record.case_number or "",
             values=current_record_values(record),
         )
 
@@ -631,12 +629,19 @@ def render_record_print_page(
     if record is None:
         raise HTTPException(status_code=404, detail="Record not found.")
 
+    clinic_profile = get_clinic_profile(session)
+    clinic_logo_url = "/settings/clinic/logo" if clinic_profile.get("has_logo") else ""
+
     return templates.TemplateResponse(
         request=request,
         name="records/print.html",
         context={
             "app_title": APP_TITLE,
-            "document": build_record_print_document(record),
+            "document": build_record_print_document(
+                record,
+                clinic_profile=clinic_profile,
+                clinic_logo_url=clinic_logo_url,
+            ),
         },
     )
 
@@ -653,10 +658,10 @@ def record_update_payload_from_form_data(form_data: dict[str, list[str]]) -> Rec
         values[block_id] = value
 
     return RecordUpdatePayload(
-        patient_name=(form_data.get("patient_name") or [""])[0],
-        patient_age=(form_data.get("patient_age") or [""])[0],
-        patient_sex=(form_data.get("patient_sex") or [""])[0],
-        case_number=(form_data.get("case_number") or [""])[0],
+        patient_name=(form_data.get("patient_name") or [None])[0],
+        patient_age=(form_data.get("patient_age") or [None])[0],
+        patient_sex=(form_data.get("patient_sex") or [None])[0],
+        case_number=(form_data.get("case_number") or [None])[0],
         values=values,
     )
 

@@ -10,15 +10,16 @@
 <body>
   {% set doc_items = document["items"] or [] %}
   {% set record_meta = document["record"] or {} %}
+  {% set clinic = document["clinic"] or {} %}
   {% macro render_items(items) %}
     {% for item in items %}
       {% if item.kind == "section" %}
       {% set child_items = item["items"] or [] %}
       <section class="print-section">
-        <div>
+        <header class="print-section-head">
           <p class="print-eyebrow">Section</p>
           <h2 class="print-section-title">{{ item.name }}</h2>
-        </div>
+        </header>
         <div class="print-items">
           {{ render_items(child_items) }}
         </div>
@@ -26,10 +27,9 @@
       {% elif item.kind == "group" %}
       {% set child_items = item["items"] or [] %}
       <section class="print-group">
-        <div>
-          <p class="print-eyebrow">Group</p>
+        <header class="print-group-head">
           <h3 class="print-group-title">{{ item.name }}</h3>
-        </div>
+        </header>
         <div class="print-items">
           {{ render_items(child_items) }}
         </div>
@@ -37,75 +37,75 @@
       {% elif item.kind == "field" %}
       {% set display = item["display"] or {} %}
       <article class="print-row">
-        <div class="print-row-head">
-          <p class="print-row-name">{{ item.name }}</p>
-          {% if item.unit_hint %}
-          <span class="print-unit">{{ item.unit_hint }}</span>
+        <div class="print-row-name">
+          <strong>{{ item.name }}</strong>
+          {% if item.reference_text %}
+          <span class="{% if item.is_abnormal %}is-abnormal{% endif %}">Reference: {{ item.reference_text }}</span>
           {% endif %}
         </div>
 
-        {% if display.kind == "image" %}
-          {% if display.image_url %}
-          <img class="print-image" src="{{ display.image_url }}" alt="{{ item.name }}">
-          {% if display.filename %}
-          <div class="print-image-meta">{{ display.filename }}</div>
-          {% endif %}
+        <div class="print-row-result">
+          {% if display.kind == "image" %}
+            {% if display.image_url %}
+            <img class="print-image" src="{{ display.image_url }}" alt="{{ item.name }}">
+            {% if display.filename %}
+            <span class="print-image-meta">{{ display.filename }}</span>
+            {% endif %}
+            {% else %}
+            <span class="print-answer is-empty">No image uploaded.</span>
+            {% endif %}
+          {% elif display.text %}
+          <span class="print-answer{% if item.is_abnormal %} is-abnormal{% endif %}">{{ display.text }}</span>
           {% else %}
-          <p class="print-answer is-empty">No image uploaded.</p>
+          <span class="print-answer is-empty">No value recorded.</span>
           {% endif %}
-        {% elif display.text %}
-        <p class="print-answer{% if item.is_abnormal %} is-abnormal{% endif %}">{{ display.text }}</p>
-        {% else %}
-        <p class="print-answer is-empty">No value recorded.</p>
-        {% endif %}
+        </div>
 
-        {% if item.reference_text %}
-        <p class="print-reference{% if item.is_abnormal %} is-abnormal{% endif %}">
-          Reference: {{ item.reference_text }}
-        </p>
-        {% endif %}
+        <div class="print-row-unit">
+          {% if item.unit_hint %}
+          <span>{{ item.unit_hint }}</span>
+          {% endif %}
+        </div>
       </article>
       {% elif item.kind == "note" %}
       <div class="print-note">
         {% if item.name %}
-        <div class="print-note-title">{{ item.name }}</div>
+        <strong>{{ item.name }}</strong>
         {% endif %}
-        <div>{{ item.content or item.name or "Note" }}</div>
+        <span>{{ item.content or item.name or "Note" }}</span>
       </div>
       {% elif item.kind == "divider" %}
       <div class="print-divider-block">
         {% if item.content or item.name %}
-        <div class="print-divider-copy">{{ item.content or item.name }}</div>
+        <span>{{ item.content or item.name }}</span>
         {% endif %}
-        <hr class="print-divider">
+        <hr>
       </div>
       {% elif item.kind == "table" %}
       {% set columns = item["columns"] or [] %}
       {% set sample_rows = item["sample_rows"] or 3 %}
       <section class="print-table-block">
-        <div class="print-row-head">
-          <p class="print-row-name">{{ item.name }}</p>
-        </div>
-        <div class="print-table-shell">
-          <table class="print-table">
-            <thead>
-              <tr>
-                {% for column in columns %}
-                <th>{{ column }}</th>
-                {% endfor %}
-              </tr>
-            </thead>
-            <tbody>
-              {% for _ in range(sample_rows) %}
-              <tr>
-                {% for column in columns %}
-                <td><span class="print-table-placeholder"></span></td>
-                {% endfor %}
-              </tr>
+        <header class="print-group-head">
+          <h3 class="print-group-title">{{ item.name }}</h3>
+        </header>
+        <table class="print-table">
+          <thead>
+            <tr>
+              {% for column in columns %}
+              <th>{{ column }}</th>
               {% endfor %}
-            </tbody>
-          </table>
-        </div>
+            </tr>
+          </thead>
+          <tbody>
+            {% for _ in range(sample_rows) %}
+            <tr>
+              {% for column in columns %}
+              <td><span class="print-table-placeholder"></span></td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
       </section>
       {% endif %}
     {% endfor %}
@@ -113,58 +113,73 @@
 
   <main class="print-shell">
     <div class="print-toolbar">
-      <div class="print-copy">
+      <div class="print-toolbar-copy">
         <p class="print-eyebrow">Print preview</p>
-        <p class="print-path">{{ document.form_name }}</p>
+        <p>{{ document.form_name }}</p>
       </div>
       <div class="print-toolbar-actions">
-        <a class="print-link" href="/records/{{ record_meta["id"] }}">Back to record</a>
-        <button class="print-button" type="button" onclick="window.print()">Print</button>
+        <a class="print-link" href="/records/{{ record_meta['id'] }}">Back</a>
+        <button class="print-button" type="button" onclick="window.print()">Print / Save PDF</button>
       </div>
     </div>
 
     <section class="print-page">
-      <header>
-        <div class="print-meta-top">
-          <div class="print-copy">
-            <p class="print-eyebrow">NAIC Medtech</p>
-            <h1 class="print-title">{{ document.form_name }}</h1>
-            <p class="print-path">{{ document.form_path_label }}</p>
+      <header class="print-document-header">
+        <div class="print-clinic-brand">
+          {% if clinic.logo_url %}
+          <img class="print-logo" src="{{ clinic.logo_url }}" alt="{{ clinic.name }}">
+          {% else %}
+          <div class="print-logo-placeholder">{{ clinic.name[:2] | upper }}</div>
+          {% endif %}
+          <div class="print-clinic-copy">
+            <strong>{{ clinic.name }}</strong>
+            {% if clinic.address %}
+            <span>{{ clinic.address }}</span>
+            {% endif %}
+            {% if clinic.contact_line %}
+            <span>{{ clinic.contact_line }}</span>
+            {% endif %}
           </div>
-          <div class="print-status">{{ document.status }}</div>
         </div>
 
-        <div class="print-meta-grid">
-          <article class="print-meta-card">
-            <span>Patient</span>
-            <strong>{{ document.patient_name or "Not set yet" }}</strong>
-          </article>
-          <article class="print-meta-card">
-            <span>Age</span>
-            <strong>{{ document.patient_age or "Not set yet" }}</strong>
-          </article>
-          <article class="print-meta-card">
-            <span>Sex</span>
-            <strong>{{ document.patient_sex or "Not set yet" }}</strong>
-          </article>
-          <article class="print-meta-card">
-            <span>Case number</span>
-            <strong>{{ document.case_number or "Not set yet" }}</strong>
-          </article>
-          <article class="print-meta-card">
-            <span>Version</span>
-            <strong>Form v{{ document.form_version_number }}</strong>
-          </article>
-          <article class="print-meta-card">
-            <span>Record key</span>
-            <strong>{{ document.record_key }}</strong>
-          </article>
+        <div class="print-document-mark">
+          <span>Laboratory Result</span>
+          <strong>{{ document.record_key }}</strong>
         </div>
       </header>
+
+      <section class="print-exam-head">
+        <div>
+          <p class="print-eyebrow">Examination</p>
+          <h1 class="print-title">{{ document.form_name }}</h1>
+          <p class="print-path">{{ document.form_path_label }}</p>
+        </div>
+        <span class="print-status" data-status="{{ document.status }}">{{ document.status }}</span>
+      </section>
+
+      <section class="print-meta-grid" aria-label="Record details">
+        {% for item in document.summary_items or [] %}
+        <article>
+          <span>{{ item.label }}</span>
+          <strong>{{ item.value or "Not set yet" }}</strong>
+        </article>
+        {% endfor %}
+      </section>
 
       <section class="print-body">
         {{ render_items(doc_items) }}
       </section>
+
+      <footer class="print-footer">
+        <div class="print-signature">
+          <span>{{ document.prepared_by_name or "" }}</span>
+          <strong>Medical Technologist</strong>
+        </div>
+        <div class="print-signature">
+          <span></span>
+          <strong>Pathologist</strong>
+        </div>
+      </footer>
     </section>
   </main>
 </body>

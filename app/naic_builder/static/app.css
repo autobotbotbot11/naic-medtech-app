@@ -1460,6 +1460,82 @@ button.subtle[aria-pressed="true"] {
   margin-top: 12px;
 }
 
+.identity-editor {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(68, 54, 40, 0.12);
+}
+
+.identity-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.identity-search-list {
+  display: grid;
+  gap: 8px;
+}
+
+.identity-search-list > span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.identity-search-list > div {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.identity-check,
+.field-required-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.identity-check {
+  justify-content: flex-start;
+  padding: 8px 10px;
+  border: 1px solid rgba(68, 54, 40, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.field-required-toggle {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(68, 54, 40, 0.1);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.identity-check input[type="checkbox"],
+.field-required-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  padding: 0;
+  flex: 0 0 auto;
+  accent-color: var(--accent);
+  box-shadow: none;
+}
+
+.identity-check span,
+.field-required-toggle span {
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+
 .reference-editor-head {
   display: grid;
   gap: 2px;
