@@ -426,6 +426,7 @@
       "footer/signatory configuration supports per-side role labels and blank, prepared-by, manual-name, or field-sourced signature names",
       "compact result-grid layout compresses consecutive ordinary scalar fields into a two-column print grid while keeping image fields full width",
       "first automated real-form fit audit after compact grid: 15 likely, 3 tight, 0 long across the current 18-form sample set",
+      "Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass",
       "/records/{id}/print applies print_config",
       "existing Semen sample verified as one A4 portrait page"
     ],
@@ -434,15 +435,15 @@
       "existing records use their frozen form_version unless migrated intentionally",
       "summary rows support field/system sources but no advanced conditional expressions yet",
       "footer/signatory layout is intentionally constrained to the current two-column signature footer",
-      "current tight forms still need browser print preview and real-device QA: OGTT, Semen, and Serology",
+      "actual clinic-like values may still be longer than sample data and need real-device print QA",
       "current output is browser-print based, not a dedicated server-side PDF engine"
     ],
-    "next_recommended_phase": "phase_2e_browser_and_device_print_qa"
+    "next_recommended_phase": "phase_2e_real_device_and_real_data_print_qa"
   },
   "next_major_build_target": "print_template_configuration_phase_2e",
   "next_major_build_scope": [
-    "browser-print QA the remaining tight forms: OGTT, Semen, and Serology",
     "test print output across real forms and long-form edge cases with actual clinic-like values",
+    "verify real clinic device/browser behavior",
     "consider section/result accent behavior only if real print review proves it useful",
     "treat non-print UI work as secondary cleanup unless direct issues appear"
   ],

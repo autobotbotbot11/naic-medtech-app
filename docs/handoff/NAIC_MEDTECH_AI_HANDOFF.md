@@ -317,12 +317,13 @@ Current implementation checkpoint:
 - controlled result-body print options now exist for hiding empty fields, section headings, group headings, image size, and table density
 - footer/signatory configuration now supports per-side role labels and blank, prepared-by, manual-name, or field-sourced signature names
 - compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid, reducing current long-form estimates to 0 long forms in the automated audit
+- Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass
 - `/records/{id}/print` now reads form-version print config
 - the existing Semen sample was verified as a one-page A4 portrait export
 
 Recommended next product priority:
-1. browser-print QA the remaining tight forms: OGTT, Semen, and Serology
-2. verify clinic-device browser print behavior with real clinic-like values
+1. verify clinic-device browser print behavior with real clinic-like values
+2. check whether any form needs a per-form override from compact grid back to rows
 3. consider section/result accent behavior only if real print review proves it useful
 
 Do not reopen major builder growth now that its core direction is done.

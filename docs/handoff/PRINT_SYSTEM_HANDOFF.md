@@ -37,7 +37,7 @@ Implemented:
 - Footer/signatory configuration now supports per-side role labels plus blank, prepared-by, manual-name, or field-sourced signature names.
 - Compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid when useful.
 - A first real-form fit audit improved the current sample set from 5 `long` forms to 0 `long` forms; remaining estimate status is 15 `likely` and 3 `tight`.
-- The existing Semen sample was verified to export as one A4 portrait page.
+- The remaining tight forms, OGTT, Semen, and Serology, were exported through Chromium PDF QA as one A4 page each after the generic print spacing pass.
 
 Code paths:
 - `app/naic_builder/static/app.js`
@@ -189,7 +189,7 @@ Use those patterns as reference only. The new app should produce a better, clean
 ## Known Limits
 - One-page output cannot be guaranteed for arbitrarily long forms.
 - The builder page-fit signal is an estimate only. Browser print preview remains the final confirmation.
-- The previous verified one-page case is the existing Semen sample; rerun real-device checks after compact result-grid layout and real clinic data are reviewed.
+- Chromium PDF QA now confirms OGTT, Semen, and Serology as one A4 page each with sample data; rerun real-device checks after real clinic data are reviewed.
 - Current automated fit audit after compact grid: 15 likely, 3 tight, 0 long across the current 18-form sample set.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
 - Empty-field hiding affects result body rows only; summary rows still show configured summary information.
@@ -230,10 +230,15 @@ Phase 2E initial compacting pass is now landed:
 - image fields stay as full-width rows
 - the current automated audit has no remaining `long` estimates
 
+Phase 2E browser/PDF QA is now landed:
+- Chromium PDF export confirmed OGTT, Semen, and Serology as one A4 page each.
+- Text-presence checks confirmed expected key sections/signatories were still present.
+- A generic print spacing pass landed: tighter print page margins, compact section headers, no repeated `Section` eyebrow in print mode, tighter meta/body/footer spacing.
+
 Next print QA should focus on:
-- browser print preview / PDF output for the 3 `tight` forms: OGTT, Semen, and Serology
 - real clinic device/browser behavior
-- whether actual clinic data needs per-form overrides from compact grid back to rows
+- actual clinic-like values that may be longer than sample data
+- whether any form needs a per-form override from compact grid back to rows
 
 Later, consider server-side PDF generation only if browser print is not reliable enough for the clinic's actual devices and workflow.
 
