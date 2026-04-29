@@ -65,7 +65,8 @@
         "Settings > My account now uses the same compact utility-card system as the newer Settings account admin screens, so profile, password, and account identity no longer fall back to the older heavy auth-grid composition.",
         "Settings > Clinic profile now uses that same compact utility-card system for clinic identity, contact details, logo upload, and brand preview, keeping the future print-branding base cleaner without starting the heavy print-template work yet.",
         "The Settings utility follow-up then brought Settings > Create user and Manage user into the same compact utility-card treatment as the Forms utility screens, so manual account fallback and user maintenance no longer fall back to older heavy auth panels.",
-        "The public auth follow-up then moved /login, /request-account, and /setup to the same compact utility-card language too, replacing the older heavy auth panel plus long helper-list composition with one direct form card and one compact facts card."
+        "The public auth follow-up then moved /login, /request-account, and /setup to the same compact utility-card language too, replacing the older heavy auth panel plus long helper-list composition with one direct form card and one compact facts card.",
+        "Settings > Users & access now keeps search and status filters inside the Accounts directory header, so the staff list reads as one directory surface instead of a separate toolbar plus list."
       ]
     },
     "notes": [
@@ -134,6 +135,7 @@
       "signed-in users can now upload/remove their own profile photo from Settings > My account, and the shell uses it in the account button and drawer identity with initials fallback",
       "Settings > My account now uses compact utility-card layouts for profile, password, and read-only account identity instead of the older heavy auth-grid composition",
       "Settings > Users & access now displays uploaded staff avatars when available, with initials fallback on account cards",
+      "Settings > Users & access now keeps search and status filters in the Accounts directory header instead of a separate toolbar block",
       "admins can now open /settings/users/{id}/edit from the directory to correct full name/role and reset another user's temporary password",
       "Settings > Create user and Manage user now share compact utility-card layouts with clearer identity/access sections instead of older heavy auth panels",
       "email and login ID remain read-only in the personal account screen so identity changes do not undermine accountability"

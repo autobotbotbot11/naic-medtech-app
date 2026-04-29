@@ -127,6 +127,7 @@ The app now starts from a builder-first FastAPI scaffold.
     - `Settings > My account` now uses the same compact utility-card structure as the newer Settings account admin screens
     - `Settings > Clinic profile` now uses the same compact utility-card structure for clinic details, logo upload, and brand preview, keeping the future print-branding base cleaner
     - `Settings > Users & access` now reads more like a staff directory with avatar/initial identity on each account card
+    - `Settings > Users & access` now keeps search and status filters inside the Accounts directory header instead of rendering them as a separate toolbar block
     - admins can open a dedicated `Manage user` page from the directory to correct full name/role and reset another user's temporary password
     - email and login ID stay read-only in the personal account page so accountability remains anchored to stable account identifiers
     - `Settings > Create user` and `Manage user` now use compact utility-card layouts too, so manual account fallback and user maintenance match the calmer admin tooling instead of the older heavy auth-panel style

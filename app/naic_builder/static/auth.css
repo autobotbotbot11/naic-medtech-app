@@ -410,11 +410,17 @@
   align-content: start;
 }
 
-.user-directory-toolbar {
+.user-directory-head {
+  align-items: start;
+}
+
+.user-directory-controls {
   display: grid;
-  grid-template-columns: minmax(240px, 420px) minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: minmax(220px, 320px) minmax(0, auto);
+  gap: 10px;
   align-items: end;
+  justify-content: end;
+  width: min(760px, 100%);
 }
 
 .search-wrap--users {
@@ -543,15 +549,43 @@
   margin: 0;
 }
 
+.user-card-title-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .user-card--compact .user-card-copy h3 {
   font-size: 18px;
   line-height: 1.08;
+}
+
+.user-card-email {
+  font-weight: 650;
+}
+
+.user-card-meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.user-card-login {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .user-card-copy p {
   color: var(--muted);
   font-size: 13px;
   overflow-wrap: anywhere;
+}
+
+.user-card-copy .user-card-email {
+  color: var(--text);
 }
 
 .user-card-actions {
@@ -567,6 +601,7 @@
 
 .user-card--compact .user-card-actions .primary-button,
 .user-card--compact .user-card-actions .ghost-button {
+  flex: 0 0 auto;
   min-height: 34px;
   padding: 7px 11px;
 }
@@ -806,8 +841,13 @@ html[data-theme="dark"] .status-chip[data-status="disabled"] {
 }
 
 @media (max-width: 820px) {
-  .user-directory-toolbar {
+  .user-directory-head {
+    align-items: stretch;
+  }
+
+  .user-directory-controls {
     grid-template-columns: 1fr;
+    width: 100%;
   }
 
   .user-status-filters {

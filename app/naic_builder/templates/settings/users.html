@@ -37,13 +37,15 @@
         {% endif %}
       </div>
       <div class="user-card-copy">
-        <div class="settings-meta-row">
+        <div class="user-card-title-row">
+          <h3>{{ user.full_name }}</h3>
           <span class="status-chip" data-status="{{ user.status }}">{{ user.status }}</span>
-          <span class="role-chip">{{ user.role }}</span>
         </div>
-        <h3>{{ user.full_name }}</h3>
-        <p>{{ user.email or "No email" }}</p>
-        <p>Login ID: {{ user.login_id }}</p>
+        <p class="user-card-email">{{ user.email or "No email" }}</p>
+        <div class="user-card-meta-row">
+          <span class="role-chip">{{ user.role }}</span>
+          <span class="user-card-login">Login ID: {{ user.login_id }}</span>
+        </div>
       </div>
     </div>
 
@@ -86,23 +88,24 @@
     <div class="banner success">{{ success_message }}</div>
     {% endif %}
 
-    <section class="user-directory-toolbar">
-      <label class="search-wrap search-wrap--users">
-        <span>Search users</span>
-        <input id="userSearch" type="search" placeholder="Name, email, login ID">
-      </label>
-      <div class="user-status-filters" aria-label="User status filters">
-        <button class="user-status-filter is-active" type="button" data-user-filter="all">All <small>{{ pending_count + active_count + disabled_count }}</small></button>
-        <button class="user-status-filter" type="button" data-user-filter="pending">Pending <small>{{ pending_count }}</small></button>
-        <button class="user-status-filter" type="button" data-user-filter="active">Active <small>{{ active_count }}</small></button>
-        <button class="user-status-filter" type="button" data-user-filter="disabled">Disabled <small>{{ disabled_count }}</small></button>
-      </div>
-    </section>
-
     <section class="app-section settings-section user-directory">
-      <div class="app-section__copy">
-        <p class="eyebrow">Directory</p>
-        <h2>Accounts</h2>
+      <div class="app-section__head user-directory-head">
+        <div class="app-section__copy">
+          <p class="eyebrow">Directory</p>
+          <h2>Accounts</h2>
+        </div>
+        <div class="user-directory-controls">
+          <label class="search-wrap search-wrap--users">
+            <span>Search users</span>
+            <input id="userSearch" type="search" placeholder="Name, email, login ID">
+          </label>
+          <div class="user-status-filters" aria-label="User status filters">
+            <button class="user-status-filter is-active" type="button" data-user-filter="all">All <small>{{ pending_count + active_count + disabled_count }}</small></button>
+            <button class="user-status-filter" type="button" data-user-filter="pending">Pending <small>{{ pending_count }}</small></button>
+            <button class="user-status-filter" type="button" data-user-filter="active">Active <small>{{ active_count }}</small></button>
+            <button class="user-status-filter" type="button" data-user-filter="disabled">Disabled <small>{{ disabled_count }}</small></button>
+          </div>
+        </div>
       </div>
       <div class="user-list app-scroll-region app-scroll-region--list" data-user-list>
         {% for user in pending_users %}
