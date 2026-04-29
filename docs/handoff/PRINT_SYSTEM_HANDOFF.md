@@ -36,6 +36,8 @@ Implemented:
 - Controlled result-body options now exist for hiding empty fields, section headings, group headings, image size, and table density.
 - Footer/signatory configuration now supports per-side role labels plus blank, prepared-by, manual-name, or field-sourced signature names.
 - Compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid when useful.
+- Print output now uses a modern exam identity band powered by each form's `accent_color`, with automatic dark/light title text for readable contrast. This intentionally keeps the old template's quick color-identification value without copying the old Word layout.
+- Known seeded NAIC forms now get legacy-guided default accent colors when their print color is still the generic default: Blood Bank magenta, Hematology/Coag red, Blood Chemistry green, Serology orange, Clinical Microscopy cyan/yellow depending form, ABG purple, and Microbiology black.
 - A first real-form fit audit improved the current sample set from 5 `long` forms to 0 `long` forms; remaining estimate status is 15 `likely` and 3 `tight`.
 - The remaining tight forms, OGTT, Semen, and Serology, were exported through Chromium PDF QA as one A4 page each after the generic print spacing pass.
 - A clinic-like stress pass with longer patient names, case numbers, requesting physician, medtech/pathologist names, remarks, and release fields still exported OGTT, Semen, and Serology as one A4 page each.
@@ -59,6 +61,7 @@ Code paths:
   - default patient-info materialization/backfill helpers
   - `normalize_record_identity_config`
   - `normalize_print_config`
+  - legacy-guided default print accent migration for known seeded forms
   - `build_print_summary_items`
   - `build_print_signature_items`
   - `build_record_print_document`
@@ -79,6 +82,7 @@ Code paths:
   - builder iframe document using sample data and the shared print-page macro
 - `app/naic_builder/static/print.css`
   - compact print layout
+  - exam identity band using the saved form accent color
   - print density handling
   - no-logo clinic header handling
   - builder-preview fit badge styling
@@ -170,7 +174,7 @@ Supported signatory sources:
 
 ## Current Print Pane Controls
 The builder Print pane currently supports:
-- header/accent color
+- exam identity/header accent color
 - density: compact or comfortable
 - show/hide clinic logo
 - show/hide clinic info

@@ -250,6 +250,21 @@ function normalizePrintAccentColor(value) {
   return /^#[0-9a-fA-F]{6}$/.test(text) ? text.toLowerCase() : DEFAULT_PRINT_ACCENT_COLOR;
 }
 
+function printAccentInkColor(value) {
+  const color = normalizePrintAccentColor(value).replace("#", "");
+  const red = parseInt(color.slice(0, 2), 16);
+  const green = parseInt(color.slice(2, 4), 16);
+  const blue = parseInt(color.slice(4, 6), 16);
+  const linear = (channel) => {
+    const normalized = channel / 255;
+    return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = 0.2126 * linear(red) + 0.7152 * linear(green) + 0.0722 * linear(blue);
+  const darkContrast = (luminance + 0.05) / 0.05;
+  const lightContrast = 1.05 / (luminance + 0.05);
+  return darkContrast >= lightContrast ? "#171512" : "#ffffff";
+}
+
 function normalizePrintDensity(value) {
   const text = compactText(value).toLowerCase();
   return text === "comfortable" ? "comfortable" : "compact";
@@ -2479,7 +2494,7 @@ function renderPrintSummaryPreview(config) {
   }).join("");
 
   return `
-    <div class="print-mini-preview" style="--preview-accent: ${escapeHtml(config.accent_color)}">
+    <div class="print-mini-preview" style="--preview-accent: ${escapeHtml(config.accent_color)}; --preview-accent-ink: ${escapeHtml(printAccentInkColor(config.accent_color))}">
       <div class="print-mini-preview__head">
         <span></span>
         <strong>${escapeHtml(state.draft.name || "Untitled Form")}</strong>

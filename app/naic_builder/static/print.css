@@ -5,6 +5,7 @@
   --line: #cfd8d3;
   --strong-line: #8ea39a;
   --accent: #1e5d52;
+  --accent-ink: #ffffff;
   --alert: #a02525;
   --paper: #ffffff;
   --preview: #e9ece9;
@@ -137,8 +138,8 @@ body {
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--accent);
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
 }
 
 .print-clinic-brand {
@@ -221,12 +222,25 @@ body {
 }
 
 .print-exam-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   justify-content: space-between;
-  gap: 18px;
-  align-items: flex-start;
-  padding: 16px 0 12px;
-  border-bottom: 1px solid var(--line);
+  gap: 14px;
+  align-items: center;
+  margin-top: 10px;
+  padding: 11px 12px;
+  border: 1px solid var(--accent);
+  border-radius: 9px;
+  color: var(--accent-ink);
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%),
+    linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 88%, #000 12%));
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.print-exam-copy {
+  min-width: 0;
 }
 
 .print-title,
@@ -236,7 +250,8 @@ body {
 }
 
 .print-title {
-  margin-top: 4px;
+  margin-top: 3px;
+  color: currentColor;
   font-size: 25px;
   line-height: 1.05;
 }
@@ -247,6 +262,12 @@ body {
 
 .print-eyebrow {
   margin: 0;
+}
+
+.print-exam-head .print-eyebrow,
+.print-exam-head .print-path {
+  color: currentColor;
+  opacity: 0.78;
 }
 
 .print-status {
@@ -263,6 +284,13 @@ body {
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.print-exam-head .print-status,
+.print-exam-head .print-status[data-status="draft"] {
+  border-color: currentColor;
+  color: currentColor;
+  background: rgba(255, 255, 255, 0.16);
 }
 
 .print-status[data-status="draft"] {
@@ -634,10 +662,13 @@ body {
   }
 
   .print-document-header,
-  .print-exam-head,
   .print-toolbar {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .print-exam-head {
+    grid-template-columns: 1fr;
   }
 
   .print-document-mark {
@@ -766,12 +797,15 @@ body {
   }
 
   .print-exam-head {
-    padding: 7px 0 6px;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 6px;
   }
 
   .print-title {
-    margin-top: 2px;
-    font-size: 20px;
+    margin-top: 1px;
+    font-size: 18.5px;
   }
 
   .print-path {

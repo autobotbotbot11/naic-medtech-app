@@ -1643,19 +1643,25 @@ button.subtle[aria-pressed="true"] {
 .print-mini-preview__head {
   display: grid;
   gap: 8px;
-  padding-bottom: 10px;
-  border-bottom: 2px solid var(--preview-accent, var(--accent));
+  padding: 10px;
+  border-radius: calc(var(--radius-sm) + 2px);
+  color: var(--preview-accent-ink, #fff);
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%),
+    linear-gradient(90deg, var(--preview-accent, var(--accent)), color-mix(in srgb, var(--preview-accent, var(--accent)) 88%, #000 12%));
 }
 
 .print-mini-preview__head span {
   display: block;
   width: 42px;
-  height: 24px;
-  border-radius: 5px;
-  background: var(--preview-accent, var(--accent));
+  height: 4px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.62;
 }
 
 .print-mini-preview__head strong {
+  color: currentColor;
   font-size: 16px;
 }
 

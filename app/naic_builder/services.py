@@ -41,6 +41,32 @@ MAX_RECORD_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_CLINIC_LOGO_BYTES = 5 * 1024 * 1024
 MAX_USER_AVATAR_BYTES = 2 * 1024 * 1024
 DEFAULT_PRINT_ACCENT_COLOR = "#1e5d52"
+DEFAULT_PRINT_ACCENT_MIGRATED_META_KEY = "print_accent_default_migrated"
+DEFAULT_PRINT_ACCENT_COLORS_BY_FORM_KEY = {
+    "abg": "#8064a2",
+    "blood_bank": "#cc3399",
+    "blood_gas_analysis": "#8064a2",
+    "cardiac": "#f79646",
+    "cardiaci": "#f79646",
+    "coag": "#c0504d",
+    "covid_19_antigen_rapid_test": "#f79646",
+    "fecalysis": "#4bacc6",
+    "female": "#9bbb59",
+    "hba1c": "#9bbb59",
+    "hba1ci": "#9bbb59",
+    "hematology": "#c0504d",
+    "hiv_1_and_2_testing": "#f79646",
+    "hscrp": "#f79646",
+    "male": "#9bbb59",
+    "microbiology": "#000000",
+    "ogtt": "#9bbb59",
+    "pro_time_aptt": "#c0504d",
+    "semen": "#00b0f0",
+    "serology": "#f79646",
+    "serologyi": "#f79646",
+    "urinalysis": "#ffff66",
+    "urine": "#ffff66",
+}
 PRINT_SUMMARY_SOURCES = {
     "field",
     "primary_identity",
@@ -105,6 +131,61 @@ def validate_user_status(value: Any) -> str:
 def normalize_print_accent_color(value: Any) -> str:
     text = compact_text(value)
     return text.lower() if re.fullmatch(r"#[0-9a-fA-F]{6}", text) else DEFAULT_PRINT_ACCENT_COLOR
+
+
+def form_key_from_meta(meta: dict[str, Any]) -> str:
+    raw_key = compact_text(meta.get("form_key")) or compact_text(meta.get("form_id"))
+    if raw_key.startswith("form."):
+        raw_key = raw_key[5:]
+    return slugify(raw_key)
+
+
+def default_print_accent_color_for_form_key(form_key: Any) -> str:
+    return DEFAULT_PRINT_ACCENT_COLORS_BY_FORM_KEY.get(slugify(compact_text(form_key)), DEFAULT_PRINT_ACCENT_COLOR)
+
+
+def print_accent_text_color(value: Any) -> str:
+    color = normalize_print_accent_color(value).lstrip("#")
+    red = int(color[0:2], 16)
+    green = int(color[2:4], 16)
+    blue = int(color[4:6], 16)
+
+    def linear_channel(channel: int) -> float:
+        value = channel / 255
+        return value / 12.92 if value <= 0.03928 else ((value + 0.055) / 1.055) ** 2.4
+
+    luminance = (
+        0.2126 * linear_channel(red)
+        + 0.7152 * linear_channel(green)
+        + 0.0722 * linear_channel(blue)
+    )
+    contrast_with_dark = (luminance + 0.05) / 0.05
+    contrast_with_light = 1.05 / (luminance + 0.05)
+    return "#171512" if contrast_with_dark >= contrast_with_light else "#ffffff"
+
+
+def ensure_form_default_print_accent(meta: dict[str, Any]) -> bool:
+    form_key = form_key_from_meta(meta)
+    default_accent = default_print_accent_color_for_form_key(form_key)
+    if default_accent == DEFAULT_PRINT_ACCENT_COLOR:
+        return False
+
+    raw_config = meta.get("print_config") if isinstance(meta.get("print_config"), dict) else {}
+    print_config = normalize_print_config(raw_config)
+    changed = print_config != raw_config
+    already_migrated = bool(meta.get(DEFAULT_PRINT_ACCENT_MIGRATED_META_KEY))
+
+    if not already_migrated and print_config.get("accent_color") == DEFAULT_PRINT_ACCENT_COLOR:
+        print_config["accent_color"] = default_accent
+        meta[DEFAULT_PRINT_ACCENT_MIGRATED_META_KEY] = True
+        changed = True
+    elif not already_migrated and print_config.get("accent_color") != DEFAULT_PRINT_ACCENT_COLOR:
+        meta[DEFAULT_PRINT_ACCENT_MIGRATED_META_KEY] = True
+        changed = True
+
+    if changed:
+        meta["print_config"] = print_config
+    return changed
 
 
 def normalize_print_density(value: Any) -> str:
@@ -1288,6 +1369,9 @@ def normalize_active_block_storage_schema(block_schema: dict[str, Any]) -> bool:
         meta["print_config"] = normalized_print_config
         block_schema["meta"] = meta
         changed = True
+    if ensure_form_default_print_accent(meta):
+        block_schema["meta"] = meta
+        changed = True
 
     for block in blocks:
         if normalize_active_block_storage_node(block):
@@ -1334,6 +1418,7 @@ def build_block_storage_payload(
     else:
         meta.pop("source", None)
 
+    ensure_form_default_print_accent(meta)
     block_schema["meta"] = meta
     return block_schema
 
@@ -2681,6 +2766,7 @@ def build_form_print_preview_document(
     )
     meta = entry_schema.get("meta") if isinstance(entry_schema.get("meta"), dict) else {}
     print_config = normalize_print_config(meta.get("print_config"))
+    print_accent_ink = print_accent_text_color(print_config.get("accent_color"))
     normalized_form_name = compact_text(form_name) or "Untitled Form"
     normalized_path = compact_text(form_path_label) or "Builder preview"
     serialized = {
@@ -2710,6 +2796,7 @@ def build_form_print_preview_document(
         "record": serialized,
         "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
         "print_config": print_config,
+        "print_accent_ink": print_accent_ink,
         "template": {
             "id": "clinic_lab_result_v1",
             "name": "Clinic lab result",
@@ -2772,6 +2859,7 @@ def build_record_print_document(
     )
     meta = entry_schema.get("meta") if isinstance(entry_schema.get("meta"), dict) else {}
     print_config = normalize_print_config(meta.get("print_config"))
+    print_accent_ink = print_accent_text_color(print_config.get("accent_color"))
     summary_items = build_print_summary_items(
         print_config,
         serialized,
@@ -2784,6 +2872,7 @@ def build_record_print_document(
         "record": serialized,
         "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
         "print_config": print_config,
+        "print_accent_ink": print_accent_ink,
         "template": {
             "id": "clinic_lab_result_v1",
             "name": "Clinic lab result",
