@@ -163,16 +163,15 @@
       {{ render_print_items(doc_items) }}
     </section>
 
-    {% if print_config.show_signatures %}
+    {% set signature_items = document.signatures or [] %}
+    {% if print_config.show_signatures and signature_items %}
     <footer class="print-footer">
-      <div class="print-signature">
-        <span>{{ document.prepared_by_name or "" }}</span>
-        <strong>Medical Technologist</strong>
-      </div>
-      <div class="print-signature">
-        <span></span>
-        <strong>Pathologist</strong>
-      </div>
+      {% for signature in signature_items %}
+        <div class="print-signature">
+          <span>{{ signature.name or "" }}</span>
+          <strong>{{ signature.label }}</strong>
+        </div>
+      {% endfor %}
     </footer>
     {% endif %}
   </section>

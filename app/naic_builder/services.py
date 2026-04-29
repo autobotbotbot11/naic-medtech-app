@@ -49,6 +49,7 @@ PRINT_SUMMARY_SOURCES = {
     "issued_at",
     "form_version",
 }
+PRINT_SIGNATURE_SOURCES = {"blank", "prepared_by", "manual", "field"}
 DEFAULT_PRINT_SUMMARY_ITEMS = [
     {"id": "summary_primary", "label": "Record", "source": "primary_identity", "field_id": ""},
     {"id": "summary_secondary", "label": "Detail", "source": "secondary_identity", "field_id": ""},
@@ -121,6 +122,12 @@ def normalize_print_table_density(value: Any) -> str:
     return density if density in {"compact", "comfortable"} else "compact"
 
 
+def normalize_print_signature_source(value: Any, *, default: str = "blank") -> str:
+    source = compact_text(value).lower()
+    fallback = default if default in PRINT_SIGNATURE_SOURCES else "blank"
+    return source if source in PRINT_SIGNATURE_SOURCES else fallback
+
+
 def normalize_boolean_setting(value: Any, *, default: bool = True) -> bool:
     if value in (None, ""):
         return default
@@ -176,6 +183,14 @@ def normalize_print_config(raw_config: Any) -> dict[str, Any]:
         "show_group_titles": normalize_boolean_setting(config.get("show_group_titles"), default=True),
         "image_size": normalize_print_image_size(config.get("image_size")),
         "table_density": normalize_print_table_density(config.get("table_density")),
+        "signature_left_label": compact_text(config.get("signature_left_label")) or "Medical Technologist",
+        "signature_left_source": normalize_print_signature_source(config.get("signature_left_source"), default="prepared_by"),
+        "signature_left_name": compact_text(config.get("signature_left_name")),
+        "signature_left_field_id": compact_text(config.get("signature_left_field_id")),
+        "signature_right_label": compact_text(config.get("signature_right_label")) or "Pathologist",
+        "signature_right_source": normalize_print_signature_source(config.get("signature_right_source"), default="blank"),
+        "signature_right_name": compact_text(config.get("signature_right_name")),
+        "signature_right_field_id": compact_text(config.get("signature_right_field_id")),
         "summary_items": summary_items,
     }
 
@@ -2408,6 +2423,53 @@ def build_print_summary_items(
     return summary_items
 
 
+def resolve_print_signature_name(
+    source: str,
+    *,
+    field_id: str,
+    manual_name: str,
+    prepared_by_name: str,
+    values: dict[str, Any],
+) -> str:
+    normalized_source = normalize_print_signature_source(source)
+    if normalized_source == "prepared_by":
+        return compact_text(prepared_by_name)
+    if normalized_source == "manual":
+        return compact_text(manual_name)
+    if normalized_source == "field":
+        return record_value_display_text(values.get(field_id))
+    return ""
+
+
+def build_print_signature_items(
+    print_config: dict[str, Any],
+    values: dict[str, Any],
+    *,
+    prepared_by_name: str,
+) -> list[dict[str, str]]:
+    signatures: list[dict[str, str]] = []
+    for side, fallback_label in (("left", "Medical Technologist"), ("right", "Pathologist")):
+        label = compact_text(print_config.get(f"signature_{side}_label")) or fallback_label
+        source = normalize_print_signature_source(print_config.get(f"signature_{side}_source"))
+        manual_name = compact_text(print_config.get(f"signature_{side}_name"))
+        field_id = compact_text(print_config.get(f"signature_{side}_field_id"))
+        signatures.append(
+            {
+                "label": label,
+                "name": resolve_print_signature_name(
+                    source,
+                    field_id=field_id,
+                    manual_name=manual_name,
+                    prepared_by_name=prepared_by_name,
+                    values=values,
+                ),
+                "source": source,
+                "field_id": field_id if source == "field" else "",
+            }
+        )
+    return signatures
+
+
 def sample_print_value_for_field(block: dict[str, Any]) -> Any:
     props = block.get("props") if isinstance(block.get("props"), dict) else {}
     key = compact_text(props.get("key")).lower()
@@ -2596,6 +2658,7 @@ def build_form_print_preview_document(
         values,
         issued_at_label="Preview sample",
     )
+    prepared_by_name = "Sample Medtech"
     document = {
         "record": serialized,
         "clinic": build_print_clinic_profile(clinic_profile, logo_url=clinic_logo_url),
@@ -2625,7 +2688,12 @@ def build_form_print_preview_document(
         "updated_at_label": "Preview sample",
         "completed_at_label": "",
         "issued_at_label": "Preview sample",
-        "prepared_by_name": "Sample Medtech",
+        "prepared_by_name": prepared_by_name,
+        "signatures": build_print_signature_items(
+            print_config,
+            values,
+            prepared_by_name=prepared_by_name,
+        ),
         "items": build_print_items(
             normalize_items(entry_schema.get("blocks")),
             values,
@@ -2663,6 +2731,7 @@ def build_record_print_document(
         values,
         issued_at_label=issued_at_label or "Not set yet",
     )
+    prepared_by_name = compact_text(updated_by.get("full_name")) or ""
 
     return {
         "record": serialized,
@@ -2693,7 +2762,12 @@ def build_record_print_document(
         "updated_at_label": serialized.get("updated_at_label") or "",
         "completed_at_label": serialized.get("completed_at_label") or "",
         "issued_at_label": issued_at_label,
-        "prepared_by_name": compact_text(updated_by.get("full_name")) or "",
+        "prepared_by_name": prepared_by_name,
+        "signatures": build_print_signature_items(
+            print_config,
+            values,
+            prepared_by_name=prepared_by_name,
+        ),
         "items": build_print_items(
             normalize_items(entry_schema.get("blocks")),
             values,

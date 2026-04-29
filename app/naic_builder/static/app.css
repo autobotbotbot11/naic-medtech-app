@@ -1550,13 +1550,16 @@ button.subtle[aria-pressed="true"] {
 
 .print-config-controls,
 .print-body-options,
+.print-signature-editor,
+.print-signature-list,
 .print-summary-editor,
 .print-summary-list {
   display: grid;
   gap: 12px;
 }
 
-.print-body-options {
+.print-body-options,
+.print-signature-editor {
   padding: 12px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
@@ -1577,6 +1580,35 @@ button.subtle[aria-pressed="true"] {
 .print-summary-head {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+}
+
+.print-signature-config {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: color-mix(in srgb, var(--panel-strong) 72%, transparent);
+}
+
+.print-signature-config__title {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+}
+
+.print-signature-config__title strong {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.print-signature-config__title span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .print-summary-row {

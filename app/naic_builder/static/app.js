@@ -46,6 +46,12 @@ const PRINT_SUMMARY_SOURCES = [
   { id: "issued_at", label: "Issued" },
   { id: "form_version", label: "Form version" },
 ];
+const PRINT_SIGNATURE_SOURCES = [
+  { id: "blank", label: "Blank line" },
+  { id: "prepared_by", label: "Prepared by" },
+  { id: "manual", label: "Manual name" },
+  { id: "field", label: "Form field" },
+];
 const DEFAULT_PRINT_SUMMARY_ITEMS = [
   { id: "summary_primary", label: "Record", source: "primary_identity", field_id: "" },
   { id: "summary_secondary", label: "Detail", source: "secondary_identity", field_id: "" },
@@ -259,6 +265,11 @@ function normalizePrintTableDensity(value) {
   return text === "comfortable" ? "comfortable" : "compact";
 }
 
+function normalizePrintSignatureSource(value, fallback = "blank") {
+  const text = compactText(value).toLowerCase();
+  return PRINT_SIGNATURE_SOURCES.some((option) => option.id === text) ? text : fallback;
+}
+
 function normalizePrintBoolean(value, fallback = true) {
   if (value === undefined || value === null || value === "") {
     return fallback;
@@ -335,6 +346,14 @@ function getDraftPrintConfig(draft = state.draft) {
       show_group_titles: true,
       image_size: "medium",
       table_density: "compact",
+      signature_left_label: "Medical Technologist",
+      signature_left_source: "prepared_by",
+      signature_left_name: "",
+      signature_left_field_id: "",
+      signature_right_label: "Pathologist",
+      signature_right_source: "blank",
+      signature_right_name: "",
+      signature_right_field_id: "",
       summary_items: deepClone(DEFAULT_PRINT_SUMMARY_ITEMS),
     };
   }
@@ -354,6 +373,14 @@ function getDraftPrintConfig(draft = state.draft) {
   config.show_group_titles = normalizePrintBoolean(config.show_group_titles, true);
   config.image_size = normalizePrintImageSize(config.image_size);
   config.table_density = normalizePrintTableDensity(config.table_density);
+  config.signature_left_label = compactText(config.signature_left_label) || "Medical Technologist";
+  config.signature_left_source = normalizePrintSignatureSource(config.signature_left_source, "prepared_by");
+  config.signature_left_name = compactText(config.signature_left_name);
+  config.signature_left_field_id = compactText(config.signature_left_field_id);
+  config.signature_right_label = compactText(config.signature_right_label) || "Pathologist";
+  config.signature_right_source = normalizePrintSignatureSource(config.signature_right_source, "blank");
+  config.signature_right_name = compactText(config.signature_right_name);
+  config.signature_right_field_id = compactText(config.signature_right_field_id);
   config.summary_items = normalizePrintSummaryItems(config.summary_items);
   return config;
 }
@@ -371,6 +398,19 @@ function setDraftPrintConfigValue(key, value, draft = state.draft) {
     config.image_size = normalizePrintImageSize(value);
   } else if (key === "table_density") {
     config.table_density = normalizePrintTableDensity(value);
+  } else if (key === "signature_left_source") {
+    config.signature_left_source = normalizePrintSignatureSource(value, "prepared_by");
+  } else if (key === "signature_right_source") {
+    config.signature_right_source = normalizePrintSignatureSource(value, "blank");
+  } else if ([
+    "signature_left_label",
+    "signature_left_name",
+    "signature_left_field_id",
+    "signature_right_label",
+    "signature_right_name",
+    "signature_right_field_id",
+  ].includes(key)) {
+    config[key] = compactText(value);
   } else if ([
     "show_logo",
     "show_clinic_info",
@@ -2338,6 +2378,55 @@ function renderPrintSummaryFieldOptions(fields, selectedFieldId) {
   ].join("");
 }
 
+function renderPrintSignatureSourceOptions(selectedSource) {
+  return PRINT_SIGNATURE_SOURCES.map((source) => `
+    <option value="${escapeHtml(source.id)}"${selectedSource === source.id ? " selected" : ""}>${escapeHtml(source.label)}</option>
+  `).join("");
+}
+
+function renderPrintSignatureConfig(side, config, fields) {
+  const sideLabel = side === "left" ? "Left signature" : "Right signature";
+  const labelKey = `signature_${side}_label`;
+  const sourceKey = `signature_${side}_source`;
+  const nameKey = `signature_${side}_name`;
+  const fieldKey = `signature_${side}_field_id`;
+  const source = normalizePrintSignatureSource(config[sourceKey], side === "left" ? "prepared_by" : "blank");
+  const manualDisabled = source === "manual" ? "" : " disabled";
+  const fieldDisabled = source === "field" ? "" : " disabled";
+  return `
+    <div class="print-signature-config">
+      <div class="print-signature-config__title">
+        <strong>${escapeHtml(sideLabel)}</strong>
+        <span>${escapeHtml(source === "blank" ? "blank line" : PRINT_SIGNATURE_SOURCES.find((item) => item.id === source)?.label || "blank line")}</span>
+      </div>
+      <div class="setup-grid">
+        <label>
+          <span>Role label</span>
+          <input data-bind="print_config.${labelKey}" value="${escapeHtml(config[labelKey])}">
+        </label>
+        <label>
+          <span>Name source</span>
+          <select data-bind="print_config.${sourceKey}">
+            ${renderPrintSignatureSourceOptions(source)}
+          </select>
+        </label>
+      </div>
+      <div class="setup-grid">
+        <label>
+          <span>Manual name</span>
+          <input data-bind="print_config.${nameKey}" value="${escapeHtml(config[nameKey])}"${manualDisabled}>
+        </label>
+        <label>
+          <span>Form field</span>
+          <select data-bind="print_config.${fieldKey}"${fieldDisabled}>
+            ${renderPrintSummaryFieldOptions(fields, config[fieldKey])}
+          </select>
+        </label>
+      </div>
+    </div>
+  `;
+}
+
 function renderPrintSummaryRow(item, index, fields, totalCount) {
   const fieldSelectDisabled = item.source !== "field" ? " disabled" : "";
   return `
@@ -2517,6 +2606,17 @@ function renderPrintCard() {
                   <option value="comfortable"${config.table_density === "comfortable" ? " selected" : ""}>Comfortable</option>
                 </select>
               </label>
+            </div>
+          </section>
+
+          <section class="print-signature-editor">
+            <div class="reference-editor-head">
+              <span class="reference-range-title">Signatories</span>
+              <p>Control the printed footer without changing the page layout.</p>
+            </div>
+            <div class="print-signature-list">
+              ${renderPrintSignatureConfig("left", config, fields)}
+              ${renderPrintSignatureConfig("right", config, fields)}
             </div>
           </section>
 

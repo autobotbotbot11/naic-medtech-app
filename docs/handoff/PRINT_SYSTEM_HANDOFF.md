@@ -18,7 +18,7 @@ Printing is a high-importance feature because this is the result document the cl
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation, builder-side preview confidence pass, and controlled result-body options are implemented.
+The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, and footer/signatory configuration are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -34,6 +34,7 @@ Implemented:
 - Builder print preview and `/records/{id}/print` share the same print document macro and backend print config normalization path.
 - The builder print preview shows an estimated one-page fit signal: likely, tight, or long.
 - Controlled result-body options now exist for hiding empty fields, section headings, group headings, image size, and table density.
+- Footer/signatory configuration now supports per-side role labels plus blank, prepared-by, manual-name, or field-sourced signature names.
 - The existing Semen sample was verified to export as one A4 portrait page.
 
 Code paths:
@@ -43,6 +44,7 @@ Code paths:
   - print config helpers
   - summary row editor
   - result-body controls
+  - signatory label/source controls
   - embedded builder print preview iframe and refresh flow
   - required-field toggle handling
 - `app/naic_builder/static/app.css`
@@ -52,6 +54,7 @@ Code paths:
   - `normalize_record_identity_config`
   - `normalize_print_config`
   - `build_print_summary_items`
+  - `build_print_signature_items`
   - `build_record_print_document`
   - `build_form_print_preview_document`
   - controlled print body rendering through `build_print_items`
@@ -59,6 +62,7 @@ Code paths:
   - required-field completion validation
 - `app/naic_builder/templates/records/_print_document.html`
   - shared print-page macro used by real record print and builder preview
+  - dynamic signatory footer rendering
 - `app/naic_builder/templates/records/print.html`
   - applies `document.print_config`
   - renders configurable summary items
@@ -104,6 +108,14 @@ Current shape:
   "show_group_titles": true,
   "image_size": "medium",
   "table_density": "compact",
+  "signature_left_label": "Medical Technologist",
+  "signature_left_source": "prepared_by",
+  "signature_left_name": "",
+  "signature_left_field_id": "",
+  "signature_right_label": "Pathologist",
+  "signature_right_source": "blank",
+  "signature_right_name": "",
+  "signature_right_field_id": "",
   "summary_items": [
     {
       "id": "summary_primary",
@@ -129,6 +141,12 @@ Supported summary item sources:
 - `issued_at`
 - `form_version`
 
+Supported signatory sources:
+- `blank`
+- `prepared_by`
+- `manual`
+- `field`
+
 ## Current Print Pane Controls
 The builder Print pane currently supports:
 - header/accent color
@@ -146,6 +164,8 @@ The builder Print pane currently supports:
 - hide/show group headings
 - image size: small, medium, or large
 - table density: compact or comfortable
+- signatory role labels
+- signatory name source: blank, prepared by, manual name, or form field
 
 This is intentionally a constrained editor. It should stay easier than a design canvas.
 
@@ -166,6 +186,7 @@ Use those patterns as reference only. The new app should produce a better, clean
 - The previous verified one-page case is the existing Semen sample; rerun real-device checks after body layout options land.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
 - Empty-field hiding affects result body rows only; summary rows still show configured summary information.
+- Footer/signatory layout is intentionally constrained to the current two-column signature footer.
 - Existing records point to frozen form versions. New print config applies naturally to records created from newer saved form versions unless old versions are intentionally migrated.
 - Clinic data and logo come from Settings > Clinic profile.
 - This is not yet a full PDF generation engine. The current implementation is browser-print based.
@@ -183,12 +204,12 @@ Phase 2C is now landed:
 - tune table density and image sizing rules
 - keep the result body driven by form structure, not by a freeform canvas
 
-Phase 2D should improve footer/signature configuration next:
+Phase 2D is now landed:
 - configurable signatory labels
 - optional names or field-sourced names
 - clearer clinic/footer rules
 
-Phase 2E should test real forms:
+Phase 2E should test real forms next:
 - Semen
 - Urinalysis
 - Hematology
