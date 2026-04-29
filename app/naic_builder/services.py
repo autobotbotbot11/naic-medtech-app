@@ -111,6 +111,16 @@ def normalize_print_density(value: Any) -> str:
     return density if density in {"compact", "comfortable"} else "compact"
 
 
+def normalize_print_image_size(value: Any) -> str:
+    size = compact_text(value).lower()
+    return size if size in {"small", "medium", "large"} else "medium"
+
+
+def normalize_print_table_density(value: Any) -> str:
+    density = compact_text(value).lower()
+    return density if density in {"compact", "comfortable"} else "compact"
+
+
 def normalize_boolean_setting(value: Any, *, default: bool = True) -> bool:
     if value in (None, ""):
         return default
@@ -161,6 +171,11 @@ def normalize_print_config(raw_config: Any) -> dict[str, Any]:
         "show_clinic_info": normalize_boolean_setting(config.get("show_clinic_info"), default=True),
         "show_status": normalize_boolean_setting(config.get("show_status"), default=True),
         "show_signatures": normalize_boolean_setting(config.get("show_signatures"), default=True),
+        "hide_empty_fields": normalize_boolean_setting(config.get("hide_empty_fields"), default=False),
+        "show_section_titles": normalize_boolean_setting(config.get("show_section_titles"), default=True),
+        "show_group_titles": normalize_boolean_setting(config.get("show_group_titles"), default=True),
+        "image_size": normalize_print_image_size(config.get("image_size")),
+        "table_density": normalize_print_table_density(config.get("table_density")),
         "summary_items": summary_items,
     }
 
@@ -2217,8 +2232,10 @@ def build_print_field_item(
     asset_by_field: dict[str, dict[str, Any]],
     *,
     record_id: int,
+    print_config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     props = block.get("props") if isinstance(block.get("props"), dict) else {}
+    config = print_config if isinstance(print_config, dict) else normalize_print_config({})
     block_id = compact_text(block.get("id"))
     raw_value = values.get(block_id)
     image_asset = asset_by_field.get(block_id)
@@ -2232,6 +2249,7 @@ def build_print_field_item(
         "unit_hint": compact_text(props.get("unit_hint")),
         "reference_text": build_print_reference(props),
         "display": display,
+        "image_size": normalize_print_image_size(config.get("image_size")),
         "is_abnormal": is_abnormal,
         "abnormal_reason": abnormal_reason,
     }
@@ -2243,8 +2261,11 @@ def build_print_items(
     asset_by_field: dict[str, dict[str, Any]],
     *,
     record_id: int,
+    print_config: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     items: list[dict[str, Any]] = []
+    config = print_config if isinstance(print_config, dict) else normalize_print_config({})
+    hide_empty_fields = normalize_boolean_setting(config.get("hide_empty_fields"), default=False)
 
     for block in blocks:
         if not isinstance(block, dict):
@@ -2253,37 +2274,56 @@ def build_print_items(
         props = block.get("props") if isinstance(block.get("props"), dict) else {}
 
         if kind == "section":
+            child_items = build_print_items(
+                normalize_items(block.get("children")),
+                values,
+                asset_by_field,
+                record_id=record_id,
+                print_config=config,
+            )
+            if hide_empty_fields and not child_items:
+                continue
             items.append(
                 {
                     "kind": "section",
                     "name": compact_text(block.get("name")) or "Untitled Section",
-                    "items": build_print_items(
-                        normalize_items(block.get("children")),
-                        values,
-                        asset_by_field,
-                        record_id=record_id,
-                    ),
+                    "show_title": normalize_boolean_setting(config.get("show_section_titles"), default=True),
+                    "items": child_items,
                 }
             )
             continue
 
         if kind == "field_group":
+            child_items = build_print_items(
+                normalize_items(block.get("children")),
+                values,
+                asset_by_field,
+                record_id=record_id,
+                print_config=config,
+            )
+            if hide_empty_fields and not child_items:
+                continue
             items.append(
                 {
                     "kind": "group",
                     "name": compact_text(block.get("name")) or "Untitled Group",
-                    "items": build_print_items(
-                        normalize_items(block.get("children")),
-                        values,
-                        asset_by_field,
-                        record_id=record_id,
-                    ),
+                    "show_title": normalize_boolean_setting(config.get("show_group_titles"), default=True),
+                    "items": child_items,
                 }
             )
             continue
 
         if kind == "field":
-            items.append(build_print_field_item(block, values, asset_by_field, record_id=record_id))
+            item = build_print_field_item(
+                block,
+                values,
+                asset_by_field,
+                record_id=record_id,
+                print_config=config,
+            )
+            if hide_empty_fields and bool(item.get("display", {}).get("is_empty")):
+                continue
+            items.append(item)
             continue
 
         if kind == "note":
@@ -2313,6 +2353,7 @@ def build_print_items(
                     "name": compact_text(block.get("name")) or "Table",
                     "columns": build_print_table_columns(props),
                     "sample_rows": build_print_table_sample_rows(props),
+                    "table_density": normalize_print_table_density(config.get("table_density")),
                 }
             )
             continue
@@ -2590,6 +2631,7 @@ def build_form_print_preview_document(
             values,
             {},
             record_id=0,
+            print_config=print_config,
         ),
     }
     document["fit_estimate"] = estimate_print_page_fit(document)
@@ -2657,6 +2699,7 @@ def build_record_print_document(
             values,
             asset_by_field,
             record_id=serialized["id"],
+            print_config=print_config,
         ),
     }
 

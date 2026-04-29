@@ -437,6 +437,16 @@ body {
   padding: 4px;
 }
 
+.print-image--small {
+  width: min(100%, 190px);
+  max-height: 140px;
+}
+
+.print-image--large {
+  width: min(100%, 460px);
+  max-height: 320px;
+}
+
 .print-note {
   display: grid;
   gap: 4px;
@@ -474,6 +484,11 @@ body {
   border-right: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
   text-align: left;
+}
+
+.print-table--comfortable th,
+.print-table--comfortable td {
+  padding: 9px 11px;
 }
 
 .print-table th:last-child,
@@ -752,6 +767,11 @@ body {
   .print-table th,
   .print-table td {
     padding: 5px 7px;
+  }
+
+  .print-table--comfortable th,
+  .print-table--comfortable td {
+    padding: 6px 8px;
   }
 
   .print-footer {

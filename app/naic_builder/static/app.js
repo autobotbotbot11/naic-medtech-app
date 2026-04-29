@@ -249,6 +249,16 @@ function normalizePrintDensity(value) {
   return text === "comfortable" ? "comfortable" : "compact";
 }
 
+function normalizePrintImageSize(value) {
+  const text = compactText(value).toLowerCase();
+  return ["small", "medium", "large"].includes(text) ? text : "medium";
+}
+
+function normalizePrintTableDensity(value) {
+  const text = compactText(value).toLowerCase();
+  return text === "comfortable" ? "comfortable" : "compact";
+}
+
 function normalizePrintBoolean(value, fallback = true) {
   if (value === undefined || value === null || value === "") {
     return fallback;
@@ -320,6 +330,11 @@ function getDraftPrintConfig(draft = state.draft) {
       show_clinic_info: true,
       show_status: true,
       show_signatures: true,
+      hide_empty_fields: false,
+      show_section_titles: true,
+      show_group_titles: true,
+      image_size: "medium",
+      table_density: "compact",
       summary_items: deepClone(DEFAULT_PRINT_SUMMARY_ITEMS),
     };
   }
@@ -334,6 +349,11 @@ function getDraftPrintConfig(draft = state.draft) {
   config.show_clinic_info = normalizePrintBoolean(config.show_clinic_info, true);
   config.show_status = normalizePrintBoolean(config.show_status, true);
   config.show_signatures = normalizePrintBoolean(config.show_signatures, true);
+  config.hide_empty_fields = normalizePrintBoolean(config.hide_empty_fields, false);
+  config.show_section_titles = normalizePrintBoolean(config.show_section_titles, true);
+  config.show_group_titles = normalizePrintBoolean(config.show_group_titles, true);
+  config.image_size = normalizePrintImageSize(config.image_size);
+  config.table_density = normalizePrintTableDensity(config.table_density);
   config.summary_items = normalizePrintSummaryItems(config.summary_items);
   return config;
 }
@@ -347,7 +367,19 @@ function setDraftPrintConfigValue(key, value, draft = state.draft) {
     config.accent_color = normalizePrintAccentColor(value);
   } else if (key === "density") {
     config.density = normalizePrintDensity(value);
-  } else if (["show_logo", "show_clinic_info", "show_status", "show_signatures"].includes(key)) {
+  } else if (key === "image_size") {
+    config.image_size = normalizePrintImageSize(value);
+  } else if (key === "table_density") {
+    config.table_density = normalizePrintTableDensity(value);
+  } else if ([
+    "show_logo",
+    "show_clinic_info",
+    "show_status",
+    "show_signatures",
+    "hide_empty_fields",
+    "show_section_titles",
+    "show_group_titles",
+  ].includes(key)) {
     config[key] = Boolean(value);
   }
 }
@@ -2449,6 +2481,44 @@ function renderPrintCard() {
               <span>Signatures</span>
             </label>
           </div>
+
+          <section class="print-body-options">
+            <div class="reference-editor-head">
+              <span class="reference-range-title">Result body</span>
+              <p>These affect the printed result rows, sections, images, and tables.</p>
+            </div>
+            <div class="print-toggle-grid">
+              <label class="identity-check">
+                <input type="checkbox" data-action="print-config-toggle" data-key="hide_empty_fields" ${config.hide_empty_fields ? "checked" : ""}>
+                <span>Hide empty fields</span>
+              </label>
+              <label class="identity-check">
+                <input type="checkbox" data-action="print-config-toggle" data-key="show_section_titles" ${config.show_section_titles ? "checked" : ""}>
+                <span>Section headings</span>
+              </label>
+              <label class="identity-check">
+                <input type="checkbox" data-action="print-config-toggle" data-key="show_group_titles" ${config.show_group_titles ? "checked" : ""}>
+                <span>Group headings</span>
+              </label>
+            </div>
+            <div class="setup-grid">
+              <label>
+                <span>Image size</span>
+                <select data-bind="print_config.image_size">
+                  <option value="small"${config.image_size === "small" ? " selected" : ""}>Small</option>
+                  <option value="medium"${config.image_size === "medium" ? " selected" : ""}>Medium</option>
+                  <option value="large"${config.image_size === "large" ? " selected" : ""}>Large</option>
+                </select>
+              </label>
+              <label>
+                <span>Table density</span>
+                <select data-bind="print_config.table_density">
+                  <option value="compact"${config.table_density === "compact" ? " selected" : ""}>Compact</option>
+                  <option value="comfortable"${config.table_density === "comfortable" ? " selected" : ""}>Comfortable</option>
+                </select>
+              </label>
+            </div>
+          </section>
 
           <section class="print-summary-editor">
             <div class="reference-editor-head print-summary-head">

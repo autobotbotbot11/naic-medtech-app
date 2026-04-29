@@ -314,13 +314,14 @@ Current implementation checkpoint:
 - current forms now have a normal editable `Patient Information` builder group based on the original `default_lab_request` fields, with Name and Case Number marked required and wired as record identity/search hints
 - the builder `Print` pane now generates a backend-built sample print preview from the current unsaved draft, with an estimated one-page fit signal
 - builder preview and `/records/{id}/print` share the same print-page macro and backend print config normalization path
+- controlled result-body print options now exist for hiding empty fields, section headings, group headings, image size, and table density
 - `/records/{id}/print` now reads form-version print config
 - the existing Semen sample was verified as a one-page A4 portrait export
 
 Recommended next product priority:
-1. add controlled result-body print options such as hide empty fields, section title behavior, image sizing, and table density
-2. add stronger footer/signatory configuration
-3. test across real forms and long-form edge cases
+1. add stronger footer/signatory configuration
+2. test across real forms and long-form edge cases
+3. consider section/result accent behavior only if real print review proves it useful
 
 Do not reopen major builder growth now that its core direction is done.
 Do not restart print from a blank architecture. Continue from the current builder-driven print config model.

@@ -422,6 +422,7 @@
       "backend print_config normalization and print summary resolution",
       "builder-side print preview generated from the unsaved draft with sample data and an estimated one-page fit signal",
       "shared print-page macro used by builder preview and /records/{id}/print",
+      "controlled result-body print options for hide empty fields, section headings, group headings, image size, and table density",
       "/records/{id}/print applies print_config",
       "existing Semen sample verified as one A4 portrait page"
     ],
@@ -431,13 +432,13 @@
       "summary rows support field/system sources but no advanced conditional expressions yet",
       "current output is browser-print based, not a dedicated server-side PDF engine"
     ],
-    "next_recommended_phase": "phase_2c_controlled_result_body_options"
+    "next_recommended_phase": "phase_2d_footer_and_signatory_configuration"
   },
-  "next_major_build_target": "print_template_configuration_phase_2c",
+  "next_major_build_target": "print_template_configuration_phase_2d",
   "next_major_build_scope": [
-    "add controlled result-body options such as hide empty fields, section-title behavior, image sizing, and table density",
     "add stronger footer and signatory configuration",
     "test print output across real forms and long-form edge cases",
+    "consider section/result accent behavior only if real print review proves it useful",
     "treat non-print UI work as secondary cleanup unless direct issues appear"
   ],
   "source_of_truth": {

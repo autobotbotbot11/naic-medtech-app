@@ -1549,10 +1549,18 @@ button.subtle[aria-pressed="true"] {
 }
 
 .print-config-controls,
+.print-body-options,
 .print-summary-editor,
 .print-summary-list {
   display: grid;
   gap: 12px;
+}
+
+.print-body-options {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--panel-strong);
 }
 
 .print-color-input {

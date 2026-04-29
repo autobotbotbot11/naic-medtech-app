@@ -18,7 +18,7 @@ Printing is a high-importance feature because this is the result document the cl
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation and builder-side preview confidence pass are implemented.
+The first print configuration foundation, builder-side preview confidence pass, and controlled result-body options are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -33,6 +33,7 @@ Implemented:
 - The builder `Print` pane can generate a backend-built sample print preview from the current unsaved draft.
 - Builder print preview and `/records/{id}/print` share the same print document macro and backend print config normalization path.
 - The builder print preview shows an estimated one-page fit signal: likely, tight, or long.
+- Controlled result-body options now exist for hiding empty fields, section headings, group headings, image size, and table density.
 - The existing Semen sample was verified to export as one A4 portrait page.
 
 Code paths:
@@ -41,6 +42,7 @@ Code paths:
   - builder `Print` pane
   - print config helpers
   - summary row editor
+  - result-body controls
   - embedded builder print preview iframe and refresh flow
   - required-field toggle handling
 - `app/naic_builder/static/app.css`
@@ -52,6 +54,7 @@ Code paths:
   - `build_print_summary_items`
   - `build_record_print_document`
   - `build_form_print_preview_document`
+  - controlled print body rendering through `build_print_items`
   - sample-data generation and estimated page-fit scoring
   - required-field completion validation
 - `app/naic_builder/templates/records/_print_document.html`
@@ -96,6 +99,11 @@ Current shape:
   "show_clinic_info": true,
   "show_status": true,
   "show_signatures": true,
+  "hide_empty_fields": false,
+  "show_section_titles": true,
+  "show_group_titles": true,
+  "image_size": "medium",
+  "table_density": "compact",
   "summary_items": [
     {
       "id": "summary_primary",
@@ -133,6 +141,11 @@ The builder Print pane currently supports:
 - summary rows sourced from ordinary fields or system values
 - sample print preview generated from the current unsaved builder draft
 - estimated one-page fit warning
+- hide/show empty result fields
+- hide/show section headings
+- hide/show group headings
+- image size: small, medium, or large
+- table density: compact or comfortable
 
 This is intentionally a constrained editor. It should stay easier than a design canvas.
 
@@ -152,6 +165,7 @@ Use those patterns as reference only. The new app should produce a better, clean
 - The builder page-fit signal is an estimate only. Browser print preview remains the final confirmation.
 - The previous verified one-page case is the existing Semen sample; rerun real-device checks after body layout options land.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
+- Empty-field hiding affects result body rows only; summary rows still show configured summary information.
 - Existing records point to frozen form versions. New print config applies naturally to records created from newer saved form versions unless old versions are intentionally migrated.
 - Clinic data and logo come from Settings > Clinic profile.
 - This is not yet a full PDF generation engine. The current implementation is browser-print based.
@@ -163,14 +177,13 @@ Phase 2B is now landed:
 - visible copy that preview changes are saved into the next form version
 - shared print macro and backend config normalization between builder preview and `/records/{id}/print`
 
-Phase 2C should add controlled result-body layout options next:
+Phase 2C is now landed:
 - hide empty fields
 - choose whether section titles appear
-- allow section/result body accent behavior if needed
 - tune table density and image sizing rules
 - keep the result body driven by form structure, not by a freeform canvas
 
-Phase 2D should improve footer/signature configuration:
+Phase 2D should improve footer/signature configuration next:
 - configurable signatory labels
 - optional names or field-sourced names
 - clearer clinic/footer rules

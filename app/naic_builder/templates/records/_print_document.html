@@ -3,10 +3,12 @@
     {% if item.kind == "section" %}
     {% set child_items = item["items"] or [] %}
     <section class="print-section">
+      {% if item.show_title %}
       <header class="print-section-head">
         <p class="print-eyebrow">Section</p>
         <h2 class="print-section-title">{{ item.name }}</h2>
       </header>
+      {% endif %}
       <div class="print-items">
         {{ render_print_items(child_items) }}
       </div>
@@ -14,9 +16,11 @@
     {% elif item.kind == "group" %}
     {% set child_items = item["items"] or [] %}
     <section class="print-group">
+      {% if item.show_title %}
       <header class="print-group-head">
         <h3 class="print-group-title">{{ item.name }}</h3>
       </header>
+      {% endif %}
       <div class="print-items">
         {{ render_print_items(child_items) }}
       </div>
@@ -34,7 +38,7 @@
       <div class="print-row-result">
         {% if display.kind == "image" %}
           {% if display.image_url %}
-          <img class="print-image" src="{{ display.image_url }}" alt="{{ item.name }}">
+          <img class="print-image print-image--{{ item.image_size or 'medium' }}" src="{{ display.image_url }}" alt="{{ item.name }}">
           {% if display.filename %}
           <span class="print-image-meta">{{ display.filename }}</span>
           {% endif %}
@@ -75,7 +79,7 @@
       <header class="print-group-head">
         <h3 class="print-group-title">{{ item.name }}</h3>
       </header>
-      <table class="print-table">
+      <table class="print-table print-table--{{ item.table_density or 'compact' }}">
         <thead>
           <tr>
             {% for column in columns %}
