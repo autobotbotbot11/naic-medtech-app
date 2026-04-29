@@ -223,7 +223,9 @@ Reason:
 
 Current status:
 - materially landed for the current non-print pass
+- `/login`, `/request-account`, and `/setup` now use the same compact utility-card treatment as the Settings account surfaces, replacing the older heavy auth panel plus long helper-list composition with one direct form card and one compact facts card
 - `/settings/clinic` and `/settings/users` now use lighter local sectioning and tighter object cards instead of wrapping every block in large settings panels
+- `/settings/clinic` now uses the same compact utility-card treatment for clinic identity, contact details, logo upload, and brand preview, keeping clinic branding ready for the later print-template pass without making this screen feel heavy
 - `/settings/account` now carries the personal profile foundation: avatar upload/remove, password management, and read-only email/login identity, now using the same compact utility-card system as the newer account admin screens
 - `/settings/users` now displays uploaded staff avatars when available, with initials fallback
 - `/settings/users/{id}/edit` now exists for admin full-name/role correction and password reset

@@ -5,29 +5,15 @@
   gap: 18px;
 }
 
-.auth-grid {
-  margin-top: 16px;
-  display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
-  align-items: start;
-}
-
-.auth-main,
-.auth-side,
-.settings-panel,
 .user-card {
   padding: 20px;
 }
 
-.auth-main,
-.auth-side,
 .settings-stack {
   display: grid;
   gap: 16px;
 }
 
-.auth-form,
 .settings-stack,
 .user-list,
 .inline-stack,
@@ -60,15 +46,6 @@
   border: 1px solid rgba(30, 93, 82, 0.24);
   background: rgba(30, 93, 82, 0.12);
   color: var(--accent);
-}
-
-.auth-hint-list {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--muted);
-  display: grid;
-  gap: 7px;
-  font-size: 13px;
 }
 
 .account-main {
@@ -212,6 +189,11 @@
   gap: 12px;
 }
 
+.auth-utility-stack {
+  display: grid;
+  gap: 14px;
+}
+
 .settings-utility-card {
   display: grid;
   gap: 0;
@@ -337,6 +319,23 @@
   margin-top: 10px;
 }
 
+.clinic-brand-card .logo-frame {
+  min-height: 150px;
+}
+
+.clinic-brand-summary {
+  gap: 7px;
+}
+
+.clinic-brand-summary h3 {
+  font-family: var(--font-heading);
+  font-size: 22px;
+}
+
+.clinic-brand-card .settings-utility-actions .ghost-button {
+  width: fit-content;
+}
+
 .field-stack,
 .stacked-field {
   display: grid;
@@ -392,7 +391,6 @@
   box-shadow: 0 0 0 4px rgba(30, 93, 82, 0.12);
 }
 
-.auth-actions,
 .user-card-actions,
 .settings-topbar-actions,
 .settings-meta-row {
@@ -670,14 +668,6 @@
   color: var(--accent);
 }
 
-.profile-grid {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.9fr);
-  align-items: start;
-}
-
-.profile-card,
 .logo-card {
   padding: 20px;
 }
@@ -755,20 +745,12 @@
   line-height: 1;
 }
 
-.auth-main,
-.auth-side,
-.settings-panel,
-.profile-card,
 .logo-card {
   background:
     linear-gradient(180deg, color-mix(in srgb, var(--panel) 78%, transparent), color-mix(in srgb, var(--panel) 94%, transparent)),
     radial-gradient(circle at top right, color-mix(in srgb, var(--accent) 7%, transparent), transparent 38%);
 }
 
-html[data-theme="dark"] .auth-main,
-html[data-theme="dark"] .auth-side,
-html[data-theme="dark"] .settings-panel,
-html[data-theme="dark"] .profile-card,
 html[data-theme="dark"] .logo-card,
 html[data-theme="dark"] .user-card,
 html[data-theme="dark"] .user-status-filter,
@@ -847,10 +829,6 @@ html[data-theme="dark"] .role-chip {
   color: #7fd5df;
 }
 
-.auth-main,
-.auth-side,
-.settings-panel,
-.profile-card,
 .logo-card,
 .user-card,
 .user-status-filter,
@@ -934,10 +912,6 @@ html[data-theme="dark"] .role-chip {
 }
 
 @media (max-width: 900px) {
-  .auth-grid {
-    grid-template-columns: 1fr;
-  }
-
   .settings-utility-grid {
     grid-template-columns: 1fr;
   }
@@ -947,10 +921,6 @@ html[data-theme="dark"] .role-chip {
   }
 
   .account-profile-card {
-    grid-template-columns: 1fr;
-  }
-
-  .profile-grid {
     grid-template-columns: 1fr;
   }
 

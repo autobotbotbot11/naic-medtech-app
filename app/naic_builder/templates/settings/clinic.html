@@ -21,8 +21,8 @@
   <div class="auth-shell">
     {% include "settings/_settings_nav.html" %}
 
-    <section class="profile-grid">
-      <section class="panel profile-card">
+    <section class="settings-utility-grid">
+      <div class="settings-utility-main">
         {% if error_message %}
         <div class="banner error">{{ error_message }}</div>
         {% endif %}
@@ -30,78 +30,93 @@
         <div class="banner success">{{ success_message }}</div>
         {% endif %}
 
-        <form id="clinicProfileForm" method="post" action="/settings/clinic" enctype="multipart/form-data" class="profile-stack">
-          <div class="brand-copy">
-            <p class="eyebrow">Identity</p>
-            <h2>Core clinic details</h2>
+        <form id="clinicProfileForm" method="post" action="/settings/clinic" enctype="multipart/form-data" class="panel settings-utility-card clinic-profile-card">
+          <div class="section-head settings-utility-head">
+            <div>
+              <p class="eyebrow">Identity</p>
+              <h2>Core clinic details</h2>
+            </div>
+            <span class="settings-utility-pill">Print base</span>
           </div>
 
-          <label class="field-stack">
-            <span>Clinic name</span>
-            <input type="text" name="clinic_name" value="{{ clinic_profile.clinic_name }}" placeholder="Example: NAIC Diagnostic Clinic" required>
-          </label>
+          <div class="settings-utility-section">
+            <label class="field-stack">
+              <span>Clinic name</span>
+              <input type="text" name="clinic_name" value="{{ clinic_profile.clinic_name }}" placeholder="Example: NAIC Diagnostic Clinic" autocomplete="organization" required>
+            </label>
+          </div>
 
-          <label class="field-stack">
-            <span>Address</span>
-            <textarea name="address" rows="4" placeholder="Optional clinic address">{{ clinic_profile.address }}</textarea>
-          </label>
+          <div class="settings-utility-section">
+            <label class="field-stack">
+              <span>Address</span>
+              <textarea name="address" rows="4" placeholder="Optional clinic address" autocomplete="street-address">{{ clinic_profile.address }}</textarea>
+            </label>
+          </div>
 
-          <div class="user-meta-grid">
+          <div class="settings-utility-section settings-utility-field-grid">
             <label class="field-stack">
               <span>Contact number</span>
-              <input type="text" name="contact_number" value="{{ clinic_profile.contact_number }}" placeholder="Optional">
+              <input type="text" name="contact_number" value="{{ clinic_profile.contact_number }}" placeholder="Optional" autocomplete="tel">
             </label>
 
             <label class="field-stack">
               <span>Contact email</span>
-              <input type="email" name="contact_email" value="{{ clinic_profile.contact_email }}" placeholder="Optional">
+              <input type="email" name="contact_email" value="{{ clinic_profile.contact_email }}" placeholder="Optional" autocomplete="email">
             </label>
           </div>
 
-          <label class="field-stack">
-            <span>Logo</span>
-            <input type="file" name="logo_file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
-            <p class="field-help">JPG, PNG, or WebP up to 5 MB.</p>
-          </label>
+          <div class="settings-utility-section">
+            <label class="field-stack">
+              <span>Logo</span>
+              <input type="file" name="logo_file" accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+              <p class="field-help">JPG, PNG, or WebP up to 5 MB.</p>
+            </label>
+          </div>
 
-          <div class="auth-actions">
+          <div class="settings-utility-actions">
             <button class="primary-button" type="submit">Save clinic profile</button>
           </div>
         </form>
-      </section>
+      </div>
 
-      <aside class="panel logo-card">
-        <div class="brand-copy">
-          <p class="eyebrow">Preview</p>
-          <h2>Brand snapshot</h2>
-        </div>
-
-        <div class="logo-frame">
-          {% if clinic_logo_url %}
-          <img src="{{ clinic_logo_url }}" alt="{{ clinic_profile.clinic_name or 'Clinic logo' }}">
-          {% else %}
-          <div class="logo-empty">
-            <strong>No logo yet</strong>
-            <p>Upload one when ready.</p>
+      <aside class="panel settings-utility-card settings-utility-card--aside clinic-brand-card">
+        <div class="section-head settings-utility-head">
+          <div>
+            <p class="eyebrow">Preview</p>
+            <h2>Brand snapshot</h2>
           </div>
-          {% endif %}
         </div>
 
-        <div class="user-card-copy">
-          <h3>{{ clinic_profile.clinic_name or "Clinic name not set" }}</h3>
-          {% if clinic_profile.address %}
-          <p>{{ clinic_profile.address }}</p>
-          {% endif %}
-          {% if clinic_profile.contact_number %}
-          <p>{{ clinic_profile.contact_number }}</p>
-          {% endif %}
-          {% if clinic_profile.contact_email %}
-          <p>{{ clinic_profile.contact_email }}</p>
-          {% endif %}
+        <div class="settings-utility-section">
+          <div class="logo-frame">
+            {% if clinic_logo_url %}
+            <img src="{{ clinic_logo_url }}" alt="{{ clinic_profile.clinic_name or 'Clinic logo' }}">
+            {% else %}
+            <div class="logo-empty">
+              <strong>No logo yet</strong>
+              <p>Upload one when ready.</p>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="settings-utility-section">
+          <div class="user-card-copy clinic-brand-summary">
+            <h3>{{ clinic_profile.clinic_name or "Clinic name not set" }}</h3>
+            {% if clinic_profile.address %}
+            <p>{{ clinic_profile.address }}</p>
+            {% endif %}
+            {% if clinic_profile.contact_number %}
+            <p>{{ clinic_profile.contact_number }}</p>
+            {% endif %}
+            {% if clinic_profile.contact_email %}
+            <p>{{ clinic_profile.contact_email }}</p>
+            {% endif %}
+          </div>
         </div>
 
         {% if clinic_logo_url %}
-        <form method="post" action="/settings/clinic/logo/remove" class="inline-action-form">
+        <form method="post" action="/settings/clinic/logo/remove" class="settings-utility-actions">
           <button class="ghost-button" type="submit">Remove logo</button>
         </form>
         {% endif %}

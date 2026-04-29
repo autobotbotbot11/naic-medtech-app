@@ -10,7 +10,7 @@
   "main_goal_status": "core_done_cleanup_remaining",
   "locked_ui_direction": {
     "design_language": "clinical_depth_luxe",
-    "status": "authenticated_shell_content_first_compact_work_surface_settings_ia_account_profile_and_settings_utility_pass_landed_print_planning_next",
+    "status": "authenticated_shell_content_first_compact_work_surface_public_auth_settings_ia_account_profile_clinic_profile_and_settings_utility_pass_landed_print_planning_next",
     "mode_pair": {
       "light": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe.html",
       "dark": "artifacts/ui-explorations/records-home-modern-clinical-depth-luxe-dark-deeper.html"
@@ -63,7 +63,9 @@
         "A Settings IA pass then made Settings visible to every signed-in user, moved password/security into Settings > My account, kept Clinic profile and Users & access admin-only, simplified the drawer footer to account identity plus Log out, and standardized drawer icons into one premium-style 24px stroke system.",
         "The account/profile foundation then added profile photo upload/remove under Settings > My account, shell avatar display with initials fallback, read-only email/login identity so accountability stays anchored to stable account identifiers, staff avatar/initial identity inside Users & access, and a dedicated Manage user page for admin full-name/role correction plus password reset.",
         "Settings > My account now uses the same compact utility-card system as the newer Settings account admin screens, so profile, password, and account identity no longer fall back to the older heavy auth-grid composition.",
-        "The Settings utility follow-up then brought Settings > Create user and Manage user into the same compact utility-card treatment as the Forms utility screens, so manual account fallback and user maintenance no longer fall back to older heavy auth panels."
+        "Settings > Clinic profile now uses that same compact utility-card system for clinic identity, contact details, logo upload, and brand preview, keeping the future print-branding base cleaner without starting the heavy print-template work yet.",
+        "The Settings utility follow-up then brought Settings > Create user and Manage user into the same compact utility-card treatment as the Forms utility screens, so manual account fallback and user maintenance no longer fall back to older heavy auth panels.",
+        "The public auth follow-up then moved /login, /request-account, and /setup to the same compact utility-card language too, replacing the older heavy auth panel plus long helper-list composition with one direct form card and one compact facts card."
       ]
     },
     "notes": [
@@ -125,8 +127,10 @@
       "login now accepts email or login ID",
       "admin-created accounts are forced to change password on first login",
       "auth feedback is steadier now too: pending-account login explains that approval is still needed, disabled-account login explains that admin access is needed again, and successful password changes now redirect back to Records with a quiet success banner",
+      "/login, /request-account, and /setup now use compact utility-card layouts with one direct form card and one compact facts card instead of the older heavy auth-panel/helper-list composition",
       "visible role gating is now active for Admin and Medtech",
       "clinic profile data and clinic logo upload/remove now exist as the branding base for future print work",
+      "Settings > Clinic profile now uses compact utility-card layouts for clinic details, logo upload, and brand preview instead of the older profile-grid/profile-card composition",
       "signed-in users can now upload/remove their own profile photo from Settings > My account, and the shell uses it in the account button and drawer identity with initials fallback",
       "Settings > My account now uses compact utility-card layouts for profile, password, and read-only account identity instead of the older heavy auth-grid composition",
       "Settings > Users & access now displays uploaded staff avatars when available, with initials fallback on account cards",

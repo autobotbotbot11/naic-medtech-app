@@ -255,6 +255,92 @@ strong {
   color: #fffdf7;
 }
 
+.auth-shell .library-topbar {
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 90%, transparent),
+      color-mix(in srgb, var(--panel) 96%, transparent)
+    ),
+    radial-gradient(circle at top right, color-mix(in srgb, var(--warm) 10%, transparent), transparent 44%);
+  border-color: var(--line);
+  color: var(--text);
+  box-shadow: var(--shadow);
+}
+
+.auth-shell .library-topbar::before {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.2), transparent 42%),
+    radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 7%, transparent), transparent 24%);
+}
+
+.auth-shell .library-topbar .eyebrow,
+.auth-shell .library-topbar .panel-copy {
+  color: color-mix(in srgb, var(--muted) 92%, var(--text) 8%);
+}
+
+.auth-shell .library-topbar h1,
+.auth-shell .library-topbar h2,
+.auth-shell .library-topbar h3 {
+  color: var(--text);
+}
+
+.auth-shell .library-topbar .ghost-button,
+.shell-theme-toggle--inline {
+  width: auto;
+  min-width: 0;
+  min-height: 42px;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--panel-strong) 92%, transparent),
+      color-mix(in srgb, var(--surface-elevated) 90%, transparent)
+    );
+  color: var(--text);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.42),
+    0 10px 20px rgba(9, 23, 29, 0.08);
+}
+
+.shell-theme-toggle--inline .theme-toggle-fab__meta {
+  display: none;
+}
+
+.shell-theme-toggle--inline .theme-toggle-fab__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.shell-theme-toggle--inline .theme-toggle-fab__label span {
+  color: inherit;
+  font-weight: 700;
+}
+
+html[data-theme="dark"] .auth-shell .library-topbar {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.042), rgba(255, 255, 255, 0.018)),
+    radial-gradient(circle at top right, rgba(99, 188, 205, 0.07), transparent 36%);
+  border-color: rgba(223, 240, 245, 0.06);
+}
+
+html[data-theme="dark"] .auth-shell .library-topbar::before {
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 38%),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.06), transparent 24%);
+}
+
+html[data-theme="dark"] .auth-shell .library-topbar .ghost-button,
+html[data-theme="dark"] .shell-theme-toggle--inline {
+  border-color: rgba(255, 255, 255, 0.08);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.024));
+  color: var(--text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
 .primary-button,
 button:not(.ghost-button):not(.ghost):not(.warn-button):not(.warn-fill):not(.user-status-filter):not([data-theme-toggle]) {
   background: linear-gradient(135deg, var(--accent-strong), color-mix(in srgb, var(--accent) 82%, #ffffff 8%));
