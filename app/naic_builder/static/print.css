@@ -29,11 +29,66 @@ body {
   padding: 0;
   color: var(--ink);
   background: var(--preview);
-  font-family: Aptos, "Segoe UI", Arial, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
   padding: 24px;
+}
+
+.print-font-arial {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.print-font-arial-narrow {
+  font-family: "Arial Narrow", Arial, Helvetica, sans-serif;
+}
+
+.print-font-aptos {
+  font-family: Aptos, "Segoe UI", Arial, sans-serif;
+}
+
+.print-font-segoe-ui {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.print-font-times-new-roman {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.print-font-times-new-roman .print-document-mark span,
+.print-font-times-new-roman .print-eyebrow,
+.print-font-times-new-roman .print-meta-grid span,
+.print-font-times-new-roman .print-grid-cell-head span,
+.print-font-times-new-roman .print-grid-cell small,
+.print-font-times-new-roman .print-signature strong,
+.print-font-times-new-roman .print-group-title,
+.print-font-times-new-roman .print-table th {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.print-font-cambria-title,
+.print-font-georgia-title,
+.print-font-bahnschrift-title {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.print-font-cambria-title .print-title {
+  font-family: Cambria, Georgia, serif;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.print-font-georgia-title .print-title {
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+
+.print-font-bahnschrift-title .print-title {
+  font-family: Bahnschrift, "Arial Narrow", Arial, sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
 .print-shell,
@@ -240,14 +295,12 @@ body {
   gap: 12px;
   align-items: center;
   margin-top: 9px;
-  padding: 10px 12px;
-  border: 1px solid var(--accent);
-  border-radius: 10px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 86%, #000 14%);
+  border-radius: 3px;
   color: var(--accent-ink);
-  background:
-    linear-gradient(116deg, rgba(255, 255, 255, 0.18), transparent 38%),
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 94%, #000 6%), color-mix(in srgb, var(--accent) 82%, #000 18%));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  background: var(--accent);
+  box-shadow: none;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -282,7 +335,7 @@ body {
 .print-exam-head .print-eyebrow,
 .print-exam-head .print-path {
   color: currentColor;
-  opacity: 0.78;
+  opacity: 0.8;
 }
 
 .print-status {
@@ -303,12 +356,18 @@ body {
 
 .print-exam-head .print-status,
 .print-exam-head .print-status[data-status="draft"] {
-  border-color: currentColor;
+  border-color: rgba(255, 255, 255, 0.72);
   color: currentColor;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .print-status[data-status="draft"] {
+  color: #7a580b;
+  border-color: rgba(122, 88, 11, 0.28);
+  background: rgba(122, 88, 11, 0.07);
+}
+
+.print-exam-head .print-status[data-status="draft"] {
   color: #7a580b;
   border-color: rgba(122, 88, 11, 0.28);
   background: rgba(122, 88, 11, 0.07);
@@ -388,19 +447,6 @@ body {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.38)),
     var(--faint);
-}
-
-.print-body > .print-group:first-child .print-group-head,
-.print-body > .print-section:first-child > .print-items > .print-group:first-child .print-group-head {
-  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
-  background:
-    linear-gradient(90deg, color-mix(in srgb, var(--accent) 11%, #fff) 0%, #fff 72%),
-    var(--paper);
-}
-
-.print-body > .print-group:first-child .print-group-title,
-.print-body > .print-section:first-child > .print-items > .print-group:first-child .print-group-title {
-  color: var(--accent);
 }
 
 .print-group-title {
@@ -844,8 +890,8 @@ body {
   .print-exam-head {
     gap: 7px;
     margin-top: 5px;
-    padding: 5.5px 7px;
-    border-radius: 6px;
+    padding: 5px 7px;
+    border-radius: 2.5px;
   }
 
   .print-title {

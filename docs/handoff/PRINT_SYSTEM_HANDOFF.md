@@ -123,6 +123,7 @@ Current shape:
 {
   "accent_color": "#2563eb",
   "density": "compact",
+  "font_family": "arial_narrow",
   "show_logo": true,
   "show_clinic_info": true,
   "show_status": true,
@@ -173,10 +174,21 @@ Supported signatory sources:
 - `manual`
 - `field`
 
+Supported print font presets:
+- `arial`
+- `arial_narrow`
+- `aptos`
+- `segoe_ui`
+- `cambria_title`
+- `georgia_title`
+- `times_new_roman`
+- `bahnschrift_title`
+
 ## Current Print Pane Controls
 The builder Print pane currently supports:
 - exam identity/header accent color
 - density: compact or comfortable
+- font preset for the printed result
 - show/hide clinic logo
 - show/hide clinic info
 - show/hide record status

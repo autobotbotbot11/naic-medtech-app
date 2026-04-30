@@ -52,6 +52,16 @@ const PRINT_SIGNATURE_SOURCES = [
   { id: "manual", label: "Manual name" },
   { id: "field", label: "Form field" },
 ];
+const PRINT_FONT_FAMILIES = [
+  { id: "arial", label: "Arial", description: "Neutral clinic document" },
+  { id: "arial_narrow", label: "Arial Narrow", description: "Compact printed form" },
+  { id: "aptos", label: "Aptos", description: "Modern Windows" },
+  { id: "segoe_ui", label: "Segoe UI", description: "Clean screen/print" },
+  { id: "cambria_title", label: "Cambria title", description: "Formal title, clean body" },
+  { id: "georgia_title", label: "Georgia title", description: "Classic title, clean body" },
+  { id: "times_new_roman", label: "Times New Roman", description: "Traditional report" },
+  { id: "bahnschrift_title", label: "Bahnschrift title", description: "Modern compact title" },
+];
 const DEFAULT_PRINT_SUMMARY_ITEMS = [
   { id: "summary_primary", label: "Record", source: "primary_identity", field_id: "" },
   { id: "summary_secondary", label: "Detail", source: "secondary_identity", field_id: "" },
@@ -285,6 +295,11 @@ function normalizePrintResultLayout(value) {
   return text === "rows" ? "rows" : "compact_grid";
 }
 
+function normalizePrintFontFamily(value) {
+  const text = compactText(value).toLowerCase().replace(/[-\s]+/g, "_");
+  return PRINT_FONT_FAMILIES.some((option) => option.id === text) ? text : "arial_narrow";
+}
+
 function normalizePrintSignatureSource(value, fallback = "blank") {
   const text = compactText(value).toLowerCase();
   return PRINT_SIGNATURE_SOURCES.some((option) => option.id === text) ? text : fallback;
@@ -357,6 +372,7 @@ function getDraftPrintConfig(draft = state.draft) {
     return {
       accent_color: DEFAULT_PRINT_ACCENT_COLOR,
       density: "compact",
+      font_family: "arial_narrow",
       show_logo: true,
       show_clinic_info: true,
       show_status: true,
@@ -386,6 +402,7 @@ function getDraftPrintConfig(draft = state.draft) {
   const config = meta.print_config;
   config.accent_color = normalizePrintAccentColor(config.accent_color);
   config.density = normalizePrintDensity(config.density);
+  config.font_family = normalizePrintFontFamily(config.font_family);
   config.show_logo = normalizePrintBoolean(config.show_logo, true);
   config.show_clinic_info = normalizePrintBoolean(config.show_clinic_info, true);
   config.show_status = normalizePrintBoolean(config.show_status, true);
@@ -418,6 +435,8 @@ function setDraftPrintConfigValue(key, value, draft = state.draft) {
     config.accent_color = normalizePrintAccentColor(value);
   } else if (key === "density") {
     config.density = normalizePrintDensity(value);
+  } else if (key === "font_family") {
+    config.font_family = normalizePrintFontFamily(value);
   } else if (key === "image_size") {
     config.image_size = normalizePrintImageSize(value);
   } else if (key === "table_density") {
@@ -2411,6 +2430,16 @@ function renderPrintSignatureSourceOptions(selectedSource) {
   `).join("");
 }
 
+function renderPrintFontOptions(selectedFont) {
+  return PRINT_FONT_FAMILIES.map((font) => `
+    <option value="${escapeHtml(font.id)}"${selectedFont === font.id ? " selected" : ""}>${escapeHtml(font.label)} - ${escapeHtml(font.description)}</option>
+  `).join("");
+}
+
+function printFontClass(fontFamily) {
+  return `print-font-${normalizePrintFontFamily(fontFamily).replaceAll("_", "-")}`;
+}
+
 function renderPrintSignatureConfig(side, config, fields) {
   const sideLabel = side === "left" ? "Left signature" : "Right signature";
   const labelKey = `signature_${side}_label`;
@@ -2497,7 +2526,7 @@ function renderPrintSummaryPreview(config) {
   }).join("");
 
   return `
-    <div class="print-mini-preview" style="--preview-accent: ${escapeHtml(config.accent_color)}; --preview-accent-ink: ${escapeHtml(printAccentInkColor(config.accent_color))}">
+    <div class="print-mini-preview ${escapeHtml(printFontClass(config.font_family))}" style="--preview-accent: ${escapeHtml(config.accent_color)}; --preview-accent-ink: ${escapeHtml(printAccentInkColor(config.accent_color))}">
       <div class="print-mini-preview__head">
         <span></span>
         <strong>${escapeHtml(state.draft.name || "Untitled Form")}</strong>
@@ -2581,6 +2610,12 @@ function renderPrintCard() {
               <select data-bind="print_config.density">
                 <option value="compact"${config.density === "compact" ? " selected" : ""}>Compact</option>
                 <option value="comfortable"${config.density === "comfortable" ? " selected" : ""}>Comfortable</option>
+              </select>
+            </label>
+            <label>
+              <span>Font</span>
+              <select data-bind="print_config.font_family">
+                ${renderPrintFontOptions(config.font_family)}
               </select>
             </label>
           </div>

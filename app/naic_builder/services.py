@@ -76,6 +76,16 @@ PRINT_SUMMARY_SOURCES = {
     "form_version",
 }
 PRINT_SIGNATURE_SOURCES = {"blank", "prepared_by", "manual", "field"}
+PRINT_FONT_FAMILIES = {
+    "arial",
+    "arial_narrow",
+    "aptos",
+    "segoe_ui",
+    "cambria_title",
+    "georgia_title",
+    "times_new_roman",
+    "bahnschrift_title",
+}
 DEFAULT_PRINT_SUMMARY_ITEMS = [
     {"id": "summary_primary", "label": "Record", "source": "primary_identity", "field_id": ""},
     {"id": "summary_secondary", "label": "Detail", "source": "secondary_identity", "field_id": ""},
@@ -208,6 +218,11 @@ def normalize_print_result_layout(value: Any) -> str:
     return layout if layout in {"rows", "compact_grid"} else "compact_grid"
 
 
+def normalize_print_font_family(value: Any) -> str:
+    font_family = compact_text(value).lower().replace("-", "_").replace(" ", "_")
+    return font_family if font_family in PRINT_FONT_FAMILIES else "arial_narrow"
+
+
 def normalize_print_signature_source(value: Any, *, default: str = "blank") -> str:
     source = compact_text(value).lower()
     fallback = default if default in PRINT_SIGNATURE_SOURCES else "blank"
@@ -260,6 +275,7 @@ def normalize_print_config(raw_config: Any) -> dict[str, Any]:
     return {
         "accent_color": normalize_print_accent_color(config.get("accent_color")),
         "density": normalize_print_density(config.get("density")),
+        "font_family": normalize_print_font_family(config.get("font_family")),
         "show_logo": normalize_boolean_setting(config.get("show_logo"), default=True),
         "show_clinic_info": normalize_boolean_setting(config.get("show_clinic_info"), default=True),
         "show_status": normalize_boolean_setting(config.get("show_status"), default=True),

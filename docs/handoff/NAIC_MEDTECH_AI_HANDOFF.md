@@ -314,7 +314,7 @@ Current implementation checkpoint:
 - current forms now have a normal editable `Patient Information` builder group based on the original `default_lab_request` fields, with Name and Case Number marked required and wired as record identity/search hints
 - the builder `Print` pane now generates a backend-built sample print preview from the current unsaved draft, with an estimated one-page fit signal
 - builder preview and `/records/{id}/print` share the same print-page macro and backend print config normalization path
-- controlled result-body print options now exist for hiding empty fields, section headings, group headings, image size, and table density
+- controlled print options now exist for typography, hiding empty fields, section headings, group headings, image size, and table density
 - footer/signatory configuration now supports per-side role labels and blank, prepared-by, manual-name, or field-sourced signature names
 - compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid, reducing current long-form estimates to 0 long forms in the automated audit
 - Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass

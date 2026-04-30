@@ -1645,29 +1645,79 @@ button.subtle[aria-pressed="true"] {
   background: #fff;
 }
 
+.print-font-arial {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.print-font-arial-narrow {
+  font-family: "Arial Narrow", Arial, Helvetica, sans-serif;
+}
+
+.print-font-aptos {
+  font-family: Aptos, "Segoe UI", Arial, sans-serif;
+}
+
+.print-font-segoe-ui {
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+
+.print-font-times-new-roman {
+  font-family: "Times New Roman", Times, serif;
+}
+
+.print-font-cambria-title,
+.print-font-georgia-title,
+.print-font-bahnschrift-title {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.print-font-cambria-title .print-mini-preview__head strong {
+  font-family: Cambria, Georgia, serif;
+  letter-spacing: -0.025em;
+}
+
+.print-font-georgia-title .print-mini-preview__head strong {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -0.035em;
+}
+
+.print-font-bahnschrift-title .print-mini-preview__head strong {
+  font-family: Bahnschrift, "Arial Narrow", Arial, sans-serif;
+  letter-spacing: -0.03em;
+}
+
 .print-mini-preview__head {
   display: grid;
-  gap: 8px;
-  padding: 10px;
-  border-radius: calc(var(--radius-sm) + 2px);
+  gap: 4px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--preview-accent, var(--accent)) 86%, #000 14%);
+  border-radius: 3px;
   color: var(--preview-accent-ink, #fff);
-  background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%),
-    linear-gradient(90deg, var(--preview-accent, var(--accent)), color-mix(in srgb, var(--preview-accent, var(--accent)) 88%, #000 12%));
+  background: var(--preview-accent, var(--accent));
 }
 
 .print-mini-preview__head span {
   display: block;
-  width: 42px;
-  height: 4px;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.62;
+  width: auto;
+  height: auto;
+  border-radius: 0;
+  background: transparent;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  line-height: 1.1;
+  opacity: 0.78;
+  text-transform: uppercase;
+}
+
+.print-mini-preview__head span::before {
+  content: "Examination";
 }
 
 .print-mini-preview__head strong {
   color: currentColor;
   font-size: 16px;
+  line-height: 1.05;
 }
 
 .print-mini-preview__meta {
