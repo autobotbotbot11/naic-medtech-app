@@ -1,8 +1,11 @@
 :root {
   --ink: #171512;
-  --muted: #5f6465;
-  --faint: #eef3f1;
-  --line: #cfd8d3;
+  --muted: #5a6461;
+  --faint: #f4f8f6;
+  --surface: #fbfcfb;
+  --line: #ced9d4;
+  --line-soft: #e2e9e5;
+  --rule: #d7e1dc;
   --strong-line: #8ea39a;
   --accent: #1e5d52;
   --accent-ink: #ffffff;
@@ -26,7 +29,7 @@ body {
   padding: 0;
   color: var(--ink);
   background: var(--preview);
-  font-family: Arial, "Segoe UI", sans-serif;
+  font-family: Aptos, "Segoe UI", Arial, sans-serif;
 }
 
 body {
@@ -127,25 +130,27 @@ body {
   width: min(210mm, 100%);
   min-height: 297mm;
   margin-inline: auto;
-  padding: 14mm 15mm 16mm;
+  padding: 13mm 14mm 15mm;
   background: var(--paper);
   border: 1px solid rgba(23, 21, 18, 0.12);
-  box-shadow: 0 16px 44px rgba(25, 31, 29, 0.16);
+  box-shadow:
+    0 22px 70px rgba(25, 31, 29, 0.16),
+    0 0 0 1px rgba(255, 255, 255, 0.72) inset;
 }
 
 .print-document-header {
   display: flex;
   justify-content: space-between;
-  gap: 18px;
+  gap: 16px;
   align-items: flex-start;
-  padding-bottom: 10px;
-  border-bottom: 1px solid var(--line);
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rule);
 }
 
 .print-clinic-brand {
   display: grid;
-  grid-template-columns: 64px minmax(0, 1fr);
-  gap: 12px;
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 11px;
   align-items: center;
   min-width: 0;
 }
@@ -156,10 +161,10 @@ body {
 
 .print-logo,
 .print-logo-placeholder {
-  width: 64px;
-  height: 64px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  width: 58px;
+  height: 58px;
+  border: 1px solid var(--line-soft);
+  border-radius: 10px;
   background: #fff;
 }
 
@@ -183,7 +188,8 @@ body {
 }
 
 .print-clinic-copy strong {
-  font-size: 18px;
+  font-size: 17px;
+  letter-spacing: -0.015em;
   line-height: 1.1;
 }
 
@@ -200,10 +206,11 @@ body {
 
 .print-document-mark {
   display: grid;
-  gap: 6px;
+  gap: 5px;
   justify-items: end;
   text-align: right;
   flex: 0 0 auto;
+  padding-top: 2px;
 }
 
 .print-document-mark span,
@@ -218,23 +225,29 @@ body {
 }
 
 .print-document-mark strong {
-  font-size: 13px;
+  padding: 4px 7px;
+  border: 1px solid var(--line-soft);
+  border-radius: 999px;
+  background: var(--surface);
+  font-size: 12px;
+  line-height: 1.1;
 }
 
 .print-exam-head {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   justify-content: space-between;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
-  margin-top: 10px;
-  padding: 11px 12px;
+  margin-top: 9px;
+  padding: 10px 12px;
   border: 1px solid var(--accent);
-  border-radius: 9px;
+  border-radius: 10px;
   color: var(--accent-ink);
   background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.14), transparent 42%),
-    linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 88%, #000 12%));
+    linear-gradient(116deg, rgba(255, 255, 255, 0.18), transparent 38%),
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 94%, #000 6%), color-mix(in srgb, var(--accent) 82%, #000 18%));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
@@ -252,7 +265,9 @@ body {
 .print-title {
   margin-top: 3px;
   color: currentColor;
-  font-size: 25px;
+  font-size: 23px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   line-height: 1.05;
 }
 
@@ -277,7 +292,7 @@ body {
   min-height: 26px;
   padding: 5px 9px;
   border: 1px solid rgba(30, 93, 82, 0.28);
-  border-radius: 6px;
+  border-radius: 999px;
   color: var(--accent);
   background: rgba(30, 93, 82, 0.06);
   font-size: 10px;
@@ -330,7 +345,7 @@ body {
 .print-body {
   display: grid;
   gap: 0;
-  margin-top: 16px;
+  margin-top: 12px;
 }
 
 .print-section,
@@ -352,8 +367,8 @@ body {
   display: grid;
   gap: 3px;
   align-items: start;
-  padding-bottom: 5px;
-  border-bottom: 1px solid var(--strong-line);
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--rule);
 }
 
 .print-section-title {
@@ -367,14 +382,31 @@ body {
 }
 
 .print-group-head {
-  padding: 7px 9px;
+  padding: 6px 8px;
   border: 1px solid var(--line);
   border-bottom: 0;
-  background: var(--faint);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.38)),
+    var(--faint);
+}
+
+.print-body > .print-group:first-child .print-group-head,
+.print-body > .print-section:first-child > .print-items > .print-group:first-child .print-group-head {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--line));
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--accent) 11%, #fff) 0%, #fff 72%),
+    var(--paper);
+}
+
+.print-body > .print-group:first-child .print-group-title,
+.print-body > .print-section:first-child > .print-items > .print-group:first-child .print-group-title {
+  color: var(--accent);
 }
 
 .print-group-title {
-  font-size: 12px;
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.045em;
   line-height: 1.25;
   text-transform: uppercase;
 }
@@ -387,10 +419,10 @@ body {
 .print-row {
   display: grid;
   grid-template-columns: minmax(0, 1.08fr) minmax(140px, 1fr) minmax(54px, 0.35fr);
-  gap: 10px;
+  gap: 9px;
   align-items: start;
-  padding: 8px 9px;
-  border: 1px solid var(--line);
+  padding: 7px 8px;
+  border: 1px solid var(--line-soft);
   border-top: 0;
 }
 
@@ -409,6 +441,7 @@ body {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border: 1px solid var(--line);
   border-top: 0;
+  background: var(--paper);
 }
 
 .print-items > .print-field-grid:first-child,
@@ -425,9 +458,9 @@ body {
   display: grid;
   gap: 4px;
   min-width: 0;
-  padding: 7px 9px;
-  border-top: 1px solid var(--line);
-  border-left: 1px solid var(--line);
+  padding: 6px 8px;
+  border-top: 1px solid var(--line-soft);
+  border-left: 1px solid var(--line-soft);
 }
 
 .print-grid-cell:nth-child(-n + 2) {
@@ -448,7 +481,9 @@ body {
 
 .print-grid-cell-head strong {
   min-width: 0;
-  font-size: 11px;
+  color: #2d3331;
+  font-size: 10.5px;
+  font-weight: 800;
   line-height: 1.2;
 }
 
@@ -476,7 +511,7 @@ body {
 .print-body > .print-table-block,
 .print-body > .print-note,
 .print-body > .print-divider-block {
-  margin-top: 14px;
+  margin-top: 10px;
 }
 
 .print-row-name {
@@ -486,7 +521,9 @@ body {
 }
 
 .print-row-name strong {
-  font-size: 12px;
+  color: #2d3331;
+  font-size: 11.5px;
+  font-weight: 800;
   line-height: 1.25;
 }
 
@@ -505,8 +542,8 @@ body {
 }
 
 .print-answer {
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 12.5px;
+  font-weight: 800;
   line-height: 1.25;
   overflow-wrap: anywhere;
 }
@@ -547,6 +584,8 @@ body {
   gap: 4px;
   padding: 8px 9px;
   border: 1px dashed var(--strong-line);
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--faint) 74%, #fff);
 }
 
 .print-note strong {
@@ -571,6 +610,7 @@ body {
   width: 100%;
   border-collapse: collapse;
   border: 1px solid var(--line);
+  background: var(--paper);
 }
 
 .print-table th,
@@ -597,7 +637,9 @@ body {
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  background: var(--faint);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.35)),
+    var(--faint);
 }
 
 .print-table tr:last-child td {
@@ -615,9 +657,10 @@ body {
 .print-footer {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 28px;
-  margin-top: 28px;
-  padding-top: 18px;
+  gap: 26px;
+  margin-top: 22px;
+  padding-top: 13px;
+  border-top: 1px solid var(--line-soft);
 }
 
 .print-signature {
@@ -627,8 +670,8 @@ body {
 }
 
 .print-signature span {
-  min-height: 19px;
-  border-bottom: 1px solid var(--ink);
+  min-height: 17px;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 74%, #fff);
   font-size: 12px;
   font-weight: 700;
 }
@@ -749,13 +792,13 @@ body {
   }
 
   .print-document-header {
-    gap: 10px;
+    gap: 9px;
     padding-bottom: 5px;
   }
 
   .print-clinic-brand {
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: 10px;
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 8px;
   }
 
   .print-clinic-brand.no-logo {
@@ -764,13 +807,13 @@ body {
 
   .print-logo,
   .print-logo-placeholder {
-    width: 48px;
-    height: 48px;
+    width: 44px;
+    height: 44px;
     border-radius: 6px;
   }
 
   .print-clinic-copy strong {
-    font-size: 15px;
+    font-size: 14px;
   }
 
   .print-clinic-copy span,
@@ -783,7 +826,8 @@ body {
   }
 
   .print-document-mark {
-    gap: 4px;
+    gap: 3px;
+    padding-top: 1px;
   }
 
   .print-document-mark span,
@@ -793,19 +837,20 @@ body {
   }
 
   .print-document-mark strong {
-    font-size: 11px;
+    padding: 3px 6px;
+    font-size: 10px;
   }
 
   .print-exam-head {
-    gap: 8px;
-    margin-top: 6px;
-    padding: 6px 8px;
+    gap: 7px;
+    margin-top: 5px;
+    padding: 5.5px 7px;
     border-radius: 6px;
   }
 
   .print-title {
     margin-top: 1px;
-    font-size: 18.5px;
+    font-size: 17.5px;
   }
 
   .print-path {
@@ -813,9 +858,9 @@ body {
   }
 
   .print-status {
-    min-height: 22px;
-    padding: 4px 7px;
-    border-radius: 5px;
+    min-height: 19px;
+    padding: 3px 6px;
+    border-radius: 999px;
     font-size: 8.5px;
   }
 
@@ -834,7 +879,7 @@ body {
   }
 
   .print-body {
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   .print-section {
@@ -843,7 +888,7 @@ body {
 
   .print-section-head {
     gap: 0;
-    padding: 5px 7px;
+    padding: 4.5px 6px;
     border: 1px solid var(--line);
     border-bottom: 0;
     background: var(--faint);
@@ -860,7 +905,7 @@ body {
   }
 
   .print-group-head {
-    padding: 5px 7px;
+    padding: 4.5px 6px;
   }
 
   .print-group-title,
@@ -871,13 +916,13 @@ body {
 
   .print-row {
     grid-template-columns: minmax(0, 1.08fr) minmax(124px, 1fr) minmax(44px, 0.28fr);
-    gap: 7px;
-    padding: 5px 7px;
+    gap: 6px;
+    padding: 4.5px 6px;
   }
 
   .print-grid-cell {
     gap: 3px;
-    padding: 5px 7px;
+    padding: 4.5px 6px;
   }
 
   .print-field-grid {
@@ -898,11 +943,11 @@ body {
   .print-body > .print-table-block,
   .print-body > .print-note,
   .print-body > .print-divider-block {
-    margin-top: 6px;
+    margin-top: 5px;
   }
 
   .print-answer {
-    font-size: 11.5px;
+    font-size: 11px;
     line-height: 1.2;
   }
 
@@ -912,16 +957,16 @@ body {
 
   .print-table th,
   .print-table td {
-    padding: 5px 7px;
+    padding: 4.5px 6px;
   }
 
   .print-table--comfortable th,
   .print-table--comfortable td {
-    padding: 6px 8px;
+    padding: 5.5px 7px;
   }
 
   .print-footer {
-    gap: 18px;
+    gap: 17px;
     margin-top: 6px;
     padding-top: 4px;
     break-inside: avoid;
@@ -944,11 +989,11 @@ body {
   }
 
   .print-density-comfortable .print-body {
-    margin-top: 12px;
+    margin-top: 9px;
   }
 
   .print-density-comfortable .print-row {
-    padding-block: 6px;
+    padding-block: 5.5px;
   }
 
   .print-density-comfortable .print-body > .print-section,
@@ -956,6 +1001,6 @@ body {
   .print-density-comfortable .print-body > .print-table-block,
   .print-density-comfortable .print-body > .print-note,
   .print-density-comfortable .print-body > .print-divider-block {
-    margin-top: 10px;
+    margin-top: 8px;
   }
 }
