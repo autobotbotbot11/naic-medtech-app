@@ -692,15 +692,30 @@ body {
 
 .print-signature {
   display: grid;
-  gap: 6px;
+  gap: 4px;
   text-align: center;
 }
 
-.print-signature-line {
-  min-height: 17px;
-  border-bottom: 1px solid color-mix(in srgb, var(--ink) 74%, #fff);
+.print-signature-mark {
+  min-height: 29px;
+}
+
+.print-signature-identity {
+  display: grid;
+  gap: 1px;
+  min-height: 16px;
+  align-content: end;
+}
+
+.print-signature-name {
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.15;
+}
+
+.print-signature-rule {
+  display: block;
+  border-bottom: 1px solid color-mix(in srgb, var(--ink) 74%, #fff);
 }
 
 .print-signature strong {
@@ -993,11 +1008,18 @@ body {
   }
 
   .print-signature {
-    gap: 3px;
+    gap: 2px;
   }
 
-  .print-signature-line {
-    min-height: 9px;
+  .print-signature-mark {
+    min-height: 21px;
+  }
+
+  .print-signature-identity {
+    min-height: 13px;
+  }
+
+  .print-signature-name {
     font-size: 9px;
     line-height: 1.1;
   }

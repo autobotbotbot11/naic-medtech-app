@@ -3009,7 +3009,7 @@ def estimate_print_page_fit(document: dict[str, Any]) -> dict[str, Any]:
     if normalize_boolean_setting(print_config.get("show_clinic_info"), default=True):
         base_units += 1.0
     if normalize_boolean_setting(print_config.get("show_signatures"), default=True):
-        base_units += 3.0
+        base_units += 4.2
     if show_summary and summary_count:
         base_units += max(1, (summary_count + 2) // 3) * 2.2
 
