@@ -18,7 +18,7 @@ APP_SCHEMA_OUTPUT_PATH = OUT_DIR / "naic_medtech_app_schema.json"
 MARKDOWN_OUTPUT_PATH = OUT_DIR / "naic_medtech_structure.md"
 HTML_OUTPUT_PATH = OUT_DIR / "naic_medtech_structure.html"
 DIAGRAM_HTML_OUTPUT_PATH = OUT_DIR / "naic_medtech_tree_diagram.html"
-APP_SCHEMA_VERSION = "1.0.0"
+APP_SCHEMA_VERSION = "1.0.1"
 
 
 FORM_SPECS = [
@@ -178,6 +178,91 @@ CHAR_REPLACEMENTS = str.maketrans(
 )
 
 
+REQUESTING_PHYSICIAN_OPTIONS = [
+    "DR. RAUL VILLAR",
+    "DR. LAVINIA BELTIJAR",
+    "DR. MELWANI GARRIDO",
+    "DR. MARIANIDA SISANTE",
+    "DR. LEONA CARMEN SISANTE",
+    "DR. ALMA LOWENA ANACAY",
+    "DR. MARIBENZ ANGON",
+    "DR. NELSON PIPIT",
+    "DR. ELENITA SISAYAN",
+    "DR. GIELZEN JOI SISAYAN",
+    "DR. PERLITA CASTRO",
+    "DR. BAYANI PASCO",
+    "DR. DEXTER SCHROTH",
+    "DR. JAYMEE SCHROTH",
+    "DR. AIKO SALORSANO",
+    "DR. LUCILA OBILLO",
+    "DR. NOEL OBILLO",
+    "DR. ARNEL MILAY",
+    "DR. CANARIE JOY ESGUERRA",
+    "DR. ELIZABETH PANGANIBAN",
+    "DR. DONNALIZA CRUZ",
+    "DR. CHERRIE ANN ANGON",
+    "DR. HANNA TRISSIA SUMABONG",
+    "DR. JERICA CRISTEL ESGUERRA",
+    "DR. KENNETH JAVIER",
+    "DR. VERONICA ALERTA",
+    "DR. ANGELA FERNANDO",
+    "DR. LYSSEL SARACANLAO",
+    "DR. IDGEE GABRIEL BONDOC",
+]
+
+
+ROOM_OPTIONS = [
+    "ST. THOMAS",
+    "ST. ANDREW",
+    "ST. JOSEPH",
+    "ST. FRANCIS",
+    "ST. TIMOTHY",
+    "ST. PAUL",
+    "ST. JOHN",
+    "ST. GABRIEL",
+    "ST. ANTHONY",
+    "ST. PETER",
+    "ST. MATTHEW",
+    "ST. DOMINIC",
+    "ST. AUGUSTINE",
+    "ST. JAMES",
+    "ST. MICHAEL",
+    "ST. LUKE",
+    "ST. LOUIE",
+    "ST. JUDE",
+    "NICU",
+    "OPD",
+    "ER",
+]
+
+
+def common_option_key(value: str) -> str:
+    ascii_value = unicodedata.normalize("NFKD", value).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "_", ascii_value.lower()).strip("_") or "option"
+
+
+def build_common_options(field_id: str, values: list[str]) -> list[dict[str, object]]:
+    options: list[dict[str, object]] = []
+    used: set[str] = set()
+    for order, value in enumerate(values, start=1):
+        base_key = common_option_key(value)
+        key = base_key
+        suffix = 2
+        while key in used:
+            key = f"{base_key}_{suffix}"
+            suffix += 1
+        used.add(key)
+        options.append(
+            {
+                "id": f"{field_id}.{key}",
+                "key": key,
+                "name": value,
+                "order": order,
+            }
+        )
+    return options
+
+
 COMMON_FIELD_SET = {
     "id": "default_lab_request",
     "name": "Default Lab Request Metadata",
@@ -207,8 +292,9 @@ COMMON_FIELD_SET = {
             "key": "sex",
             "name": "Sex",
             "order": 3,
-            "control": "input",
-            "data_type": "text",
+            "control": "select",
+            "data_type": "enum",
+            "options": build_common_options("default_lab_request.sex", ["Male", "Female"]),
         },
         {
             "id": "default_lab_request.date_or_datetime",
@@ -223,16 +309,21 @@ COMMON_FIELD_SET = {
             "key": "requesting_physician",
             "name": "Requesting Physician",
             "order": 5,
-            "control": "input",
-            "data_type": "text",
+            "control": "select",
+            "data_type": "enum",
+            "options": build_common_options(
+                "default_lab_request.requesting_physician",
+                REQUESTING_PHYSICIAN_OPTIONS,
+            ),
         },
         {
             "id": "default_lab_request.room",
             "key": "room",
             "name": "Room",
             "order": 6,
-            "control": "input",
-            "data_type": "text",
+            "control": "select",
+            "data_type": "enum",
+            "options": build_common_options("default_lab_request.room", ROOM_OPTIONS),
         },
         {
             "id": "default_lab_request.case_number",

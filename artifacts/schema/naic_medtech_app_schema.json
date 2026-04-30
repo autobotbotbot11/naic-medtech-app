@@ -1,15 +1,16 @@
 {
   "schema_name": "NAIC Medtech App Schema",
-  "schema_version": "1.0.0",
+  "schema_version": "1.0.1",
   "source_workbook": "NAIC MEDTECH SYSTEM DATA.xlsx",
-  "generated_at_utc": "2026-03-31T17:00:15.679194+00:00",
+  "generated_at_utc": "2026-04-30T05:08:34.280530+00:00",
   "normalization_rules": [
     "Shared patient/request metadata was moved into a reusable common field set.",
     "Any field with explicit options was normalized to control=\"select\", even if the raw spreadsheet input type said manual entry.",
     "Known pseudo-option lists that actually represent child manual-entry fields were normalized into field groups.",
     "Manual-entry fields with strong numeric hints such as units or numeric normal ranges were normalized to data_type=\"number\".",
     "Manual-entry fields without strong type signals default to data_type=\"text\".",
-    "Standalone departments are represented as groups that contain exactly one form for a consistent app navigation model."
+    "Standalone departments are represented as groups that contain exactly one form for a consistent app navigation model.",
+    "Shared patient fields with source dropdown options remain dropdowns in the reusable common field set."
   ],
   "common_field_sets": [
     {
@@ -41,8 +42,22 @@
           "key": "sex",
           "name": "Sex",
           "order": 3,
-          "control": "input",
-          "data_type": "text"
+          "control": "select",
+          "data_type": "enum",
+          "options": [
+            {
+              "id": "default_lab_request.sex.male",
+              "key": "male",
+              "name": "Male",
+              "order": 1
+            },
+            {
+              "id": "default_lab_request.sex.female",
+              "key": "female",
+              "name": "Female",
+              "order": 2
+            }
+          ]
         },
         {
           "id": "default_lab_request.date_or_datetime",
@@ -57,16 +72,320 @@
           "key": "requesting_physician",
           "name": "Requesting Physician",
           "order": 5,
-          "control": "input",
-          "data_type": "text"
+          "control": "select",
+          "data_type": "enum",
+          "options": [
+            {
+              "id": "default_lab_request.requesting_physician.dr_raul_villar",
+              "key": "dr_raul_villar",
+              "name": "DR. RAUL VILLAR",
+              "order": 1
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_lavinia_beltijar",
+              "key": "dr_lavinia_beltijar",
+              "name": "DR. LAVINIA BELTIJAR",
+              "order": 2
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_melwani_garrido",
+              "key": "dr_melwani_garrido",
+              "name": "DR. MELWANI GARRIDO",
+              "order": 3
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_marianida_sisante",
+              "key": "dr_marianida_sisante",
+              "name": "DR. MARIANIDA SISANTE",
+              "order": 4
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_leona_carmen_sisante",
+              "key": "dr_leona_carmen_sisante",
+              "name": "DR. LEONA CARMEN SISANTE",
+              "order": 5
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_alma_lowena_anacay",
+              "key": "dr_alma_lowena_anacay",
+              "name": "DR. ALMA LOWENA ANACAY",
+              "order": 6
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_maribenz_angon",
+              "key": "dr_maribenz_angon",
+              "name": "DR. MARIBENZ ANGON",
+              "order": 7
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_nelson_pipit",
+              "key": "dr_nelson_pipit",
+              "name": "DR. NELSON PIPIT",
+              "order": 8
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_elenita_sisayan",
+              "key": "dr_elenita_sisayan",
+              "name": "DR. ELENITA SISAYAN",
+              "order": 9
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_gielzen_joi_sisayan",
+              "key": "dr_gielzen_joi_sisayan",
+              "name": "DR. GIELZEN JOI SISAYAN",
+              "order": 10
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_perlita_castro",
+              "key": "dr_perlita_castro",
+              "name": "DR. PERLITA CASTRO",
+              "order": 11
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_bayani_pasco",
+              "key": "dr_bayani_pasco",
+              "name": "DR. BAYANI PASCO",
+              "order": 12
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_dexter_schroth",
+              "key": "dr_dexter_schroth",
+              "name": "DR. DEXTER SCHROTH",
+              "order": 13
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_jaymee_schroth",
+              "key": "dr_jaymee_schroth",
+              "name": "DR. JAYMEE SCHROTH",
+              "order": 14
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_aiko_salorsano",
+              "key": "dr_aiko_salorsano",
+              "name": "DR. AIKO SALORSANO",
+              "order": 15
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_lucila_obillo",
+              "key": "dr_lucila_obillo",
+              "name": "DR. LUCILA OBILLO",
+              "order": 16
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_noel_obillo",
+              "key": "dr_noel_obillo",
+              "name": "DR. NOEL OBILLO",
+              "order": 17
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_arnel_milay",
+              "key": "dr_arnel_milay",
+              "name": "DR. ARNEL MILAY",
+              "order": 18
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_canarie_joy_esguerra",
+              "key": "dr_canarie_joy_esguerra",
+              "name": "DR. CANARIE JOY ESGUERRA",
+              "order": 19
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_elizabeth_panganiban",
+              "key": "dr_elizabeth_panganiban",
+              "name": "DR. ELIZABETH PANGANIBAN",
+              "order": 20
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_donnaliza_cruz",
+              "key": "dr_donnaliza_cruz",
+              "name": "DR. DONNALIZA CRUZ",
+              "order": 21
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_cherrie_ann_angon",
+              "key": "dr_cherrie_ann_angon",
+              "name": "DR. CHERRIE ANN ANGON",
+              "order": 22
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_hanna_trissia_sumabong",
+              "key": "dr_hanna_trissia_sumabong",
+              "name": "DR. HANNA TRISSIA SUMABONG",
+              "order": 23
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_jerica_cristel_esguerra",
+              "key": "dr_jerica_cristel_esguerra",
+              "name": "DR. JERICA CRISTEL ESGUERRA",
+              "order": 24
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_kenneth_javier",
+              "key": "dr_kenneth_javier",
+              "name": "DR. KENNETH JAVIER",
+              "order": 25
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_veronica_alerta",
+              "key": "dr_veronica_alerta",
+              "name": "DR. VERONICA ALERTA",
+              "order": 26
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_angela_fernando",
+              "key": "dr_angela_fernando",
+              "name": "DR. ANGELA FERNANDO",
+              "order": 27
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_lyssel_saracanlao",
+              "key": "dr_lyssel_saracanlao",
+              "name": "DR. LYSSEL SARACANLAO",
+              "order": 28
+            },
+            {
+              "id": "default_lab_request.requesting_physician.dr_idgee_gabriel_bondoc",
+              "key": "dr_idgee_gabriel_bondoc",
+              "name": "DR. IDGEE GABRIEL BONDOC",
+              "order": 29
+            }
+          ]
         },
         {
           "id": "default_lab_request.room",
           "key": "room",
           "name": "Room",
           "order": 6,
-          "control": "input",
-          "data_type": "text"
+          "control": "select",
+          "data_type": "enum",
+          "options": [
+            {
+              "id": "default_lab_request.room.st_thomas",
+              "key": "st_thomas",
+              "name": "ST. THOMAS",
+              "order": 1
+            },
+            {
+              "id": "default_lab_request.room.st_andrew",
+              "key": "st_andrew",
+              "name": "ST. ANDREW",
+              "order": 2
+            },
+            {
+              "id": "default_lab_request.room.st_joseph",
+              "key": "st_joseph",
+              "name": "ST. JOSEPH",
+              "order": 3
+            },
+            {
+              "id": "default_lab_request.room.st_francis",
+              "key": "st_francis",
+              "name": "ST. FRANCIS",
+              "order": 4
+            },
+            {
+              "id": "default_lab_request.room.st_timothy",
+              "key": "st_timothy",
+              "name": "ST. TIMOTHY",
+              "order": 5
+            },
+            {
+              "id": "default_lab_request.room.st_paul",
+              "key": "st_paul",
+              "name": "ST. PAUL",
+              "order": 6
+            },
+            {
+              "id": "default_lab_request.room.st_john",
+              "key": "st_john",
+              "name": "ST. JOHN",
+              "order": 7
+            },
+            {
+              "id": "default_lab_request.room.st_gabriel",
+              "key": "st_gabriel",
+              "name": "ST. GABRIEL",
+              "order": 8
+            },
+            {
+              "id": "default_lab_request.room.st_anthony",
+              "key": "st_anthony",
+              "name": "ST. ANTHONY",
+              "order": 9
+            },
+            {
+              "id": "default_lab_request.room.st_peter",
+              "key": "st_peter",
+              "name": "ST. PETER",
+              "order": 10
+            },
+            {
+              "id": "default_lab_request.room.st_matthew",
+              "key": "st_matthew",
+              "name": "ST. MATTHEW",
+              "order": 11
+            },
+            {
+              "id": "default_lab_request.room.st_dominic",
+              "key": "st_dominic",
+              "name": "ST. DOMINIC",
+              "order": 12
+            },
+            {
+              "id": "default_lab_request.room.st_augustine",
+              "key": "st_augustine",
+              "name": "ST. AUGUSTINE",
+              "order": 13
+            },
+            {
+              "id": "default_lab_request.room.st_james",
+              "key": "st_james",
+              "name": "ST. JAMES",
+              "order": 14
+            },
+            {
+              "id": "default_lab_request.room.st_michael",
+              "key": "st_michael",
+              "name": "ST. MICHAEL",
+              "order": 15
+            },
+            {
+              "id": "default_lab_request.room.st_luke",
+              "key": "st_luke",
+              "name": "ST. LUKE",
+              "order": 16
+            },
+            {
+              "id": "default_lab_request.room.st_louie",
+              "key": "st_louie",
+              "name": "ST. LOUIE",
+              "order": 17
+            },
+            {
+              "id": "default_lab_request.room.st_jude",
+              "key": "st_jude",
+              "name": "ST. JUDE",
+              "order": 18
+            },
+            {
+              "id": "default_lab_request.room.nicu",
+              "key": "nicu",
+              "name": "NICU",
+              "order": 19
+            },
+            {
+              "id": "default_lab_request.room.opd",
+              "key": "opd",
+              "name": "OPD",
+              "order": 20
+            },
+            {
+              "id": "default_lab_request.room.er",
+              "key": "er",
+              "name": "ER",
+              "order": 21
+            }
+          ]
         },
         {
           "id": "default_lab_request.case_number",

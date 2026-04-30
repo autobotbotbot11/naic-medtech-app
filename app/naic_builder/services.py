@@ -814,6 +814,9 @@ def default_patient_info_legacy_group() -> dict[str, Any]:
                 "common_field_id": compact_text(raw_field.get("id")),
             },
         }
+        options = normalize_options(raw_field.get("options"), f"{PATIENT_INFO_GROUP_KEY}.{key}")
+        if options:
+            field["options"] = options
         if key in PATIENT_INFO_REQUIRED_KEYS:
             field["required"] = True
         fields.append(field)
