@@ -35,7 +35,7 @@ Implemented:
 - Builder print preview and `/records/{id}/print` share the same print document macro and backend print config normalization path.
 - The builder print preview shows an estimated one-page fit signal: likely, tight, or long.
 - Controlled result-body options now exist for hiding empty fields, section headings, group headings, image size, and table density.
-- Generic signatory configuration now lives at `block_schema.meta.signatories`; it supports role labels, dropdown people, fixed people, manual entry, blank lines, required completion, print visibility, signature lines, and license display.
+- Generic signatory configuration now lives at `block_schema.meta.signatories`; it supports role labels, dropdown people, fixed people, fixed stamp images, manual entry, blank lines, required completion, print visibility, signature lines, and license display.
 - Medical Technologist and Pathologist were removed from normal Patient Information fields in the runtime forms and moved into signatories. Existing runtime data was migrated with a DB backup under `data/runtime/backups/`.
 - Compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid when useful.
 - Print output now uses a modern exam identity band powered by each form's `accent_color`, with automatic dark/light title text for readable contrast. This intentionally keeps the old template's quick color-identification value without copying the old Word layout.
@@ -45,6 +45,7 @@ Implemented:
 - A clinic-like stress pass with longer patient names, case numbers, requesting physician, medtech/pathologist names, remarks, and release fields still exported OGTT, Semen, and Serology as one A4 page each.
 - Actual `/records/{id}/print` smoke now passes for all 18 current forms by creating temporary completed records and checking the real route; the QA script snapshots/restores the runtime DB by default so the smoke run does not leave QA rows behind.
 - Browser PDF QA now generates A4 PDFs from real `/records/{id}/print` pages through Playwright, checks the resulting PDF page counts, restores the runtime DB by default, and currently passes all 18 forms as one-page A4 PDFs.
+- Signatories now support a generic `stamp_image` input type for a full uploaded stamp image that already contains signature, name, and license. This is not pathologist-specific; any signatory slot can use it.
 
 Code paths:
 - `app/naic_builder/static/app.js`
@@ -182,22 +183,20 @@ Current shape:
   {
     "id": "pathologist",
     "label": "Pathologist",
-    "input_type": "fixed",
+    "input_type": "stamp_image",
     "required": false,
     "show_on_print": true,
     "show_license": true,
     "signature_line": true,
-    "default_option_id": "bernardita_mojica_figueroa",
-    "options": [
-      {
-        "id": "bernardita_mojica_figueroa",
-        "name": "Bernardita Mojica Figueroa, MD, DPSP",
-        "license": "068053"
-      }
-    ]
+    "stamp_image_url": "/signatory-stamps/stamp_example.png",
+    "stamp_image_filename": "pathologist-stamp.png",
+    "stamp_image_mime_type": "image/png",
+    "options": []
   }
 ]
 ```
+
+Existing seeded runtime forms may still use `input_type: "fixed"` for Pathologist until an admin switches that slot to `stamp_image` and uploads the fixed stamp.
 
 Supported summary item sources:
 - `field`
@@ -210,6 +209,7 @@ Supported summary item sources:
 Supported signatory input types:
 - `person_dropdown`
 - `fixed`
+- `stamp_image`
 - `manual`
 - `blank`
 
@@ -244,7 +244,7 @@ The builder Print pane currently supports:
 - table density: compact or comfortable
 - result layout: compact grid or rows
 - show/hide signatures
-- Signatories pane controls role label, input type, required state, print visibility, license visibility, signature line, selectable people, and fixed default person
+- Signatories pane controls role label, input type, required state, print visibility, license visibility, signature line, selectable people, fixed default person, and fixed stamp image upload
 
 This is intentionally a constrained editor. It should stay easier than a design canvas.
 

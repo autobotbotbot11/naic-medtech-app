@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import mimetypes
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -13,7 +14,7 @@ from sqlalchemy.orm import Session
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 
-from .config import APP_TITLE, SESSION_SECRET, STATIC_DIR, TEMPLATES_DIR
+from .config import APP_TITLE, SESSION_SECRET, SIGNATORY_UPLOADS_DIR, STATIC_DIR, TEMPLATES_DIR
 from .database import SessionLocal, ensure_runtime_schema, get_session
 from .schemas import (
     AccountRequestPayload,
@@ -73,6 +74,7 @@ from .services import (
     serialize_form,
     serialize_form_location,
     save_clinic_profile,
+    save_signatory_stamp_image,
     save_user_avatar,
     store_record_image_asset,
     update_user_admin_details,
@@ -2003,6 +2005,33 @@ def form_print_preview(
                 clinic_logo_url=clinic_logo_url,
             ),
         },
+    )
+
+
+@app.post("/api/forms/signatory-stamp")
+async def upload_signatory_stamp_endpoint(stamp_file: UploadFile = File(...)) -> dict[str, Any]:
+    try:
+        return save_signatory_stamp_image(
+            stamp_filename=stamp_file.filename or "",
+            stamp_content_type=stamp_file.content_type,
+            stamp_bytes=await stamp_file.read(),
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@app.get("/signatory-stamps/{filename}")
+def signatory_stamp_file(filename: str) -> FileResponse:
+    safe_name = Path(filename).name
+    if safe_name != filename:
+        raise HTTPException(status_code=404, detail="Stamp image not found.")
+    stamp_path = SIGNATORY_UPLOADS_DIR / safe_name
+    if not stamp_path.is_file():
+        raise HTTPException(status_code=404, detail="Stamp image not found.")
+    return FileResponse(
+        stamp_path,
+        media_type=mimetypes.guess_type(str(stamp_path))[0] or None,
+        filename=safe_name,
     )
 
 

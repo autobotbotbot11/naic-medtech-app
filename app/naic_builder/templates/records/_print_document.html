@@ -188,8 +188,13 @@
     {% if print_config.show_signatures and signature_items %}
     <footer class="print-footer">
       {% for signature in signature_items %}
-        <div class="print-signature">
-          <span class="print-signature-mark" aria-hidden="true"></span>
+        <div class="print-signature{% if signature.image_url %} has-stamp-image{% endif %}">
+          <span class="print-signature-mark">
+            {% if signature.image_url %}
+            <img class="print-signature-stamp" src="{{ signature.image_url }}" alt="{{ signature.image_alt or signature.label }}">
+            {% endif %}
+          </span>
+          {% if signature.name or signature.title or signature.license %}
           <span class="print-signature-identity">
           {% if signature.name %}
             <span class="print-signature-name">{{ signature.name }}</span>
@@ -201,6 +206,7 @@
             <small>Lic. No. {{ signature.license }}</small>
             {% endif %}
           </span>
+          {% endif %}
           <span class="print-signature-rule" aria-hidden="true"></span>
           <strong>{{ signature.label }}</strong>
         </div>

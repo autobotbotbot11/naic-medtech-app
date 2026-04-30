@@ -122,6 +122,9 @@ Current recommended shape:
         "show_on_print": true,
         "show_license": true,
         "signature_line": true,
+        "stamp_image_url": "",
+        "stamp_image_filename": "",
+        "stamp_image_mime_type": "",
         "options": []
       }
     ]
@@ -129,7 +132,9 @@ Current recommended shape:
 }
 ```
 
-This keeps the engine generic: `Medical Technologist` and `Pathologist` are current clinic defaults, not hardcoded employee concepts.
+Supported signatory input types are `person_dropdown`, `fixed`, `stamp_image`, `manual`, and `blank`.
+
+This keeps the engine generic: `Medical Technologist` and `Pathologist` are current clinic defaults, not hardcoded employee concepts. A `stamp_image` slot is still just a generic signatory slot with an uploaded full stamp image, not a special pathologist model.
 
 ## 4. Preset
 Reusable block bundle.

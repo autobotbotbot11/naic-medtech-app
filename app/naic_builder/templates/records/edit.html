@@ -193,7 +193,7 @@
             {% endif %}
           {% endfor %}
           {% set selected_option_id = snapshot.value.option_id or slot.default_option_id or "" %}
-          <label class="entry-field entry-signatory-field{% if slot.input_type == 'fixed' %} is-fixed{% endif %}" {% if slot.required %}data-required-field{% endif %}>
+          <label class="entry-field entry-signatory-field{% if slot.input_type in ['fixed', 'stamp_image'] %} is-fixed{% endif %}" {% if slot.required %}data-required-field{% endif %}>
             <div class="entry-field-head">
               <span>{{ slot.label }}</span>
               <div class="entry-field-meta">
@@ -202,6 +202,8 @@
                 {% endif %}
                 {% if slot.input_type == "fixed" %}
                 <small class="entry-chip">Fixed</small>
+                {% elif slot.input_type == "stamp_image" %}
+                <small class="entry-chip">Stamp</small>
                 {% endif %}
               </div>
             </div>
@@ -219,6 +221,9 @@
             {% elif slot.input_type == "manual" %}
               <input type="text" name="signatory__{{ slot.id }}__name" value="{{ snapshot.value.name or slot.manual_name or '' }}" placeholder="Name">
               <input type="text" name="signatory__{{ slot.id }}__license" value="{{ snapshot.value.license or slot.manual_license or '' }}" placeholder="License number">
+            {% elif slot.input_type == "stamp_image" %}
+              <p class="entry-inline-hint">Fixed stamp image from form setup.</p>
+              <input type="hidden" name="signatory__{{ slot.id }}__name" value="">
             {% else %}
               <input type="hidden" name="signatory__{{ slot.id }}__name" value="">
             {% endif %}

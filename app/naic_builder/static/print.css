@@ -697,7 +697,20 @@ body {
 }
 
 .print-signature-mark {
+  display: grid;
+  place-items: end center;
   min-height: 29px;
+}
+
+.print-signature.has-stamp-image .print-signature-mark {
+  min-height: 56px;
+}
+
+.print-signature-stamp {
+  display: block;
+  max-width: 100%;
+  max-height: 54px;
+  object-fit: contain;
 }
 
 .print-signature-identity {
@@ -1013,6 +1026,14 @@ body {
 
   .print-signature-mark {
     min-height: 21px;
+  }
+
+  .print-signature.has-stamp-image .print-signature-mark {
+    min-height: 42px;
+  }
+
+  .print-signature-stamp {
+    max-height: 41px;
   }
 
   .print-signature-identity {

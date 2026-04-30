@@ -15,7 +15,13 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from .config import CLINIC_UPLOADS_DIR, RECORD_UPLOADS_DIR, REFERENCE_SCHEMA_PATH, USER_UPLOADS_DIR
+from .config import (
+    CLINIC_UPLOADS_DIR,
+    RECORD_UPLOADS_DIR,
+    REFERENCE_SCHEMA_PATH,
+    SIGNATORY_UPLOADS_DIR,
+    USER_UPLOADS_DIR,
+)
 from .database import Base, engine
 from .models import ClinicProfile, FormDefinition, FormVersion, LibraryNode, Record, RecordAsset, User, utc_now
 from .schemas import (
@@ -40,6 +46,7 @@ ALLOWED_IMAGE_CONTENT_TYPES = {
 MAX_RECORD_IMAGE_BYTES = 10 * 1024 * 1024
 MAX_CLINIC_LOGO_BYTES = 5 * 1024 * 1024
 MAX_USER_AVATAR_BYTES = 2 * 1024 * 1024
+MAX_SIGNATORY_STAMP_BYTES = 5 * 1024 * 1024
 DEFAULT_PRINT_ACCENT_COLOR = "#1e5d52"
 DEFAULT_PRINT_ACCENT_MIGRATED_META_KEY = "print_accent_default_migrated"
 DEFAULT_PRINT_ACCENT_COLORS_BY_FORM_KEY = {
@@ -100,7 +107,7 @@ PATIENT_INFO_PRIMARY_KEY = "name"
 PATIENT_INFO_SECONDARY_KEY = "case_number"
 PATIENT_INFO_REQUIRED_KEYS = {PATIENT_INFO_PRIMARY_KEY, PATIENT_INFO_SECONDARY_KEY}
 SIGNATORY_FIELD_KEYS = {"medical_technologist", "pathologist"}
-SIGNATORY_INPUT_TYPES = {"person_dropdown", "manual", "fixed", "blank"}
+SIGNATORY_INPUT_TYPES = {"person_dropdown", "manual", "fixed", "blank", "stamp_image"}
 DEFAULT_MEDTECH_SIGNATORY_PEOPLE = [
     {"id": "imelda_a_elemia", "name": "Imelda A. Elemia, RMT", "license": "0036643"},
     {"id": "crystel_c_tesoro", "name": "Crystel C. Tesoro, RMT", "license": "0103760"},
@@ -899,6 +906,9 @@ def normalize_signatory_slot(raw_slot: Any, index: int) -> dict[str, Any] | None
         "manual_name": compact_text(slot.get("manual_name")),
         "manual_title": compact_text(slot.get("manual_title")),
         "manual_license": compact_text(slot.get("manual_license")),
+        "stamp_image_url": compact_text(slot.get("stamp_image_url")),
+        "stamp_image_filename": compact_text(slot.get("stamp_image_filename")),
+        "stamp_image_mime_type": compact_text(slot.get("stamp_image_mime_type")),
         "options": options,
     }
 
@@ -958,6 +968,9 @@ def build_signatory_snapshot(slot: dict[str, Any], raw_value: Any = None) -> dic
         "show_on_print": normalize_boolean_setting(slot.get("show_on_print"), default=True),
         "show_license": normalize_boolean_setting(slot.get("show_license"), default=True),
         "signature_line": normalize_boolean_setting(slot.get("signature_line"), default=True),
+        "stamp_image_url": compact_text(slot.get("stamp_image_url")),
+        "stamp_image_filename": compact_text(slot.get("stamp_image_filename")),
+        "stamp_image_mime_type": compact_text(slot.get("stamp_image_mime_type")),
     }
 
 
@@ -992,6 +1005,23 @@ def signatory_snapshots_for_print(snapshots: list[dict[str, Any]]) -> list[dict[
         required = normalize_boolean_setting(snapshot.get("required"), default=False)
         name = compact_text(snapshot.get("name"))
         license_text = compact_text(snapshot.get("license"))
+        stamp_image_url = compact_text(snapshot.get("stamp_image_url"))
+        if input_type == "stamp_image":
+            if not stamp_image_url:
+                continue
+            printable.append(
+                {
+                    "label": compact_text(snapshot.get("label")) or "Signatory",
+                    "name": "",
+                    "title": "",
+                    "license": "",
+                    "image_url": stamp_image_url,
+                    "image_alt": compact_text(snapshot.get("stamp_image_filename"))
+                    or compact_text(snapshot.get("label"))
+                    or "Signatory stamp",
+                }
+            )
+            continue
         if not name and not normalize_boolean_setting(snapshot.get("signature_line"), default=True):
             continue
         if not name and not license_text and input_type != "blank" and not required:
@@ -1002,6 +1032,8 @@ def signatory_snapshots_for_print(snapshots: list[dict[str, Any]]) -> list[dict[
                 "name": name,
                 "title": compact_text(snapshot.get("title")),
                 "license": license_text if normalize_boolean_setting(snapshot.get("show_license"), default=True) else "",
+                "image_url": "",
+                "image_alt": "",
             }
         )
     return printable
@@ -2093,6 +2125,32 @@ def save_clinic_profile(
     return serialize_clinic_profile(profile)
 
 
+def save_signatory_stamp_image(
+    *,
+    stamp_filename: str = "",
+    stamp_content_type: str | None = None,
+    stamp_bytes: bytes | None = None,
+) -> dict[str, Any]:
+    mime_type = compact_text(stamp_content_type)
+    extension = ALLOWED_IMAGE_CONTENT_TYPES.get(mime_type)
+    if extension is None:
+        raise ValueError("Only JPG, PNG, and WebP stamp images are allowed.")
+    if not stamp_bytes:
+        raise ValueError("Choose a stamp image before uploading.")
+    if len(stamp_bytes) > MAX_SIGNATORY_STAMP_BYTES:
+        raise ValueError("Stamp image must be 5 MB or smaller.")
+
+    SIGNATORY_UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+    stamp_path = SIGNATORY_UPLOADS_DIR / f"stamp_{uuid4().hex}{extension}"
+    stamp_path.write_bytes(stamp_bytes)
+    return {
+        "url": f"/signatory-stamps/{stamp_path.name}",
+        "original_filename": compact_text(stamp_filename) or stamp_path.name,
+        "mime_type": mime_type,
+        "size_bytes": len(stamp_bytes),
+    }
+
+
 def remove_clinic_logo(session: Session) -> dict[str, Any]:
     profile = get_or_create_clinic_profile(session)
     old_logo_path = profile.logo_path
@@ -2448,7 +2506,8 @@ def list_record_completion_issues(
     for slot, snapshot in zip(signatory_slots, signatory_snapshots):
         if not normalize_boolean_setting(slot.get("required"), default=False):
             continue
-        if not compact_text(snapshot.get("name")) and compact_text(slot.get("input_type")) != "blank":
+        slot_input_type = compact_text(slot.get("input_type")).lower()
+        if slot_input_type in {"person_dropdown", "manual"} and not compact_text(snapshot.get("name")):
             issues.append(f"Choose required signatory: {compact_text(slot.get('label')) or 'Signatory'}.")
     return issues
 

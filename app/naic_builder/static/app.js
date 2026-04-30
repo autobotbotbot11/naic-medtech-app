@@ -130,6 +130,7 @@ const DEFAULT_PATHOLOGIST_SIGNATORY_OPTIONS = [
 const SIGNATORY_INPUT_TYPES = [
   { id: "person_dropdown", label: "Dropdown" },
   { id: "fixed", label: "Fixed person" },
+  { id: "stamp_image", label: "Fixed stamp image" },
   { id: "manual", label: "Manual entry" },
   { id: "blank", label: "Blank line" },
 ];
@@ -437,6 +438,9 @@ function normalizeSignatorySlot(rawSlot, index) {
     manual_name: compactText(slot.manual_name),
     manual_title: compactText(slot.manual_title),
     manual_license: compactText(slot.manual_license),
+    stamp_image_url: compactText(slot.stamp_image_url),
+    stamp_image_filename: compactText(slot.stamp_image_filename),
+    stamp_image_mime_type: compactText(slot.stamp_image_mime_type),
     options,
   };
 }
@@ -549,6 +553,9 @@ function updateDraftSignatorySlot(slotId, key, value) {
   if (key === "manual_name" || key === "manual_license" || key === "manual_title") {
     slot[key] = compactText(value);
   }
+  if (key === "stamp_image_url" || key === "stamp_image_filename" || key === "stamp_image_mime_type") {
+    slot[key] = compactText(value);
+  }
 }
 
 function updateDraftSignatoryOptions(slotId, rawText) {
@@ -562,6 +569,44 @@ function updateDraftSignatoryOptions(slotId, rawText) {
   }
   if (slot.input_type === "fixed" && !slot.default_option_id && slot.options.length) {
     slot.default_option_id = slot.options[0].id;
+  }
+}
+
+async function uploadSignatoryStamp(inputEl) {
+  const slotId = compactText(inputEl.dataset.id);
+  const file = inputEl.files?.[0];
+  if (!slotId || !file) {
+    return;
+  }
+  const slot = getDraftSignatory(slotId);
+  if (!slot) {
+    inputEl.value = "";
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("stamp_file", file);
+  try {
+    setStatus("Uploading stamp image...");
+    const response = await fetch("/api/forms/signatory-stamp", {
+      method: "POST",
+      body: formData,
+    });
+    const body = await response.json().catch(async () => ({ detail: await response.text() }));
+    if (!response.ok) {
+      throw new Error(body.detail || "Stamp upload failed.");
+    }
+    slot.stamp_image_url = compactText(body.url);
+    slot.stamp_image_filename = compactText(body.original_filename) || file.name;
+    slot.stamp_image_mime_type = compactText(body.mime_type) || file.type;
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    setStatus("Stamp image uploaded.");
+  } catch (error) {
+    console.error(error);
+    setStatus(`Stamp upload failed: ${error.message}`, true);
+  } finally {
+    inputEl.value = "";
   }
 }
 
@@ -2931,6 +2976,7 @@ function renderSignatoryDefaultOptions(slot) {
 function renderSignatoryCard(slot, index, totalCount) {
   const optionsText = signatoryOptionsToText(slot);
   const isManual = slot.input_type === "manual";
+  const isStampImage = slot.input_type === "stamp_image";
   const usesOptions = slot.input_type === "person_dropdown" || slot.input_type === "fixed";
   return `
     <article class="signatory-config-card" data-signatory-id="${escapeHtml(slot.id)}">
@@ -2959,15 +3005,18 @@ function renderSignatoryCard(slot, index, totalCount) {
         </label>
       </div>
 
-      <div class="print-toggle-grid signatory-toggle-grid">
+      <div class="print-toggle-grid signatory-toggle-grid${isStampImage ? " is-compact" : ""}">
+        ${isStampImage ? "" : `
         <label class="identity-check">
           <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="required" ${slot.required ? "checked" : ""}>
           <span>Required</span>
         </label>
+        `}
         <label class="identity-check">
           <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="show_on_print" ${slot.show_on_print ? "checked" : ""}>
           <span>Show on print</span>
         </label>
+        ${isStampImage ? "" : `
         <label class="identity-check">
           <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="show_license" ${slot.show_license ? "checked" : ""}>
           <span>Show license</span>
@@ -2976,7 +3025,23 @@ function renderSignatoryCard(slot, index, totalCount) {
           <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="signature_line" ${slot.signature_line ? "checked" : ""}>
           <span>Signature line</span>
         </label>
+        `}
       </div>
+
+      ${isStampImage ? `
+        <div class="signatory-stamp-editor">
+          <div class="signatory-stamp-preview-frame">
+            ${slot.stamp_image_url
+              ? `<img class="signatory-stamp-preview" src="${escapeHtml(slot.stamp_image_url)}" alt="${escapeHtml(slot.stamp_image_filename || slot.label || "Signatory stamp")}">`
+              : `<span>No stamp image uploaded</span>`}
+          </div>
+          <label class="stacked-input">
+            <span>Stamp image</span>
+            <input type="file" accept="image/png,image/jpeg,image/webp" data-action="signatory-stamp-upload" data-id="${escapeHtml(slot.id)}">
+          </label>
+          <p class="signatory-upload-note">Use a cropped image that already contains the signature, printed name, and license text.</p>
+        </div>
+      ` : ""}
 
       ${usesOptions ? `
         <div class="setup-grid">
@@ -4977,6 +5042,10 @@ formEditorEl.addEventListener("input", (event) => {
 formEditorEl.addEventListener("change", (event) => {
   if (event.target.dataset.action === "option-normal") {
     handleOptionInput(event);
+    return;
+  }
+  if (event.target.dataset.action === "signatory-stamp-upload") {
+    void uploadSignatoryStamp(event.target);
     return;
   }
   if (event.target.matches("select, input[type='checkbox'], input[type='color']")) {

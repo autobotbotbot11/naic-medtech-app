@@ -134,12 +134,14 @@
       </div>
       <div class="entry-signatory-grid">
         {% for item in snapshots %}
-          {% if item.name or item.license %}
+          {% if item.name or item.license or item.stamp_image_url %}
           <article class="entry-signatory-value">
             <span>{{ item.label }}</span>
-            <strong>{{ item.name or "Not selected" }}</strong>
+            <strong>{{ item.name or "Fixed stamp image" }}</strong>
             {% if item.license %}
             <span>Lic. No. {{ item.license }}</span>
+            {% elif item.stamp_image_url %}
+            <span>Printed from form setup</span>
             {% endif %}
           </article>
           {% endif %}
