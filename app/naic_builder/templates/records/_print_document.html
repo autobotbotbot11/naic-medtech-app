@@ -131,8 +131,8 @@
   {% set clinic = document["clinic"] or {} %}
   {% set print_config = document["print_config"] or {} %}
   <section class="print-page">
+    {% if print_config.show_logo or print_config.show_clinic_info %}
     <header class="print-document-header">
-      {% if print_config.show_logo or print_config.show_clinic_info %}
       <div class="print-clinic-brand{% if not print_config.show_logo %} no-logo{% endif %}">
         {% if print_config.show_logo %}
         {% if clinic.logo_url %}
@@ -153,12 +153,8 @@
         </div>
         {% endif %}
       </div>
-      {% else %}
-      <div></div>
-      {% endif %}
-
-      <div class="print-document-mark" aria-hidden="true"></div>
     </header>
+    {% endif %}
 
     <section class="print-exam-head">
       <div class="print-exam-copy">

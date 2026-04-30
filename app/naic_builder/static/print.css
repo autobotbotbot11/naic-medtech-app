@@ -56,7 +56,6 @@ body {
   font-family: "Times New Roman", Times, serif;
 }
 
-.print-font-times-new-roman .print-document-mark span,
 .print-font-times-new-roman .print-eyebrow,
 .print-font-times-new-roman .print-meta-grid span,
 .print-font-times-new-roman .print-grid-cell-head span,
@@ -194,20 +193,20 @@ body {
 }
 
 .print-document-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: flex-start;
-  padding-bottom: 9px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  padding-bottom: 8px;
   border-bottom: 1px solid var(--rule);
 }
 
 .print-clinic-brand {
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  gap: 11px;
+  grid-template-columns: 54px minmax(0, 1fr);
+  gap: 10px;
   align-items: center;
   min-width: 0;
+  font-family: Arial, Helvetica, sans-serif;
 }
 
 .print-clinic-brand.no-logo {
@@ -216,10 +215,10 @@ body {
 
 .print-logo,
 .print-logo-placeholder {
-  width: 58px;
-  height: 58px;
+  width: 54px;
+  height: 54px;
   border: 1px solid var(--line-soft);
-  border-radius: 10px;
+  border-radius: 8px;
   background: #fff;
 }
 
@@ -238,14 +237,15 @@ body {
 
 .print-clinic-copy {
   display: grid;
-  gap: 3px;
+  gap: 2px;
   min-width: 0;
 }
 
 .print-clinic-copy strong {
-  font-size: 17px;
-  letter-spacing: -0.015em;
-  line-height: 1.1;
+  font-size: 16.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.08;
 }
 
 .print-clinic-copy span,
@@ -259,16 +259,6 @@ body {
   line-height: 1.35;
 }
 
-.print-document-mark {
-  display: grid;
-  gap: 5px;
-  justify-items: end;
-  text-align: right;
-  flex: 0 0 auto;
-  padding-top: 2px;
-}
-
-.print-document-mark span,
 .print-eyebrow,
 .print-meta-grid span {
   color: var(--muted);
@@ -277,15 +267,6 @@ body {
   letter-spacing: 0.08em;
   line-height: 1.2;
   text-transform: uppercase;
-}
-
-.print-document-mark strong {
-  padding: 4px 7px;
-  border: 1px solid var(--line-soft);
-  border-radius: 999px;
-  background: var(--surface);
-  font-size: 12px;
-  line-height: 1.1;
 }
 
 .print-exam-head {
@@ -760,11 +741,6 @@ body {
     grid-template-columns: 1fr;
   }
 
-  .print-document-mark {
-    justify-items: start;
-    text-align: left;
-  }
-
   .print-page {
     min-height: 0;
     padding: 18px;
@@ -838,13 +814,12 @@ body {
   }
 
   .print-document-header {
-    gap: 9px;
-    padding-bottom: 5px;
+    padding-bottom: 4.5px;
   }
 
   .print-clinic-brand {
-    grid-template-columns: 44px minmax(0, 1fr);
-    gap: 8px;
+    grid-template-columns: 40px minmax(0, 1fr);
+    gap: 7px;
   }
 
   .print-clinic-brand.no-logo {
@@ -853,13 +828,13 @@ body {
 
   .print-logo,
   .print-logo-placeholder {
-    width: 44px;
-    height: 44px;
-    border-radius: 6px;
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
   }
 
   .print-clinic-copy strong {
-    font-size: 14px;
+    font-size: 13.5px;
   }
 
   .print-clinic-copy span,
@@ -871,20 +846,9 @@ body {
     font-size: 9.5px;
   }
 
-  .print-document-mark {
-    gap: 3px;
-    padding-top: 1px;
-  }
-
-  .print-document-mark span,
   .print-eyebrow,
   .print-meta-grid span {
     font-size: 8.5px;
-  }
-
-  .print-document-mark strong {
-    padding: 3px 6px;
-    font-size: 10px;
   }
 
   .print-exam-head {
