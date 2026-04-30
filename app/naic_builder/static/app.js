@@ -360,6 +360,7 @@ function getDraftPrintConfig(draft = state.draft) {
       show_logo: true,
       show_clinic_info: true,
       show_status: true,
+      show_summary: false,
       show_signatures: true,
       hide_empty_fields: false,
       show_section_titles: true,
@@ -388,6 +389,7 @@ function getDraftPrintConfig(draft = state.draft) {
   config.show_logo = normalizePrintBoolean(config.show_logo, true);
   config.show_clinic_info = normalizePrintBoolean(config.show_clinic_info, true);
   config.show_status = normalizePrintBoolean(config.show_status, true);
+  config.show_summary = normalizePrintBoolean(config.show_summary, false);
   config.show_signatures = normalizePrintBoolean(config.show_signatures, true);
   config.hide_empty_fields = normalizePrintBoolean(config.hide_empty_fields, false);
   config.show_section_titles = normalizePrintBoolean(config.show_section_titles, true);
@@ -439,6 +441,7 @@ function setDraftPrintConfigValue(key, value, draft = state.draft) {
     "show_logo",
     "show_clinic_info",
     "show_status",
+    "show_summary",
     "show_signatures",
     "hide_empty_fields",
     "show_section_titles",
@@ -2499,9 +2502,15 @@ function renderPrintSummaryPreview(config) {
         <span></span>
         <strong>${escapeHtml(state.draft.name || "Untitled Form")}</strong>
       </div>
-      <div class="print-mini-preview__meta">
-        ${rows}
-      </div>
+      ${config.show_summary ? `
+        <div class="print-mini-preview__meta">
+          ${rows}
+        </div>
+      ` : `
+        <div class="print-mini-preview__patient-first">
+          Patient information prints from the form body.
+        </div>
+      `}
     </div>
   `;
 }
@@ -2590,6 +2599,10 @@ function renderPrintCard() {
               <span>Status</span>
             </label>
             <label class="identity-check">
+              <input type="checkbox" data-action="print-config-toggle" data-key="show_summary" ${config.show_summary ? "checked" : ""}>
+              <span>Top summary</span>
+            </label>
+            <label class="identity-check">
               <input type="checkbox" data-action="print-config-toggle" data-key="show_signatures" ${config.show_signatures ? "checked" : ""}>
               <span>Signatures</span>
             </label>
@@ -2651,15 +2664,24 @@ function renderPrintCard() {
             </div>
           </section>
 
-          <section class="print-summary-editor">
-            <div class="reference-editor-head print-summary-head">
-              <span class="reference-range-title">Summary area</span>
-              <button class="ghost mini" type="button" data-action="add-print-summary">Add row</button>
-            </div>
-            <div class="print-summary-list">
-              ${summaryItems.map((item, index) => renderPrintSummaryRow(item, index, fields, summaryItems.length)).join("")}
-            </div>
-          </section>
+          ${config.show_summary ? `
+            <section class="print-summary-editor">
+              <div class="reference-editor-head print-summary-head">
+                <span class="reference-range-title">Top summary</span>
+                <button class="ghost mini" type="button" data-action="add-print-summary">Add row</button>
+              </div>
+              <div class="print-summary-list">
+                ${summaryItems.map((item, index) => renderPrintSummaryRow(item, index, fields, summaryItems.length)).join("")}
+              </div>
+            </section>
+          ` : `
+            <section class="print-summary-editor print-summary-editor--quiet">
+              <div class="reference-editor-head">
+                <span class="reference-range-title">Top summary hidden</span>
+                <p>Patient information will print from the form body, avoiding duplicate name, date, and case number fields.</p>
+              </div>
+            </section>
+          `}
         </div>
 
         ${renderPrintSummaryPreview(config)}

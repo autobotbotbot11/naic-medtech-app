@@ -126,6 +126,7 @@ Current shape:
   "show_logo": true,
   "show_clinic_info": true,
   "show_status": true,
+  "show_summary": false,
   "show_signatures": true,
   "hide_empty_fields": false,
   "show_section_titles": true,
@@ -179,6 +180,7 @@ The builder Print pane currently supports:
 - show/hide clinic logo
 - show/hide clinic info
 - show/hide record status
+- show/hide top summary strip
 - show/hide signatures
 - configurable summary rows
 - summary rows sourced from ordinary fields or system values
@@ -212,8 +214,9 @@ Use those patterns as reference only. The new app should produce a better, clean
 - Chromium PDF QA now confirms OGTT, Semen, and Serology as one A4 page each with sample data; rerun real-device checks after real clinic data are reviewed.
 - Chromium PDF stress QA also confirms OGTT, Semen, and Serology as one A4 page each with longer clinic-like values.
 - Current automated fit audit after compact grid: 15 likely, 3 tight, 0 long across the current 18-form sample set.
+- Top summary is off by default for patient-facing output because patient information is expected to print from the form body. It can be enabled only when a clinic explicitly wants a duplicate quick strip.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
-- Empty-field hiding affects result body rows only; summary rows still show configured summary information.
+- Empty-field hiding affects result body rows only; enabled summary rows still show configured summary information.
 - Footer/signatory layout is intentionally constrained to the current two-column signature footer.
 - Existing records point to frozen form versions. New print config applies naturally to records created from newer saved form versions unless old versions are intentionally migrated.
 - Clinic data and logo come from Settings > Clinic profile.

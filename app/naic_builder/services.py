@@ -263,6 +263,7 @@ def normalize_print_config(raw_config: Any) -> dict[str, Any]:
         "show_logo": normalize_boolean_setting(config.get("show_logo"), default=True),
         "show_clinic_info": normalize_boolean_setting(config.get("show_clinic_info"), default=True),
         "show_status": normalize_boolean_setting(config.get("show_status"), default=True),
+        "show_summary": normalize_boolean_setting(config.get("show_summary"), default=False),
         "show_signatures": normalize_boolean_setting(config.get("show_signatures"), default=True),
         "hide_empty_fields": normalize_boolean_setting(config.get("hide_empty_fields"), default=False),
         "show_section_titles": normalize_boolean_setting(config.get("show_section_titles"), default=True),
@@ -2506,6 +2507,9 @@ def build_print_summary_items(
     *,
     issued_at_label: str,
 ) -> list[dict[str, str]]:
+    if not normalize_boolean_setting(print_config.get("show_summary"), default=False):
+        return []
+
     entry_schema = serialized.get("entry_schema") if isinstance(serialized.get("entry_schema"), dict) else {}
     identity = serialized.get("record_identity") if isinstance(serialized.get("record_identity"), dict) else {}
     fields = record_field_lookup(entry_schema)
@@ -2704,7 +2708,8 @@ def print_item_fit_units(items: list[dict[str, Any]]) -> float:
 def estimate_print_page_fit(document: dict[str, Any]) -> dict[str, Any]:
     print_config = document.get("print_config") if isinstance(document.get("print_config"), dict) else {}
     density = normalize_print_density(print_config.get("density"))
-    summary_count = len(normalize_items(document.get("summary_items")))
+    show_summary = normalize_boolean_setting(print_config.get("show_summary"), default=False)
+    summary_count = len(normalize_items(document.get("summary_items"))) if show_summary else 0
     base_units = 8.5
     if normalize_boolean_setting(print_config.get("show_logo"), default=True):
         base_units += 1.2
@@ -2712,7 +2717,8 @@ def estimate_print_page_fit(document: dict[str, Any]) -> dict[str, Any]:
         base_units += 1.0
     if normalize_boolean_setting(print_config.get("show_signatures"), default=True):
         base_units += 3.0
-    base_units += max(1, (summary_count + 2) // 3) * 2.2
+    if show_summary and summary_count:
+        base_units += max(1, (summary_count + 2) // 3) * 2.2
 
     density_factor = 1.14 if density == "comfortable" else 1.0
     estimated_units = (base_units + print_item_fit_units(normalize_items(document.get("items")))) * density_factor
