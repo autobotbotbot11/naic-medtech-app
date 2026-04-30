@@ -189,8 +189,14 @@
     <footer class="print-footer">
       {% for signature in signature_items %}
         <div class="print-signature">
-          <span>{{ signature.name or "" }}</span>
+          <span class="print-signature-line">{{ signature.name or "" }}</span>
           <strong>{{ signature.label }}</strong>
+          {% if signature.title %}
+          <em>{{ signature.title }}</em>
+          {% endif %}
+          {% if signature.license %}
+          <small>Lic. No. {{ signature.license }}</small>
+          {% endif %}
         </div>
       {% endfor %}
     </footer>

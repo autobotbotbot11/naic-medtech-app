@@ -106,6 +106,31 @@ Recommended shape:
 ### Important rule
 Patient/result records should always point to a specific `form_version_id`, not just a form id.
 
+### Signatory Config
+Signatories should live as form-version metadata, not as ordinary result fields.
+
+Current recommended shape:
+```json
+{
+  "meta": {
+    "signatories": [
+      {
+        "id": "medical_technologist_1",
+        "label": "Medical Technologist",
+        "input_type": "person_dropdown",
+        "required": true,
+        "show_on_print": true,
+        "show_license": true,
+        "signature_line": true,
+        "options": []
+      }
+    ]
+  }
+}
+```
+
+This keeps the engine generic: `Medical Technologist` and `Pathologist` are current clinic defaults, not hardcoded employee concepts.
+
 ## 4. Preset
 Reusable block bundle.
 

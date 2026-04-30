@@ -1059,6 +1059,47 @@
   color: var(--warm);
 }
 
+.entry-signatories {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  border-radius: var(--radius-xl);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 84%, transparent), color-mix(in srgb, var(--panel) 78%, transparent));
+}
+
+.entry-signatory-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.entry-signatory-field.is-fixed {
+  border-style: dashed;
+}
+
+.entry-signatory-value {
+  display: grid;
+  gap: 5px;
+  padding: 12px 13px;
+  border: 1px solid color-mix(in srgb, var(--line) 86%, transparent);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--panel-strong) 78%, transparent);
+}
+
+.entry-signatory-value strong {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.entry-signatory-value span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .entry-inline-hint {
   margin: 0;
   color: var(--muted);
@@ -1669,6 +1710,8 @@ html[data-theme="dark"] .record-card:hover {
 
 html[data-theme="dark"] .entry-field,
 html[data-theme="dark"] .records-search-form .entry-field,
+html[data-theme="dark"] .entry-signatories,
+html[data-theme="dark"] .entry-signatory-value,
 html[data-theme="dark"] .record-value-row,
 html[data-theme="dark"] .entry-group,
 html[data-theme="dark"] .entry-note,

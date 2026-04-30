@@ -177,9 +177,63 @@
     {% endfor %}
   {% endmacro %}
 
+  {% macro render_signatory_inputs(slots, snapshots) %}
+    {% if slots %}
+    <section class="entry-signatories">
+      <div class="entry-block-head">
+        <p class="eyebrow">Signatories</p>
+        <h3>For print</h3>
+      </div>
+      <div class="entry-signatory-grid">
+        {% for slot in slots %}
+          {% set snapshot = namespace(value={}) %}
+          {% for item in snapshots or [] %}
+            {% if item.slot_id == slot.id %}
+              {% set snapshot.value = item %}
+            {% endif %}
+          {% endfor %}
+          {% set selected_option_id = snapshot.value.option_id or slot.default_option_id or "" %}
+          <label class="entry-field entry-signatory-field{% if slot.input_type == 'fixed' %} is-fixed{% endif %}" {% if slot.required %}data-required-field{% endif %}>
+            <div class="entry-field-head">
+              <span>{{ slot.label }}</span>
+              <div class="entry-field-meta">
+                {% if slot.required %}
+                <small class="entry-chip entry-chip-required">Required</small>
+                {% endif %}
+                {% if slot.input_type == "fixed" %}
+                <small class="entry-chip">Fixed</small>
+                {% endif %}
+              </div>
+            </div>
+
+            {% if slot.input_type in ["person_dropdown", "fixed"] %}
+              <select name="signatory__{{ slot.id }}__option_id" {% if slot.input_type == "fixed" %}disabled{% endif %}>
+                <option value=""></option>
+                {% for option in slot.options or [] %}
+                <option value="{{ option.id }}" {% if selected_option_id == option.id %}selected{% endif %}>{{ option.name }}{% if option.license %} - Lic. {{ option.license }}{% endif %}</option>
+                {% endfor %}
+              </select>
+              {% if slot.input_type == "fixed" %}
+              <input type="hidden" name="signatory__{{ slot.id }}__option_id" value="{{ selected_option_id }}">
+              {% endif %}
+            {% elif slot.input_type == "manual" %}
+              <input type="text" name="signatory__{{ slot.id }}__name" value="{{ snapshot.value.name or slot.manual_name or '' }}" placeholder="Name">
+              <input type="text" name="signatory__{{ slot.id }}__license" value="{{ snapshot.value.license or slot.manual_license or '' }}" placeholder="License number">
+            {% else %}
+              <input type="hidden" name="signatory__{{ slot.id }}__name" value="">
+            {% endif %}
+          </label>
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  {% endmacro %}
+
   {% set entry_schema = record["entry_schema"] or {} %}
   {% set record_values = record["values"] or {} %}
   {% set asset_by_field = record["asset_by_field_id"] or {} %}
+  {% set signatory_slots = ((entry_schema["meta"] or {}).signatories or []) %}
+  {% set record_signatories = record["signatories"] or [] %}
   {% set created_by = record["created_by"] %}
   {% set updated_by = record["updated_by"] or record["created_by"] %}
   {% set jump_nav = namespace(count=0) %}
@@ -265,6 +319,7 @@
 
         <div class="entry-stack">
           {{ render_blocks(entry_schema["blocks"] or [], record_values, asset_by_field, record["id"]) }}
+          {{ render_signatory_inputs(signatory_slots, record_signatories) }}
         </div>
 
         <div class="entry-actions">

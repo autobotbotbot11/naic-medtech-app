@@ -11,14 +11,15 @@ Printing is a high-importance feature because this is the result document the cl
 - The active print direction is A4 portrait, not the old landscape template shape.
 - Header/accent color should be configurable per examination/form so staff can visually recognize the test type.
 - Legacy `.dotx` templates in `references/print-templates` are visual guidance only. Do not copy them exactly.
-- The app must stay generic. It should not hardcode patient-info concepts such as patient name, age, case number, medtech, or pathologist as special workflow zones in the builder.
+- The app must stay generic. It should not hardcode patient-info concepts such as patient name, age, or case number as special workflow zones in the builder.
 - Patient information is just normal form content. If the clinic wants a `Patient info` area, the user should create that section and choose which fields belong there.
+- Signatories are generic print-footer slots, not ordinary result fields. Current seeded defaults are two Medical Technologist slots and one fixed Pathologist slot because that matches the source workbook/client workflow, but the builder must allow changing those roles later.
 - Required fields are field-level builder settings. The clinic decides which fields are required, including identity-style fields such as name or case number.
 - Print configuration belongs to the form builder, preferably in a separate `Print` tab/panel, because print behavior is tied to each saved form version.
 - Do not build a full Canva/Figma-style freeform editor right now. The safer direction is a constrained print configuration panel with clear template controls.
 
 ## Current Implementation Status
-The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, footer/signatory configuration, compact real-form result layout, actual-record print smoke coverage, and repeatable browser PDF page-count QA are implemented.
+The first print configuration foundation, builder-side preview confidence pass, controlled result-body options, generic signatory configuration, compact real-form result layout, actual-record print smoke coverage, and repeatable browser PDF page-count QA are implemented.
 
 Implemented:
 - Builder fields now support `props.required`.
@@ -34,7 +35,8 @@ Implemented:
 - Builder print preview and `/records/{id}/print` share the same print document macro and backend print config normalization path.
 - The builder print preview shows an estimated one-page fit signal: likely, tight, or long.
 - Controlled result-body options now exist for hiding empty fields, section headings, group headings, image size, and table density.
-- Footer/signatory configuration now supports per-side role labels plus blank, prepared-by, manual-name, or field-sourced signature names.
+- Generic signatory configuration now lives at `block_schema.meta.signatories`; it supports role labels, dropdown people, fixed people, manual entry, blank lines, required completion, print visibility, signature lines, and license display.
+- Medical Technologist and Pathologist were removed from normal Patient Information fields in the runtime forms and moved into signatories. Existing runtime data was migrated with a DB backup under `data/runtime/backups/`.
 - Compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid when useful.
 - Print output now uses a modern exam identity band powered by each form's `accent_color`, with automatic dark/light title text for readable contrast. This intentionally keeps the old template's quick color-identification value without copying the old Word layout.
 - Known seeded NAIC forms now get legacy-guided default accent colors when their print color is still the generic default: Blood Bank magenta, Hematology/Coag red, Blood Chemistry green, Serology orange, Clinical Microscopy cyan/yellow depending form, ABG purple, and Microbiology black.
@@ -52,7 +54,7 @@ Code paths:
   - summary row editor
   - result-body controls
   - result-layout control
-  - signatory label/source controls
+  - separate Signatories pane for print-footer roles/people
   - embedded builder print preview iframe and refresh flow
   - required-field toggle handling
 - `app/naic_builder/static/app.css`
@@ -63,6 +65,7 @@ Code paths:
   - `normalize_print_config`
   - legacy-guided default print accent migration for known seeded forms
   - `build_print_summary_items`
+  - generic signatory normalization/snapshots
   - `build_print_signature_items`
   - `build_record_print_document`
   - `build_form_print_preview_document`
@@ -72,7 +75,7 @@ Code paths:
   - required-field completion validation
 - `app/naic_builder/templates/records/_print_document.html`
   - shared print-page macro used by real record print and builder preview
-  - dynamic signatory footer rendering
+  - dynamic generic signatory footer rendering, including license numbers
 - `app/naic_builder/templates/records/print.html`
   - applies `document.print_config`
   - shows the same estimated fit badge used by builder preview
@@ -135,14 +138,6 @@ Current shape:
   "image_size": "medium",
   "table_density": "compact",
   "result_layout": "compact_grid",
-  "signature_left_label": "Medical Technologist",
-  "signature_left_source": "prepared_by",
-  "signature_left_name": "",
-  "signature_left_field_id": "",
-  "signature_right_label": "Pathologist",
-  "signature_right_source": "blank",
-  "signature_right_name": "",
-  "signature_right_field_id": "",
   "summary_items": [
     {
       "id": "summary_primary",
@@ -160,6 +155,50 @@ Current shape:
 }
 ```
 
+Legacy `signature_left_*` and `signature_right_*` print-config keys still exist as fallback compatibility only. The active model is `block_schema.meta.signatories`.
+
+`signatories` lives under `block_schema.meta.signatories`.
+
+Current shape:
+```json
+[
+  {
+    "id": "medical_technologist_1",
+    "label": "Medical Technologist",
+    "input_type": "person_dropdown",
+    "required": true,
+    "show_on_print": true,
+    "show_license": true,
+    "signature_line": true,
+    "default_option_id": "",
+    "options": [
+      {
+        "id": "imelda_a_elemia",
+        "name": "Imelda A. Elemia, RMT",
+        "license": "0036643"
+      }
+    ]
+  },
+  {
+    "id": "pathologist",
+    "label": "Pathologist",
+    "input_type": "fixed",
+    "required": false,
+    "show_on_print": true,
+    "show_license": true,
+    "signature_line": true,
+    "default_option_id": "bernardita_mojica_figueroa",
+    "options": [
+      {
+        "id": "bernardita_mojica_figueroa",
+        "name": "Bernardita Mojica Figueroa, MD, DPSP",
+        "license": "068053"
+      }
+    ]
+  }
+]
+```
+
 Supported summary item sources:
 - `field`
 - `primary_identity`
@@ -168,11 +207,11 @@ Supported summary item sources:
 - `issued_at`
 - `form_version`
 
-Supported signatory sources:
-- `blank`
-- `prepared_by`
+Supported signatory input types:
+- `person_dropdown`
+- `fixed`
 - `manual`
-- `field`
+- `blank`
 
 Supported print font presets:
 - `arial`
@@ -204,8 +243,8 @@ The builder Print pane currently supports:
 - image size: small, medium, or large
 - table density: compact or comfortable
 - result layout: compact grid or rows
-- signatory role labels
-- signatory name source: blank, prepared by, manual name, or form field
+- show/hide signatures
+- Signatories pane controls role label, input type, required state, print visibility, license visibility, signature line, selectable people, and fixed default person
 
 This is intentionally a constrained editor. It should stay easier than a design canvas.
 
@@ -229,7 +268,7 @@ Use those patterns as reference only. The new app should produce a better, clean
 - Top summary is off by default for patient-facing output because patient information is expected to print from the form body. It can be enabled only when a clinic explicitly wants a duplicate quick strip.
 - Current summary configuration is row-based and simple. There are no conditional expressions yet.
 - Empty-field hiding affects result body rows only; enabled summary rows still show configured summary information.
-- Footer/signatory layout is intentionally constrained to the current two-column signature footer.
+- Footer/signatory layout is intentionally constrained to a compact auto-fit signature footer, not a freeform print canvas.
 - Existing records point to frozen form versions. New print config applies naturally to records created from newer saved form versions unless old versions are intentionally migrated.
 - Clinic data and logo come from Settings > Clinic profile.
 - This is not yet a full PDF generation engine. The current implementation is browser-print based.
@@ -248,9 +287,9 @@ Phase 2C is now landed:
 - keep the result body driven by form structure, not by a freeform canvas
 
 Phase 2D is now landed:
-- configurable signatory labels
-- optional names or field-sourced names
-- clearer clinic/footer rules
+- generic configurable signatory slots
+- dropdown/fixed/manual/blank signatory modes
+- cleaner clinic/footer rules without treating medtech/pathologist as ordinary result fields
 
 Phase 2E should test real forms next:
 - Semen

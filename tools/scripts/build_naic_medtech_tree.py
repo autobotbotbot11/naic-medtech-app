@@ -333,24 +333,66 @@ COMMON_FIELD_SET = {
             "control": "input",
             "data_type": "text",
         },
-        {
-            "id": "default_lab_request.medical_technologist",
-            "key": "medical_technologist",
-            "name": "Medical Technologist",
-            "order": 8,
-            "control": "input",
-            "data_type": "text",
-        },
-        {
-            "id": "default_lab_request.pathologist",
-            "key": "pathologist",
-            "name": "Pathologist",
-            "order": 9,
-            "control": "input",
-            "data_type": "text",
-        },
     ],
 }
+
+
+DEFAULT_SIGNATORIES = [
+    {
+        "id": "medical_technologist_1",
+        "label": "Medical Technologist",
+        "input_type": "person_dropdown",
+        "required": True,
+        "show_on_print": True,
+        "show_license": True,
+        "signature_line": True,
+        "default_option_id": "",
+        "options": [
+            {"id": "imelda_a_elemia", "name": "Imelda A. Elemia, RMT", "license": "0036643", "order": 1},
+            {"id": "crystel_c_tesoro", "name": "Crystel C. Tesoro, RMT", "license": "0103760", "order": 2},
+            {"id": "ma_jesusa_b_vite", "name": "Ma. Jesusa B. Vite, RMT", "license": "0118710", "order": 3},
+            {"id": "andrea_coleen_a_avellones", "name": "Andrea Coleen A. Avellones, RMT", "license": "0119501", "order": 4},
+            {"id": "julie_kyle_a_ronato", "name": "Julie Kyle A. Ronato, RMT", "license": "0119616", "order": 5},
+            {"id": "shiela_mae_d_libradilla", "name": "Shiela Mae D. Libradilla, RMT", "license": "0135995", "order": 6},
+        ],
+    },
+    {
+        "id": "medical_technologist_2",
+        "label": "Medical Technologist",
+        "input_type": "person_dropdown",
+        "required": False,
+        "show_on_print": True,
+        "show_license": True,
+        "signature_line": True,
+        "default_option_id": "",
+        "options": [
+            {"id": "imelda_a_elemia", "name": "Imelda A. Elemia, RMT", "license": "0036643", "order": 1},
+            {"id": "crystel_c_tesoro", "name": "Crystel C. Tesoro, RMT", "license": "0103760", "order": 2},
+            {"id": "ma_jesusa_b_vite", "name": "Ma. Jesusa B. Vite, RMT", "license": "0118710", "order": 3},
+            {"id": "andrea_coleen_a_avellones", "name": "Andrea Coleen A. Avellones, RMT", "license": "0119501", "order": 4},
+            {"id": "julie_kyle_a_ronato", "name": "Julie Kyle A. Ronato, RMT", "license": "0119616", "order": 5},
+            {"id": "shiela_mae_d_libradilla", "name": "Shiela Mae D. Libradilla, RMT", "license": "0135995", "order": 6},
+        ],
+    },
+    {
+        "id": "pathologist",
+        "label": "Pathologist",
+        "input_type": "fixed",
+        "required": False,
+        "show_on_print": True,
+        "show_license": True,
+        "signature_line": True,
+        "default_option_id": "bernardita_mojica_figueroa",
+        "options": [
+            {
+                "id": "bernardita_mojica_figueroa",
+                "name": "Bernardita Mojica Figueroa, MD, DPSP",
+                "license": "068053",
+                "order": 1,
+            },
+        ],
+    },
+]
 
 
 VITAL_SIGNS_CHILD_SPECS = {
@@ -1008,6 +1050,7 @@ def build_app_schema(document: dict[str, object]) -> dict[str, object]:
         "generated_at_utc": document["generated_at_utc"],
         "normalization_rules": [
             "Shared patient/request metadata was moved into a reusable common field set.",
+            "Medical Technologist and Pathologist are modeled as configurable print signatories, not ordinary result fields.",
             'Any field with explicit options was normalized to control="select", even if the raw spreadsheet input type said manual entry.',
             "Known pseudo-option lists that actually represent child manual-entry fields were normalized into field groups.",
             'Manual-entry fields with strong numeric hints such as units or numeric normal ranges were normalized to data_type="number".',
@@ -1015,6 +1058,7 @@ def build_app_schema(document: dict[str, object]) -> dict[str, object]:
             "Standalone departments are represented as groups that contain exactly one form for a consistent app navigation model.",
         ],
         "common_field_sets": [COMMON_FIELD_SET],
+        "default_signatories": DEFAULT_SIGNATORIES,
         "groups": [
             build_app_group(node, group_order)
             for group_order, node in enumerate(document.get("tree", []), start=1)

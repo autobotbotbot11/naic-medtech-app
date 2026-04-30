@@ -888,6 +888,7 @@ button.subtle[aria-pressed="true"] {
 }
 
 .form-editor.pane-setup,
+.form-editor.pane-signatories,
 .form-editor.pane-print,
 .form-editor.pane-save {
   max-width: 780px;
@@ -1634,6 +1635,61 @@ button.subtle[aria-pressed="true"] {
 .print-summary-editor--quiet {
   border-style: dashed;
   opacity: 0.78;
+}
+
+.signatories-editor-card {
+  max-width: 860px;
+}
+
+.signatory-spotlight {
+  padding: 12px 14px;
+}
+
+.signatory-config-list {
+  display: grid;
+  gap: 12px;
+}
+
+.signatory-config-card {
+  display: grid;
+  gap: 12px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--panel-strong) 88%, transparent), color-mix(in srgb, var(--panel) 78%, transparent));
+}
+
+.signatory-config-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: start;
+}
+
+.signatory-config-head > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.signatory-config-head strong {
+  color: var(--text);
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 1.05;
+}
+
+.signatory-index {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.signatory-toggle-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .print-mini-preview {
@@ -3089,6 +3145,7 @@ html[data-theme="dark"] .shell .preview-image-upload {
 
 html[data-theme="dark"] .shell .section-card,
 html[data-theme="dark"] .shell .item-card,
+html[data-theme="dark"] .shell .signatory-config-card,
 html[data-theme="dark"] .shell .option-focus-card,
 html[data-theme="dark"] .shell .section-organizer-item,
 html[data-theme="dark"] .shell .item-organizer-item,
@@ -3101,6 +3158,7 @@ html[data-theme="dark"] .shell .outline-subitem {
 
 html[data-theme="dark"] .shell .section-card.is-open,
 html[data-theme="dark"] .shell .item-card.is-open,
+html[data-theme="dark"] .shell .signatory-config-card:focus-within,
 html[data-theme="dark"] .shell .outline-item.active,
 html[data-theme="dark"] .shell .outline-subitem.active,
 html[data-theme="dark"] .shell .section-organizer-item.active,
@@ -3189,5 +3247,13 @@ html[data-theme="dark"] .shell .option-organizer-item.active {
 
   .shell .preview-grid {
     grid-template-columns: 1fr;
+  }
+
+  .signatory-config-head {
+    display: grid;
+  }
+
+  .signatory-toggle-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

@@ -683,8 +683,8 @@ body {
 
 .print-footer {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 26px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 22px;
   margin-top: 22px;
   padding-top: 13px;
   border-top: 1px solid var(--line-soft);
@@ -696,7 +696,7 @@ body {
   text-align: center;
 }
 
-.print-signature span {
+.print-signature-line {
   min-height: 17px;
   border-bottom: 1px solid color-mix(in srgb, var(--ink) 74%, #fff);
   font-size: 12px;
@@ -708,6 +708,14 @@ body {
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.print-signature em,
+.print-signature small {
+  color: var(--muted);
+  font-size: 9.5px;
+  font-style: normal;
+  line-height: 1.15;
 }
 
 .print-density-comfortable .print-body {
@@ -988,7 +996,7 @@ body {
     gap: 3px;
   }
 
-  .print-signature span {
+  .print-signature-line {
     min-height: 9px;
     font-size: 9px;
     line-height: 1.1;
@@ -996,6 +1004,12 @@ body {
 
   .print-signature strong {
     font-size: 7.5px;
+    line-height: 1.1;
+  }
+
+  .print-signature em,
+  .print-signature small {
+    font-size: 7.2px;
     line-height: 1.1;
   }
 

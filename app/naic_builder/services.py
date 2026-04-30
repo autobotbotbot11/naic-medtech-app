@@ -99,6 +99,23 @@ PATIENT_INFO_GROUP_NAME = "Patient Information"
 PATIENT_INFO_PRIMARY_KEY = "name"
 PATIENT_INFO_SECONDARY_KEY = "case_number"
 PATIENT_INFO_REQUIRED_KEYS = {PATIENT_INFO_PRIMARY_KEY, PATIENT_INFO_SECONDARY_KEY}
+SIGNATORY_FIELD_KEYS = {"medical_technologist", "pathologist"}
+SIGNATORY_INPUT_TYPES = {"person_dropdown", "manual", "fixed", "blank"}
+DEFAULT_MEDTECH_SIGNATORY_PEOPLE = [
+    {"id": "imelda_a_elemia", "name": "Imelda A. Elemia, RMT", "license": "0036643"},
+    {"id": "crystel_c_tesoro", "name": "Crystel C. Tesoro, RMT", "license": "0103760"},
+    {"id": "ma_jesusa_b_vite", "name": "Ma. Jesusa B. Vite, RMT", "license": "0118710"},
+    {"id": "andrea_coleen_a_avellones", "name": "Andrea Coleen A. Avellones, RMT", "license": "0119501"},
+    {"id": "julie_kyle_a_ronato", "name": "Julie Kyle A. Ronato, RMT", "license": "0119616"},
+    {"id": "shiela_mae_d_libradilla", "name": "Shiela Mae D. Libradilla, RMT", "license": "0135995"},
+]
+DEFAULT_PATHOLOGIST_SIGNATORY_PEOPLE = [
+    {
+        "id": "bernardita_mojica_figueroa",
+        "name": "Bernardita Mojica Figueroa, MD, DPSP",
+        "license": "068053",
+    },
+]
 
 
 def load_reference_schema() -> dict[str, Any]:
@@ -779,6 +796,217 @@ def normalize_section(section: dict[str, Any], form_id: str, order: int, used_ke
     return normalized
 
 
+def normalize_signatory_option(raw_option: Any, index: int, slot_id: str) -> dict[str, Any] | None:
+    option = raw_option if isinstance(raw_option, dict) else {"name": raw_option}
+    name = compact_text(option.get("name"))
+    if not name:
+        return None
+    key = slugify(compact_text(option.get("key")) or compact_text(option.get("id")) or name)
+    option_id = compact_text(option.get("id")) or f"{slot_id}.{key}"
+    license_text = compact_text(option.get("license") or option.get("license_no") or option.get("license_number"))
+    if license_text.lower().startswith("lic. no:"):
+        license_text = compact_text(license_text.split(":", 1)[1])
+    return {
+        "id": option_id,
+        "key": key,
+        "name": name,
+        "title": compact_text(option.get("title")),
+        "license": license_text,
+        "order": int(option.get("order") or index),
+    }
+
+
+def default_signatory_options(slot_id: str, people: list[dict[str, str]]) -> list[dict[str, Any]]:
+    options: list[dict[str, Any]] = []
+    for index, person in enumerate(people, start=1):
+        option = normalize_signatory_option(person, index, slot_id)
+        if option is not None:
+            options.append(option)
+    return options
+
+
+def default_signatory_slots() -> list[dict[str, Any]]:
+    medtech_1_options = default_signatory_options("medical_technologist_1", DEFAULT_MEDTECH_SIGNATORY_PEOPLE)
+    medtech_2_options = default_signatory_options("medical_technologist_2", DEFAULT_MEDTECH_SIGNATORY_PEOPLE)
+    pathologist_options = default_signatory_options("pathologist", DEFAULT_PATHOLOGIST_SIGNATORY_PEOPLE)
+    pathologist_default = compact_text(pathologist_options[0]["id"]) if pathologist_options else ""
+    return [
+        {
+            "id": "medical_technologist_1",
+            "label": "Medical Technologist",
+            "input_type": "person_dropdown",
+            "required": True,
+            "show_on_print": True,
+            "show_license": True,
+            "signature_line": True,
+            "default_option_id": "",
+            "options": medtech_1_options,
+        },
+        {
+            "id": "medical_technologist_2",
+            "label": "Medical Technologist",
+            "input_type": "person_dropdown",
+            "required": False,
+            "show_on_print": True,
+            "show_license": True,
+            "signature_line": True,
+            "default_option_id": "",
+            "options": medtech_2_options,
+        },
+        {
+            "id": "pathologist",
+            "label": "Pathologist",
+            "input_type": "fixed",
+            "required": False,
+            "show_on_print": True,
+            "show_license": True,
+            "signature_line": True,
+            "default_option_id": pathologist_default,
+            "options": pathologist_options,
+        },
+    ]
+
+
+def normalize_signatory_slot(raw_slot: Any, index: int) -> dict[str, Any] | None:
+    slot = raw_slot if isinstance(raw_slot, dict) else {}
+    label = compact_text(slot.get("label")) or f"Signatory {index}"
+    slot_id = slugify(compact_text(slot.get("id")) or compact_text(slot.get("key")) or label)
+    input_type = compact_text(slot.get("input_type")).lower()
+    if input_type not in SIGNATORY_INPUT_TYPES:
+        input_type = "person_dropdown"
+    options = [
+        option
+        for option in (
+            normalize_signatory_option(option, option_index, slot_id)
+            for option_index, option in enumerate(normalize_items(slot.get("options")), start=1)
+        )
+        if option is not None
+    ]
+    default_option_id = compact_text(slot.get("default_option_id"))
+    if default_option_id and all(compact_text(option.get("id")) != default_option_id for option in options):
+        default_option_id = ""
+    if input_type == "fixed" and not default_option_id and options:
+        default_option_id = compact_text(options[0].get("id"))
+    return {
+        "id": slot_id,
+        "label": label,
+        "input_type": input_type,
+        "required": normalize_boolean_setting(slot.get("required"), default=False),
+        "show_on_print": normalize_boolean_setting(slot.get("show_on_print"), default=True),
+        "show_license": normalize_boolean_setting(slot.get("show_license"), default=True),
+        "signature_line": normalize_boolean_setting(slot.get("signature_line"), default=True),
+        "default_option_id": default_option_id,
+        "manual_name": compact_text(slot.get("manual_name")),
+        "manual_title": compact_text(slot.get("manual_title")),
+        "manual_license": compact_text(slot.get("manual_license")),
+        "options": options,
+    }
+
+
+def normalize_signatory_slots(raw_slots: Any, *, use_defaults: bool = False) -> list[dict[str, Any]]:
+    if not isinstance(raw_slots, list):
+        return default_signatory_slots() if use_defaults else []
+    slots = [
+        slot
+        for slot in (
+            normalize_signatory_slot(slot, index)
+            for index, slot in enumerate(raw_slots, start=1)
+        )
+        if slot is not None
+    ]
+    return slots
+
+
+def signatory_option_by_id(slot: dict[str, Any], option_id: str) -> dict[str, Any] | None:
+    target_id = compact_text(option_id)
+    for option in normalize_items(slot.get("options")):
+        if isinstance(option, dict) and compact_text(option.get("id")) == target_id:
+            return option
+    return None
+
+
+def build_signatory_snapshot(slot: dict[str, Any], raw_value: Any = None) -> dict[str, Any]:
+    value = raw_value if isinstance(raw_value, dict) else {}
+    input_type = compact_text(slot.get("input_type")).lower()
+    option_id = compact_text(value.get("option_id"))
+    if not option_id and input_type == "fixed":
+        option_id = compact_text(slot.get("default_option_id"))
+    option = signatory_option_by_id(slot, option_id) if option_id else None
+
+    name = compact_text(value.get("name"))
+    title = compact_text(value.get("title"))
+    license_text = compact_text(value.get("license"))
+    if option is not None:
+        name = compact_text(option.get("name"))
+        title = compact_text(option.get("title"))
+        license_text = compact_text(option.get("license"))
+        option_id = compact_text(option.get("id"))
+    elif input_type in {"fixed", "manual"}:
+        name = compact_text(slot.get("manual_name"))
+        title = compact_text(slot.get("manual_title"))
+        license_text = compact_text(slot.get("manual_license"))
+
+    return {
+        "slot_id": compact_text(slot.get("id")),
+        "label": compact_text(slot.get("label")) or "Signatory",
+        "input_type": input_type if input_type in SIGNATORY_INPUT_TYPES else "person_dropdown",
+        "option_id": option_id,
+        "name": name,
+        "title": title,
+        "license": license_text,
+        "required": normalize_boolean_setting(slot.get("required"), default=False),
+        "show_on_print": normalize_boolean_setting(slot.get("show_on_print"), default=True),
+        "show_license": normalize_boolean_setting(slot.get("show_license"), default=True),
+        "signature_line": normalize_boolean_setting(slot.get("signature_line"), default=True),
+    }
+
+
+def normalize_record_signatory_snapshots(raw_signatories: Any, slots: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    raw_map: dict[str, Any] = {}
+    if isinstance(raw_signatories, dict):
+        raw_map = raw_signatories
+    elif isinstance(raw_signatories, list):
+        raw_map = {
+            compact_text(item.get("slot_id")): item
+            for item in raw_signatories
+            if isinstance(item, dict) and compact_text(item.get("slot_id"))
+        }
+
+    snapshots: list[dict[str, Any]] = []
+    for slot in slots:
+        slot_id = compact_text(slot.get("id"))
+        if not slot_id:
+            continue
+        snapshots.append(build_signatory_snapshot(slot, raw_map.get(slot_id)))
+    return snapshots
+
+
+def signatory_snapshots_for_print(snapshots: list[dict[str, Any]]) -> list[dict[str, str]]:
+    printable: list[dict[str, str]] = []
+    for snapshot in snapshots:
+        if not isinstance(snapshot, dict):
+            continue
+        if not normalize_boolean_setting(snapshot.get("show_on_print"), default=True):
+            continue
+        input_type = compact_text(snapshot.get("input_type")).lower()
+        required = normalize_boolean_setting(snapshot.get("required"), default=False)
+        name = compact_text(snapshot.get("name"))
+        license_text = compact_text(snapshot.get("license"))
+        if not name and not normalize_boolean_setting(snapshot.get("signature_line"), default=True):
+            continue
+        if not name and not license_text and input_type != "blank" and not required:
+            continue
+        printable.append(
+            {
+                "label": compact_text(snapshot.get("label")) or "Signatory",
+                "name": name,
+                "title": compact_text(snapshot.get("title")),
+                "license": license_text if normalize_boolean_setting(snapshot.get("show_license"), default=True) else "",
+            }
+        )
+    return printable
+
+
 def reference_common_field_set(field_set_id: str) -> dict[str, Any]:
     target_id = compact_text(field_set_id)
     for field_set in normalize_items(load_reference_schema().get("common_field_sets")):
@@ -797,6 +1025,8 @@ def default_patient_info_legacy_group() -> dict[str, Any]:
         key = compact_text(raw_field.get("key"))
         name = compact_text(raw_field.get("name"))
         if not key or not name:
+            continue
+        if key in SIGNATORY_FIELD_KEYS:
             continue
 
         data_type = compact_text(raw_field.get("data_type")) or "text"
@@ -1390,6 +1620,15 @@ def normalize_active_block_storage_schema(block_schema: dict[str, Any]) -> bool:
         block_schema["meta"] = meta
         changed = True
     if ensure_form_default_print_accent(meta):
+        block_schema["meta"] = meta
+        changed = True
+
+    normalized_signatories = normalize_signatory_slots(
+        meta.get("signatories"),
+        use_defaults="signatories" not in meta,
+    )
+    if meta.get("signatories") != normalized_signatories:
+        meta["signatories"] = normalized_signatories
         block_schema["meta"] = meta
         changed = True
 
@@ -2066,6 +2305,20 @@ def build_record_indexed_meta(
     )
     normalized["record_identity"] = identity
     normalized["record_search_text"] = identity["search_text"]
+    meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+    signatory_slots = normalize_signatory_slots(meta.get("signatories"), use_defaults=False)
+    signatory_snapshots = normalize_record_signatory_snapshots(
+        normalized.get("signatories"),
+        signatory_slots,
+    )
+    normalized["signatories"] = signatory_snapshots
+    signatory_search = " ".join(
+        compact_text(snapshot.get("name"))
+        for snapshot in signatory_snapshots
+        if isinstance(snapshot, dict) and compact_text(snapshot.get("name"))
+    )
+    if signatory_search:
+        normalized["record_search_text"] = compact_text(f"{normalized['record_search_text']} {signatory_search}")
     return normalized, identity
 
 
@@ -2175,6 +2428,7 @@ def list_record_completion_issues(
     record: Record,
     *,
     values: dict[str, Any],
+    indexed_meta: dict[str, Any] | None = None,
 ) -> list[str]:
     issues: list[str] = []
     block_schema, _ = load_block_storage_document(record.form_version)
@@ -2184,6 +2438,18 @@ def list_record_completion_issues(
             values,
         )
     )
+    meta = block_schema.get("meta") if isinstance(block_schema.get("meta"), dict) else {}
+    signatory_slots = normalize_signatory_slots(meta.get("signatories"), use_defaults=False)
+    resolved_meta = indexed_meta if isinstance(indexed_meta, dict) else load_json_object(record.indexed_meta_json)
+    signatory_snapshots = normalize_record_signatory_snapshots(
+        resolved_meta.get("signatories"),
+        signatory_slots,
+    )
+    for slot, snapshot in zip(signatory_slots, signatory_snapshots):
+        if not normalize_boolean_setting(slot.get("required"), default=False):
+            continue
+        if not compact_text(snapshot.get("name")) and compact_text(slot.get("input_type")) != "blank":
+            issues.append(f"Choose required signatory: {compact_text(slot.get('label')) or 'Signatory'}.")
     return issues
 
 
@@ -2191,10 +2457,12 @@ def validate_record_completion(
     record: Record,
     *,
     values: dict[str, Any],
+    indexed_meta: dict[str, Any] | None = None,
 ) -> None:
     issues = list_record_completion_issues(
         record,
         values=values,
+        indexed_meta=indexed_meta,
     )
     if issues:
         raise RecordCompletionValidationError(issues)
@@ -2592,7 +2860,13 @@ def build_print_signature_items(
     values: dict[str, Any],
     *,
     prepared_by_name: str,
+    signatories: list[dict[str, Any]] | None = None,
 ) -> list[dict[str, str]]:
+    if signatories is not None:
+        signature_items = signatory_snapshots_for_print(signatories)
+        if signature_items:
+            return signature_items
+
     signatures: list[dict[str, str]] = []
     for side, fallback_label in (("left", "Medical Technologist"), ("right", "Pathologist")):
         label = compact_text(print_config.get(f"signature_{side}_label")) or fallback_label
@@ -2791,6 +3065,8 @@ def build_form_print_preview_document(
     )
     meta = entry_schema.get("meta") if isinstance(entry_schema.get("meta"), dict) else {}
     print_config = normalize_print_config(meta.get("print_config"))
+    signatory_slots = normalize_signatory_slots(meta.get("signatories"), use_defaults=False)
+    signatory_samples = normalize_record_signatory_snapshots({}, signatory_slots)
     print_accent_ink = print_accent_text_color(print_config.get("accent_color"))
     normalized_form_name = compact_text(form_name) or "Untitled Form"
     normalized_path = compact_text(form_path_label) or "Builder preview"
@@ -2852,6 +3128,7 @@ def build_form_print_preview_document(
             print_config,
             values,
             prepared_by_name=prepared_by_name,
+            signatories=signatory_samples,
         ),
         "items": build_print_items(
             normalize_items(entry_schema.get("blocks")),
@@ -2928,6 +3205,7 @@ def build_record_print_document(
             print_config,
             values,
             prepared_by_name=prepared_by_name,
+            signatories=normalize_items(serialized.get("signatories")),
         ),
         "items": build_print_items(
             normalize_items(entry_schema.get("blocks")),
@@ -2950,6 +3228,17 @@ def serialize_record(
     location = serialize_form_location(record.form)
     indexed_meta = load_json_object(record.indexed_meta_json)
     stored_values = normalize_record_values(load_json_object(record.values_json))
+    block_schema_for_signatories, _ = load_block_storage_document(record.form_version)
+    block_meta_for_signatories = (
+        block_schema_for_signatories.get("meta")
+        if isinstance(block_schema_for_signatories.get("meta"), dict)
+        else {}
+    )
+    signatory_slots = normalize_signatory_slots(block_meta_for_signatories.get("signatories"), use_defaults=False)
+    signatory_snapshots = normalize_record_signatory_snapshots(
+        indexed_meta.get("signatories"),
+        signatory_slots,
+    )
     stored_identity = indexed_meta.get("record_identity") if isinstance(indexed_meta.get("record_identity"), dict) else {}
     if stored_identity:
         identity = resolve_record_identity(
@@ -3016,12 +3305,12 @@ def serialize_record(
         "created_by": serialize_record_actor(record.created_by_user),
         "updated_by": serialize_record_actor(record.updated_by_user),
         "indexed_meta": indexed_meta,
+        "signatories": signatory_snapshots,
     }
     if include_values:
         payload["values"] = stored_values
     if include_entry_schema:
-        block_schema, _ = load_block_storage_document(record.form_version)
-        payload["entry_schema"] = block_schema
+        payload["entry_schema"] = block_schema_for_signatories
     return payload
 
 
@@ -3242,6 +3531,7 @@ def complete_record(
     validate_record_completion(
         record,
         values=normalized_values,
+        indexed_meta=indexed_meta,
     )
 
     record.patient_name = identity["primary_value"] or patient_name or None

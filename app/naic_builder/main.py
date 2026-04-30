@@ -652,6 +652,7 @@ def render_record_print_page(
 
 def record_update_payload_from_form_data(form_data: dict[str, list[str]]) -> RecordUpdatePayload:
     values: dict[str, Any] = {}
+    signatories_by_slot: dict[str, dict[str, str]] = {}
     for key, raw_values in form_data.items():
         if not key.startswith("value__"):
             continue
@@ -661,12 +662,26 @@ def record_update_payload_from_form_data(form_data: dict[str, list[str]]) -> Rec
         value = (raw_values or [""])[0]
         values[block_id] = value
 
+    for key, raw_values in form_data.items():
+        if not key.startswith("signatory__"):
+            continue
+        parts = key.split("__", 2)
+        if len(parts) != 3:
+            continue
+        _, slot_id, field_name = parts
+        slot_id = slot_id.strip()
+        field_name = field_name.strip()
+        if not slot_id or field_name not in {"option_id", "name", "title", "license"}:
+            continue
+        signatories_by_slot.setdefault(slot_id, {})[field_name] = (raw_values or [""])[0]
+
     return RecordUpdatePayload(
         patient_name=(form_data.get("patient_name") or [None])[0],
         patient_age=(form_data.get("patient_age") or [None])[0],
         patient_sex=(form_data.get("patient_sex") or [None])[0],
         case_number=(form_data.get("case_number") or [None])[0],
         values=values,
+        indexed_meta={"signatories": signatories_by_slot},
     )
 
 
@@ -961,6 +976,13 @@ async def update_record_page(
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Record not found.") from exc
     except RecordCompletionValidationError as exc:
+        update_record(
+            session,
+            record_id,
+            payload,
+            preserve_asset_fields=True,
+            actor_user_id=current_user_id(request),
+        )
         return render_record_edit_page(
             request,
             session,

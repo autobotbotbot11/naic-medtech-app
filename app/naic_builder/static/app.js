@@ -116,6 +116,23 @@ const DEFAULT_PATIENT_ROOM_OPTIONS = [
   "OPD",
   "ER",
 ];
+const DEFAULT_MEDTECH_SIGNATORY_OPTIONS = [
+  { id: "imelda_a_elemia", name: "Imelda A. Elemia, RMT", license: "0036643" },
+  { id: "crystel_c_tesoro", name: "Crystel C. Tesoro, RMT", license: "0103760" },
+  { id: "ma_jesusa_b_vite", name: "Ma. Jesusa B. Vite, RMT", license: "0118710" },
+  { id: "andrea_coleen_a_avellones", name: "Andrea Coleen A. Avellones, RMT", license: "0119501" },
+  { id: "julie_kyle_a_ronato", name: "Julie Kyle A. Ronato, RMT", license: "0119616" },
+  { id: "shiela_mae_d_libradilla", name: "Shiela Mae D. Libradilla, RMT", license: "0135995" },
+];
+const DEFAULT_PATHOLOGIST_SIGNATORY_OPTIONS = [
+  { id: "bernardita_mojica_figueroa", name: "Bernardita Mojica Figueroa, MD, DPSP", license: "068053" },
+];
+const SIGNATORY_INPUT_TYPES = [
+  { id: "person_dropdown", label: "Dropdown" },
+  { id: "fixed", label: "Fixed person" },
+  { id: "manual", label: "Manual entry" },
+  { id: "blank", label: "Blank line" },
+];
 const DEFAULT_PRINT_SUMMARY_ITEMS = [
   { id: "summary_primary", label: "Record", source: "primary_identity", field_id: "" },
   { id: "summary_secondary", label: "Detail", source: "secondary_identity", field_id: "" },
@@ -151,8 +168,6 @@ const DEFAULT_PATIENT_INFO_FIELDS = [
     required: false,
   },
   { key: "case_number", name: "Case Number", dataType: "text", required: true },
-  { key: "medical_technologist", name: "Medical Technologist", dataType: "text", required: false },
-  { key: "pathologist", name: "Pathologist", dataType: "text", required: false },
 ];
 
 const initialFormSlug = document.body?.dataset?.initialFormSlug || "";
@@ -328,6 +343,234 @@ function setDraftRecordIdentityValue(key, value, draft = state.draft) {
     const meta = ensureBlockSchemaMeta(draft);
     delete meta.record_identity;
   }
+}
+
+function normalizeSignatoryOption(rawOption, index, slotId) {
+  const option = rawOption && typeof rawOption === "object" ? rawOption : { name: rawOption };
+  const name = compactText(option.name || option.label || option.value);
+  if (!name) {
+    return null;
+  }
+  const key = slugify(option.key || option.id || name);
+  return {
+    id: compactText(option.id) || `${slotId}.${key}`,
+    key,
+    name,
+    title: compactText(option.title),
+    license: compactText(option.license || option.license_no || option.license_number),
+    order: parsePositiveInt(option.order, index),
+  };
+}
+
+function makeDefaultSignatoryOptions(slotId, options) {
+  return normalizeArray(options)
+    .map((option, index) => normalizeSignatoryOption(option, index + 1, slotId))
+    .filter(Boolean);
+}
+
+function defaultSignatorySlots() {
+  const medtech1Options = makeDefaultSignatoryOptions("medical_technologist_1", DEFAULT_MEDTECH_SIGNATORY_OPTIONS);
+  const medtech2Options = makeDefaultSignatoryOptions("medical_technologist_2", DEFAULT_MEDTECH_SIGNATORY_OPTIONS);
+  const pathologistOptions = makeDefaultSignatoryOptions("pathologist", DEFAULT_PATHOLOGIST_SIGNATORY_OPTIONS);
+  return [
+    {
+      id: "medical_technologist_1",
+      label: "Medical Technologist",
+      input_type: "person_dropdown",
+      required: true,
+      show_on_print: true,
+      show_license: true,
+      signature_line: true,
+      default_option_id: "",
+      options: medtech1Options,
+    },
+    {
+      id: "medical_technologist_2",
+      label: "Medical Technologist",
+      input_type: "person_dropdown",
+      required: false,
+      show_on_print: true,
+      show_license: true,
+      signature_line: true,
+      default_option_id: "",
+      options: medtech2Options,
+    },
+    {
+      id: "pathologist",
+      label: "Pathologist",
+      input_type: "fixed",
+      required: false,
+      show_on_print: true,
+      show_license: true,
+      signature_line: true,
+      default_option_id: pathologistOptions[0]?.id || "",
+      options: pathologistOptions,
+    },
+  ];
+}
+
+function normalizeSignatorySlot(rawSlot, index) {
+  const slot = rawSlot && typeof rawSlot === "object" ? rawSlot : {};
+  const label = compactText(slot.label) || `Signatory ${index}`;
+  const slotId = slugify(slot.id || slot.key || label || `signatory_${index}`);
+  const requestedInputType = compactText(slot.input_type).toLowerCase();
+  const inputType = SIGNATORY_INPUT_TYPES.some((type) => type.id === requestedInputType)
+    ? requestedInputType
+    : "person_dropdown";
+  const options = makeDefaultSignatoryOptions(slotId, slot.options);
+  let defaultOptionId = compactText(slot.default_option_id);
+  if (defaultOptionId && !options.some((option) => option.id === defaultOptionId)) {
+    defaultOptionId = "";
+  }
+  if (inputType === "fixed" && !defaultOptionId && options.length) {
+    defaultOptionId = options[0].id;
+  }
+  return {
+    id: slotId,
+    label,
+    input_type: inputType,
+    required: normalizePrintBoolean(slot.required, false),
+    show_on_print: normalizePrintBoolean(slot.show_on_print, true),
+    show_license: normalizePrintBoolean(slot.show_license, true),
+    signature_line: normalizePrintBoolean(slot.signature_line, true),
+    default_option_id: defaultOptionId,
+    manual_name: compactText(slot.manual_name),
+    manual_title: compactText(slot.manual_title),
+    manual_license: compactText(slot.manual_license),
+    options,
+  };
+}
+
+function getDraftSignatories(draft = state.draft) {
+  if (!draft || typeof draft !== "object") {
+    return [];
+  }
+  const meta = ensureBlockSchemaMeta(draft);
+  if (!Array.isArray(meta.signatories)) {
+    meta.signatories = defaultSignatorySlots();
+  }
+  meta.signatories = meta.signatories
+    .map((slot, index) => normalizeSignatorySlot(slot, index + 1))
+    .filter(Boolean);
+  return meta.signatories;
+}
+
+function getDraftSignatory(slotId) {
+  const targetId = compactText(slotId);
+  return getDraftSignatories().find((slot) => slot.id === targetId) || null;
+}
+
+function makeBlankSignatorySlot() {
+  const slotId = `signatory_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+  return normalizeSignatorySlot(
+    {
+      id: slotId,
+      label: "Signatory",
+      input_type: "person_dropdown",
+      required: false,
+      show_on_print: true,
+      show_license: true,
+      signature_line: true,
+      default_option_id: "",
+      options: [],
+    },
+    getDraftSignatories().length + 1
+  );
+}
+
+function signatoryOptionsToText(slot) {
+  return normalizeArray(slot.options)
+    .map((option) => [compactText(option.name), compactText(option.license)].filter(Boolean).join(" | "))
+    .filter(Boolean)
+    .join("\n");
+}
+
+function parseSignatoryOptionsText(value, slotId) {
+  return splitLines(value)
+    .map((line, index) => {
+      const parts = line.split("|").map((part) => compactText(part));
+      return normalizeSignatoryOption(
+        {
+          name: parts[0],
+          license: parts.slice(1).join(" | "),
+        },
+        index + 1,
+        slotId
+      );
+    })
+    .filter(Boolean);
+}
+
+function addDraftSignatorySlot() {
+  const slots = getDraftSignatories();
+  slots.push(makeBlankSignatorySlot());
+}
+
+function removeDraftSignatorySlot(slotId) {
+  const meta = ensureBlockSchemaMeta(state.draft);
+  const targetId = compactText(slotId);
+  meta.signatories = getDraftSignatories().filter((slot) => slot.id !== targetId);
+}
+
+function moveDraftSignatorySlot(slotId, direction) {
+  const slots = getDraftSignatories();
+  const index = slots.findIndex((slot) => slot.id === slotId);
+  if (index === -1) {
+    return;
+  }
+  const nextIndex = direction === "up" ? index - 1 : index + 1;
+  if (nextIndex < 0 || nextIndex >= slots.length) {
+    return;
+  }
+  const [slot] = slots.splice(index, 1);
+  slots.splice(nextIndex, 0, slot);
+}
+
+function updateDraftSignatorySlot(slotId, key, value) {
+  const slot = getDraftSignatory(slotId);
+  if (!slot) {
+    return;
+  }
+  if (key === "label") {
+    slot.label = compactText(value) || "Signatory";
+    return;
+  }
+  if (key === "input_type") {
+    slot.input_type = SIGNATORY_INPUT_TYPES.some((type) => type.id === value) ? value : "person_dropdown";
+    if (slot.input_type === "fixed" && !slot.default_option_id && slot.options.length) {
+      slot.default_option_id = slot.options[0].id;
+    }
+    return;
+  }
+  if (key === "default_option_id") {
+    slot.default_option_id = compactText(value);
+    return;
+  }
+  if (key === "manual_name" || key === "manual_license" || key === "manual_title") {
+    slot[key] = compactText(value);
+  }
+}
+
+function updateDraftSignatoryOptions(slotId, rawText) {
+  const slot = getDraftSignatory(slotId);
+  if (!slot) {
+    return;
+  }
+  slot.options = parseSignatoryOptionsText(rawText, slot.id);
+  if (slot.default_option_id && !slot.options.some((option) => option.id === slot.default_option_id)) {
+    slot.default_option_id = "";
+  }
+  if (slot.input_type === "fixed" && !slot.default_option_id && slot.options.length) {
+    slot.default_option_id = slot.options[0].id;
+  }
+}
+
+function setDraftSignatoryToggle(slotId, key, checked) {
+  const slot = getDraftSignatory(slotId);
+  if (!slot || !["required", "show_on_print", "show_license", "signature_line"].includes(key)) {
+    return;
+  }
+  slot[key] = Boolean(checked);
 }
 
 function normalizePrintAccentColor(value) {
@@ -792,6 +1035,7 @@ function syncRootMetaToBlockSchema(draft = state.draft) {
   }
 
   getDraftPrintConfig(draft);
+  getDraftSignatories(draft);
 }
 
 function syncDraftBlockState() {
@@ -2007,6 +2251,7 @@ function makeBlankForm(config = {}) {
         form_key: slugify(formName),
         form_order: 1,
         default_patient_info_materialized: true,
+        signatories: defaultSignatorySlots(),
         record_identity: {
           primary_field_id: patientNameField?.id || "",
           secondary_field_id: caseNumberField?.id || "",
@@ -2353,7 +2598,7 @@ function defaultFocusPane() {
 
 function syncFocusPane() {
   const focus = String(state.ui.focusPane || "");
-  const valid = new Set(["setup", "content", "print", "save"]);
+  const valid = new Set(["setup", "content", "signatories", "print", "save"]);
   if (!valid.has(focus)) {
     state.ui.focusPane = defaultFocusPane();
   }
@@ -2401,6 +2646,9 @@ function renderOutline() {
         ` : `
           <div class="outline-empty">No content yet.</div>
         `}
+        <button class="outline-item ${focusPane === "signatories" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="signatories">
+          <span>Signatories</span>
+        </button>
         <button class="outline-item ${focusPane === "print" ? "active" : ""}" type="button" data-action="focus-pane" data-pane="print">
           <span>Print</span>
         </button>
@@ -2426,6 +2674,8 @@ function renderEditor() {
     formEditorEl.innerHTML = renderFormSetupCard({ focusMode: true });
   } else if (focusPane === "content") {
     formEditorEl.innerHTML = renderContentCard();
+  } else if (focusPane === "signatories") {
+    formEditorEl.innerHTML = renderSignatoriesCard();
   } else if (focusPane === "print") {
     formEditorEl.innerHTML = renderPrintCard({ focusMode: true });
   } else if (focusPane === "save") {
@@ -2434,7 +2684,7 @@ function renderEditor() {
     formEditorEl.innerHTML = renderContentCard();
   }
 
-  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-print", "pane-save");
+  formEditorEl.classList.remove("pane-setup", "pane-content", "pane-signatories", "pane-print", "pane-save");
   formEditorEl.classList.add(`pane-${focusPane}`);
 
   setupSortableCollections();
@@ -2663,6 +2913,135 @@ function renderPrintPreviewPanel() {
   `;
 }
 
+function renderSignatoryTypeOptions(selectedType) {
+  return SIGNATORY_INPUT_TYPES.map((type) => `
+    <option value="${escapeHtml(type.id)}"${selectedType === type.id ? " selected" : ""}>${escapeHtml(type.label)}</option>
+  `).join("");
+}
+
+function renderSignatoryDefaultOptions(slot) {
+  return [
+    '<option value="">No default</option>',
+    ...normalizeArray(slot.options).map((option) => `
+      <option value="${escapeHtml(option.id)}"${slot.default_option_id === option.id ? " selected" : ""}>${escapeHtml(option.name)}</option>
+    `),
+  ].join("");
+}
+
+function renderSignatoryCard(slot, index, totalCount) {
+  const optionsText = signatoryOptionsToText(slot);
+  const isManual = slot.input_type === "manual";
+  const usesOptions = slot.input_type === "person_dropdown" || slot.input_type === "fixed";
+  return `
+    <article class="signatory-config-card" data-signatory-id="${escapeHtml(slot.id)}">
+      <div class="signatory-config-head">
+        <div>
+          <span class="signatory-index">Signature ${index + 1}</span>
+          <strong>${escapeHtml(slot.label || "Signatory")}</strong>
+        </div>
+        <div class="row-actions">
+          <button class="ghost mini" type="button" data-action="move-signatory" data-id="${escapeHtml(slot.id)}" data-direction="up" ${index === 0 ? "disabled" : ""}>Up</button>
+          <button class="ghost mini" type="button" data-action="move-signatory" data-id="${escapeHtml(slot.id)}" data-direction="down" ${index === totalCount - 1 ? "disabled" : ""}>Down</button>
+          <button class="ghost mini warn" type="button" data-action="remove-signatory" data-id="${escapeHtml(slot.id)}">Remove</button>
+        </div>
+      </div>
+
+      <div class="setup-grid">
+        <label>
+          <span>Role label</span>
+          <input data-action="signatory-field" data-id="${escapeHtml(slot.id)}" data-key="label" value="${escapeHtml(slot.label)}" placeholder="Example: Medical Technologist">
+        </label>
+        <label>
+          <span>Type</span>
+          <select data-action="signatory-field" data-id="${escapeHtml(slot.id)}" data-key="input_type">
+            ${renderSignatoryTypeOptions(slot.input_type)}
+          </select>
+        </label>
+      </div>
+
+      <div class="print-toggle-grid signatory-toggle-grid">
+        <label class="identity-check">
+          <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="required" ${slot.required ? "checked" : ""}>
+          <span>Required</span>
+        </label>
+        <label class="identity-check">
+          <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="show_on_print" ${slot.show_on_print ? "checked" : ""}>
+          <span>Show on print</span>
+        </label>
+        <label class="identity-check">
+          <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="show_license" ${slot.show_license ? "checked" : ""}>
+          <span>Show license</span>
+        </label>
+        <label class="identity-check">
+          <input type="checkbox" data-action="signatory-toggle" data-id="${escapeHtml(slot.id)}" data-key="signature_line" ${slot.signature_line ? "checked" : ""}>
+          <span>Signature line</span>
+        </label>
+      </div>
+
+      ${usesOptions ? `
+        <div class="setup-grid">
+          <label>
+            <span>Default</span>
+            <select data-action="signatory-field" data-id="${escapeHtml(slot.id)}" data-key="default_option_id">
+              ${renderSignatoryDefaultOptions(slot)}
+            </select>
+          </label>
+        </div>
+        <label class="stacked-input">
+          <span>People</span>
+          <textarea data-action="signatory-options" data-id="${escapeHtml(slot.id)}" rows="6" placeholder="One person per line: Name | License">${escapeHtml(optionsText)}</textarea>
+        </label>
+      ` : ""}
+
+      ${isManual ? `
+        <div class="setup-grid">
+          <label>
+            <span>Default name</span>
+            <input data-action="signatory-field" data-id="${escapeHtml(slot.id)}" data-key="manual_name" value="${escapeHtml(slot.manual_name)}">
+          </label>
+          <label>
+            <span>Default license</span>
+            <input data-action="signatory-field" data-id="${escapeHtml(slot.id)}" data-key="manual_license" value="${escapeHtml(slot.manual_license)}">
+          </label>
+        </div>
+      ` : ""}
+    </article>
+  `;
+}
+
+function renderSignatoriesCard() {
+  const slots = getDraftSignatories(state.draft);
+  return `
+    <section class="editor-card signatories-editor-card">
+      <div class="card-head">
+        <div>
+          <p class="eyebrow">Signatories</p>
+          <div class="card-title-row">
+            <h3 class="card-title">Print signatories</h3>
+            ${renderHelpPopover("Signatories help", "These are selected during record entry and printed as signature lines.")}
+          </div>
+        </div>
+        <div class="top-actions">
+          <button class="ghost mini" type="button" data-action="add-signatory">Add signatory</button>
+        </div>
+      </div>
+
+      <div class="editor-spotlight signatory-spotlight">
+        <div>
+          <strong>${escapeHtml(slots.length ? `${slots.length} configured` : "No signatories")}</strong>
+          <span>Kept separate from normal result fields.</span>
+        </div>
+      </div>
+
+      <div class="signatory-config-list">
+        ${slots.length
+          ? slots.map((slot, index) => renderSignatoryCard(slot, index, slots.length)).join("")
+          : '<div class="empty-state">No signatory lines yet.</div>'}
+      </div>
+    </section>
+  `;
+}
+
 function renderPrintCard() {
   const fields = collectIdentityFieldOptions();
   const config = getDraftPrintConfig(state.draft);
@@ -2776,12 +3155,9 @@ function renderPrintCard() {
           <section class="print-signature-editor">
             <div class="reference-editor-head">
               <span class="reference-range-title">Signatories</span>
-              <p>Control the printed footer without changing the page layout.</p>
+              <p>Configured separately so they do not behave like ordinary result fields.</p>
             </div>
-            <div class="print-signature-list">
-              ${renderPrintSignatureConfig("left", config, fields)}
-              ${renderPrintSignatureConfig("right", config, fields)}
-            </div>
+            <button class="ghost mini" type="button" data-action="focus-pane" data-pane="signatories">Edit signatories</button>
           </section>
 
           ${config.show_summary ? `
@@ -4263,6 +4639,10 @@ async function handleEditorClick(event) {
 
   const path = actionTarget.dataset.path ? decodePath(actionTarget.dataset.path) : null;
 
+  if (action === "focus-pane") {
+    setFocusPane(actionTarget.dataset.pane || defaultFocusPane());
+    return;
+  }
   if (action === "add-section") {
     addSection();
     return;
@@ -4367,6 +4747,24 @@ async function handleEditorClick(event) {
     await confirmDeleteOption(path, Number(actionTarget.dataset.index));
     return;
   }
+  if (action === "add-signatory") {
+    addDraftSignatorySlot();
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "remove-signatory") {
+    removeDraftSignatorySlot(compactText(actionTarget.dataset.id));
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (action === "move-signatory") {
+    moveDraftSignatorySlot(compactText(actionTarget.dataset.id), compactText(actionTarget.dataset.direction));
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
   if (action === "add-print-summary") {
     addDraftPrintSummaryItem();
     syncRootMetaToBlockSchema();
@@ -4398,6 +4796,26 @@ async function handleEditorClick(event) {
 }
 
 function handleEditorChange(event) {
+  if (event.target.dataset.action === "signatory-field") {
+    updateDraftSignatorySlot(
+      compactText(event.target.dataset.id),
+      compactText(event.target.dataset.key),
+      event.target.value
+    );
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
+  if (event.target.dataset.action === "signatory-toggle") {
+    setDraftSignatoryToggle(
+      compactText(event.target.dataset.id),
+      compactText(event.target.dataset.key),
+      event.target.checked
+    );
+    syncRootMetaToBlockSchema();
+    touch({ full: true, source: "blocks" });
+    return;
+  }
   if (event.target.dataset.action === "field-required") {
     const field = getNodeByPath(decodePath(event.target.dataset.path));
     if (isStoredBlockNode(field)) {
@@ -4528,6 +4946,22 @@ formEditorEl.addEventListener("click", handleEditorClick);
 formEditorEl.addEventListener("input", (event) => {
   if (event.target.dataset.action === "option-name") {
     handleOptionInput(event);
+    return;
+  }
+  if (event.target.dataset.action === "signatory-field") {
+    updateDraftSignatorySlot(
+      compactText(event.target.dataset.id),
+      compactText(event.target.dataset.key),
+      event.target.value
+    );
+    syncRootMetaToBlockSchema();
+    touch({ source: "blocks" });
+    return;
+  }
+  if (event.target.dataset.action === "signatory-options") {
+    updateDraftSignatoryOptions(compactText(event.target.dataset.id), event.target.value);
+    syncRootMetaToBlockSchema();
+    touch({ source: "blocks" });
     return;
   }
   if (event.target.dataset.action === "print-summary-label") {

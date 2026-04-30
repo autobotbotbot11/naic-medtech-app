@@ -304,6 +304,7 @@ Current print direction:
 - make header/accent color configurable per examination/form
 - keep print configuration inside the form builder as a separate `Print` pane/tab
 - keep patient info generic and user-configured, not hardcoded by the app
+- keep medtech/pathologist generic too: they are configurable signatory slots under `block_schema.meta.signatories`, not ordinary result fields and not hardcoded employee concepts
 - use a constrained template/configuration approach instead of a freeform Canva-style editor
 
 Current implementation checkpoint:
@@ -311,11 +312,13 @@ Current implementation checkpoint:
 - completion validates builder-marked required fields
 - generic record identity config lives at `block_schema.meta.record_identity`
 - print config lives at `block_schema.meta.print_config`
+- signatory config lives at `block_schema.meta.signatories`
 - current forms now have a normal editable `Patient Information` builder group based on the original `default_lab_request` fields, with Name and Case Number marked required and wired as record identity/search hints
+- Medical Technologist and Pathologist were removed from normal Patient Information fields and migrated into the generic Signatories pane; current defaults are two medtech slots and one fixed pathologist slot from the source workbook
 - the builder `Print` pane now generates a backend-built sample print preview from the current unsaved draft, with an estimated one-page fit signal
 - builder preview and `/records/{id}/print` share the same print-page macro and backend print config normalization path
 - controlled print options now exist for typography, hiding empty fields, section headings, group headings, image size, and table density
-- footer/signatory configuration now supports per-side role labels and blank, prepared-by, manual-name, or field-sourced signature names
+- generic signatory configuration now supports dropdown people, fixed people, manual entry, blank lines, required completion, print visibility, signature lines, and license display
 - compact result-grid layout now compresses consecutive ordinary scalar fields into a two-column print grid, reducing current long-form estimates to 0 long forms in the automated audit
 - Chromium PDF QA confirmed the remaining tight forms OGTT, Semen, and Serology each export as one A4 page after the generic print spacing pass
 - clinic-like stress PDF QA confirmed those same tight forms still export as one A4 page with longer names/remarks/signatory-style values

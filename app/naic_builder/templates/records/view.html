@@ -125,9 +125,34 @@
     {% endfor %}
   {% endmacro %}
 
+  {% macro render_signatory_values(snapshots) %}
+    {% if snapshots %}
+    <section class="entry-signatories entry-signatories--view">
+      <div class="entry-block-head">
+        <p class="eyebrow">Signatories</p>
+        <h3>For print</h3>
+      </div>
+      <div class="entry-signatory-grid">
+        {% for item in snapshots %}
+          {% if item.name or item.license %}
+          <article class="entry-signatory-value">
+            <span>{{ item.label }}</span>
+            <strong>{{ item.name or "Not selected" }}</strong>
+            {% if item.license %}
+            <span>Lic. No. {{ item.license }}</span>
+            {% endif %}
+          </article>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </section>
+    {% endif %}
+  {% endmacro %}
+
   {% set entry_schema = record["entry_schema"] or {} %}
   {% set record_values = record["values"] or {} %}
   {% set asset_by_field = record["asset_by_field_id"] or {} %}
+  {% set record_signatories = record["signatories"] or [] %}
   {% set created_by = record["created_by"] %}
   {% set updated_by = record["updated_by"] or record["created_by"] %}
   {% set jump_nav = namespace(count=0) %}
@@ -199,6 +224,7 @@
       <div class="record-value-grid">
         {{ render_values(entry_schema["blocks"] or [], record_values, asset_by_field, record["id"]) }}
       </div>
+      {{ render_signatory_values(record_signatories) }}
     </section>
   </div>
 {% endblock %}
